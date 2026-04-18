@@ -1,0 +1,28 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+venv_mac/
+venv_windows/
+
+# Database & Personal Data
+database.db
+*.db
+*.sqlite
+
+# Secrets
+.env
+
+# Python caching
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

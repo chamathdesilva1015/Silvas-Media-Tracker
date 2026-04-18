@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silva's Media Tracker</title>
+    <meta name="description" content="A premium personal media tracking dashboard for movies, shows, games, and anime, by Silva.">
+    
+    <!-- Google Fonts: Lora (Serif) & Nunito (Sans-Serif) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css?v=14">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tabs</h2>
+                <button id="closeSidebarBtn" class="icon-btn">&times;</button>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav">
+                <a href="#" class="nav-link active" data-filter="Movie">
+                    <span class="nav-text">Movies</span>
+                    <span class="nav-count" id="count-Movie">0</span>
+                </a>
+                <a href="#" class="nav-link" data-filter="TV Series">
+                    <span class="nav-text">TV Series</span>
+                    <span class="nav-count" id="count-TVSeries">0</span>
+                </a>
+                <a href="#" class="nav-link" data-filter="Manga">
+                    <span class="nav-text">Manga</span>
+                    <span class="nav-count" id="count-Manga">0</span>
+                </a>
+
+                <a href="#" class="nav-link" data-filter="Anime">
+                    <span class="nav-text">Anime</span>
+                    <span class="nav-count" id="count-Anime">0</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="addMediaBtn" class="btn-primary btn-full">+ Add Entry</button>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <div id="pageBanner" class="page-banner"></div>
+            <header>
+                <div class="header-left">
+                    <button id="openSidebarBtn" class="icon-btn hamburger">&#9776;</button>
+                    <div class="header-content">
+                        <h1 id="pageTitle"><span class="serif">Movie</span></h1>
+                        
+                        <div class="page-tabs" id="pageTabs">
+                            <button class="pill-tab active" data-sub="Completed">Completed</button>
+                            <button class="pill-tab" data-sub="Rankings">Rankings</button>
+                            <button class="pill-tab pill-tab-liked" data-sub="Liked">♥ Liked</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <!-- Sort Controls -->
+                    <div class="custom-dropdown" id="sortDropdown">
+                        <div class="dropdown-header"><span>Sort by...</span></div>
+                        <ul class="dropdown-options">
+                            <li data-value="rating-desc">Rating: High to Low</li>
+                            <li data-value="rating-asc">Rating: Low to High</li>
+                            <li data-value="year-desc">Year: Newest First</li>
+                            <li data-value="year-asc">Year: Oldest First</li>
+                            <li data-value="title-asc">Title: A-Z</li>
+                            <li data-value="title-desc">Title: Z-A</li>
+                        </ul>
+                    </div>
+                    <div class="custom-dropdown" id="reviewFilterDropdown">
+                        <div class="dropdown-header"><span>Reviews: All</span></div>
+                        <ul class="dropdown-options">
+                            <li data-value="all" class="selected">All</li>
+                            <li data-value="reviewed">Reviewed</li>
+                            <li data-value="unreviewed">Unreviewed</li>
+                        </ul>
+                    </div>
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
+                    </div>
+                </div>
+            </header>
+
+    <main class="container">
+        <!-- Loader -->
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Grid Container -->
+        <div id="mediaGrid" class="media-grid">
+            <!-- Cards will be populated here via Javascript -->
+        </div>
+    </main>
+
+    <!-- Add Entry Modal (Hidden by default) -->
+    <div id="mediaModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModalBtn">&times;</span>
+            <h2>New Entry</h2>
+            <form id="mediaForm">
+                <div class="form-group">
+                    <label for="typeInput">Type</label>
+                    <select id="typeInput" required>
+                        <option value="" disabled selected>Select Media Type...</option>
+                        <option value="Movie">Movie</option>
+                        <option value="TV Series">TV Series</option>
+                        <option value="Manga">Manga</option>
+
+                        <option value="Anime">Anime</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="titleInput">Title</label>
+                    <input type="text" id="titleInput" required placeholder="e.g. The Batman">
+                </div>
+
+                <!-- Dynamic Movie Fields (hidden by default via JS) -->
+                <div id="movieFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="releaseYearInput">Release Year</label>
+                        <input type="number" id="releaseYearInput" min="1800" max="2100" placeholder="e.g. 2022">
+                    </div>
+                    <div class="form-group">
+                        <label>Genres <small style="color: var(--text-secondary);">(Max 2, Select at least 1)</small></label>
+                        <div class="genre-checklist" id="genreChecklist">
+                            <label><input type="checkbox" value="Action"> Action</label>
+                            <label><input type="checkbox" value="Comedy"> Comedy</label>
+                            <label><input type="checkbox" value="Drama"> Drama</label>
+                            <label><input type="checkbox" value="Sci-Fi"> Sci-Fi</label>
+                            <label><input type="checkbox" value="Horror"> Horror</label>
+                            <label><input type="checkbox" value="Romance"> Romance</label>
+                            <label><input type="checkbox" value="Thriller"> Thriller</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ratingInput">Rating</label>
+                    <!-- 0.5 scale for Movie, but applied via JS validation or step -->
+                    <input type="number" id="ratingInput" required step="0.5" min="0" max="10" placeholder="e.g. 8.5">
+                </div>
+                <div class="form-group">
+                    <label for="reviewInput">Review (Optional)</label>
+                    <textarea id="reviewInput" rows="3" placeholder="Drop your thoughts..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary btn-full">Save Target</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Global Review Editor Modal -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content review-modal-content">
+            <span class="close-btn" id="closeReviewModalBtn">&times;</span>
+            <h2 id="reviewTitleDisplay" class="serif">Rate & Review</h2>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+                <textarea id="reviewInputBox" rows="8" placeholder="Type your review here... (will be saved automatically upon clicking Save)"></textarea>
+            </div>
+            
+            <div class="form-actions" style="display: flex; gap: 10px; margin-top: 1.5rem;">
+                <button id="saveReviewBtn" class="btn-primary" style="flex:1;">Save Review</button>
+                <button id="clearReviewBtn" style="flex:1; background:var(--bg-base); color:var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; cursor:pointer; font-family:'Nunito', sans-serif;">Delete Review</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="app.js?v=14"></script>
+    </div> <!-- End app-layout -->
+</body>
+</html>
