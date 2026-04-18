@@ -33,11 +33,11 @@ Users can write and persist written reviews directly within the dashboard. The s
 
 Building this tracker involved overcoming several technical hurdles that required creative engineering:
 
-### The "Dirty Data" Constraint
+### Incorrect Data
 During the development of the Discord parser, we encountered several instances of malformed data—such as movie years recorded as "20109" or ratings with corrupted formatting. 
 **Solution**: We implemented a rigorous validation layer in the sync script. It uses regular expressions to normalize year data and enforces logical bounds (1888-2030), rejecting or flagging entries that fall outside these safe zones to prevent database corruption.
 
-### Solving the "Browser Cache Ghost"
+### Solving the Browser Cache Problem
 Developing a single-page app with frequent CSS and JS updates presented a persistent issue where changes wouldn't appear for the end user due to aggressive browser caching.
 **Solution**: We transitioned to a manual cache-busting system. By appending versioned query strings (e.g., `app.js?v=13`) to resource links in the HTML, we force the browser to immediately fetch the latest code whenever a deployment change occurs.
 
