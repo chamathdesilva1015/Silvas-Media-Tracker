@@ -82,5 +82,27 @@ If you have entries with missing or incorrect release years (especially those im
 python verify_years.py
 ```
 
+## 🚀 Update 1: The Precision Enrichment Overhaul
+
+This update marks a significant leap in the accuracy and professional feel of the dashboard's metadata. We moved beyond simple data ingestion to create an "opinionated" enrichment engine.
+
+### 🎬 High-Precision Movie Engine 2.0
+- **Wikipedia Category Scoring**: Replaced basic keyword matching with a sophisticated scoring system that parses hidden Wikipedia category tags (e.g., `Category:2000s action thriller films`). This ensures the metadata reflects the film’s true identity rather than generic tags.
+- **The Strict 2-Genre Rule**: Every movie in the library is now guaranteed to have exactly **two genres**. 
+- **Genre Complement System**: For movies with sparse data, the system automatically suggests logical pairings (e.g., *Animation* is paired with *Adventure* or *Comedy*) to ensure a consistent, premium look across all cards.
+
+### 📖 Manga & Anime Metadata Refining
+- **Tiered Metadata Priority**: Implemented a "Golden List" logic that prioritizes defining genres (Action, Romance, Drama) over secondary themes (School, Slice of Life).
+- **Type Prefix Stripping**: Cleaned up the UI by removing redundant "Manga - " and "Manhwa - " prefixes, allowing the actual genres to shine.
+- **Source of Truth Layer**: Added a manual override system for high-priority accuracy titles (e.g., ensuring *A Silent Voice* is correctly tagged as *Romance/Drama*).
+
+### 🎨 UI/UX Cleanup
+- **Simplified Badges**: Removed the media type badges (Anime, Manga, etc.) from the card view. This declutters the interface and allows the focus to remain on the artwork and the newly refined genres.
+- **Deep Grid Optimization**: Improved the rendering logic to handle the new 1-2 genre format seamlessly across all screen sizes.
+
+### ⚙️ Backend & Reliability
+- **Throttling & Rate-Limit Resistance**: Hardened the Wikipedia and Jikan API collectors with a patient "retry-after" back-off logic to handle aggressive rate limits without failing the sync.
+- **Universal Migration Scripts**: Created `refresh_movie_genres.py` and `refresh_manga_genres.py` to allow for library-wide metadata updates with a single command.
+
 ## 📜 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
