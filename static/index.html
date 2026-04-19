@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=14">
+    <link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
     <div class="app-layout">
@@ -23,9 +23,9 @@
                 <button id="closeSidebarBtn" class="icon-btn">&times;</button>
             </div>
             <nav class="sidebar-nav" id="sidebarNav">
-                <a href="#" class="nav-link active" data-filter="Movie">
+                <a href="#" class="nav-link active" data-filter="Movies">
                     <span class="nav-text">Movies</span>
-                    <span class="nav-count" id="count-Movie">0</span>
+                    <span class="nav-count" id="count-Movies">0</span>
                 </a>
                 <a href="#" class="nav-link" data-filter="TV Series">
                     <span class="nav-text">TV Series</span>
@@ -43,6 +43,7 @@
             </nav>
             <div class="sidebar-footer">
                 <button id="addMediaBtn" class="btn-primary btn-full">+ Add Entry</button>
+                
             </div>
         </aside>
 
@@ -52,7 +53,7 @@
                 <div class="header-left">
                     <button id="openSidebarBtn" class="icon-btn hamburger">&#9776;</button>
                     <div class="header-content">
-                        <h1 id="pageTitle"><span class="serif">Movie</span></h1>
+                        <h1 id="pageTitle"><span class="serif">Movies</span></h1>
                         
                         <div class="page-tabs" id="pageTabs">
                             <button class="pill-tab active" data-sub="Completed">Completed</button>
@@ -107,14 +108,13 @@
             <span class="close-btn" id="closeModalBtn">&times;</span>
             <h2>New Entry</h2>
             <form id="mediaForm">
-                <div class="form-group">
+                <div class="form-group" style="display: none;">
                     <label for="typeInput">Type</label>
                     <select id="typeInput" required>
                         <option value="" disabled selected>Select Media Type...</option>
-                        <option value="Movie">Movie</option>
+                        <option value="Movies">Movies</option>
                         <option value="TV Series">TV Series</option>
                         <option value="Manga">Manga</option>
-
                         <option value="Anime">Anime</option>
                     </select>
                 </div>
@@ -149,10 +149,6 @@
                     <!-- 0.5 scale for Movie, but applied via JS validation or step -->
                     <input type="number" id="ratingInput" required step="0.5" min="0" max="10" placeholder="e.g. 8.5">
                 </div>
-                <div class="form-group">
-                    <label for="reviewInput">Review (Optional)</label>
-                    <textarea id="reviewInput" rows="3" placeholder="Drop your thoughts..."></textarea>
-                </div>
                 
                 <button type="submit" class="btn-primary btn-full">Save Target</button>
             </form>
@@ -176,8 +172,24 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content review-modal-content" style="max-width: 400px; text-align: center;">
+            <h2 class="serif">Delete Entry?</h2>
+            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                Are you sure you want to delete <strong id="deleteTargetTitle" style="color: var(--text-primary);">this item</strong>?
+                <br><br>
+                <span style="font-size: 0.85rem; opacity: 0.8;">Note: If this exists on Discord, it may be re-synced unless deleted there too.</span>
+            </p>
+            <div class="form-actions" style="display: flex; gap: 10px; margin-top: 2rem;">
+                <button id="cancelDeleteBtn" class="btn-secondary" style="flex:1; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer; padding: 10px;">Cancel</button>
+                <button id="confirmDeleteBtn" class="btn-primary" style="flex:1; background: #e74c3c;">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom JS -->
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=17"></script>
     </div> <!-- End app-layout -->
 </body>
 </html>

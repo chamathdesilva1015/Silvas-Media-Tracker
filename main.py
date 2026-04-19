@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
+import asyncio
+from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
+from fastapi.responses import JSONResponse, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -8,8 +9,16 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 from database import engine, create_db_and_tables, MediaItem
+from discord_sync import run_sync
+from enrich_data import run_enrichment
 
 app = FastAPI(title="Silva's Media Tracker API")
+
+# Automation state — defined early so startup hook and background task can reference it
+automation_status = {
+    "sync":   {"running": False, "last_result": None, "logs": []},
+    "enrich": {"running": False, "last_result": None, "logs": []},
+}
 
 # Add CORS middleware for local network/browser compatibility
 app.add_middleware(
@@ -35,16 +44,80 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     create_db_and_tables()
+    # Run Score Cross-Linker synchronously (fast, DB-only)
+    try:
+        from health_check import run_score_crosslink
+        with Session(engine) as session:
+            items = session.exec(select(MediaItem)).all()
+            fixed, _ = run_score_crosslink(session, items, auto_fix=True)
+            if fixed:
+                session.commit()
+                print(f"[Startup] Score Cross-Linker: linked {fixed} missing scores.")
+    except Exception as e:
+        print(f"[Startup] Score Cross-Linker skipped: {e}")
+
+    # Launch Discord sync in the background — site is immediately usable
+    # while data refreshes from Discord in the background.
+    asyncio.create_task(_background_sync())
+
+
+async def _background_sync():
+    """Runs a full Discord sync every time the server starts."""
+    automation_status["sync"]["running"] = True
+    automation_status["sync"]["logs"] = ["[System] Auto-sync started on launch..."]
+
+    def log_sync(msg):
+        print(msg)  # visible in terminal
+        automation_status["sync"]["logs"].append(msg)
+
+    try:
+        res = await run_sync(log_func=log_sync, category=None)
+        automation_status["sync"]["last_result"] = res
+        print(f"[Startup] Discord sync complete: {res}")
+    except Exception as e:
+        print(f"[Startup] Discord sync error: {e}")
+        automation_status["sync"]["last_result"] = {"status": "error", "message": str(e)}
+    finally:
+        automation_status["sync"]["running"] = False
+
+
+# Suppress Chromium/Brave devtools probe (harmless, just noisy)
+@app.get("/.well-known/appspecific/com.chrome.devtools.json")
+def devtools_probe():
+    return Response(content="{}", media_type="application/json")
+
 
 @app.get("/api/media", response_model=List[MediaItem])
 def read_media(session: Session = Depends(get_session)):
     media = session.exec(select(MediaItem).order_by(MediaItem.date_added.desc())).all()
     return media
 
+@app.delete("/api/media/{item_id}")
+def delete_media_item(item_id: int, session: Session = Depends(get_session)):
+    item = session.get(MediaItem, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    session.delete(item)
+    session.commit()
+    return {"status": "success", "message": "Item deleted"}
+
 @app.post("/api/media", response_model=MediaItem)
 def create_media(item: MediaItem, session: Session = Depends(get_session)):
+    # Error-Proof Duplicate Check
+    stmt = select(MediaItem).where(
+        MediaItem.title == item.title,
+        MediaItem.type == item.type,
+        MediaItem.release_year == item.release_year
+    )
+    existing = session.exec(stmt).first()
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"This piece of media ('{item.title}' {item.release_year or ''}) already exists in your tracker."
+        )
+        
     session.add(item)
     session.commit()
     session.refresh(item)
@@ -84,9 +157,23 @@ def update_review(payload: ReviewPayload, session: Session = Depends(get_session
     session.commit()
     return {"ok": True, "updated_count": len(target_items)}
 
+def normalize_title(title: str) -> str:
+    """Universal normalizer for semantic identity matching."""
+    if not title: return ""
+    import string
+    t = title.lower().strip()
+    # Remove common prefixes
+    for prefix in ["the ", "a ", "an "]:
+        if t.startswith(prefix):
+            t = t[len(prefix):]
+            break
+    # Remove punctuation & collapse whitespace
+    t = "".join(char for char in t if char not in string.punctuation)
+    return " ".join(t.split())
+
 @app.post("/api/media/like/{item_id}")
 def toggle_like(item_id: str, session: Session = Depends(get_session)):
-    """Toggle is_liked on an item, then cascade to all rows with same title+type."""
+    """Toggle is_liked on an item, then cascade to all rows with same normalized title+type."""
     try:
         actual_id = int(item_id)
     except ValueError:
@@ -98,19 +185,20 @@ def toggle_like(item_id: str, session: Session = Depends(get_session)):
 
     # Flip the value
     new_liked = not item.is_liked
+    target_norm = normalize_title(item.title)
 
-    # Cascade across all rows with the same title and type (Completed + Rankings)
+    # Cascade across all rows with the same NORMALIZED title and type
     all_related = session.exec(
         select(MediaItem).where(MediaItem.type == item.type)
     ).all()
-    related = [r for r in all_related if r.title.lower() == item.title.lower()]
+    related = [r for r in all_related if normalize_title(r.title) == target_norm]
 
     for r in related:
         r.is_liked = new_liked
         session.add(r)
 
     session.commit()
-    print(f"[DEBUG] TOGGLED LIKE for '{item.title}' ({item.type}) -> {new_liked} ({len(related)} rows)")
+    print(f"[DEBUG] TOGGLED LIKE for '{item.title}' (Norm: '{target_norm}') -> {new_liked} ({len(related)} rows)")
     return {"ok": True, "is_liked": new_liked, "updated_count": len(related)}
 
 @app.post("/api/media/delete/{item_id}")
@@ -137,6 +225,71 @@ def delete_media(item_id: str, session: Session = Depends(get_session)):
     session.commit()
     print(f"[DEBUG] SUCCESS: DELETED ITEM {actual_id} ({item.title})")
     return {"ok": True}
+
+@app.post("/api/automation/sync")
+async def trigger_sync(background_tasks: BackgroundTasks, category: Optional[str] = None):
+    if automation_status["sync"]["running"]:
+        return {"ok": False, "message": "Sync already in progress"}
+    
+    automation_status["sync"]["running"] = True
+    automation_status["sync"]["logs"] = [f"[System] Starting Discord Sync for {category or 'All Categories'}..."]
+    
+    def log_sync(msg):
+        automation_status["sync"]["logs"].append(msg)
+    
+    async def run_sync_task():
+        try:
+            res = await run_sync(log_func=log_sync, category=category)
+            automation_status["sync"]["last_result"] = res
+        except Exception as e:
+            log_sync(f"[System] Critical Error: {str(e)}")
+            automation_status["sync"]["last_result"] = {"status": "error", "message": str(e)}
+        finally:
+            automation_status["sync"]["running"] = False
+            
+    background_tasks.add_task(run_sync_task)
+    return {"ok": True, "message": "Sync started"}
+
+@app.post("/api/automation/enrich")
+async def trigger_enrich(background_tasks: BackgroundTasks, category: Optional[str] = None):
+    if automation_status["enrich"]["running"]:
+        return {"ok": False, "message": "Enrichment already in progress"}
+    
+    automation_status["enrich"]["running"] = True
+    automation_status["enrich"]["logs"] = [f"[System] Starting Magic Auto-Fill for {category or 'All Categories'}..."]
+
+    def log_enrich(msg):
+        automation_status["enrich"]["logs"].append(msg)
+    
+    async def run_enrich_task():
+        try:
+            res = await run_enrichment(log_func=log_enrich, category=category)
+            automation_status["enrich"]["last_result"] = res
+        except Exception as e:
+            log_enrich(f"[System] Critical Error: {str(e)}")
+            automation_status["enrich"]["last_result"] = {"status": "error", "message": str(e)}
+        finally:
+            automation_status["enrich"]["running"] = False
+            
+    background_tasks.add_task(run_enrich_task)
+    return {"ok": True, "message": "Data enrichment started"}
+
+@app.get("/api/automation/status")
+def get_automation_status():
+    return {
+        "sync": {k: v for k, v in automation_status["sync"].items() if k != "logs"},
+        "enrich": {k: v for k, v in automation_status["enrich"].items() if k != "logs"}
+    }
+
+@app.get("/api/automation/logs/{task}")
+def get_automation_logs(task: str):
+    if task not in automation_status:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    # Return all logs and clear them (destructive read for the frontend)
+    logs = list(automation_status[task]["logs"])
+    automation_status[task]["logs"] = []
+    return {"logs": logs}
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

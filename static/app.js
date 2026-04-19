@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let allMedia = [];
-    let currentCategory = 'Movie'; // Default page
+    let currentCategory = 'Movies'; // Default page
     let currentSubTab = 'Completed'; // Default subtab ('Completed' or 'Rankings')
 
     const searchInput = document.getElementById('searchInput');
@@ -23,15 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageTitle = document.getElementById('pageTitle');
     const pageBanner = document.getElementById('pageBanner');
 
-    const updateBanner = () => {
-        const categoryMap = {
-            'Movie': 'linear-gradient(135deg, #1b2838 0%, #2a1138 100%)',
-            'TV Series': 'linear-gradient(135deg, #30171a 0%, #291223 99%, #291223 100%)',
-            'Manga': 'linear-gradient(135deg, #142e1f 0%, #152630 100%)',
-            'Anime': 'linear-gradient(135deg, #30162a 0%, #162033 100%)',
-        };
-        const bg = categoryMap[currentCategory] || 'linear-gradient(135deg, #2a2723 0%, #1c1a17 100%)';
-        pageBanner.style.background = bg;
+    const updateTheme = () => {
+        const theme = currentCategory.toLowerCase().replace(' ', '-');
+        document.body.setAttribute('data-theme', theme);
+        
+        // Update banner background using the CSS variable (transition is handled in CSS)
+        pageBanner.style.background = 'var(--theme-banner)';
     };
 
     navLinks.forEach(link => {
@@ -44,7 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             pageTitle.innerHTML = `<span class="serif">${currentCategory}</span>`;
             
-            updateBanner();
+            // Update Add Button Text
+            const addBtn = document.getElementById('addMediaBtn');
+            if (addBtn) {
+                addBtn.innerText = `+ Add ${currentCategory}`;
+            }
+
+            updateTheme();
             filterAndRenderMedia();
             
             // Auto close on small mobile screens
@@ -53,6 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Initial theme set
+    updateTheme();
 
     // Pill Tabs Navigation
     const pillTabs = document.querySelectorAll('.pill-tab');
@@ -138,24 +144,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const isRankingRequired = currentSubTab === 'Rankings';
         const isLikedRequired = currentSubTab === 'Liked';
 
+        // 1. Filter by Tab Status (Completed vs Ranking vs Liked)
         if (isLikedRequired) {
-            // Liked tab: only items explicitly marked liked
             filtered = filtered.filter(item => item.is_liked === true || item.is_liked === 1);
-            // Prefer Completed entries over Rankings entries (sort non-ranking first)
-            filtered.sort((a, b) => (a.is_ranking ? 1 : 0) - (b.is_ranking ? 1 : 0));
-            // Deduplicate by title, keeping the first (Completed) version
-            const seen = new Set();
-            filtered = filtered.filter(item => {
-                const k = item.title.toLowerCase();
-                if (seen.has(k)) return false;
-                seen.add(k);
-                return true;
-            });
+        } else if (isRankingRequired) {
+            // Rankings Tab: ONLY show items where is_ranking is explicitly true.
+            // This is the single source of truth to avoid "ghost" duplicates.
+            filtered = filtered.filter(item =>
+                item.is_ranking === true || item.is_ranking === 1
+            );
         } else {
-            filtered = filtered.filter(item => Boolean(item.is_ranking) === isRankingRequired);
+            // Completed Tab: Show EVERYTHING (Standard list)
+            // Note: We no longer exclude rankings from the main list!
         }
+
+        // 2. Bulletproof Identity deduplication (Gatekeeper)
+        // We ensure that each Title+Type+Year combination only appears ONCE on the screen.
+        const activeIds = new Set();
+        const activeMediaKeys = new Set();
         
-        // Filter by Search Query
+        filtered = filtered.filter(item => {
+            // Check by database ID
+            if (item.id && activeIds.has(item.id)) return false;
+            
+            // Check by semantic identity (Title + Type + Year)
+            const identityKey = `${item.title.toLowerCase().trim()}|${item.type.toLowerCase()}|${item.release_year || 'any'}`;
+            if (activeMediaKeys.has(identityKey)) return false;
+
+            if (item.id) activeIds.add(item.id);
+            activeMediaKeys.add(identityKey);
+            return true;
+        });
+
+        // 3. Filter by Search Query
         const query = searchInput.value.toLowerCase().trim();
         if (query) {
             filtered = filtered.filter(item => item.title.toLowerCase().includes(query));
@@ -171,8 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sort Rankings Numerically (always, if Rankings tab)
         if (isRankingRequired) {
             filtered.sort((a, b) => {
-                const rankA = parseInt(a.rating.replace('#', ''), 10) || 999;
-                const rankB = parseInt(b.rating.replace('#', ''), 10) || 999;
+                const rankA = parseInt((a.rating || '').replace('#', ''), 10) || 999;
+                const rankB = parseInt((b.rating || '').replace('#', ''), 10) || 999;
                 return rankA - rankB;
             });
         } else {
@@ -195,13 +216,21 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMedia(filtered, isRankingRequired, isLikedRequired);
     };
 
+    const normalizeTitle = (title) => {
+        if (!title) return "";
+        // Match backend: remove symbols, lowercase, trim, collapse spaces
+        return title.toLowerCase()
+            .replace(/[^\w\s]/g, '')
+            .trim()
+            .replace(/\s+/g, ' ');
+    };
+
     const updateSidebarCounts = () => {
-        const categories = ['Movie', 'TV Series', 'Manga', 'Anime'];
+        const categories = ['Movies', 'TV Series', 'Manga', 'Anime'];
         categories.forEach(cat => {
-            // Filter specific to the category
             const items = allMedia.filter(i => i.type.toLowerCase() === cat.toLowerCase());
-            // Filter purely by unique titles so we don't accidentally double-count a movie existing in both Rankings and Completed arrays
-            const uniqueTitles = new Set(items.map(i => i.title.toLowerCase()));
+            // Use normalized titles for unique Set to ensure accuracy
+            const uniqueTitles = new Set(items.map(i => normalizeTitle(i.title)));
 
             const countId = `count-${cat.replace(' ', '')}`;
             const countSpan = document.getElementById(countId);
@@ -221,6 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal behavior
     addBtn.onclick = () => {
+        // Pre-select current category and trigger logic
+        const typeInput = document.getElementById('typeInput');
+        typeInput.value = currentCategory;
+        typeInput.dispatchEvent(new Event('change'));
+        
         modal.classList.add('show');
     };
 
@@ -239,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const movieFields = document.getElementById('movieFields');
     
     typeInput.addEventListener('change', (e) => {
-        if (e.target.value === 'Movie') {
+        if (e.target.value === 'Movies') {
             movieFields.style.display = 'block';
             document.getElementById('releaseYearInput').required = true;
         } else {
@@ -268,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let genres = null;
         let releaseYear = null;
 
-        if (type === 'Movie') {
+        if (type === 'Movies') {
             const checkedBoxes = document.querySelectorAll('#genreChecklist input[type="checkbox"]:checked');
             if (checkedBoxes.length < 1 || checkedBoxes.length > 2) {
                 alert('For movies, please select exactly 1 or 2 genres.');
@@ -286,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: document.getElementById('titleInput').value,
             type: type,
             rating: ratingVal + '/10',
-            review: document.getElementById('reviewInput').value,
+            review: '', // No review on creation per user request
             release_year: releaseYear,
             genres: genres,
             source: 'manual'
@@ -387,39 +421,52 @@ document.addEventListener('DOMContentLoaded', () => {
         submitReview(''); // Empty string nullifies the review backend
     });
 
-    // Deletion Logic
-    const deleteMedia = async (id) => {
-        console.log(`[JS DEBUG] ATTEMPTING TO DELETE ENTRY WITH ID: ${id}`);
-        
-        if (!id) {
-            alert('Error: Media ID is missing. Cannot delete.');
-            return;
-        }
+    // --- Delete Modal Event Handlers ---
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteTargetTitle = document.getElementById('deleteTargetTitle');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    let itemToDeleteId = null;
 
-        if (!confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
-            return;
-        }
+    const closeDeleteModal = () => {
+        deleteModal.classList.remove('show');
+        itemToDeleteId = null;
+    };
+
+    cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+
+    window.addEventListener('click', (e) => {
+        if (e.target === deleteModal) closeDeleteModal();
+    });
+
+    const openDeleteModal = (id, title) => {
+        itemToDeleteId = id;
+        deleteTargetTitle.innerText = title;
+        deleteModal.classList.add('show');
+    };
+
+    confirmDeleteBtn.addEventListener('click', async () => {
+        if (!itemToDeleteId) return;
 
         try {
-            const url = `/api/media/delete/${id}`;
-            console.log(`[JS DEBUG] CALLING DELETE URL: ${url}`);
-
-            const res = await fetch(url, {
-                method: 'POST'
+            const res = await fetch(`/api/media/${itemToDeleteId}`, {
+                method: 'DELETE'
             });
 
             if (res.ok) {
-                console.log(`[JS DEBUG] SUCCESSFUL DELETION OF ID: ${id}`);
-                fetchMedia(); // Refresh list and counts
+                closeDeleteModal();
+                fetchMedia();
             } else {
-                const err = await res.json();
-                console.error(`[JS DEBUG] SERVER ERROR DURING DELETION:`, err);
-                alert(err.detail || 'Failed to delete entry');
+                alert('Failed to delete entry.');
             }
         } catch (error) {
-            console.error("[JS DEBUG] FETCH EXCEPTION DURING DELETION:", error);
-            alert('An error occurred while deleting.');
+            console.error('Error deleting media:', error);
+            alert('Error deleting entry.');
         }
+    });
+
+    const deleteMedia = (id, title) => {
+        openDeleteModal(id, title);
     };
 
     // Fetch initial data
@@ -462,6 +509,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderMedia = (items, isRankingRequired, isLikedRequired) => {
+        // Explicit sort for rankings (numerical #1, #2...)
+        if (isRankingRequired) {
+            items.sort((a, b) => {
+                const rankA = parseInt((a.rating || '').replace('#', ''), 10) || 999;
+                const rankB = parseInt((b.rating || '').replace('#', ''), 10) || 999;
+                return rankA - rankB;
+            });
+        }
+
         grid.innerHTML = '';
         
         // Remove structural classes from previous renders
@@ -532,32 +588,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="ranking-info">
                         <div class="ranking-header">
                             <h3 class="media-title" style="cursor:pointer;" onclick="window.openReviewModal('${safeTitle}', '${item.type}', '${safeReview}')">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
-                            <span class="media-type ${typeClass}">${item.type}</span>
                         </div>
                         ${hasReview ? `<div class="review-badge">✍️ Reviewed</div>` : ''}
                     </div>
                 `;
 
-                // Heart button for ranking rows
+                // Action group for ranking rows (Heart + Delete)
+                const actions = document.createElement('div');
+                actions.className = 'row-actions';
+
                 const likeBtn = document.createElement('button');
                 likeBtn.className = `like-btn${item.is_liked ? ' liked' : ''}`;
                 likeBtn.title = item.is_liked ? 'Unlike' : 'Mark as personally liked';
                 likeBtn.innerHTML = item.is_liked ? '♥' : '♡';
                 likeBtn.onclick = (e) => { e.stopPropagation(); toggleLike(item.id); };
-                row.appendChild(likeBtn);
+                actions.appendChild(likeBtn);
 
-                if (item.source === 'manual') {
-                    const delBtn = document.createElement('button');
-                    delBtn.className = 'delete-btn';
-                    delBtn.innerHTML = '&times;';
-                    delBtn.title = 'Delete Entry';
-                    delBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        deleteMedia(item.id);
-                    };
-                    row.appendChild(delBtn);
-                }
-
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-btn';
+                delBtn.innerHTML = '&times;';
+                delBtn.title = 'Delete Entry';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteMedia(item.id, item.title);
+                };
+                actions.appendChild(delBtn);
+                
+                row.appendChild(actions);
                 grid.appendChild(row);
 
             } else {
@@ -566,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.className = 'media-card';
                 
                 const yearBadge = item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : '';
-                const genreText = item.genres ? `<div style="font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 0.8rem; font-weight: 600;">${item.genres}</div>` : '';
+                const genreText = item.genres ? `<div class="media-genres">${item.genres}</div>` : '';
                 const hasReview = isRealReview(item.review);
                 const safeTitle = (item.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                 const safeReview = isRealReview(item.review) ? (item.review || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
@@ -574,18 +631,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 const likedClass = item.is_liked ? 'liked' : '';
                 const likedIcon = item.is_liked ? '♥' : '♡';
 
-                // Check if this title has a ranking position
+                // --- DUAL-DISPLAY PRIORITY LOGIC ---
+                const ratingStr = item.rating || '';
+                const numRatingStr = item.numeric_rating || '';
+                
+                // Identify which one is the Score (10/10) and which is the Rank (#1)
+                const isRatingA_Rank = ratingStr.startsWith('#');
+                const isRatingB_Rank = numRatingStr.startsWith('#');
+                
+                // The "Prime" rating for the card center should ALWAYS be a score if possible
+                let displayRating = '';
+                if (!isRatingA_Rank && ratingStr) {
+                    displayRating = ratingStr;
+                } else if (!isRatingB_Rank && numRatingStr) {
+                    displayRating = numRatingStr;
+                }
+                // REMOVED: Fallback to rank string here to avoid redundancy with badge
+
+                // The Rank Badge (#1) should always show the Rank string if we have one
+                const rankFromFields = isRatingA_Rank ? ratingStr : (isRatingB_Rank ? numRatingStr : '');
+                
+                // Final Check: Check the rankMap (from the Rankings tab) as a second source
                 const rankKey = (item.title + '|' + item.type).toLowerCase();
-                const rankPosition = rankMap[rankKey];
-                const rankBadgeHTML = rankPosition ? `<div class="card-rank-badge">#${rankPosition}</div>` : '';
+                const globalRank = rankMap[rankKey];
+                const finalRank = rankFromFields || (globalRank ? `#${globalRank}` : '');
+                const rankBadgeHTML = finalRank ? `<div class="card-rank-badge">${finalRank}</div>` : '';
 
                 card.innerHTML = `
                     <div class="card-header">
                         <h3 class="media-title" onclick="window.openReviewModal('${safeTitle}', '${item.type}', '${safeReview}')">${item.title} ${yearBadge}</h3>
-                        <span class="media-type ${typeClass}">${item.type}</span>
                     </div>
                     ${genreText}
-                    <div class="media-rating">${item.rating}</div>
+                    <div class="media-rating-container">
+                        <div class="media-rating default-rating">${displayRating}</div>
+                        ${(() => {
+                            const hoverCandidate = item.numeric_rating || displayRating;
+                            // Only render a separate hover rating if it provides new information (e.g. score over rank)
+                            if (hoverCandidate && hoverCandidate !== displayRating && !String(hoverCandidate).startsWith('#')) {
+                                return `<div class="media-rating hover-rating">${hoverCandidate}</div>`;
+                            }
+                            return '';
+                        })()}
+                    </div>
                     <div class="card-badges">
                         ${hasReview ? `<div class="review-badge">✍️ Reviewed</div>` : ''}
                         ${rankBadgeHTML}
@@ -606,27 +693,78 @@ document.addEventListener('DOMContentLoaded', () => {
                     toggleLike(item.id);
                 });
 
-                if (item.source === 'manual') {
-                    const delBtn = document.createElement('button');
-                    delBtn.className = 'delete-btn';
-                    delBtn.innerHTML = '&times;';
-                    delBtn.title = 'Delete Entry';
-                    delBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        deleteMedia(item.id);
-                    };
-                    card.appendChild(delBtn);
-                }
+                // Delete button for cards (all sources allowed)
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-btn';
+                delBtn.innerHTML = '&times;';
+                delBtn.title = 'Delete Entry';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteMedia(item.id, item.title);
+                };
+                card.appendChild(delBtn);
                 
                 grid.appendChild(card);
             }
         });
     };
 
+
+    // --- Global Notification System ---
+    function showNotification(msg, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+
+    // --- Startup Sync Watcher ---
+    // The server runs a Discord sync automatically on launch.
+    // Monitor its status and refresh media data once it completes.
+    async function watchStartupSync() {
+        let syncWasRunning = false;
+        let idleChecks = 0;
+        const MAX_IDLE = 10; // give up after 10 × 2s = 20s with no activity
+
+        const check = async () => {
+            try {
+                const res = await fetch('/api/automation/status');
+                if (!res.ok) return;
+                const data = await res.json();
+
+                if (data.sync.running) {
+                    syncWasRunning = true;
+                    idleChecks = 0; // reset while actively syncing
+                } else if (syncWasRunning) {
+                    // Sync just finished — refresh data silently
+                    clearInterval(poll);
+                    await fetchMedia();
+                    updateSidebarCounts();
+                    if (data.sync.last_result?.status === 'success') {
+                        showNotification('✓ Discord data updated', 'success');
+                    }
+                } else {
+                    // Sync never started or already done before page loaded
+                    idleChecks++;
+                    if (idleChecks >= MAX_IDLE) clearInterval(poll);
+                }
+            } catch (_) { /* server still starting — keep trying */ }
+        };
+
+        const poll = setInterval(check, 2000);
+        check(); // run immediately on load
+    }
+
     // Initialization
     pageTitle.innerHTML = `<span class="serif">${currentCategory}</span>`;
-    updateBanner();
+    updateTheme();
     fetchMedia().then(() => {
         updateSidebarCounts();
+        watchStartupSync();
     });
 });

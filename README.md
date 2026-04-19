@@ -71,6 +71,16 @@ The project includes a startup script that handles virtual environment creation 
 chmod +x Run_on_Mac.command
 ./Run_on_Mac.command
 ```
+Open your browser to `http://127.0.0.1:8000`.
 
-## Licensing
-This project is licensed under the MIT License. This provides broad permission for anyone to use and modify the code, while establishing that the author is not liable for its use. See the `LICENSE` file for the full legal text.
+## 🛠️ Maintenance and Enrichment
+
+### Verifying Release Years
+If you have entries with missing or incorrect release years (especially those imported from Discord without dates), you can run the built-in verification utility. This script uses specialized APIs (Jikan for Anime/Manga, TVmaze for TV, and Wikipedia for Movies) to automatically find and save the correct years.
+
+```bash
+python verify_years.py
+```
+
+## 📜 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
