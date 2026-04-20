@@ -7,10 +7,12 @@ from datetime import datetime
 import discord
 from dotenv import load_dotenv
 from sqlmodel import Session, select
+from sqlalchemy import text
 
 from database import engine, MediaItem, SyncState, create_db_and_tables
 
 # ─── Environment ────────────────────────────────────────────────────────────
+
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -300,9 +302,9 @@ class SyncClient(discord.Client):
                     # Reset is_ranking AND clear the rank string (#NN) from the rating field
                     # We restore the numeric_rating if available, otherwise clear the rating.
                     session.exec(
-                        text("UPDATE mediaitem SET is_ranking = 0, rating = COALESCE(numeric_rating, '') "
-                             "WHERE type = :t AND is_ranking = 1"),
-                        {'t': target_type}
+                        text("UPDATE mediaitem SET is_ranking = false, rating = COALESCE(numeric_rating, '') "
+                             "WHERE type = :t AND is_ranking = true"),
+                        params={'t': target_type}
                     )
                 session.commit()
             
@@ -319,19 +321,12 @@ class SyncClient(discord.Client):
 
             self._log(f"[Sync] Scanning #{channel.name} ({media_type})...")
 
-            # Incremental sync: for Completed channels, only read new messages.
-            # Ranking channels ALWAYS do a full scan (messages are edited in-place).
+            # Discord messages are frequently edited (e.g. adding items to bulleted lists).
+            # Doing a full historical scan up to 1000 messages ensures we always catch edits,
+            # whereas incremental sync (using 'after=cursor') misses edits to old messages.
             cid_str = str(channel_id)
-            last_cursor = sync_cursors.get(cid_str)
-
-            if is_ranking or not last_cursor:
-                # Full scan
-                history_kwargs = {"limit": 500 if is_ranking else 1000}
-                scan_mode = "full"
-            else:
-                # Incremental: only messages AFTER the last-seen message
-                history_kwargs = {"after": discord.Object(id=int(last_cursor)), "limit": 1000}
-                scan_mode = "incremental"
+            history_kwargs = {"limit": 500 if is_ranking else 1000}
+            scan_mode = "full"
 
             self._log(f"  [{scan_mode.upper()}] mode for #{channel.name}")
 
