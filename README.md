@@ -99,16 +99,33 @@ chmod +x Run_on_Mac.command
 
 This project is under active development. We are committed to a continuous improvement cycle, focusing on metadata accuracy and interface polish.
 
-### Update 1: The Precision Metadata Overhaul
-This is the first major technical update to the enrichment engine, focusing on "opinionated" data accuracy rather than simple ingestion.
-
-- **Advanced Movie Classification**: We migrated the movie enrichment logic from simple text extraction to a sophisticated **Wikipedia Category Scoring Model**. The system now queries the Wikipedia `prop=categories` API to parse detailed film classifications.
-- **Strict 2-Genre Requirement**: A hard constraint was implemented for the Movies category. Every film is now required to display exactly two core genres.
-- **Genre Complement Logic**: For titles with limited metadata, an internal mapping system (e.g., *Animation* -> *Animation/Adventure*) ensures every card maintains a consistent and professional density.
-- **Tiered Metadata Priority**: The Manga and Anime engine now utilizes a "Golden List" scoring system. This prioritizes definitive genres (Action, Romance, Drama) while deprioritizing background settings (School, Slice of Life) unless additional context is required.
-- **API Resilience**: The data collectors were hardened with a patient back-off algorithm to handle HTTP 429 rate-limiting from Wikipedia and MyAnimeList, ensuring library-wide refreshes can complete without interruption.
-- **Manual Accuracy Overrides**: A "Source of Truth" dictionary was added to `enrich_data.py` to allow for manual correction of complex titles (e.g., ensuring *A Silent Voice* captures its Romance/Drama identity over generic tags).
 - **Interface Simplification**: To improve the minimalist feel, media type badges were removed, allowing the high-precision genres and artwork to dominate the visual space.
+
+### Update 1: The Precision Metadata Overhaul
+This was the first major technical update to the enrichment engine, focusing on "opinionated" data accuracy and sophisticated genre classification across all media types.
+
+- **Advanced Movie Classification**: Migrated movie enrichment to a sophisticated **Wikipedia Category Scoring Model** to parse detailed film classifications.
+- **Initial Genre Enrichment**: Implemented a mandatory 2-genre constraint for movies and a "Golden List" scoring system for Anime/Manga to prioritize core themes over background settings.
+- **API Resilience**: Hardened data collectors with patient back-off algorithms to handle rate-limiting from authoritative metadata sources.
+- **Manual Accuracy Overrides**: Added a "Source of Truth" matching dictionary to allow for manual correction of complex titles.
+
+### Update 2: The Infrastructure and Reliability Overhaul
+This update represents a total transition from a local prototype to a production-grade, globally accessible application. We rebuilt the core engine for speed, security, and data integrity.
+
+- **Cloud Infrastructure Migration**: We successfully migrated the data layer from local SQLite to a high-availability **Supabase (PostgreSQL)** backend. The frontend is now continuously deployed via **Vercel**, enabling instant synchronization across all devices.
+- **Dynamic Genre-Free Experience**: In a bold move toward pure minimalism and speed, the entire genre tracking system was decommissioned. This stripped out over 500 lines of complex scraping code, resulting in a cleaner UI and **5x faster synchronization speeds**.
+- **Security & Public Read-Only Mode**: To protect the integrity of your personal ratings while keeping the site public, we implemented an environment-aware **Authorization Shield**. The site automatically detects if it is running in production and disables all destructive actions (Add, Delete, Edit) for non-admin viewers.
+- **Discord Message ID Anchoring**: The sync engine was overhauled to use unique Discord Message IDs as primary keys. This allows for seamless "Live Edits"—where updating a message in Discord immediately and accurately updates the corresponding entry on the site without creating duplicates.
+- **Strict Ranking Integrity Engine**: 
+    - **Position Prioritization**: We implemented a hardened logic layer that ensures your "#1" ranking slots are never overwritten by standard scores.
+    - **Post-Sync Auditing**: An automated safety check now runs after every sync run to detect duplicate ranks or sequence gaps, guaranteeing that your "Top 20" lists are always logically sound.
+- **Fuzzy Year Merging**: To handle human error during Discord logging, the system now features a "Fuzzy Year" safety net (±2 years). It intelligently identifies when you've logged the same movie with a typo and merges the data automatically.
+- **Brand Identity & UI Polish**:
+    - **Custom Vector Favicon**: Replaced the default browser icon with a bespoke, minimalist logo design (Clapperboard/Play Button hybrid) that matches the site's sleek aesthetic.
+    - **Live Entry Counters**: Implemented dynamic counters in the page headers that display the verified total number of entries for each category in real-time.
+- **Performance-First Design**: By removing heavy data enrichment dependencies, the sync process now focuses on high-speed title matching and metadata verification, ensuring the dashboard remains exceptionally snappy even as the library grows.
+
+
 
 ---
 
