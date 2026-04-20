@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Determine Environment: Localhost vs Production (Read-Only)
+    const hostname = window.location.hostname;
+    const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
+    if (isReadOnly) {
+        document.body.classList.add('read-only-mode');
+        document.getElementById('reviewInputBox').readOnly = true;
+        document.getElementById('reviewInputBox').placeholder = 'There is no review setup for this entry.';
+    }
+
     let allMedia = [];
     let currentCategory = 'Movies'; // Default page
     let currentSubTab = 'Completed'; // Default subtab ('Completed' or 'Rankings')

@@ -1,4 +1,5 @@
 import asyncio
+import os
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, Response
 from fastapi.exceptions import RequestValidationError
@@ -32,6 +33,11 @@ app.add_middleware(
 def get_session():
     with Session(engine) as session:
         yield session
+
+def check_readonly():
+    # Detect Vercel environment automatically
+    if os.environ.get("VERCEL") == "1":
+        raise HTTPException(status_code=403, detail="Action disabled in public read-only mode.")
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -95,7 +101,7 @@ def read_media(session: Session = Depends(get_session)):
     return media
 
 @app.delete("/api/media/{item_id}")
-def delete_media_item(item_id: int, session: Session = Depends(get_session)):
+def delete_media_item(item_id: int, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     item = session.get(MediaItem, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -104,7 +110,7 @@ def delete_media_item(item_id: int, session: Session = Depends(get_session)):
     return {"status": "success", "message": "Item deleted"}
 
 @app.post("/api/media", response_model=MediaItem)
-def create_media(item: MediaItem, session: Session = Depends(get_session)):
+def create_media(item: MediaItem, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     # Error-Proof Duplicate Check
     stmt = select(MediaItem).where(
         MediaItem.title == item.title,
@@ -129,7 +135,7 @@ class ReviewPayload(BaseModel):
     review: Optional[str] = None
 
 @app.post("/api/media/review")
-def update_review(payload: ReviewPayload, session: Session = Depends(get_session)):
+def update_review(payload: ReviewPayload, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     print(f"\n[DEBUG] RECEIVED REVIEW UPDATE FOR: {payload.title} ({payload.type})")
     
     # We want to match all entries with the same exact title (case-insensitive) and exact type.
@@ -172,7 +178,7 @@ def normalize_title(title: str) -> str:
     return " ".join(t.split())
 
 @app.post("/api/media/like/{item_id}")
-def toggle_like(item_id: str, session: Session = Depends(get_session)):
+def toggle_like(item_id: str, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     """Toggle is_liked on an item, then cascade to all rows with same normalized title+type."""
     try:
         actual_id = int(item_id)
@@ -203,7 +209,7 @@ def toggle_like(item_id: str, session: Session = Depends(get_session)):
 
 @app.post("/api/media/delete/{item_id}")
 @app.post("/api/media/delete/{item_id}/") # Trailing slash support
-def delete_media(item_id: str, session: Session = Depends(get_session)):
+def delete_media(item_id: str, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     print(f"\n[DEBUG] RECEIVED DELETE REQUEST FOR ID: {item_id}")
     try:
         # Cast to int manually to handle potential stringified IDs

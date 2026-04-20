@@ -1379,3 +1379,11 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     justify-content: center;
 }
+
+/* ====== Read Only Mode for Public Viewers ====== */
+body.read-only-mode #addMediaBtn,
+body.read-only-mode .delete-btn,
+body.read-only-mode #saveReviewBtn,
+body.read-only-mode #clearReviewBtn {
+    display: none !important;
+}
