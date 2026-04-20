@@ -312,6 +312,9 @@ class SyncClient(discord.Client):
             for snap in items_snapshot:
                 if snap["type"] in ranking_types_to_reset:
                     snap["is_ranking"] = False
+                    # IMPORTANT: Do NOT clear snap["rating"] strings here yet, 
+                    # as we use them to detect if an item WAS a ranking and needs its score moved.
+                    # The sync loop handles the actual string overwriting.
 
         for channel_id, media_type, is_ranking in channels_to_scan:
             channel = self.get_channel(channel_id)
@@ -465,17 +468,20 @@ class SyncClient(discord.Client):
                                     upd["enrichment_attempts"] = 0
 
                             # ── Cross-pollination: keep rank + score in separate fields ──
+                            is_currently_ranking = is_ranking or upd.get("is_ranking") or existing.get("is_ranking") or (existing["rating"] or "").startswith('#')
+                            
                             if rating.startswith('#'):
                                 # Incoming = RANK
                                 if existing["rating"] and not existing["rating"].startswith('#'):
-                                    if existing["numeric_rating"] != existing["rating"]:
+                                    if not existing["numeric_rating"] or existing["numeric_rating"] != existing["rating"]:
                                         upd["numeric_rating"] = existing["rating"]
                                 if existing["rating"] != rating:
                                     upd["rating"] = rating
                                     upd["is_ranking"] = True
                             else:
                                 # Incoming = SCORE
-                                if existing["rating"] and existing["rating"].startswith('#'):
+                                if is_currently_ranking:
+                                    # It's already a ranking! Just keep score in numeric_rating
                                     if existing["numeric_rating"] != rating:
                                         upd["numeric_rating"] = rating
                                         self._log(f"  [~] Score linked: {title} <- {rating}")
@@ -579,6 +585,30 @@ class SyncClient(discord.Client):
             else:
                 self._log("[Sync] Score Cross-Linker: all scores already linked.")
 
+            # ── POST-SYNC: Ranking Integrity Audit ──────────────────────
+            self._log("[Sync] Running post-sync Ranking Integrity Audit...")
+            all_final = session.exec(select(MediaItem).where(MediaItem.is_ranking == True)).all()
+            for mtype in ["Movies", "Anime", "Manga", "TV Series"]:
+                m_ranks = [m for m in all_final if m.type == mtype]
+                if not m_ranks: continue
+                
+                # Check for "Rank-with-Score" corruption
+                corrupt = [m for m in m_ranks if not (m.rating or "").startswith('#')]
+                if corrupt:
+                    self._log(f"  [!] WARNING: {mtype} has {len(corrupt)} ranked items with score-ratings! (Systemic failure)")
+                
+                # Check for duplicates/gaps
+                try:
+                    numeric_ranks = sorted([int(m.rating.replace('#','')) for m in m_ranks if (m.rating or "").startswith('#')])
+                    if numeric_ranks:
+                        dupe_check = collections.Counter(numeric_ranks)
+                        dupes = [k for k, v in dupe_check.items() if v > 1]
+                        if dupes:
+                            self._log(f"  [!] WARNING: {mtype} has DUPLICATE ranks: {dupes}")
+                        if numeric_ranks[-1] != len(numeric_ranks):
+                            self._log(f"  [!] INFO: {mtype} ranking sequence has gaps (Max #{numeric_ranks[-1]} vs Count {len(numeric_ranks)})")
+                except Exception as e:
+                    self._log(f"  [!] Audit failed for {mtype}: {e}")
 
 # ─── Public API ──────────────────────────────────────────────────────────────
 async def run_sync(log_func=print, category=None):

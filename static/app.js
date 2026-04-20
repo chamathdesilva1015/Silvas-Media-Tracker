@@ -169,6 +169,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Bulletproof Identity deduplication (Gatekeeper)
         // We ensure that each Title+Type+Year combination only appears ONCE on the screen.
+        // We sort by is_ranking DESC initially so that the "ranked" version of a movie wins the dedup.
+        filtered.sort((a, b) => (b.is_ranking ? 1 : 0) - (a.is_ranking ? 1 : 0));
+
         const activeIds = new Set();
         const activeMediaKeys = new Set();
         
