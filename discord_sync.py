@@ -436,8 +436,15 @@ class SyncClient(discord.Client):
                             for c in candidates:
                                 if c["release_year"] == discord_year and discord_year is not None:
                                     existing = c; break
-                                    
-                        # 3. Match fuzzy year (if one is missing, assume they match)
+
+                        # 3. Match close year (±2 years) to protect against manual typos in Discord
+                        if not existing:
+                            for c in candidates:
+                                if c["release_year"] is not None and discord_year is not None:
+                                    if abs(c["release_year"] - discord_year) <= 2:
+                                        existing = c; break
+                                        
+                        # 4. Match fuzzy year (if one is missing, assume they match)
                         if not existing:
                             for c in candidates:
                                 if c["release_year"] and discord_year and c["release_year"] != discord_year:
