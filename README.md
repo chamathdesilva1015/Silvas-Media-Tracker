@@ -1,8 +1,10 @@
 # Silva's Media Tracker
 
-Silva's Media Tracker is a personal project designed to organize and catalog expansive collections of movies, television series, manga, and anime. The application provides a highly customized, cinematic interface that prioritizes clean visual aesthetics and accurate metadata without the clutter typical of mainstream media tracking platforms.
+Silva's Media Tracker is a personal project I built to help me organize and track all the movies, TV series, manga, and anime I've gone through. I wanted a way to see my collection in different ways (whether that's through a clean cinematic grid, top-tier rankings, or just seeing my favorites) all without the clutter of mainstream tracking sites.
 
-The system synchronizes ratings directly from Discord and presents them via a refined, dark-themed dashboard tailored for a minimalist user experience.
+**[Live Dashboard](https://silvas-media-tracker.vercel.app/)**
+
+The system pulls my ratings directly from Discord and displays them on a dark-themed dashboard that I designed to fit my own taste and keep things simple.
 
 ---
 
