@@ -28,11 +28,28 @@ class SyncState(SQLModel, table=True):
     last_message_id: str  # Newest message ID seen during last sync
     last_sync_at: datetime = Field(default_factory=datetime.utcnow)
 
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+import os
+from dotenv import load_dotenv
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
+load_dotenv()
+
+# Database Configuration
+# Priority: DATABASE_URL (for Supabase/Cloud) -> sqlite_url (for local)
+database_url = os.environ.get("DATABASE_URL")
+
+if database_url:
+    # Adapt Supabase/Heroku postgres:// to postgresql+psycopg2:// for SQLAlchemy
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    engine_url = database_url
+    # PostgreSQL doesn't need check_same_thread
+    connect_args = {}
+else:
+    sqlite_file_name = "database.db"
+    engine_url = f"sqlite:///{sqlite_file_name}"
+    connect_args = {"check_same_thread": False}
+
+engine = create_engine(engine_url, echo=False, connect_args=connect_args)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
