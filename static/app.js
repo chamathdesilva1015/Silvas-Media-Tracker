@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             currentCategory = link.getAttribute('data-filter');
             
-            pageTitle.innerHTML = `<span class="serif">${currentCategory}</span>`;
+            updateCategoryTitleCount();
             
             // Update Add Button Text
             const addBtn = document.getElementById('addMediaBtn');
@@ -225,19 +225,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/\s+/g, ' ');
     };
 
-    const updateSidebarCounts = () => {
-        const categories = ['Movies', 'TV Series', 'Manga', 'Anime'];
-        categories.forEach(cat => {
-            const items = allMedia.filter(i => i.type.toLowerCase() === cat.toLowerCase());
-            // Use normalized titles for unique Set to ensure accuracy
-            const uniqueTitles = new Set(items.map(i => normalizeTitle(i.title)));
-
-            const countId = `count-${cat.replace(' ', '')}`;
-            const countSpan = document.getElementById(countId);
-            if (countSpan) {
-                countSpan.textContent = uniqueTitles.size;
-            }
-        });
+    const updateCategoryTitleCount = () => {
+        if (!currentCategory) return;
+        const items = allMedia.filter(i => i.type.toLowerCase() === currentCategory.toLowerCase());
+        const uniqueTitles = new Set(items.map(i => normalizeTitle(i.title)));
+        const count = uniqueTitles.size;
+        
+        pageTitle.innerHTML = `<span class="serif">${currentCategory}</span> <span class="header-count">${count}</span>`;
     };
 
     const grid = document.getElementById('mediaGrid');
@@ -744,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Sync just finished — refresh data silently
                     clearInterval(poll);
                     await fetchMedia();
-                    updateSidebarCounts();
+                    updateCategoryTitleCount();
                     if (data.sync.last_result?.status === 'success') {
                         showNotification('✓ Discord data updated', 'success');
                     }
@@ -761,10 +755,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialization
-    pageTitle.innerHTML = `<span class="serif">${currentCategory}</span>`;
+    updateCategoryTitleCount();
     updateTheme();
     fetchMedia().then(() => {
-        updateSidebarCounts();
+        updateCategoryTitleCount();
         watchStartupSync();
     });
 });
