@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const uniqueTitles = new Set(items.map(i => normalizeTitle(i.title)));
         const count = uniqueTitles.size;
         
-        pageTitle.innerHTML = `<span class="serif">${currentCategory}</span> <span class="header-count">${count}</span>`;
+        pageTitle.innerHTML = `<span class="serif">${currentCategory}</span> <span class="header-count">Total Entries ${count}</span>`;
     };
 
     const grid = document.getElementById('mediaGrid');
