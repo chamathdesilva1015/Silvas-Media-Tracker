@@ -259,74 +259,14 @@ async def get_movie_data(session, title):
             categories = [c.get('title', '') for c in pages[p_id].get('categories', [])]
             break
             
-        if not extract and not categories: continue
+        if not extract: continue
         
         # Extract Year from extract
         m_year = re.search(r'\b(1[89]\d{2}|20[0-2]\d)\b', extract)
         if m_year: result["year"] = int(m_year.group(1))
         
-        # Scoring System for Genres
-        genre_scores = {g: 0 for g in PRIMARY_GENRES}
-        
-        # 1. Scan Categories (High Weight)
-        for cat in categories:
-            cat_lower = cat.lower()
-            for g in PRIMARY_GENRES:
-                # Direct match
-                if re.search(rf'\b{g}\b', cat, re.IGNORECASE):
-                    genre_scores[g] += 5
-                
-                # Special Mappings for common Wikipedia category phrases
-                if g == "Sci-Fi" and "science fiction" in cat_lower: genre_scores[g] += 5
-                if g == "Animation" and "animated" in cat_lower: genre_scores[g] += 5
-                if g == "Action" and ("superhero" in cat_lower or "thriller" in cat_lower): genre_scores[g] += 3
-                if g == "Drama" and ("biographical" in cat_lower or "coming-of-age" in cat_lower or "romance" in cat_lower): genre_scores[g] += 2
-                if g == "Horror" and "slasher" in cat_lower: genre_scores[g] += 5
-                if g == "Mystery" and "detective" in cat_lower: genre_scores[g] += 5
-                if g == "Comedy" and "humor" in cat_lower: genre_scores[g] += 5
-                
-        # 2. Scan Extract (Lower Weight)
-        for g in PRIMARY_GENRES:
-            if re.search(rf'\b{g}\b', extract, re.IGNORECASE):
-                genre_scores[g] += 1
-
-        # Sort by score, then by original rank in PRIMARY_GENRES
-        sorted_genres = sorted(
-            [g for g, s in genre_scores.items() if s > 0],
-            key=lambda x: (genre_scores[x], -PRIMARY_GENRES.index(x)),
-            reverse=True
-        )
-        
-        # Mandatory 2 Genres logic
-        final_tags = sorted_genres[:2]
-        
-        # Priority complement for Animation
-        if "Animation" in final_tags and len(final_tags) == 1:
-            # Check extract for Adventure or Comedy
-            if "adventure" in extract.lower(): final_tags.append("Adventure")
-            else: final_tags.append("Comedy")
-
-        # If we only have 1, find a complement
-        if len(final_tags) == 1:
-            primary = final_tags[0]
-            complement = GENRE_COMPLEMENTS.get(primary, "Adventure")
-            if complement != primary and complement not in final_tags:
-                final_tags.append(complement)
-            else:
-                # Last ditch fallback
-                final_tags.append("Action" if primary != "Action" else "Drama")
-        
-        # Ensure we have EXACTLY 2
-        while len(final_tags) < 2:
-            for d in ["Action", "Adventure", "Drama"]:
-                if d not in final_tags:
-                    final_tags.append(d)
-                    break
-
-        if final_tags:
-            result["genres"] = "/".join(final_tags[:2])
             
-        if result["year"] or result["genres"]:
+        if result["year"]:
             return result
                 
     return result
@@ -339,19 +279,15 @@ async def verify_item(session, item: MediaItem):
     if item.type == "Anime":
         data = await get_anime_manga_data(session, item.title, "Anime")
         if data["year"]: updates["release_year"] = data["year"]
-        if data["genres"]: updates["genres"] = data["genres"]
     elif item.type == "Manga":
         data = await get_anime_manga_data(session, item.title, "Manga")
         if data["year"]: updates["release_year"] = data["year"]
-        if data["genres"]: updates["genres"] = data["genres"]
     elif item.type == "TV Series":
         tv_data = await enrich_tv_series(session, item.title)
         if tv_data["year"]: updates["release_year"] = tv_data["year"]
-        if tv_data["genre"]: updates["genres"] = tv_data["genre"]
     elif item.type == "Movies":
         movie_data = await get_movie_data(session, item.title)
         if movie_data["year"]: updates["release_year"] = movie_data["year"]
-        if movie_data["genres"]: updates["genres"] = movie_data["genres"]
     
     if updates:
         for k, v in updates.items():
@@ -368,10 +304,7 @@ async def run_enrichment(log_func=print, category=None):
         with Session(engine) as db_session:
             # We target items missing EITHER year OR genres, prioritizing those with fewer attempts
             query = select(MediaItem).where(
-                (MediaItem.release_year == None) | 
-                (MediaItem.genres == None) | 
-                (MediaItem.genres == "") |
-                (MediaItem.genres == "Imported from Discord")
+                (MediaItem.release_year == None)
             ).where(
                 MediaItem.enrichment_attempts < 3
             )
@@ -405,20 +338,15 @@ async def run_enrichment(log_func=print, category=None):
                 if item.type == "Anime":
                     anime_data = await get_anime_manga_data(session, item.title, "Anime")
                     if anime_data["year"]: updates["release_year"] = anime_data["year"]
-                    if anime_data["genres"]: updates["genres"] = anime_data["genres"]
                 elif item.type == "Manga":
                     manga_data = await get_anime_manga_data(session, item.title, "Manga")
                     if manga_data["year"]: updates["release_year"] = manga_data["year"]
-                    if manga_data["genres"]: updates["genres"] = manga_data["genres"]
                 elif item.type == "TV Series":
                     tv_data = await enrich_tv_series(session, item.title)
                     if tv_data["year"]: updates["release_year"] = tv_data["year"]
-                    if tv_data["genre"] and (item.genres != tv_data["genre"]): 
-                        updates["genres"] = tv_data["genre"]
                 elif item.type == "Movies":
                     movie_data = await get_movie_data(session, item.title)
                     if movie_data["year"]: updates["release_year"] = movie_data["year"]
-                    if movie_data["genres"]: updates["genres"] = movie_data["genres"]
                 
                 if updates:
                     for k, v in updates.items():

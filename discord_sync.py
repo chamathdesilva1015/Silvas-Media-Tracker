@@ -346,7 +346,7 @@ class SyncClient(discord.Client):
                 items_found_in_msg = []
 
                 for line in lines:
-                    title, year_str, rating, num_rating, genres = None, None, None, None, None
+                    title, year_str, rating, num_rating = None, None, None, None
 
                     if not is_ranking:
                         clean_line = line.replace('**', '').replace('*', '')
@@ -358,7 +358,6 @@ class SyncClient(discord.Client):
 
                         if match_anime:
                             title     = match_anime.group(1).strip()
-                            genres    = match_anime.group(2).strip() if match_anime.group(2) else None
                             rating    = match_anime.group(3).strip()
                             num_rating = rating if '/10' in rating else None
                         elif match_tvseries:
@@ -462,7 +461,6 @@ class SyncClient(discord.Client):
                             if discord_year is not None and existing["release_year"] != discord_year:
                                 upd["release_year"] = discord_year
                                 if existing["release_year"] is not None:
-                                    upd["genres"] = None
                                     upd["cover_url"] = None
                                     upd["enrichment_attempts"] = 0
 
@@ -486,8 +484,7 @@ class SyncClient(discord.Client):
 
                             if num_rating and existing["numeric_rating"] != num_rating:
                                 upd["numeric_rating"] = num_rating
-                            if genres and (not existing["genres"] or existing["genres"] == "Imported from Discord"):
-                                upd["genres"] = genres
+
                             if not existing["is_ranking"] and is_ranking:
                                 upd["is_ranking"] = True
 
@@ -496,7 +493,7 @@ class SyncClient(discord.Client):
                         else:
                             pending_adds.append({
                                 "title": title, "release_year": discord_year,
-                                "genres": genres, "type": media_type,
+                                "type": media_type,
                                 "is_ranking": is_ranking, "rating": rating,
                                 "numeric_rating": num_rating,
                                 "review": "Imported from Discord Ranking" if is_ranking else "Imported from Discord",

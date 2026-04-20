@@ -8,7 +8,7 @@ class MediaItem(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     release_year: Optional[int] = Field(default=None, index=True)
-    genres: Optional[str] = None
+
     type: str # Movies, TV Series, Manga, Book, Anime
     is_ranking: bool = Field(default=False)
     is_liked: bool = Field(default=False)

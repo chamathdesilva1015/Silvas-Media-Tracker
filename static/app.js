@@ -293,16 +293,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let genres = null;
         let releaseYear = null;
 
         if (type === 'Movies') {
-            const checkedBoxes = document.querySelectorAll('#genreChecklist input[type="checkbox"]:checked');
-            if (checkedBoxes.length < 1 || checkedBoxes.length > 2) {
-                alert('For movies, please select exactly 1 or 2 genres.');
-                return;
-            }
-            genres = Array.from(checkedBoxes).map(cb => cb.value).join(', ');
             releaseYear = parseInt(document.getElementById('releaseYearInput').value, 10);
             if (isNaN(releaseYear)) {
                 alert('Please enter a valid release year for this movie.');
@@ -316,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
             rating: ratingVal + '/10',
             review: '', // No review on creation per user request
             release_year: releaseYear,
-            genres: genres,
             source: 'manual'
         };
 
@@ -617,7 +609,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.className = 'media-card';
                 
                 const yearBadge = item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : '';
-                const genreText = item.genres ? `<div class="media-genres">${item.genres}</div>` : '';
                 const hasReview = isRealReview(item.review);
                 const safeTitle = (item.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                 const safeReview = isRealReview(item.review) ? (item.review || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
@@ -655,7 +646,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-header">
                         <h3 class="media-title" onclick="window.openReviewModal('${safeTitle}', '${item.type}', '${safeReview}')">${item.title} ${yearBadge}</h3>
                     </div>
-                    ${genreText}
                     <div class="media-rating-container">
                         <div class="media-rating default-rating">${displayRating}</div>
                         ${(() => {
