@@ -248,7 +248,7 @@ class SyncClient(discord.Client):
                 {
                     "id": m.id, "title": m.title, "type": m.type,
                     "release_year": m.release_year, "rating": m.rating,
-                    "numeric_rating": m.numeric_rating, "genres": m.genres,
+                    "numeric_rating": m.numeric_rating,
                     "discord_id": m.discord_id, "is_ranking": m.is_ranking,
                 }
                 for m in all_items
@@ -363,7 +363,7 @@ class SyncClient(discord.Client):
                         elif match_tvseries:
                             title     = match_tvseries.group(1).strip()
                             year_str  = match_tvseries.group(2).strip() if match_tvseries.group(2) else None
-                            genres    = match_tvseries.group(3).strip() if match_tvseries.group(3) else None
+
                             rating    = match_tvseries.group(4).strip()
                             num_rating = rating if '/10' in rating else None
                         elif match_movies_y:
