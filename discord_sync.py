@@ -425,11 +425,19 @@ class SyncClient(discord.Client):
                         discord_year = int(year_str) if (year_str and is_valid_year(year_str)) else None
                         candidates = candidates_map.get((norm_title, media_type), [])
 
-                        # Match: exact year first, then fuzzy
+                        # 1. Match by exact Discord Message ID (handles edits where the year is changed)
                         existing = None
                         for c in candidates:
-                            if c["release_year"] == discord_year and discord_year is not None:
+                            if c.get("discord_id") == msg_id:
                                 existing = c; break
+                        
+                        # 2. Match exact year
+                        if not existing:
+                            for c in candidates:
+                                if c["release_year"] == discord_year and discord_year is not None:
+                                    existing = c; break
+                                    
+                        # 3. Match fuzzy year (if one is missing, assume they match)
                         if not existing:
                             for c in candidates:
                                 if c["release_year"] and discord_year and c["release_year"] != discord_year:
@@ -442,8 +450,14 @@ class SyncClient(discord.Client):
 
                             if existing["discord_id"] != msg_id:
                                 upd["discord_id"] = msg_id
-                            if discord_year is not None and not existing["release_year"]:
+                            
+                            # If year changes, we invalidate enrichment data so the new movie is re-fetched
+                            if discord_year is not None and existing["release_year"] != discord_year:
                                 upd["release_year"] = discord_year
+                                if existing["release_year"] is not None:
+                                    upd["genres"] = None
+                                    upd["cover_url"] = None
+                                    upd["enrichment_attempts"] = 0
 
                             # ── Cross-pollination: keep rank + score in separate fields ──
                             if rating.startswith('#'):
