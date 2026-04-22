@@ -36,8 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const theme = currentCategory.toLowerCase().replace(' ', '-');
         document.body.setAttribute('data-theme', theme);
         
-        // Update banner background using the CSS variable (transition is handled in CSS)
+        // Update banner background
         pageBanner.style.background = 'var(--theme-banner)';
+
+        // Update mesh blob positions for "movement"
+        const blobs = document.querySelectorAll('.mesh-blob');
+        blobs.forEach((blob, i) => {
+            const x = Math.random() * 40 - 20;
+            const y = Math.random() * 40 - 20;
+            blob.style.transform = `translate(${x}px, ${y}px) scale(${1 + Math.random() * 0.2})`;
+        });
     };
 
     navLinks.forEach(link => {
@@ -467,8 +475,19 @@ document.addEventListener('DOMContentLoaded', () => {
         openDeleteModal(id, title);
     };
 
+    const renderSkeletons = () => {
+        grid.innerHTML = '';
+        grid.className = 'media-grid';
+        for (let i = 0; i < 8; i++) {
+            const skel = document.createElement('div');
+            skel.className = 'skeleton-card';
+            grid.appendChild(skel);
+        }
+    };
+
     // Fetch initial data
     const fetchMedia = async () => {
+        renderSkeletons();
         try {
             const res = await fetch('/api/media');
             if (!res.ok) {
@@ -565,9 +584,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const sourceIcon = item.source.toLowerCase() === 'discord' ? '🎮' : '✍️'; 
 
             if (isRankingRequired) {
-                // Procedural Leaderboard Row Injection
                 const row = document.createElement('div');
-                row.className = 'ranking-row';
+                row.className = 'ranking-row stagger-in';
+                row.style.animationDelay = `${index * 0.05}s`;
                 
                 const rankNum = parseInt(item.rating.replace('#', ''), 10);
                 
@@ -622,7 +641,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Traditional Grid Block 
                 const card = document.createElement('div');
-                card.className = 'media-card';
+                card.className = 'media-card stagger-in';
+                card.style.animationDelay = `${index * 0.05}s`;
                 
                 const yearBadge = item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : '';
                 const hasReview = isRealReview(item.review);
