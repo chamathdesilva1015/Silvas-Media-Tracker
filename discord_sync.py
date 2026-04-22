@@ -310,11 +310,11 @@ class SyncClient(discord.Client):
             
             # Refresh items_snapshot in memory to reflect reset status
             for snap in items_snapshot:
-                if snap["type"] in ranking_types_to_reset:
+                if snap["type"] in ranking_types_to_reset and snap.get("is_ranking"):
                     snap["is_ranking"] = False
-                    # IMPORTANT: Do NOT clear snap["rating"] strings here yet, 
-                    # as we use them to detect if an item WAS a ranking and needs its score moved.
-                    # The sync loop handles the actual string overwriting.
+                    # We must also reset the snapshot rating to match what the SQL did (COALESCE(numeric_rating, ''))
+                    # This ensures the sync loop detects a difference and correctly re-applies the rank strings.
+                    snap["rating"] = snap.get("numeric_rating") or ""
 
         for channel_id, media_type, is_ranking in channels_to_scan:
             channel = self.get_channel(channel_id)
