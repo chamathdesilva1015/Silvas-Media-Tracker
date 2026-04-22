@@ -237,7 +237,6 @@ header p {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
     z-index: 5;
     font-size: 1.1rem;
     padding: 0;
@@ -256,7 +255,6 @@ header p {
 }
 
 .like-btn:hover {
-    transform: translateY(-50%) scale(1.15);
     color: #e05c5c;
 }
 
@@ -269,7 +267,6 @@ header p {
     font-size: 1.1rem;
     line-height: 1;
     padding: 0;
-    transition: all 0.2s ease;
     opacity: 0.4;
 }
 
@@ -283,7 +280,6 @@ header p {
 }
 
 .like-btn-inline:hover {
-    transform: scale(1.2);
     color: #e05c5c;
 }
 
