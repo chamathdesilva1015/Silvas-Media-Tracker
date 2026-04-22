@@ -587,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="ranking-header">
                             <h3 class="media-title" style="cursor:pointer;" onclick="window.openReviewModal('${safeTitle}', '${item.type}', '${safeReview}')">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
                         </div>
-                        ${hasReview ? `<div class="review-badge">✍️ Reviewed</div>` : ''}
+                        ${hasReview ? `<span class="review-badge">✎ Reviewed</span>` : ''}
                     </div>
                 `;
 
@@ -652,7 +652,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rankKey = (item.title + '|' + item.type).toLowerCase();
                 const globalRank = rankMap[rankKey];
                 const finalRank = rankFromFields || (globalRank ? `#${globalRank}` : '');
-                const rankBadgeHTML = finalRank ? `<div class="card-rank-badge">${finalRank}</div>` : '';
 
                 card.innerHTML = `
                     <div class="card-header">
@@ -670,8 +669,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         })()}
                     </div>
                     <div class="card-badges">
-                        ${hasReview ? `<div class="review-badge">✍️ Reviewed</div>` : ''}
-                        ${rankBadgeHTML}
+                        ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
+                        ${hasReview ? `<span class="review-badge">✎ Reviewed</span>` : ''}
                     </div>
                     <div class="card-spacer"></div>
                     <div class="media-footer">

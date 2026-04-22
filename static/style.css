@@ -517,19 +517,22 @@ header p {
     flex-grow: 1;
 }
 
-/* card-badges handled in the lower section for better layout control */
+/* card-badges: fixed slot at bottom of card, above footer */
 
 .card-rank-badge {
     display: inline-flex;
     align-items: center;
-    background: rgba(212, 175, 55, 0.12);
-    color: #d4af37;
-    border: 1px solid rgba(212, 175, 55, 0.35);
-    font-size: 0.75rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
+    gap: 3px;
+    background: var(--theme-accent-muted);
+    color: var(--theme-accent);
+    border: 1px solid var(--theme-accent-glow);
+    font-size: 0.72rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 20px;
     font-family: 'Nunito', sans-serif;
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
 }
 
 .media-card::before {
@@ -694,8 +697,11 @@ header p {
 
 .card-badges {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    min-height: 1.5rem; /* Reserve space even when empty, for consistent card height */
+    margin-bottom: 1rem;
 }
 
 .media-title {
@@ -723,17 +729,16 @@ header p {
 .review-badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    background: var(--theme-accent-muted);
-    color: var(--theme-accent);
-    border: 1px solid var(--theme-accent-glow);
-    font-size: 0.75rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
+    gap: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    font-size: 0.72rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 20px;
     font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    margin-top: 0.5rem;
-    align-self: flex-start;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 .media-type {
@@ -758,17 +763,8 @@ header p {
     transform: translateY(0) scale(1.05);
 }
 
-.card-badges {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 0.3rem;
-    transition: opacity 0.3s ease;
-}
-
 .media-card:hover .card-badges {
-    opacity: 0.5; /* Subtly dim badges to make the rating the star of the show */
+    opacity: 1; /* Stay visible on hover */
 }
 
 .media-genres {
