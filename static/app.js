@@ -578,16 +578,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (rankNum === 3) podiumClass = 'rank-bronze';
 
                 const hasReview = isRealReview(item.review);
-                const safeTitle = (item.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                const safeReview = isRealReview(item.review) ? (item.review || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
 
                 row.innerHTML = `
                     <div class="rank-badge ${podiumClass}">#${rankNum}</div>
                     <div class="ranking-info">
                         <div class="ranking-header">
-                            <h3 class="media-title" style="cursor:pointer;" onclick="window.openReviewModal('${safeTitle}', '${item.type}', '${safeReview}')">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
+                            <h3 class="media-title clickable-review-trigger" style="cursor:pointer;">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
                         </div>
-                        ${hasReview ? `<span class="review-badge">✎ Reviewed</span>` : ''}
+                        ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
                     </div>
                 `;
 
@@ -595,21 +593,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const actions = document.createElement('div');
                 actions.className = 'row-actions';
 
+                // Wire up review modal trigger for ranking row
+                row.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.openReviewModal(item.title, item.type, item.review);
+                });
+
                 const likeBtn = document.createElement('button');
                 likeBtn.className = `like-btn${item.is_liked ? ' liked' : ''}`;
                 likeBtn.title = item.is_liked ? 'Unlike' : 'Mark as personally liked';
                 likeBtn.innerHTML = item.is_liked ? '♥' : '♡';
-                likeBtn.onclick = (e) => { e.stopPropagation(); toggleLike(item.id); };
+                likeBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleLike(item.id); });
                 actions.appendChild(likeBtn);
 
                 const delBtn = document.createElement('button');
                 delBtn.className = 'delete-btn';
                 delBtn.innerHTML = '&times;';
                 delBtn.title = 'Delete Entry';
-                delBtn.onclick = (e) => {
+                delBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     deleteMedia(item.id, item.title);
-                };
+                });
                 actions.appendChild(delBtn);
                 
                 row.appendChild(actions);
@@ -622,8 +626,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const yearBadge = item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : '';
                 const hasReview = isRealReview(item.review);
-                const safeTitle = (item.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                const safeReview = isRealReview(item.review) ? (item.review || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
 
                 const likedClass = item.is_liked ? 'liked' : '';
                 const likedIcon = item.is_liked ? '♥' : '♡';
@@ -643,7 +645,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (!isRatingB_Rank && numRatingStr) {
                     displayRating = numRatingStr;
                 }
-                // REMOVED: Fallback to rank string here to avoid redundancy with badge
 
                 // The Rank Badge (#1) should always show the Rank string if we have one
                 const rankFromFields = isRatingA_Rank ? ratingStr : (isRatingB_Rank ? numRatingStr : '');
@@ -655,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3 class="media-title" onclick="window.openReviewModal('${safeTitle}', '${item.type}', '${safeReview}')">${item.title} ${yearBadge}</h3>
+                        <h3 class="media-title clickable-review-trigger" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
                     <div class="media-rating-container">
                         <div class="media-rating default-rating">${displayRating}</div>
@@ -669,8 +670,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         })()}
                     </div>
                     <div class="card-badges">
-                        ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
-                        ${hasReview ? `<span class="review-badge">✎ Reviewed</span>` : ''}
+                        <div class="badge-slot-left">
+                            ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
+                        </div>
+                        <div class="badge-slot-right">
+                            ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
+                        </div>
                     </div>
                     <div class="card-spacer"></div>
                     <div class="media-footer">
@@ -681,6 +686,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="like-btn-inline ${likedClass}" title="${item.is_liked ? 'Unlike' : 'Like'}">${likedIcon}</button>
                     </div>
                 `;
+
+                // Wire up review modal trigger
+                card.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.openReviewModal(item.title, item.type, item.review);
+                });
 
                 // Wire up like button click
                 card.querySelector('.like-btn-inline').addEventListener('click', (e) => {
