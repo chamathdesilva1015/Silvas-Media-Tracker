@@ -1160,15 +1160,6 @@ document.addEventListener('DOMContentLoaded', () => {
         check(); // run immediately on load
     }
 
-    // Initialization
-    updateCategoryTitleCount();
-    updateTheme();
-    fetchMedia().then(() => {
-        updateCategoryTitleCount();
-        watchStartupSync();
-    });
-});
-
     // --- Info Hub Navigation Logic ---
     const iIntro = document.getElementById('infoIntro');
     const iDetail = document.getElementById('infoDetail');
@@ -1191,6 +1182,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
                 iIntro.style.display = 'none';
                 iDetail.style.display = 'block';
+                // Scroll to top of content
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
 
@@ -1201,3 +1194,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    // Initialization
+    updateCategoryTitleCount();
+    updateTheme();
+    fetchMedia().then(() => {
+        updateCategoryTitleCount();
+        watchStartupSync();
+    });
+});
