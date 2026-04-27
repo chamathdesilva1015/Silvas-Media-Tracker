@@ -2161,3 +2161,20 @@ body.read-only-mode #clearReviewBtn {
         font-size: 0.6rem !important;
     }
 }
+
+.info-subtitle-sm {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+    opacity: 0.8;
+}
+
+@media (max-width: 800px) {
+    .info-subtitle-sm {
+        font-size: 0.8rem;
+        padding: 0 1rem;
+    }
+}

@@ -1164,8 +1164,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const iIntro = document.getElementById('infoIntro');
     const iDetail = document.getElementById('infoDetail');
     const iTitle = document.getElementById('infoSectionTitle');
+    const iSubtitle = document.getElementById('infoSectionSubtitle');
     const iBody = document.getElementById('infoSectionBody');
     const iBack = document.getElementById('backToInfoBtn');
+
+    const infoSubtitles = {
+        'Rating Scale': 'A standardized 1-10 numerical reference guide. Use this to understand the specific weight and rewatch value associated with each score. Click a tier to expand its full definition.',
+        'Criteria Breakdown': 'A detailed analysis of the 8 core pillars used to evaluate media. This ensures structural consistency and objective separation of craft. Click a category to view its evaluation metrics.'
+    };
 
     const infoData = {
         'Rating Scale': `
@@ -1267,6 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => {
                 const section = btn.getAttribute('data-section');
                 iTitle.innerText = section;
+                iSubtitle.innerText = infoSubtitles[section] || 'Detailed methodology and project documentation.';
                 iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
                 iIntro.style.display = 'none';
                 iDetail.style.display = 'block';
