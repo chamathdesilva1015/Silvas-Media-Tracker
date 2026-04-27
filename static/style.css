@@ -1611,55 +1611,56 @@ body.read-only-mode #clearReviewBtn {
         font-size: 1.8rem;
     }
 
-    /* --- Phase B: Adaptive Row-Cards & Touch Interactions --- */
+    /* --- Phase B: Adaptive 2-Column Grid & Touch Interactions --- */
     .media-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
     }
 
     .media-card {
-        min-height: auto;
-        padding: 1.2rem;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        grid-template-rows: auto auto auto;
-        grid-template-areas: 
-            "header rating"
-            "badges rating"
-            "footer footer";
-        gap: 0.6rem;
+        min-height: 140px;
+        padding: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        position: relative;
     }
 
-    .card-header { grid-area: header; }
-    h3.media-title { font-size: 1.25rem; }
+    .card-header { margin-bottom: auto; }
+    h3.media-title { font-size: 0.95rem; line-height: 1.2; }
     
     .card-badges { 
-        grid-area: badges; 
         margin-bottom: 0;
         min-height: auto;
         flex-wrap: wrap;
+        gap: 0.3rem;
     }
+    .card-badges .review-badge { font-size: 0.6rem; padding: 0.1rem 0.4rem; }
     
     .card-spacer { display: none; }
     
     .media-footer {
-        grid-area: footer;
-        margin-top: 0.2rem;
-        padding-top: 0.8rem;
+        margin-top: 0.4rem;
+        padding-top: 0.4rem;
         border-top: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 0.65rem;
     }
     
+    .media-footer .date-added { display: none; } /* Hide date to save space on mobile */
+    .media-footer .like-btn-inline { font-size: 1rem; }
+
     .media-card::before { display: none; }
 
-    /* Touch-to-Reveal Score Box */
+    /* Touch-to-Reveal Score Box (Compact for 2-column) */
     .media-rating-container {
-        grid-area: rating;
-        position: relative;
-        top: 0; transform: none;
-        width: 65px; height: 65px;
-        background: rgba(0, 0, 0, 0.3);
+        position: absolute;
+        bottom: 3.5rem; 
+        right: 0.8rem;
+        transform: none;
+        width: 38px; height: 38px;
+        background: rgba(0, 0, 0, 0.6);
         border: 1px solid var(--border-color);
-        border-radius: 12px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1670,7 +1671,7 @@ body.read-only-mode #clearReviewBtn {
         content: "tap";
         position: absolute;
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 0.75rem;
+        font-size: 0.55rem;
         font-weight: 700;
         text-transform: uppercase;
         color: var(--text-secondary);
