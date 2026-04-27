@@ -16,7 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const canEdit = !isReadOnly || isAdminUnlocked;
 
-    if (isReadOnly && !isAdminUnlocked) {
+    if (canEdit) {
+        document.body.classList.remove('read-only-mode');
+        // Redundant safely reset review box if it was ever locked
+        document.getElementById('reviewInputBox').readOnly = false;
+        document.getElementById('reviewInputBox').placeholder = 'Type your review here...';
+    } else {
         document.body.classList.add('read-only-mode');
         document.getElementById('reviewInputBox').readOnly = true;
         document.getElementById('reviewInputBox').placeholder = 'There is no review setup for this entry.';
