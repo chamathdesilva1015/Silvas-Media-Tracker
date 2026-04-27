@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return headers;
     };
 
+    const canEdit = !isReadOnly || isAdminUnlocked;
+
     if (isReadOnly && !isAdminUnlocked) {
         document.body.classList.add('read-only-mode');
         document.getElementById('reviewInputBox').readOnly = true;
@@ -21,16 +23,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const loginAdminBtn = document.getElementById('loginAdminBtn');
-    if (loginAdminBtn) {
-        loginAdminBtn.onclick = () => {
-            const pwd = prompt("Enter Admin Password to unlock editing:");
-            if (pwd === "Dn1h7M55!") {
-                localStorage.setItem('admin_key', pwd);
-                window.location.reload(); 
-            } else if (pwd !== null) {
-                alert("Incorrect Password.");
-            }
-        };
+    const logoutAdminBtn = document.getElementById('logoutAdminBtn');
+
+    if (loginAdminBtn && logoutAdminBtn) {
+        if (isAdminUnlocked) {
+            loginAdminBtn.style.display = 'none';
+            logoutAdminBtn.style.display = 'block';
+            logoutAdminBtn.onclick = () => {
+                localStorage.removeItem('admin_key');
+                window.location.reload();
+            };
+        } else if (!isReadOnly) {
+            // Localhost mode
+            loginAdminBtn.style.display = 'none';
+            logoutAdminBtn.style.display = 'none';
+        } else {
+            // Live, Locked mode
+            logoutAdminBtn.style.display = 'none';
+            loginAdminBtn.onclick = () => {
+                const pwd = prompt("Enter Admin Password to unlock editing:");
+                if (pwd === "Dn1h7M55!") {
+                    localStorage.setItem('admin_key', pwd);
+                    window.location.reload(); 
+                } else if (pwd !== null) {
+                    alert("Incorrect Password.");
+                }
+            };
+        }
     }
 
     let allMedia = [];
@@ -631,12 +650,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (rankNum === 3) podiumClass = 'rank-bronze';
 
                 const hasReview = isRealReview(item.review);
+                const canClickReview = hasReview || canEdit;
 
                 row.innerHTML = `
                     <div class="rank-badge ${podiumClass}">#${rankNum}</div>
                     <div class="ranking-info">
                         <div class="ranking-header">
-                            <h3 class="media-title ${hasReview ? 'clickable-review-trigger' : ''}" style="${hasReview ? 'cursor:pointer;' : ''}">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
+                            <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" style="${canClickReview ? 'cursor:pointer;' : ''}">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
                         </div>
                         ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
                     </div>
@@ -647,7 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 actions.className = 'row-actions';
 
                 // Wire up review modal trigger for ranking row
-                if (hasReview) {
+                if (canClickReview) {
                     row.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
                         e.stopPropagation();
                         window.openReviewModal(item.title, item.type, item.review);
@@ -682,6 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const yearBadge = item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : '';
                 const hasReview = isRealReview(item.review);
+                const canClickReview = hasReview || canEdit;
 
                 const likedClass = item.is_liked ? 'liked' : '';
                 const likedIcon = item.is_liked ? '♥' : '♡';
@@ -712,7 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3 class="media-title ${hasReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
+                        <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
                     <div class="media-rating-container">
                         <div class="media-rating default-rating">${displayRating}</div>
@@ -744,7 +765,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
 
                 // Wire up review modal trigger
-                if (hasReview) {
+                if (canClickReview) {
                     card.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
                         e.stopPropagation();
                         window.openReviewModal(item.title, item.type, item.review);
