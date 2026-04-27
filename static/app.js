@@ -1169,8 +1169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const iBack = document.getElementById('backToInfoBtn');
 
     const infoSubtitles = {
-        'Rating Scale': 'A standardized 1-10 numerical reference guide. Use this to understand the specific weight and rewatch value associated with each score. Click a tier to expand its full definition.',
-        'Criteria Breakdown': 'A detailed analysis of the 8 core pillars used to evaluate media. This ensures structural consistency and objective separation of craft. Click a category to view its evaluation metrics.'
+        'Rating Scale': 'A standardized 1-10 numerical reference guide. Intermediate scores (e.g., 7.5 or 3.5) represent a qualitative hybrid, indicating the entry straddles the transition between two tiers. Click a tier to expand.',
+        'Criteria Breakdown': 'This methodology isolates 8 core dimensions of craft to ensure structural consistency and reduce evaluation overlap. By separating technical cause from emotional effect, we maintain a measurable scoring framework. Click a category to view metrics.'
     };
 
     const infoData = {
@@ -1222,7 +1222,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `,
         'Criteria Breakdown': `
-            <p class="info-subtitle" style="text-align: left; margin-bottom: 2rem;">This system uses 8 categories. Each one isolates a specific dimension of a film so scoring stays structured and reduces overlap. The goal is separation of cause (craft) rather than mixing cause and effect (impact).</p>
             <div class="rating-accordion criteria-accordion">
                 ${[
                     {title: 'Writing', text: 'Covers the core narrative construction: story, structure, dialogue, and themes. Evaluates plot logic, scene connectivity, and meaningful development. Strong writing is intentional; weak writing relies on coincidence.'},
