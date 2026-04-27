@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="rank-badge ${podiumClass}">#${rankNum}</div>
                     <div class="ranking-info">
                         <div class="ranking-header">
-                            <h3 class="media-title clickable-review-trigger" style="cursor:pointer;">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
+                            <h3 class="media-title ${hasReview ? 'clickable-review-trigger' : ''}" style="${hasReview ? 'cursor:pointer;' : ''}">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
                         </div>
                         ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
                     </div>
@@ -618,10 +618,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 actions.className = 'row-actions';
 
                 // Wire up review modal trigger for ranking row
-                row.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    window.openReviewModal(item.title, item.type, item.review);
-                });
+                if (hasReview) {
+                    row.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.openReviewModal(item.title, item.type, item.review);
+                    });
+                }
 
                 const likeBtn = document.createElement('button');
                 likeBtn.className = `like-btn${item.is_liked ? ' liked' : ''}`;
@@ -681,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3 class="media-title clickable-review-trigger" data-id="${item.id}">${item.title} ${yearBadge}</h3>
+                        <h3 class="media-title ${hasReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
                     <div class="media-rating-container">
                         <div class="media-rating default-rating">${displayRating}</div>
@@ -713,10 +715,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
 
                 // Wire up review modal trigger
-                card.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    window.openReviewModal(item.title, item.type, item.review);
-                });
+                if (hasReview) {
+                    card.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.openReviewModal(item.title, item.type, item.review);
+                    });
+                }
 
                 // Wire up like button click
                 card.querySelector('.like-btn-inline').addEventListener('click', (e) => {

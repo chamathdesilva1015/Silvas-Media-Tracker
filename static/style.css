@@ -1740,10 +1740,10 @@ body.read-only-mode #clearReviewBtn {
         width: 100% !important;
         max-width: 100% !important;
         margin: 0;
-        border-radius: 24px 24px 0 0; /* Only curve top corners */
+        border-radius: 20px 20px 0 0; /* Tighten curve */
         border: none;
         border-top: 1px solid var(--border-color);
-        padding: 2.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+        padding: 1.5rem 1.2rem calc(1rem + env(safe-area-inset-bottom)); /* Reduced from 2.5rem padding */
         transform: translateY(100%); /* Start hidden below bounds */
         animation: none; /* Disable desktop scale animation */
         transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1751,6 +1751,23 @@ body.read-only-mode #clearReviewBtn {
 
     .modal.show .modal-content {
         transform: translateY(0); /* Slide up */
+    }
+    
+    /* Make review texts and titles smaller to fit sheets better */
+    .modal h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+    .form-group label { font-size: 0.8rem; }
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+        font-size: 0.85rem;
+        padding: 0.8rem;
+    }
+    .form-group textarea {
+        height: 120px; /* Reduced from 160px/200px */
+    }
+    .btn-primary, .btn-secondary, .btn-danger {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
     }
 
     /* Faux drag-handle purely for aesthetics */
