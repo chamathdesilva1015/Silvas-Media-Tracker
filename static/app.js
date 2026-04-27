@@ -489,14 +489,89 @@ document.addEventListener('DOMContentLoaded', () => {
         reviewingStructureModal.classList.add('show');
     });
 
-    // --- Reviewing Structure Modal Logic ---
+    // --- Reviewing Structure Modal Logic Overhaul ---
+    const categoryDefinitions = {
+        "Writing": {
+            def: "The story itself—what happens, how it’s structured, what characters say, and what it all means.",
+            well: "The plot is clear and makes sense; events connect logically; dialogue sounds natural; themes come through without being forced.",
+            poor: "The story is confusing or inconsistent; events feel random; dialogue is awkward or unnatural; themes are shallow or overly obvious."
+        },
+        "Directing": {
+            def: "How the film is controlled and brought together—choices in tone, staging, and how scenes are presented.",
+            well: "Everything feels intentional; scenes are easy to follow; tone stays consistent; all parts of the film work together.",
+            poor: "Feels messy or unfocused; scenes are unclear; tone shifts unintentionally; elements feel disconnected."
+        },
+        "Acting": {
+            def: "How believable and effective the performances are.",
+            well: "Characters feel real; emotions come across naturally; performances fit the scene and tone.",
+            poor: "Acting feels stiff, exaggerated, or fake; emotions don’t land; characters feel flat or inconsistent."
+        },
+        "Visual Craft": {
+            def: "How the film looks—camera work, lighting, sets, and overall visual quality.",
+            well: "Shots are clear and well-composed; lighting and design support the mood; visuals feel polished and intentional.",
+            poor: "Shots are confusing or dull; visuals distract or feel cheap; noticeable visual mistakes break immersion."
+        },
+        "Flow": {
+            def: "How the film moves over time—pacing, editing, and sound working together.",
+            well: "Scenes transition smoothly; pacing feels right; sound and cuts support tension and clarity.",
+            poor: "Feels choppy, rushed, or too slow; cuts are confusing; sound or timing disrupts the experience."
+        },
+        "Emotion": {
+            def: "How strongly the film makes the viewer feel something.",
+            well: "Creates clear, meaningful emotional reactions that last beyond the scene.",
+            poor: "Feels empty, forced, or forgettable; emotional moments don’t land."
+        },
+        "Originality": {
+            def: "How new or distinct the film feels in its ideas or execution.",
+            well: "Offers a fresh perspective or unique style; stands out from similar films.",
+            poor: "Feels generic, predictable, or heavily copied from other works."
+        },
+        "Genre Fit": {
+            def: "How well the film delivers on what its genre is supposed to do.",
+            well: "Meets expectations (e.g., horror is tense, comedy is funny) while still feeling complete.",
+            poor: "Fails to deliver the core experience the genre promises."
+        }
+    };
+
     const reviewStep1 = document.getElementById('reviewStep1');
-    const reviewStep2 = document.getElementById('reviewStep2');
+    const reviewContentStep = document.getElementById('reviewContentStep');
     const goToStep2Btn = document.getElementById('goToStep2Btn');
-    const backToStep1Btn = document.getElementById('backToStep1Btn');
+    const prevSubStepBtn = document.getElementById('prevSubStepBtn');
+    const nextSubStepBtn = document.getElementById('nextSubStepBtn');
     const categoryChips = document.querySelectorAll('.category-chip');
+
+    // Content Display Elements
+    const currentCategoryTitle = document.getElementById('currentCategoryTitle');
+    const currentCategoryDef = document.getElementById('currentCategoryDef');
+    const currentCategoryWell = document.getElementById('currentCategoryWell');
+    const currentCategoryPoor = document.getElementById('currentCategoryPoor');
+    const categoryContentInput = document.getElementById('categoryContentInput');
+    const subStepIndicator = document.getElementById('subStepIndicator');
     
     let selectedReviewCategories = [];
+    let currentSubStepIndex = 0;
+    let categoryContents = {}; // Map: Category Name -> Content Text
+
+    const updateSubStepUI = () => {
+        const catName = selectedReviewCategories[currentSubStepIndex];
+        const data = categoryDefinitions[catName];
+
+        currentCategoryTitle.innerText = catName;
+        currentCategoryDef.innerText = data.def;
+        currentCategoryWell.innerText = data.well;
+        currentCategoryPoor.innerText = data.poor;
+
+        // Load existing content if any
+        categoryContentInput.value = categoryContents[catName] || '';
+        categoryContentInput.placeholder = `Write about the ${catName.toLowerCase()}... (Min. 1 word)`;
+        
+        // Update Indicator
+        subStepIndicator.innerText = `${currentSubStepIndex + 1} / ${selectedReviewCategories.length}`;
+
+        // Update Buttons
+        nextSubStepBtn.innerText = (currentSubStepIndex === selectedReviewCategories.length - 1) ? 'Finish' : 'Next';
+        categoryContentInput.focus();
+    };
 
     categoryChips.forEach(chip => {
         chip.addEventListener('click', () => {
@@ -508,38 +583,73 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedReviewCategories.push(cat);
                 chip.classList.add('selected');
             }
-
-            // Update Next Button
-            if (selectedReviewCategories.length > 0) {
-                goToStep2Btn.style.display = 'block';
-                // Always use the next logical step name (as per user's prompt)
-                goToStep2Btn.innerText = `Next Step: ${selectedReviewCategories[0]}`; 
-            } else {
-                goToStep2Btn.style.display = 'none';
-            }
+            goToStep2Btn.style.display = (selectedReviewCategories.length > 0) ? 'block' : 'none';
         });
     });
 
     goToStep2Btn.addEventListener('click', () => {
+        currentSubStepIndex = 0;
+        categoryContents = {}; // Fresh start
         reviewStep1.style.display = 'none';
-        reviewStep2.style.display = 'block';
+        reviewContentStep.style.display = 'block';
+        updateSubStepUI();
     });
 
-    backToStep1Btn.addEventListener('click', () => {
-        reviewStep2.style.display = 'none';
-        reviewStep1.style.display = 'block';
-    });
+    const goToPrevSubStep = () => {
+        if (currentSubStepIndex > 0) {
+            // Save current before moving
+            const currentCat = selectedReviewCategories[currentSubStepIndex];
+            categoryContents[currentCat] = categoryContentInput.value;
 
-    closeReviewingStructureBtn.addEventListener('click', () => {
+            currentSubStepIndex--;
+            updateSubStepUI();
+        } else {
+            // Go back to category selection
+            reviewContentStep.style.display = 'none';
+            reviewStep1.style.display = 'block';
+        }
+    };
+
+    const goToNextSubStep = () => {
+        const currentCat = selectedReviewCategories[currentSubStepIndex];
+        const text = categoryContentInput.value.trim();
+        
+        // Validation: more than 1 word
+        const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+        if (wordCount < 1) {
+            alert(`Please write at least one word for ${currentCat} to proceed.`);
+            categoryContentInput.focus();
+            return;
+        }
+
+        // Save
+        categoryContents[currentCat] = text;
+
+        if (currentSubStepIndex < selectedReviewCategories.length - 1) {
+            currentSubStepIndex++;
+            updateSubStepUI();
+        } else {
+            // Final Completion
+            alert("All categories completed! (Placeholder for final review generation)");
+            closeReviewingStructure();
+        }
+    };
+
+    prevSubStepBtn.addEventListener('click', goToPrevSubStep);
+    nextSubStepBtn.addEventListener('click', goToNextSubStep);
+
+    const closeReviewingStructure = () => {
         reviewingStructureModal.classList.remove('show');
-        // Reset state for next time
         selectedReviewCategories = [];
+        categoryContents = {};
         categoryChips.forEach(c => c.classList.remove('selected'));
         goToStep2Btn.style.display = 'none';
-        reviewStep2.style.display = 'none';
+        reviewContentStep.style.display = 'none';
         reviewStep1.style.display = 'block';
         pendingReviewData = null;
-    });
+    };
+
+    closeReviewingStructureBtn.addEventListener('click', closeReviewingStructure);
 
     window.addEventListener('click', (e) => {
         if (e.target === reviewModal && reviewModal.classList.contains('show')) {

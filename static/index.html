@@ -227,20 +227,36 @@
                     <div class="category-chip" data-cat="Genre Fit">Genre Fit</div>
                 </div>
                 <div class="step-actions">
-                    <button id="goToStep2Btn" class="btn-primary" style="display: none; width: 100%;">Next Step: Writing</button>
+                    <button id="goToStep2Btn" class="btn-primary" style="display: none; width: 100%;">Next Step: Content</button>
                 </div>
             </div>
 
-            <!-- Step 2: Writing Placeholder -->
-            <div id="reviewStep2" class="review-step" style="display: none;">
-                <h3 class="serif" style="margin-bottom: 0.5rem;">Step 2: Writing</h3>
-                <p class="step-instruction">Evaluate the quality of the narrative, character arcs, and dialogue.</p>
-                <div style="height: 150px; border: 1px dashed var(--border-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 2rem;">
-                    [Writing Section UI Pending]
+            <!-- Dynamic Category Content Steps (Page 2+) -->
+            <div id="reviewContentStep" class="review-step" style="display: none;">
+                <div id="categoryHeader">
+                    <h3 id="currentCategoryTitle" class="serif" style="margin-bottom: 0.2rem;">Category Name</h3>
+                    <p id="currentCategoryDef" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">Definition goes here...</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1.5rem; font-size: 0.8rem; line-height: 1.3;">
+                        <div style="background: rgba(46, 204, 113, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #2ecc71;">
+                            <strong style="color: #2ecc71; display: block; margin-bottom: 4px;">Done well:</strong>
+                            <span id="currentCategoryWell" style="opacity: 0.8;">...</span>
+                        </div>
+                        <div style="background: rgba(231, 76, 60, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #e74c3c;">
+                            <strong style="color: #e74c3c; display: block; margin-bottom: 4px;">Done poorly:</strong>
+                            <span id="currentCategoryPoor" style="opacity: 0.8;">...</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="step-actions" style="justify-content: space-between;">
-                    <button id="backToStep1Btn" class="btn-secondary">Back</button>
-                    <button class="btn-primary" disabled>Next Step</button>
+
+                <div class="form-group">
+                    <textarea id="categoryContentInput" rows="6" placeholder="Write your thoughts here... (Min. 1 word required)"></textarea>
+                </div>
+
+                <div class="step-actions" style="justify-content: space-between; align-items: center;">
+                    <button id="prevSubStepBtn" class="btn-secondary">Back</button>
+                    <div id="subStepIndicator" style="font-size: 0.8rem; opacity: 0.5; font-weight: 700;">1 / 3</div>
+                    <button id="nextSubStepBtn" class="btn-primary" style="min-width: 120px;">Next</button>
                 </div>
             </div>
         </div>
@@ -268,6 +284,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=54"></script>
+    <script src="app.js?v=55"></script>
 </body>
 </html>
