@@ -629,9 +629,40 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSubStepIndex++;
             updateSubStepUI();
         } else {
-            // Final Completion
-            alert("All categories completed! (Placeholder for final review generation)");
-            closeReviewingStructure();
+            // --- FINAL COMPLETION & ASSEMBLY ---
+            const n = selectedReviewCategories.length;
+            const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+            
+            let combinedReview = "";
+            
+            selectedReviewCategories.forEach((cat, i) => {
+                const content = categoryContents[cat];
+                let prefix = "";
+                
+                if (i === 0) {
+                    prefix = "1st the";
+                } else if (i === n - 1) {
+                    prefix = "Finally the";
+                } else {
+                    prefix = `${ordinals[i]} the`;
+                }
+                
+                combinedReview += `${prefix} ${cat}: ${content}\n\n`;
+            });
+
+            // Submit to DB
+            if (pendingReviewData) {
+                // Ensure submitReview has the context it needs
+                currentReviewContext = { title: pendingReviewData.title, type: pendingReviewData.type };
+                submitReview(combinedReview.trim());
+                
+                // UX: provide visual feedback then close
+                alert(`Review for "${pendingReviewData.title}" has been submitted!`);
+                closeReviewingStructure();
+            } else {
+                console.error("Critical Error: Missing pendingReviewData on submission.");
+                closeReviewingStructure();
+            }
         }
     };
 
