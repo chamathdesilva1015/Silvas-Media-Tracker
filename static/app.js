@@ -3,59 +3,77 @@ document.addEventListener('DOMContentLoaded', () => {
     const hostname = window.location.hostname;
     const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
 
-    // Admin Auth Hook
-    const cachedKey = localStorage.getItem('admin_key');
-    const isAdminUnlocked = (cachedKey === "Dn1h7M55!");
+    // Admin Auth Hook (In-Memory Only, Wipes on Refresh)
+    window.runtimeAdminKey = null;
+    let isAdminUnlocked = false;
+
+    // Helper to evaluate auth bounds
+    const computeCanEdit = () => !isReadOnly || isAdminUnlocked;
 
     const getAuthHeaders = (isJson = true) => {
         const headers = {};
         if (isJson) headers['Content-Type'] = 'application/json';
-        if (isAdminUnlocked) headers['X-Admin-Key'] = cachedKey;
+        if (isAdminUnlocked && window.runtimeAdminKey) headers['X-Admin-Key'] = window.runtimeAdminKey;
         return headers;
     };
-
-    const canEdit = !isReadOnly || isAdminUnlocked;
-
-    if (canEdit) {
-        document.body.classList.remove('read-only-mode');
-        // Redundant safely reset review box if it was ever locked
-        document.getElementById('reviewInputBox').readOnly = false;
-        document.getElementById('reviewInputBox').placeholder = 'Type your review here...';
-    } else {
-        document.body.classList.add('read-only-mode');
-        document.getElementById('reviewInputBox').readOnly = true;
-        document.getElementById('reviewInputBox').placeholder = 'There is no review setup for this entry.';
-    }
 
     const loginAdminBtn = document.getElementById('loginAdminBtn');
     const logoutAdminBtn = document.getElementById('logoutAdminBtn');
 
-    if (loginAdminBtn && logoutAdminBtn) {
-        if (isAdminUnlocked) {
-            loginAdminBtn.style.display = 'none';
-            logoutAdminBtn.style.display = 'block';
-            logoutAdminBtn.onclick = () => {
-                localStorage.removeItem('admin_key');
-                window.location.reload();
-            };
-        } else if (!isReadOnly) {
-            // Localhost mode
-            loginAdminBtn.style.display = 'none';
-            logoutAdminBtn.style.display = 'none';
-        } else {
-            // Live, Locked mode
-            logoutAdminBtn.style.display = 'none';
-            loginAdminBtn.onclick = () => {
-                const pwd = prompt("Enter Admin Password to unlock editing:");
-                if (pwd === "Dn1h7M55!") {
-                    localStorage.setItem('admin_key', pwd);
-                    window.location.reload(); 
-                } else if (pwd !== null) {
-                    alert("Incorrect Password.");
+    // Make updateAuthUI safely globally accessible so it can run before and after media loads
+    window.updateAuthUI = () => {
+        const canEdit = computeCanEdit();
+        if (canEdit) {
+            document.body.classList.remove('read-only-mode');
+            document.getElementById('reviewInputBox').readOnly = false;
+            document.getElementById('reviewInputBox').placeholder = 'Type your review here...';
+            
+            if (loginAdminBtn && logoutAdminBtn) {
+                if (!isReadOnly) {
+                    // Localhost, no need for auth buttons
+                    loginAdminBtn.style.display = 'none';
+                    logoutAdminBtn.style.display = 'none';
+                } else {
+                    // Logged in live
+                    loginAdminBtn.style.display = 'none';
+                    logoutAdminBtn.style.display = 'block';
                 }
-            };
+            }
+        } else {
+            document.body.classList.add('read-only-mode');
+            document.getElementById('reviewInputBox').readOnly = true;
+            document.getElementById('reviewInputBox').placeholder = 'There is no review setup for this entry.';
+            
+            if (loginAdminBtn && logoutAdminBtn) {
+                logoutAdminBtn.style.display = 'none';
+                loginAdminBtn.style.display = 'block';
+            }
         }
+    };
+
+    if (loginAdminBtn && logoutAdminBtn) {
+        logoutAdminBtn.onclick = () => {
+            window.runtimeAdminKey = null;
+            isAdminUnlocked = false;
+            window.updateAuthUI();
+            if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
+        };
+
+        loginAdminBtn.onclick = () => {
+            const pwd = prompt("Enter Admin Password to unlock editing:");
+            if (pwd === "Dn1h7M55!") {
+                window.runtimeAdminKey = pwd;
+                isAdminUnlocked = true;
+                window.updateAuthUI();
+                if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
+            } else if (pwd !== null) {
+                alert("Incorrect Password.");
+            }
+        };
     }
+
+    // Run initial boot visually
+    window.updateAuthUI();
 
     let allMedia = [];
     let currentCategory = 'Movies'; // Default page
@@ -655,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (rankNum === 3) podiumClass = 'rank-bronze';
 
                 const hasReview = isRealReview(item.review);
-                const canClickReview = hasReview || canEdit;
+                const canClickReview = hasReview || computeCanEdit();
 
                 row.innerHTML = `
                     <div class="rank-badge ${podiumClass}">#${rankNum}</div>
@@ -707,7 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const yearBadge = item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : '';
                 const hasReview = isRealReview(item.review);
-                const canClickReview = hasReview || canEdit;
+                const canClickReview = hasReview || computeCanEdit();
 
                 const likedClass = item.is_liked ? 'liked' : '';
                 const likedIcon = item.is_liked ? '♥' : '♡';
