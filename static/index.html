@@ -109,23 +109,37 @@
         </div>
 
         <!-- Info Page (Hidden by default) -->
-        <div id="infoPage" class="info-page" style="display: none; padding: 3rem 2rem; color: var(--text-primary); text-align: center; max-width: 800px; margin: 0 auto;">
-            <h2 class="serif" style="font-size: 2.5rem; margin-bottom: 1rem;">Information Hub</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 3rem; font-size: 1.1rem; line-height: 1.6;">Everything you need to know about the methodology, rating metrics, and context of this media archive.</p>
-            
-            <div class="info-button-grid">
-                <button class="info-btn">
-                    <span class="info-btn-text">Rating Scale</span>
-                </button>
-                <button class="info-btn">
-                    <span class="info-btn-text">Criteria Breakdown</span>
-                </button>
-                <button class="info-btn">
-                    <span class="info-btn-text">Ranking Rules</span>
-                </button>
-                <button class="info-btn">
-                    <span class="info-btn-text">Context & Bias</span>
-                </button>
+        <div id="infoPage" class="info-page" style="display: none; padding: 2rem 1.5rem; color: var(--text-primary); text-align: center; max-width: 800px; margin: 0 auto;">
+            <!-- Main Grid View -->
+            <div id="infoIntro">
+                <h2 class="serif info-main-title">Information Hub</h2>
+                <p class="info-subtitle">Everything you need to know about the methodology and context of this archive.</p>
+                
+                <div class="info-button-grid">
+                    <button class="info-btn" data-section="Rating Scale">
+                        <span class="info-btn-text">Rating Scale</span>
+                    </button>
+                    <button class="info-btn" data-section="Criteria Breakdown">
+                        <span class="info-btn-text">Criteria Breakdown</span>
+                    </button>
+                    <button class="info-btn" data-section="Ranking Rules">
+                        <span class="info-btn-text">Ranking Rules</span>
+                    </button>
+                    <button class="info-btn" data-section="Context & Bias">
+                        <span class="info-btn-text">Context & Bias</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detail Content View -->
+            <div id="infoDetail" style="display: none; text-align: left;">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <button id="backToInfoBtn" class="btn-secondary" style="width: auto; padding: 0.5rem 1.5rem; font-size: 0.9rem;">← Back to Hub</button>
+                </div>
+                <h2 id="infoSectionTitle" class="serif" style="font-size: 2rem; margin-bottom: 1.5rem; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;"></h2>
+                <div id="infoSectionBody" class="info-content-body">
+                    <!-- Placeholder content injected here -->
+                </div>
             </div>
         </div>
     </main>
@@ -302,6 +316,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=61"></script>
+    <script src="app.js?v=62"></script>
 </body>
 </html>

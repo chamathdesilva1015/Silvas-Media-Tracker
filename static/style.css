@@ -1912,3 +1912,40 @@ body.read-only-mode #clearReviewBtn {
         padding: 1.5rem;
     }
 }
+
+.info-main-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.info-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.info-content-body {
+    line-height: 1.8;
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+}
+
+@media (max-width: 800px) {
+    .info-main-title {
+        font-size: 1.6rem !important;
+    }
+    
+    .info-subtitle {
+        font-size: 0.9rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .info-btn {
+        padding: 1.2rem !important;
+    }
+
+    .info-btn-text {
+        font-size: 0.9rem !important;
+    }
+}

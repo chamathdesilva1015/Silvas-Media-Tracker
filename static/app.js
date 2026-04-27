@@ -263,8 +263,15 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.style.display = 'none';
             if (infoPage) {
                 infoPage.style.display = 'block';
-                const h2 = infoPage.querySelector('h2');
-                if (h2) h2.innerText = `${currentCategory} Information Hub`;
+                
+                // Always reset to the dashboard view when landing on Info
+                const infoIntroView = document.getElementById('infoIntro');
+                const infoDetailView = document.getElementById('infoDetail');
+                if (infoIntroView) infoIntroView.style.display = 'block';
+                if (infoDetailView) infoDetailView.style.display = 'none';
+
+                const mainTitle = infoPage.querySelector('.info-main-title');
+                if (mainTitle) mainTitle.innerText = `${currentCategory} Information Hub`;
             }
             if (controls) controls.style.display = 'none';
             if (addBtn) addBtn.style.display = 'none';
@@ -1161,3 +1168,36 @@ document.addEventListener('DOMContentLoaded', () => {
         watchStartupSync();
     });
 });
+
+    // --- Info Hub Navigation Logic ---
+    const iIntro = document.getElementById('infoIntro');
+    const iDetail = document.getElementById('infoDetail');
+    const iTitle = document.getElementById('infoSectionTitle');
+    const iBody = document.getElementById('infoSectionBody');
+    const iBack = document.getElementById('backToInfoBtn');
+
+    const infoData = {
+        'Rating Scale': '<p>This section will contain the full breakdown of what each numerical score (1-10) signifies. It establishes the baseline for consistency across all media types.</p>',
+        'Criteria Breakdown': '<p>Details on how Writing, Directing, Acting, and Visual Craft are weighted during the evaluation process. Provides transparency into the "why" behind the scores.</p>',
+        'Ranking Rules': '<p>Explains how items move up and down the rankings list, the significance of the "Top 3" podium, and how seasonal updates affect the stack.</p>',
+        'Context & Bias': '<p>An honest look at personal preferences, genre leanings, and the specific perspective from which these reviews are written.</p>'
+    };
+
+    if (iIntro && iDetail) {
+        document.querySelectorAll('.info-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const section = btn.getAttribute('data-section');
+                iTitle.innerText = section;
+                iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
+                iIntro.style.display = 'none';
+                iDetail.style.display = 'block';
+            });
+        });
+
+        if (iBack) {
+            iBack.addEventListener('click', () => {
+                iDetail.style.display = 'none';
+                iIntro.style.display = 'block';
+            });
+        }
+    }
