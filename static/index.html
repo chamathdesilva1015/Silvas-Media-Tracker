@@ -111,9 +111,24 @@
         </div>
 
         <!-- Info Page (Hidden by default) -->
-        <div id="infoPage" class="info-page" style="display: none; padding: 2rem; color: var(--text-primary);">
-            <h2 class="serif">Silva's Media Tracker</h2>
-            <p style="color: var(--text-secondary); margin-top: 1rem;">This is a placeholder for the info page. Here you can find more information about the project, the sync process, and more.</p>
+        <div id="infoPage" class="info-page" style="display: none; padding: 3rem 2rem; color: var(--text-primary); text-align: center; max-width: 800px; margin: 0 auto;">
+            <h2 class="serif" style="font-size: 2.5rem; margin-bottom: 1rem;">Information Hub</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 3rem; font-size: 1.1rem; line-height: 1.6;">Everything you need to know about the methodology, rating metrics, and context of this media archive.</p>
+            
+            <div class="info-button-grid">
+                <button class="info-btn">
+                    <span class="info-btn-text">Rating Scale</span>
+                </button>
+                <button class="info-btn">
+                    <span class="info-btn-text">Criteria Breakdown</span>
+                </button>
+                <button class="info-btn">
+                    <span class="info-btn-text">Ranking Rules</span>
+                </button>
+                <button class="info-btn">
+                    <span class="info-btn-text">Context & Bias</span>
+                </button>
+            </div>
         </div>
     </main>
 
@@ -292,6 +307,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=59"></script>
+    <script src="app.js?v=60"></script>
 </body>
 </html>

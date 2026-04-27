@@ -1862,3 +1862,53 @@ body.read-only-mode #clearReviewBtn {
         width: 100%;
     }
 }
+
+/* Info Hub Styling */
+.info-button-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.info-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    padding: 2.5rem 1.5rem;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-btn-text {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: 0.02em;
+}
+
+.info-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--theme-accent);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 20px var(--theme-accent-glow);
+}
+
+.info-btn:active {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 800px) {
+    .info-button-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .info-btn {
+        padding: 1.5rem;
+    }
+}
