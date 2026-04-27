@@ -148,15 +148,38 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            currentCategory = link.getAttribute('data-filter');
+            const filter = link.getAttribute('data-filter');
+            const sub = link.getAttribute('data-sub');
 
-            // Sync active state across BOTH sidebar and bottom nav
-            navLinks.forEach(l => {
-                l.classList.remove('active');
-                if (l.getAttribute('data-filter') === currentCategory) {
-                    l.classList.add('active');
-                }
-            });
+            if (sub === 'Info') {
+                currentSubTab = 'Info';
+                // Sync the top pill-tabs if they exist
+                document.querySelectorAll('.pill-tab').forEach(t => {
+                    t.classList.remove('active');
+                    if (t.getAttribute('data-sub') === 'Info') t.classList.add('active');
+                });
+                
+                // Sync bottom nav active state (remove from others, add to this one)
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            } else if (filter) {
+                currentCategory = filter;
+                currentSubTab = 'Completed'; // Reset to Completed when switching category
+                
+                // Sync the top pill-tabs
+                document.querySelectorAll('.pill-tab').forEach(t => {
+                    t.classList.remove('active');
+                    if (t.getAttribute('data-sub') === 'Completed') t.classList.add('active');
+                });
+
+                // Sync active state across BOTH sidebar and bottom nav
+                navLinks.forEach(l => {
+                    l.classList.remove('active');
+                    if (l.getAttribute('data-filter') === currentCategory) {
+                        l.classList.add('active');
+                    }
+                });
+            }
             
             updateCategoryTitleCount();
             
@@ -169,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateTheme();
             filterAndRenderMedia();
             
-            // Auto close on small mobile screens
+            // Auto close sidebar on small mobile screens
             if (window.innerWidth < 800) {
                 sidebar.classList.add('collapsed');
             }
