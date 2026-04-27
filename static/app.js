@@ -2,10 +2,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Determine Environment: Localhost vs Production (Read-Only)
     const hostname = window.location.hostname;
     const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
-    if (isReadOnly) {
+
+    // Admin Auth Hook
+    const cachedKey = localStorage.getItem('admin_key');
+    const isAdminUnlocked = (cachedKey === "Dn1h7M55!");
+
+    const getAuthHeaders = (isJson = true) => {
+        const headers = {};
+        if (isJson) headers['Content-Type'] = 'application/json';
+        if (isAdminUnlocked) headers['X-Admin-Key'] = cachedKey;
+        return headers;
+    };
+
+    if (isReadOnly && !isAdminUnlocked) {
         document.body.classList.add('read-only-mode');
         document.getElementById('reviewInputBox').readOnly = true;
         document.getElementById('reviewInputBox').placeholder = 'There is no review setup for this entry.';
+    }
+
+    const loginAdminBtn = document.getElementById('loginAdminBtn');
+    if (loginAdminBtn) {
+        loginAdminBtn.onclick = () => {
+            const pwd = prompt("Enter Admin Password to unlock editing:");
+            if (pwd === "Dn1h7M55!") {
+                localStorage.setItem('admin_key', pwd);
+                window.location.reload(); 
+            } else if (pwd !== null) {
+                alert("Incorrect Password.");
+            }
+        };
     }
 
     let allMedia = [];
@@ -340,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/api/media', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(true),
                 body: JSON.stringify(payload)
             });
 
@@ -409,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/api/media/review', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(true),
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
@@ -461,7 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const res = await fetch(`/api/media/${itemToDeleteId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: getAuthHeaders(false)
             });
 
             if (res.ok) {
@@ -519,7 +545,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle like on a media item (optimistic UI + cascade via API)
     const toggleLike = async (itemId) => {
         try {
-            const res = await fetch(`/api/media/like/${itemId}`, { method: 'POST' });
+            const res = await fetch(`/api/media/like/${itemId}`, { 
+                method: 'POST',
+                headers: getAuthHeaders(false)
+            });
             if (res.ok) {
                 fetchMedia(); // refresh to reflect the new liked state everywhere
             } else {

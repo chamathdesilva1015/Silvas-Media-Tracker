@@ -1470,6 +1470,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ====== Read Only Mode for Public Viewers ====== */
+body:not(.read-only-mode) #loginAdminBtn {
+    display: none !important; /* Hide admin prompt if already unlocked/localhost */
+}
+
 body.read-only-mode #addMediaBtn,
 body.read-only-mode .delete-btn,
 body.read-only-mode #saveReviewBtn,
