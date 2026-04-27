@@ -1476,3 +1476,138 @@ body.read-only-mode #saveReviewBtn,
 body.read-only-mode #clearReviewBtn {
     display: none !important;
 }
+
+/* =========================================
+   Mobile UX Overhaul (Phase A) 
+========================================= */
+
+/* Mobile Bottom Navigation */
+.bottom-nav {
+    display: none; /* Hidden on Desktop */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(30, 28, 25, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--border-color);
+    z-index: 999;
+    padding-bottom: calc(0.3rem + env(safe-area-inset-bottom));
+}
+
+.bottom-nav .nav-link {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 0;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    background: none;
+    border: none;
+}
+
+.bottom-nav .nav-icon {
+    font-size: 1.4rem;
+    margin-bottom: 0.2rem;
+    filter: grayscale(1);
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.bottom-nav .nav-text {
+    font-size: 0.7rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+}
+
+.bottom-nav .nav-link.active {
+    color: var(--theme-accent);
+}
+
+.bottom-nav .nav-link.active .nav-icon {
+    transform: translateY(-2px);
+    filter: grayscale(0);
+}
+
+/* Mobile Breakpoint (Match JS 800px logic) */
+@media (max-width: 800px) {
+    /* 1. Hide Desktop Sidebar Completely */
+    .sidebar {
+        display: none !important;
+    }
+
+    /* 2. Show Bottom Navigation */
+    .bottom-nav {
+        display: flex;
+    }
+
+    /* 3. Add padding to main content to stop items hiding behind Bottom Nav */
+    .app-layout {
+        padding-bottom: 80px; 
+    }
+
+    /* 4. Sticky Header Framework */
+    header {
+        position: sticky;
+        top: 0;
+        z-index: 90;
+        background: rgba(15, 14, 12, 0.8);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        padding: 1rem 5%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .header-left {
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    /* Hide the hamburger menu since sidebar is gone */
+    #openSidebarBtn {
+        display: none !important;
+    }
+
+    /* Make search and dropdowns full width for thumb-reach */
+    .header-right {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .header-right .search-container {
+        flex: 1;
+    }
+
+    .header-right .search-bar {
+        width: 100%;
+    }
+
+    .header-right .custom-dropdown {
+        width: auto;
+        min-width: unset;
+        flex: 1;
+    }
+
+    .header-right .dropdown-header {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .page-banner {
+        /* Hide the large banner on mobile to save vertical space */
+        display: none !important;
+    }
+
+    h1#pageTitle {
+        font-size: 1.8rem;
+    }
+}

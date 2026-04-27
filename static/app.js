@@ -51,10 +51,15 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            
             currentCategory = link.getAttribute('data-filter');
+
+            // Sync active state across BOTH sidebar and bottom nav
+            navLinks.forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('data-filter') === currentCategory) {
+                    l.classList.add('active');
+                }
+            });
             
             updateCategoryTitleCount();
             
