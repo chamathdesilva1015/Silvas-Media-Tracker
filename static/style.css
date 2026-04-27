@@ -612,8 +612,8 @@ header p {
     background: var(--theme-accent-muted);
     color: var(--theme-accent);
     border: 1px solid var(--theme-accent-glow);
-    font-size: 0.72rem;
-    padding: 0.18rem 0.55rem;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-family: 'Nunito', sans-serif;
     font-weight: 800;
@@ -1654,6 +1654,7 @@ body.read-only-mode #clearReviewBtn {
         flex-wrap: wrap;
         gap: 0.2rem;
     }
+    .card-badges .card-rank-badge { font-size: 0.5rem; padding: 0.05rem 0.25rem; }
     .card-badges .review-badge { font-size: 0.5rem; padding: 0.1rem 0.25rem; }
     .card-badges .source-badge { font-size: 0.5rem; padding: 0.1rem 0.25rem; }
     
