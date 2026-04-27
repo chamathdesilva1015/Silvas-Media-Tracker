@@ -1800,49 +1800,71 @@ body.read-only-mode #clearReviewBtn {
 
     /* --- Phase C: Centered Mobile Modals --- */
     .modal {
-        align-items: center; 
-        padding: 1rem; /* Re-add safe guard padding */
+        align-items: flex-start; /* Start from top to allow scrolling down */
+        padding: 1rem;
+        overflow-y: auto; /* ENABLE SCROLLING */
+        -webkit-overflow-scrolling: touch;
     }
 
     .modal-content {
         width: 100% !important;
-        max-width: 100% !important; /* Will be constrained by the modal padding */
-        margin: 0;
-        border-radius: 16px; /* Standard rounded edges for pop-ups */
+        max-width: 100% !important;
+        margin: 2rem auto !important; /* Spacing for top/bottom */
+        border-radius: 20px;
         border: 1px solid var(--border-color);
-        padding: 1.8rem 1.2rem;
-        
-        /* Remove the bottom-sheet specific slides */
-        transform: translateY(20px);
+        padding: 2rem 1.2rem 1.5rem 1.2rem;
+        transform: translateY(10px);
         transition: transform 0.3s ease;
+    }
+
+    .close-btn {
+        top: 0.8rem !important;
+        right: 1rem !important;
+        font-size: 1.8rem !important;
     }
 
     .modal.show .modal-content {
         transform: translateY(0);
     }
     
-    /* Make review texts highly readable on phone */
-    .modal h2 { font-size: 1.4rem; margin-bottom: 1rem; text-align: center; }
-    .form-group label { font-size: 0.85rem; }
+    .modal h2 { font-size: 1.3rem; margin-bottom: 1.2rem; text-align: center; }
     
-    .form-group input, 
-    .form-group select, 
     .form-group textarea {
-        font-size: 0.95rem;
-        padding: 0.8rem;
-        line-height: 1.5;
+        height: 25vh; /* Shrunk height for mobile review forms */
+        min-height: 180px;
     }
-    
-    .form-group textarea {
-        height: 35vh; /* Responsive height focused on reading long reviews */
-        min-height: 250px;
+
+    .category-selection-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .category-chip {
+        padding: 10px;
+        font-size: 0.85rem;
     }
     
     /* Make buttons easier to tap */
     .btn-primary, .btn-secondary, .btn-danger {
-        padding: 0.8rem 1rem;
-        font-size: 0.95rem;
-        width: 100%; /* Stretch across modal */
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        width: 100%;
         margin-top: 0.5rem;
+    }
+
+    .step-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .step-actions button {
+        width: 100%;
+    }
+
+    #subStepIndicator {
+        order: -1;
+        margin-bottom: 5px;
+        text-align: center;
+        width: 100%;
     }
 }
