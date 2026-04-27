@@ -1168,13 +1168,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const iBack = document.getElementById('backToInfoBtn');
 
     const infoData = {
-        'Rating Scale': '<p>This section will contain the full breakdown of what each numerical score (1-10) signifies. It establishes the baseline for consistency across all media types.</p>',
+        'Rating Scale': `
+            <div class="rating-accordion">
+                ${[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(num => {
+                    const titles = {
+                        10: 'Masterpiece / Peak',
+                        9: 'Excellent / Near Perfect',
+                        8: 'Very Good / Great',
+                        7: 'Good',
+                        6: 'Decent / Okay',
+                        5: 'Mid / Average',
+                        4: 'Weak / Disappointing',
+                        3: 'Bad',
+                        2: 'Very Bad',
+                        1: 'Awful'
+                    };
+                    const details = {
+                        10: ['Exceptional in all or nearly all dimensions.', 'Deep emotional and lasting impact.', 'Personally significant or defining experience.', 'Infinite rewatch value.', 'Absolute must-watch.', 'Memorability: Would never forget.'],
+                        9: ['Outstanding in almost all aspects with very minor flaws.', 'Strong emotional and intellectual impact.', 'Highly memorable.', 'Would rewatch freely with no specific reason.', 'Must-watch recommendation.', 'Hard to forget; vivid long-term recall.'],
+                        8: ['Strong performance across most categories.', 'Memorable and engaging experience.', 'Strong positive reaction.', 'Would rewatch at almost any time.', 'Highly recommended.', 'Easy to recall key moments in detail.'],
+                        7: ['Consistently enjoyable with clear strengths.', 'Positive emotional response throughout.', 'Glad I watched it.', 'Would rewatch occasionally.', 'Recommended.', 'Several scenes or ideas stay with you over time.'],
+                        6: ['Noticeably better than average but inconsistent.', 'Some enjoyable or interesting parts.', 'Positive but restrained reaction.', 'Would rewatch only for specific reasons.', 'Mildly recommended.', 'Retains clear moments, but not strongly anchored.'],
+                        5: ['Neither good nor bad in a meaningful way.', 'Neutral emotional response.', 'Forgettable but not painful to watch.', 'No desire to rewatch.', 'Not particularly recommended.', 'Quickly fades afterward.'],
+                        4: ['Tried to work but largely failed in execution.', 'Some effort or moments show potential.', 'Mixed reaction leaning negative.', 'Unlikely to rewatch.', 'Generally not recommended.', 'Remembered in parts, but not as a coherent whole.'],
+                        3: ['Poor overall, but with tolerable moments.', 'Negative experience overall.', 'Barely worth finishing.', 'Would not rewatch.', 'Not recommended.', 'Fades quickly, only fragments remain.'],
+                        2: ['Significantly flawed with almost no structure.', 'Dislike outweighs any minor positives.', 'Glad it’s over.', 'Would not rewatch.', 'Not recommended.', 'Easily forgettable, actively pushed out of memory.'],
+                        1: ['Awful execution across most areas.', 'No enjoyment or value gained.', 'Strong negative reaction.', 'Would never rewatch.', 'Not recommended under any circumstance.', 'Would forget if given the choice.']
+                    };
+
+                    return `
+                        <div class="rating-item">
+                            <div class="rating-header-click">
+                                <div class="rating-score-label">
+                                    <span class="score-num">${num}/10</span>
+                                    <span class="score-title">${titles[num]}</span>
+                                </div>
+                                <span class="chevron-icon">▼</span>
+                            </div>
+                            <div class="rating-content-pane">
+                                <ul class="rating-detail-list">
+                                    ${details[num].map(d => `<li>${d}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `,
         'Criteria Breakdown': '<p>Details on how Writing, Directing, Acting, and Visual Craft are weighted during the evaluation process. Provides transparency into the "why" behind the scores.</p>',
         'Ranking Rules': '<p>Explains how items move up and down the rankings list, the significance of the "Top 3" podium, and how seasonal updates affect the stack.</p>',
         'Context & Bias': '<p>An honest look at personal preferences, genre leanings, and the specific perspective from which these reviews are written.</p>'
     };
 
     if (iIntro && iDetail) {
+        // Delegate rating item clicks
+        iBody.addEventListener('click', (e) => {
+            const header = e.target.closest('.rating-header-click');
+            if (header) {
+                const item = header.closest('.rating-item');
+                // Close other items for clean accordion behavior
+                document.querySelectorAll('.rating-item').forEach(other => {
+                    if (other !== item) other.classList.remove('open');
+                });
+                item.classList.toggle('open');
+            }
+        });
+
         document.querySelectorAll('.info-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const section = btn.getAttribute('data-section');
