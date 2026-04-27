@@ -45,7 +45,7 @@
             </nav>
             <div class="sidebar-footer">
                 <button id="addMediaBtn" class="btn-primary btn-full">+ Add Entry</button>
-                <button id="loginAdminBtn" class="btn-secondary btn-full" style="margin-top: 10px; opacity: 0.6; font-size: 0.8rem;">Admin?</button>
+                <button id="loginAdminBtn" class="btn-secondary btn-full" style="margin-top: 10px; opacity: 0.6; font-size: 0.8rem;">Login</button>
             </div>
         </aside>
 
@@ -145,6 +145,20 @@
         </div>
     </div>
 
+
+    <!-- Admin Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close-btn" id="closeLoginModalBtn">&times;</span>
+            <h2 class="serif" style="margin-bottom: 10px;">Developer Login</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">
+                This secure portal is for the developer to bypass read-only mode and edit the live database.
+            </p>
+            <input type="password" id="adminPasswordInput" placeholder="Enter Developer Key..." style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary);">
+            <button id="submitLoginBtn" class="btn-primary" style="width: 100%;">Unlock Database</button>
+        </div>
+    </div>
+
     <!-- Global Review Editor Modal -->
     <div id="reviewModal" class="modal">
         <div class="modal-content review-modal-content">
@@ -200,6 +214,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=47"></script>
+    <script src="app.js?v=49"></script>
 </body>
 </html>

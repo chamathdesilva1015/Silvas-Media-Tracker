@@ -52,6 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (loginAdminBtn && logoutAdminBtn) {
+        const loginModal = document.getElementById('loginModal');
+        const adminPasswordInput = document.getElementById('adminPasswordInput');
+        const submitLoginBtn = document.getElementById('submitLoginBtn');
+        const closeLoginModalBtn = document.getElementById('closeLoginModalBtn');
+
+        const closeLogin = () => {
+            if(loginModal) loginModal.classList.remove('show');
+            if(adminPasswordInput) adminPasswordInput.value = '';
+        };
+
         logoutAdminBtn.onclick = () => {
             window.runtimeAdminKey = null;
             isAdminUnlocked = false;
@@ -60,16 +70,33 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         loginAdminBtn.onclick = () => {
-            const pwd = prompt("Enter Admin Password to unlock editing:");
-            if (pwd === "Dn1h7M55!") {
-                window.runtimeAdminKey = pwd;
-                isAdminUnlocked = true;
-                window.updateAuthUI();
-                if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
-            } else if (pwd !== null) {
-                alert("Incorrect Password.");
+            if(loginModal) {
+                loginModal.classList.add('show');
+                if(adminPasswordInput) adminPasswordInput.focus();
             }
         };
+
+        if(closeLoginModalBtn) closeLoginModalBtn.onclick = closeLogin;
+
+        if(submitLoginBtn) {
+            submitLoginBtn.onclick = () => {
+                const pwd = adminPasswordInput.value;
+                if (pwd === "Dn1h7M55!") {
+                    window.runtimeAdminKey = pwd;
+                    isAdminUnlocked = true;
+                    window.updateAuthUI();
+                    if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
+                    closeLogin();
+                } else {
+                    alert("Incorrect Developer Key. Viewing access only.");
+                }
+            };
+        }
+        
+        // Add native dismiss
+        window.addEventListener('click', (e) => {
+            if (e.target == loginModal) closeLogin();
+        });
     }
 
     // Run initial boot visually
