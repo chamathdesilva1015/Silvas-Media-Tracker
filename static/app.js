@@ -1170,7 +1170,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const infoSubtitles = {
         'Rating Scale': 'A standardized 1-10 numerical reference guide. Intermediate scores (e.g., 7.5 or 3.5) represent a qualitative hybrid, indicating the entry straddles the transition between two tiers. Click a tier to expand.',
-        'Criteria Breakdown': 'This methodology isolates 8 core dimensions of craft to ensure structural consistency and reduce evaluation overlap. By separating technical cause from emotional effect, we maintain a measurable scoring framework. Click a category to view metrics.'
+        'Criteria Breakdown': 'This methodology isolates 8 core dimensions of craft to ensure structural consistency and reduce evaluation overlap. By separating technical cause from emotional effect, we maintain a measurable scoring framework. Click a category to view metrics.',
+        'Ranking Rules': 'The logic behind my personal Top 20 list. This section explains the relationship between Favorites and Scores, as well as the rules governing rank stability and fluidity.'
     };
 
     const infoData = {
@@ -1249,7 +1250,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('')}
             </div>
         `,
-        'Ranking Rules': '<p>Explains how items move up and down the rankings list, the significance of the "Top 3" podium, and how seasonal updates affect the stack.</p>',
+        'Ranking Rules': `
+            <div class="rating-accordion criteria-accordion">
+                ${[
+                    {title: 'Subjective Favorite Bias', text: 'Unlike the global list, the Rankings tab is **explicitly biased**. It represents my personal "Favorites" rather than just technically superior films. Emotional resonance and personal impact are the primary drivers here.'},
+                    {title: 'Score Independence', text: 'An entry does **not** need a high numerical score (like 10/10) to enter the Top 20. A technically "flawed" 7/10 that I personally love can higher rank than an "excellent" 9/10.'},
+                    {title: 'Rank Stability (Anchoring)', text: 'The list is fluid, but stability is tied to position. The higher an entry sits (especially the Top 5), the less likely it is to move. Lower positions (15-20) are more volatile and prone to being swapped out.'},
+                    {title: 'Active Fluidity', text: 'This list is not static. As I watch more media, entries will be added, shifted, and deleted. The Rankings tab is a living document reflecting my absolute best-of-the-best at any given moment.'}
+                ].map(item => `
+                    <div class="rating-item">
+                        <div class="rating-header-click">
+                            <div class="rating-score-label">
+                                <span class="score-title" style="padding-left: 0.5rem;">${item.title}</span>
+                            </div>
+                            <span class="chevron-icon">▼</span>
+                        </div>
+                        <div class="rating-content-pane">
+                            <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
+                                ${item.text}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `,
         'Context & Bias': '<p>An honest look at personal preferences, genre leanings, and the specific perspective from which these reviews are written.</p>'
     };
 
