@@ -1215,7 +1215,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 }).join('')}
             </div>
         `,
-        'Criteria Breakdown': '<p>Details on how Writing, Directing, Acting, and Visual Craft are weighted during the evaluation process. Provides transparency into the "why" behind the scores.</p>',
+        'Criteria Breakdown': `
+            <p class="info-subtitle" style="text-align: left; margin-bottom: 2rem;">This system uses 8 categories. Each one isolates a specific dimension of a film so scoring stays structured and reduces overlap. The goal is separation of cause (craft) rather than mixing cause and effect (impact).</p>
+            <div class="rating-accordion">
+                ${[
+                    {id: 1, title: 'Writing', text: 'Covers the core narrative construction: story, structure, dialogue, and themes. Evaluates plot logic, scene connectivity, and meaningful development. Strong writing is intentional; weak writing relies on coincidence.'},
+                    {id: 2, title: 'Directing', text: 'Covers the unified vision: tone consistency, staging, and department coordination. Good directing makes the film feel controlled; weak directing feels disjointed or inconsistent.'},
+                    {id: 3, title: 'Acting', text: 'Covers performance and believability. Evaluates whether actors convincingly portray characters through emotion and behavior. Strong acting is grounded; weak acting breaks immersion.'},
+                    {id: 4, title: 'Visual Craft', text: 'Covers cinematography, lighting, production design, and costumes. Evaluates how the film is visually constructed to support tone. Strong craft is immersive; weak craft is plain or distracting.'},
+                    {id: 5, title: 'Flow', text: 'Combined category (Editing + Sound). Measures pacing, transitions, and audio-visual rhythm. Strong flow feels seamless; weak flow feels choppy or disrupted by poor timing.'},
+                    {id: 6, title: 'Emotion', text: 'Covers the emotional effect on the viewer. Successfully generates feelings like tension, joy, or discomfort. Strong impact lingers; weak impact feels forced or forgettable.'},
+                    {id: 7, title: 'Originality', text: 'Covers freshness in concept or style. Evaluates whether the film offers something new or reinterprets ideas. Strong originality is inventive; weak originality is formulaic.'},
+                    {id: 8, title: 'Genre Fit', text: 'Covers effectiveness within an intended category (Comedy should be funny, etc.). Strong fit successfully delivers the intended experience regardless of general quality.'}
+                ].map(cat => `
+                    <div class="rating-item">
+                        <div class="rating-header-click">
+                            <div class="rating-score-label">
+                                <span class="score-num">${cat.id}</span>
+                                <span class="score-title">${cat.title}</span>
+                            </div>
+                            <span class="chevron-icon">▼</span>
+                        </div>
+                        <div class="rating-content-pane">
+                            <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
+                                ${cat.text}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `,
         'Ranking Rules': '<p>Explains how items move up and down the rankings list, the significance of the "Top 3" podium, and how seasonal updates affect the stack.</p>',
         'Context & Bias': '<p>An honest look at personal preferences, genre leanings, and the specific perspective from which these reviews are written.</p>'
     };
