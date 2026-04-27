@@ -1563,34 +1563,28 @@ body.read-only-mode #clearReviewBtn {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0.6rem 0;
+    padding: 1rem 0;
     color: var(--text-secondary);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
     background: none;
     border: none;
 }
 
-.bottom-nav .nav-icon {
-    font-size: 1.4rem;
-    margin-bottom: 0.2rem;
-    filter: grayscale(1);
-    transition: transform 0.2s, filter 0.2s;
-}
-
 .bottom-nav .nav-text {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 700;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .bottom-nav .nav-link.active {
     color: var(--theme-accent);
 }
 
-.bottom-nav .nav-link.active .nav-icon {
-    transform: translateY(-2px);
-    filter: grayscale(0);
+.bottom-nav .nav-link.active .nav-text {
+    text-shadow: 0 0 10px var(--theme-accent-glow);
 }
 
 /* Mobile Breakpoint (Match JS 800px logic) */
