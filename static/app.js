@@ -259,14 +259,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const infoPage = document.getElementById('infoPage');
         const controls = document.querySelector('.top-controls');
 
-        if (currentCategory === 'Info') {
+        if (currentSubTab === 'Info') {
             grid.style.display = 'none';
-            if (infoPage) infoPage.style.display = 'block';
+            if (infoPage) {
+                infoPage.style.display = 'block';
+                const h2 = infoPage.querySelector('h2');
+                if (h2) h2.innerText = `${currentCategory} Information Hub`;
+            }
             if (controls) controls.style.display = 'none';
             if (addBtn) addBtn.style.display = 'none';
             return;
         } else {
-            grid.style.display = (currentSubTab === 'Rankings') ? 'block' : 'grid'; // Maintain functional display
+            grid.style.display = (currentSubTab === 'Rankings') ? 'block' : 'grid';
             if (infoPage) infoPage.style.display = 'none';
             if (controls) controls.style.display = 'flex';
             if (isAdminUnlocked && addBtn) addBtn.style.display = 'block';
@@ -365,10 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCategoryTitleCount = () => {
         if (!currentCategory) return;
-        if (currentCategory === 'Info') {
-            pageTitle.innerHTML = `<span class="serif">Project Info</span>`;
-            return;
-        }
         const items = allMedia.filter(i => i.type.toLowerCase() === currentCategory.toLowerCase());
         const uniqueTitles = new Set(items.map(i => normalizeTitle(i.title)));
         const count = uniqueTitles.size;
