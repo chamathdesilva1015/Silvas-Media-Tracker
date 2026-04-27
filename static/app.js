@@ -1301,13 +1301,36 @@ document.addEventListener('DOMContentLoaded', () => {
         'Bias & Effects': `
             <div class="rating-accordion criteria-accordion">
                 ${[
-                    {title: 'Genre Bias & Inflation', text: 'I have a strong admitted preference for grounded dramas, high-concept sci-fi, and psychological thrillers. These genres naturally feel more "important" or intellectually rewarding to me. While I try to judge every film on its own merits, a cerebral sci-fi will almost always have a lower barrier to entry for my engagement than a standard action flick. Understanding this helps you see why my "Average" for a drama might still rank higher than a "Good" for a genre I’m less connected to.'},
-                    {title: 'Theme Bias & Weighting', text: 'I am inherently drawn to philosophical, psychological, and socially relevant themes. Unlike conventional popcorn movies, I look for a balance between *what* a film is saying and *how* it is saying it. I evaluate thematic weight and technical execution with equal importance, ensuring that a profound message is supported by meaningful craft.'},
-                    {title: 'Personnel Bias & Expectation', text: 'I recognize that my familiarity with specific directors or actors creates a carry-over expectation. Because I am already biased toward their past success, I enter the viewing experience both wanting and expecting the film to be excellent. This pre-existing desire for a quality performance or vision can influence my final perception of the work.'},
-                    {title: 'Hype Bias & Distortion', text: 'My scores are heavily influenced by the "Delta" between my expectations and the reality of the viewing experience. A highly hyped film that is "only" an 8/10 can feel like a disappointment (and get a 7.5), while a hidden gem I expected to be awful might get a generous "inflation" bump. This section serves as a reminder that my scores are often a measurement of my personal surprise or letdown.'},
-                    {title: 'Recency Bias & Drift', text: 'Newer films benefit from high emotional clarity. The music is fresher, the visual beats are clearer, and the impact is immediate. Older films often suffer from "memory decay," where only the flaws or the broadest strokes remain. Without active re-reviews, my rankings will naturally drift toward recent experiences. If you see an older film with a rating that seems too high or too low, message me and I will look into re-evaluating it.'},
-                    {title: 'Legacy Bias & Momentum', text: 'Sequels rarely exist in a vacuum for me. I am susceptible to "Legacy Bias," where my emotional connection to a long-running franchise can sometimes fill in the narrutive gaps for a weaker individual entry. Conversely, a sequel can be punished for the sin of simply not living up to a legendary predecessor. My evaluations often carry the weight of the entire series, making it difficult for an entry to truly stand on its own feet.'},
-                    {title: 'Scale Bias & Efficiency', text: 'I am highly aware of the relationship between budget and output. While I acknowledge the technical polish of major studio releases, I specifically take note when massive budgets produce uninspired work or "slop." Conversely, I give significant credit when a lower-budget project performs exceptionally well despite its constraints. This is an evaluation of resource efficiency as much as technical quality.'}
+                    {
+                        title: 'Genre & Theme Bias & Favoritism', 
+                        text: `I have a naturally high interest in grounded dramas, high-concept sci-fi, and psychological thrillers. I also tend to give more weight to philosophical or socially relevant themes.<br><br>
+                               <strong>The Result:</strong> This creates a "lower barrier to entry" where a drama might score an 8 simply because it's engaging with my favorite topics, while a comedy that's technically just as good might feel less "important."<br><br>
+                               <strong>What to understand:</strong> My "Average" for a preferred genre can still rank higher than a "Good" for a genre I'm less connected to. It's a measurement of personal resonance as much as craft.`
+                    },
+                    {
+                        title: 'Personnel & Hype Bias & Anticipation', 
+                        text: `I'm often already biased toward directors or actors I've liked in the past, and my expectations are heavily tied to marketing and general reputation.<br><br>
+                               <strong>The Result:</strong> I walk into these movies *wanting* them to be great. If there's a big gap between what I expected and what I got, the score is driven by that disappointment. Conversely, a hidden gem I expected to be bad might get an "inflation" bump because I was pleasantly surprised.<br><br>
+                               <strong>What to understand:</strong> These scores are a measurement of my personal surprise or letdown relative to the talent involved and the hype surrounding the release.`
+                    },
+                    {
+                        title: 'Recency Bias & Drift', 
+                        text: `Newer movies are fresher in my head; the music, the visuals, and the emotions are all high clarity. Older movies suffer from "memory decay" where I might only remember the biggest flaws or broadest strokes.<br><br>
+                               <strong>The Result:</strong> Without active re-reviews, my rankings will naturally drift toward whatever I've watched recently. Older ratings can start to feel deflated or disconnected over time.<br><br>
+                               <strong>What to understand:</strong> A 10-year-old 8/10 was likely just as impactful at the time as a 9/10 released today. If you see an old rating that looks way off, message me and I'll re-evaluate it.`
+                    },
+                    {
+                        title: 'Legacy Bias & Momentum', 
+                        text: `I find it hard to judge sequels in a vacuum. My emotional connection to an entire franchise often fills in the narrative gaps for a weaker individual entry.<br><br>
+                               <strong>The Result:</strong> A sequel can be "carried" by the momentum of a series I love, or unfairly punished for just not being as legendary as its predecessor.<br><br>
+                               <strong>What to understand:</strong> My ratings often reflect the weight of the entire franchise journey, rather than just the isolated effort of that one movie.`
+                    },
+                    {
+                        title: 'Scale Bias & Efficiency', 
+                        text: `I pay close attention to how a movie uses its resources. I hold $200M blockbusters to a much higher technical standard and I definitely notice when that money produces uninspired "slop."<br><br>
+                               <strong>The Result:</strong> I give a lot of credit to low-budget indies that perform well despite their limits. An indie "7" often feels more impressive to me than a massive studio "7."<br><br>
+                               <strong>What to understand:</strong> This is an evaluation of resource efficiency. A high-budget failure feels like a larger loss, while a low-budget success is seen as a triumph of passion.`
+                    }
                 ].map(item => `
                     <div class="rating-item">
                         <div class="rating-header-click">
