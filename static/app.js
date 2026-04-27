@@ -4,8 +4,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
 
     // Admin Auth Hook (In-Memory Only, Wipes on Refresh)
-    window.runtimeAdminKey = null;
-    let isAdminUnlocked = false;
+    const tempKey = localStorage.getItem('admin_key_temp');
+    if (tempKey === "Dn1h7M55!") {
+        window.runtimeAdminKey = tempKey;
+        localStorage.removeItem('admin_key_temp'); // Burn after reading so next refresh is guest
+    } else {
+        window.runtimeAdminKey = null;
+    }
+    
+    let isAdminUnlocked = (window.runtimeAdminKey !== null);
 
     // Helper to evaluate auth bounds
     const computeCanEdit = () => !isReadOnly || isAdminUnlocked;
@@ -61,8 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if(btn) btn.onclick = () => {
             window.runtimeAdminKey = null;
             isAdminUnlocked = false;
-            window.updateAuthUI();
-            if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
+            localStorage.removeItem('admin_key_temp');
+            window.location.reload(); // Hard reset for clean logout sweep
         };
     });
 
@@ -81,11 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
         submitLoginBtn.onclick = () => {
             const pwd = adminPasswordInput.value;
             if (pwd === "Dn1h7M55!") {
-                window.runtimeAdminKey = pwd;
-                isAdminUnlocked = true;
-                window.updateAuthUI();
-                if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
-                closeLogin();
+                // Set temporary key to survive the RELOAD
+                localStorage.setItem('admin_key_temp', pwd);
+                window.location.reload(); 
             } else {
                 alert("Incorrect Developer Key. Viewing access only.");
             }
@@ -505,8 +510,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper: determine if a review is a real user-written review vs a Discord placeholder
     const isRealReview = (review) => {
-        if (!review) return false;
-        const lower = review.toLowerCase().trim();
+        if (!review || typeof review !== 'string') return false;
+        const trimmed = review.trim();
+        if (trimmed === '') return false;
+        const lower = trimmed.toLowerCase();
         if (lower.startsWith('imported from discord')) return false;
         return true;
     };
@@ -727,7 +734,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isRankingRequired) {
                 const row = document.createElement('div');
                 row.className = 'ranking-row stagger-in';
-                row.style.animationDelay = `${index * 0.05}s`;
+                row.style.animationDelay = `${index * 0.02}s`;
                 
                 const rankNum = parseInt(item.rating.replace('#', ''), 10);
                 
@@ -786,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Traditional Grid Block 
                 const card = document.createElement('div');
                 card.className = 'media-card stagger-in';
-                card.style.animationDelay = `${index * 0.05}s`;
+                card.style.animationDelay = `${index * 0.02}s`;
                 
                 const yearBadge = item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : '';
                 const hasReview = isRealReview(item.review);
