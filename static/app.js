@@ -1249,14 +1249,38 @@ document.addEventListener('DOMContentLoaded', () => {
         'Criteria Breakdown': `
             <div class="rating-accordion criteria-accordion">
                 ${[
-                    {title: 'Writing', text: 'Covers the core narrative construction: story, structure, dialogue, and themes. Evaluates plot logic, scene connectivity, and meaningful development. Strong writing is intentional; weak writing relies on coincidence.'},
-                    {title: 'Directing', text: 'Covers the unified vision: tone consistency, staging, and department coordination. Good directing makes the work feel controlled; weak directing feels disjointed or inconsistent.'},
-                    {title: 'Acting', text: 'Covers performance and believability. Evaluates whether actors convincingly portray characters through emotion and behavior. Strong acting is grounded; weak acting breaks immersion.'},
-                    {title: 'Visual Craft', text: 'Covers cinematography, lighting, production design, and costumes. Evaluates how the piece is visually constructed to support tone. Strong craft is immersive; weak craft is plain or distracting.'},
-                    {title: 'Flow', text: 'Combined category (Editing + Sound). Measures pacing, transitions, and audio-visual rhythm. Strong flow feels seamless; weak flow feels choppy or disrupted by poor timing.'},
-                    {title: 'Emotion', text: 'Covers the emotional effect on the viewer. Successfully generates feelings like tension, joy, or discomfort. Strong impact lingers; weak impact feels forced or forgettable.'},
-                    {title: 'Originality', text: 'Covers freshness in concept or style. Evaluates whether the work offers something new or reinterprets ideas. Strong originality is inventive; weak originality is formulaic.'},
-                    {title: 'Genre Fit', text: 'Covers effectiveness within an intended category (Comedy should be funny, etc.). Strong fit successfully delivers the intended experience regardless of general quality.'}
+                    {
+                        title: 'Writing', 
+                        text: `This covers everything "on paper" before production begins: story, dialogue, plot structure, and themes. I'm looking for a narrative that makes logical sense and scenes that connect naturally. Strong writing feels purposeful and deliberate. Weak writing relies heavily on lucky coincidences, plot armor, or characters making frustratingly stupid decisions just to advance the story.`
+                    },
+                    {
+                        title: 'Directing', 
+                        text: `This is all about the captain of the ship and the unified vision of the work. Does the tone stay consistent from start to finish? Good directing creates a focused atmosphere where the music, the actors, and the camera are all working together toward the exact same goal. Weak directing feels confusing, as if the different production departments weren't talking to each other.`
+                    },
+                    {
+                        title: 'Acting', 
+                        text: `This evaluates the believability of the performances. It's not just about who can scream the loudest or cry the hardest—it's about the subtle, quiet moments too. Good acting grounds the story and makes you completely forget you're watching a performance. Bad or stiff acting immediately breaks the immersion and snaps you out of the experience.`
+                    },
+                    {
+                        title: 'Visual Craft', 
+                        text: `This combines cinematography, lighting, sets, costumes, CGI, and overall design. Are the shots framed nicely? Does the lighting match what the scene is trying to make you feel? This isn't just about throwing a massive budget at the screen; it's about building a uniquely cohesive physical world. Weak craft looks flat, dull, uninspired, or noticeably artificial.`
+                    },
+                    {
+                        title: 'Flow', 
+                        text: `This measures pacing, editing, and audio-visual rhythm. How well does the story move over time? Good flow means the editing feels seamless, the transitions make sense, and the pacing naturally holds your attention without dragging. Bad flow feels noticeably choppy, unnecessarily drawn out, or uses awkward cuts that kill the momentum.`
+                    },
+                    {
+                        title: 'Emotion', 
+                        text: `This is the raw impact factor. Regardless of the technical details, did this work actually make you feel something? It could be tension, joy, profound sadness, or even legitimate discomfort. A strong emotional impact will linger with you long after it's over, while a weak one feels forced, unearned, or completely hollow.`
+                    },
+                    {
+                        title: 'Originality', 
+                        text: `This isn't about completely reinventing the wheel—it's about offering a fresh perspective or an undeniably unique sense of style. Did the creators take a risk, try something different, or put a clever spin on an old trope? Strong originality feels inventive. Weak originality feels like a predictable, copy-paste formula you've already seen a hundred times.`
+                    },
+                    {
+                        title: 'Genre Fit', 
+                        text: `This category asks one simple question: Did it deliver on what it promised to be? A comedy needs to bring the laughs; a horror needs to be tense; an action thriller needs good set pieces. An entry can have basic writing and mediocre visuals, but if it successfully nails its specific genre goal, it gets high respect here.`
+                    }
                 ].map(cat => `
                     <div class="rating-item">
                         <div class="rating-header-click">
