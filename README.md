@@ -120,6 +120,18 @@ Focus shifted to maximizing data density across varying viewport dimensions and 
 - **Conditional Click Execution**: Refactored the JavaScript event loop to conditionally bind modal triggers; unreviewed media is now fully locked against pointer interactions, preventing empty data states.
 - **Responsive Dynamic Scaling**: Rebuilt badge sizing logic per-device threshold; ranked leaderboard badges intelligently upscale to match spacious PC cards, whilst shrinking down smoothly to preserve layout integrity on phones.
 
+### Update 5: Evaluative Philosophy and Information Hub Finalization
+Focus shifted to documentation transparency, terminology generalization, and massive codebase maintenance.
+
+- **Category-Agnostic Refactoring**: Stripped media-specific terminology ("movie/film") across the entire engine and UI, replacing it with universal logic ("work/entry") to natively support Anime, Manga, and TV Series within the same documentation framework.
+- **Information Hub Consolidation**: Centralized all meta-content into a refined "Info" dashboard, unifying the Rating Scale, Criteria Breakdown, Ranking Rules, and Bias documentation into a single interactive registry.
+- **Bias & Effects Narrative**: Overhauled the personal bias documentation into five core pillars: *Preference, Expectation, Recency, Legacy,* and *Scale*. Each section was rewritten into a grounded "Bias -> Result -> Understanding" framework.
+- **Grading Criteria Professionalism**: Rewrote the criteria breakdown (Writing, Acting, Visual Craft, etc.) from robotic definitions into meaningful, human-centric paragraphs that articulate specific evaluative standards.
+- **Legacy Logic Purge**: Executed a systemic cleanup of the repository, deleting seven obsolete scripts and stripping over 200 lines of deprecated genre-mapping logic from the automated enrichment engine.
+- **Health Auditor Hardening**: Updated the custom `health_check.py` auditor to support the new schema, strictly validating release years and ranking integrity whilst preventing crashes caused by missing legacy columns.
+- **Mobile Navigation Integration**: Synchronized the "Info" hub into the mobile bottom navigation bar, ensuring documentation accessibility is maintained across all device types.
+- **Ranking Fluidity Rules**: Crystalized the "Ranking Rules" logic, formally documenting the relationship between an entry's position and its stability within the Top 20 leaderboards.
+
 ---
 
 ## License

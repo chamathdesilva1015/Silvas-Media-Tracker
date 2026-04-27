@@ -173,10 +173,10 @@ def run_health_check(auto_fix=False):
 
         # ── Pass 3: Missing Metadata ──────────────────────────────────────────
         for item in items:
-            if not item.release_year and (not item.genres or item.genres == "Imported from Discord"):
+            if not item.release_year:
                 issues.append(
                     f"[Metadata Missing] ID {item.id} (\"{item.title}\") "
-                    f"is missing both year and genres."
+                    f"is missing a release year."
                 )
 
         # ── Pass 4: Corruption Purge ──────────────────────────────────────────
