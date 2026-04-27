@@ -1195,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Rating Scale': 'A standardized 1-10 numerical reference guide. Intermediate scores (e.g., 7.5 or 3.5) represent a qualitative hybrid, indicating the entry straddles the transition between two tiers. Click a tier to expand.',
         'Criteria Breakdown': 'This methodology isolates 8 core dimensions of craft to ensure structural consistency and reduce evaluation overlap. By separating technical cause from emotional effect, we maintain a measurable scoring framework. Click a category to view metrics.',
         'Ranking Rules': 'The logic behind my personal Top 20 list. This section explains the relationship between Favorites and Scores, as well as the rules governing rank stability and fluidity.',
-        'Bias & Effects': 'An honest acknowledgement that this entire database is filtered through a single perspective. This section breaks down my personal leanings and physiological "shortcuts"—not to fix them, but to provide you with the necessary context to interpret my scores fairly.'
+        'Bias & Effects': 'These are my own personal biases and the common "shortcuts" my brain uses when I review media. I’m not trying to fix these—they’re just here to help you understand the perspective behind my scores and why I value certain things more than others.'
     };
 
     const infoData = {
