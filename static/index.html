@@ -42,6 +42,9 @@
                 <a href="#" class="nav-link" data-filter="Anime">
                     <span class="nav-text">Anime</span>
                 </a>
+                <a href="#" class="nav-link" data-filter="Info" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <span class="nav-text">Info</span>
+                </a>
             </nav>
             <div class="sidebar-footer">
                 <button id="addMediaBtn" class="btn-primary btn-full">+ Add Entry</button>
@@ -105,6 +108,12 @@
         <!-- Grid Container -->
         <div id="mediaGrid" class="media-grid">
             <!-- Cards will be populated here via Javascript -->
+        </div>
+
+        <!-- Info Page (Hidden by default) -->
+        <div id="infoPage" class="info-page" style="display: none; padding: 2rem; color: var(--text-primary);">
+            <h2 class="serif">Silva's Media Tracker</h2>
+            <p style="color: var(--text-secondary); margin-top: 1rem;">This is a placeholder for the info page. Here you can find more information about the project, the sync process, and more.</p>
         </div>
     </main>
 
@@ -280,10 +289,14 @@
             <span class="nav-icon">🌸</span>
             <span class="nav-text">Anime</span>
         </a>
+        <a href="#" class="nav-link" data-filter="Info">
+            <span class="nav-icon">💡</span>
+            <span class="nav-text">Info</span>
+        </a>
     </nav>
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=57"></script>
+    <script src="app.js?v=58"></script>
 </body>
 </html>

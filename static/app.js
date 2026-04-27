@@ -256,6 +256,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const filterAndRenderMedia = () => {
+        const infoPage = document.getElementById('infoPage');
+        const controls = document.querySelector('.top-controls');
+
+        if (currentCategory === 'Info') {
+            grid.style.display = 'none';
+            if (infoPage) infoPage.style.display = 'block';
+            if (controls) controls.style.display = 'none';
+            if (addBtn) addBtn.style.display = 'none';
+            return;
+        } else {
+            grid.style.display = (currentSubTab === 'Rankings') ? 'block' : 'grid'; // Maintain functional display
+            if (infoPage) infoPage.style.display = 'none';
+            if (controls) controls.style.display = 'flex';
+            if (isAdminUnlocked && addBtn) addBtn.style.display = 'block';
+        }
+
         // Filter by current Category
         let filtered = allMedia.filter(item => item.type.toLowerCase() === currentCategory.toLowerCase());
         
@@ -349,6 +365,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCategoryTitleCount = () => {
         if (!currentCategory) return;
+        if (currentCategory === 'Info') {
+            pageTitle.innerHTML = `<span class="serif">Project Info</span>`;
+            return;
+        }
         const items = allMedia.filter(i => i.type.toLowerCase() === currentCategory.toLowerCase());
         const uniqueTitles = new Set(items.map(i => normalizeTitle(i.title)));
         const count = uniqueTitles.size;
