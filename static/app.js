@@ -1302,13 +1302,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="rating-accordion criteria-accordion">
                 ${[
                     {
-                        title: 'Genre & Theme Bias & Favoritism', 
+                        title: 'Preference Bias & Favoritism', 
                         text: `I have a naturally high interest in grounded dramas, high-concept sci-fi, and psychological thrillers. I also tend to give more weight to philosophical or socially relevant themes.<br><br>
                                <strong>The Result:</strong> This creates a "lower barrier to entry" where a drama might score an 8 simply because it's engaging with my favorite topics, while a comedy that's technically just as good might feel less "important."<br><br>
                                <strong>What to understand:</strong> My "Average" for a preferred genre can still rank higher than a "Good" for a genre I'm less connected to. It's a measurement of personal resonance as much as craft.`
                     },
                     {
-                        title: 'Personnel & Hype Bias & Anticipation', 
+                        title: 'Expectation Bias & Anticipation', 
                         text: `I'm often already biased toward directors or actors I've liked in the past, and my expectations are heavily tied to marketing and general reputation.<br><br>
                                <strong>The Result:</strong> I walk into these movies *wanting* them to be great. If there's a big gap between what I expected and what I got, the score is driven by that disappointment. Conversely, a hidden gem I expected to be bad might get an "inflation" bump because I was pleasantly surprised.<br><br>
                                <strong>What to understand:</strong> These scores are a measurement of my personal surprise or letdown relative to the talent involved and the hype surrounding the release.`
