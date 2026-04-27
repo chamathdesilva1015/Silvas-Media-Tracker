@@ -489,8 +489,55 @@ document.addEventListener('DOMContentLoaded', () => {
         reviewingStructureModal.classList.add('show');
     });
 
+    // --- Reviewing Structure Modal Logic ---
+    const reviewStep1 = document.getElementById('reviewStep1');
+    const reviewStep2 = document.getElementById('reviewStep2');
+    const goToStep2Btn = document.getElementById('goToStep2Btn');
+    const backToStep1Btn = document.getElementById('backToStep1Btn');
+    const categoryChips = document.querySelectorAll('.category-chip');
+    
+    let selectedReviewCategories = [];
+
+    categoryChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const cat = chip.getAttribute('data-cat');
+            if (selectedReviewCategories.includes(cat)) {
+                selectedReviewCategories = selectedReviewCategories.filter(c => c !== cat);
+                chip.classList.remove('selected');
+            } else {
+                selectedReviewCategories.push(cat);
+                chip.classList.add('selected');
+            }
+
+            // Update Next Button
+            if (selectedReviewCategories.length > 0) {
+                goToStep2Btn.style.display = 'block';
+                // Always use the next logical step name (as per user's prompt)
+                goToStep2Btn.innerText = `Next Step: ${selectedReviewCategories[0]}`; 
+            } else {
+                goToStep2Btn.style.display = 'none';
+            }
+        });
+    });
+
+    goToStep2Btn.addEventListener('click', () => {
+        reviewStep1.style.display = 'none';
+        reviewStep2.style.display = 'block';
+    });
+
+    backToStep1Btn.addEventListener('click', () => {
+        reviewStep2.style.display = 'none';
+        reviewStep1.style.display = 'block';
+    });
+
     closeReviewingStructureBtn.addEventListener('click', () => {
         reviewingStructureModal.classList.remove('show');
+        // Reset state for next time
+        selectedReviewCategories = [];
+        categoryChips.forEach(c => c.classList.remove('selected'));
+        goToStep2Btn.style.display = 'none';
+        reviewStep2.style.display = 'none';
+        reviewStep1.style.display = 'block';
         pendingReviewData = null;
     });
 

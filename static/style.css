@@ -1458,6 +1458,59 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Main Page Header Item Counter */
+/* Structured Review System */
+.review-step {
+    margin-top: 1.5rem;
+}
+
+.step-instruction {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.category-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+}
+
+.category-chip {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    padding: 14px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.9rem;
+    user-select: none;
+}
+
+.category-chip:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.category-chip.selected {
+    background: var(--theme-accent-muted, rgba(123, 142, 118, 0.15));
+    border-color: var(--theme-accent, #7b8e76);
+    color: var(--text-primary);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.step-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
 .header-count {
     background: var(--theme-accent-muted, rgba(255, 255, 255, 0.06));
     color: var(--theme-accent, var(--text-secondary));

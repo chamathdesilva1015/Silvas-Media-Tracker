@@ -207,13 +207,41 @@
         </div>
     </div>
 
-    <!-- Reviewing Structure Modal (Blank for now) -->
+    <!-- Reviewing Structure Modal (8-Part Overhaul) -->
     <div id="reviewingStructureModal" class="modal">
         <div class="modal-content review-modal-content">
             <span class="close-btn" id="closeReviewingStructureBtn">&times;</span>
             <h2 class="serif">Reviewing Structure</h2>
-            <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
-                Structured review content placeholder...
+            
+            <!-- Step 1: Category Selection -->
+            <div id="reviewStep1" class="review-step">
+                <p class="step-instruction">Select the categories you wish to evaluate (Select 1-8):</p>
+                <div class="category-selection-grid">
+                    <div class="category-chip" data-cat="Writing">Writing</div>
+                    <div class="category-chip" data-cat="Directing">Directing</div>
+                    <div class="category-chip" data-cat="Acting">Acting</div>
+                    <div class="category-chip" data-cat="Visual Craft">Visual Craft</div>
+                    <div class="category-chip" data-cat="Flow">Flow</div>
+                    <div class="category-chip" data-cat="Emotion">Emotion</div>
+                    <div class="category-chip" data-cat="Originality">Originality</div>
+                    <div class="category-chip" data-cat="Genre Fit">Genre Fit</div>
+                </div>
+                <div class="step-actions">
+                    <button id="goToStep2Btn" class="btn-primary" style="display: none; width: 100%;">Next Step: Writing</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Writing Placeholder -->
+            <div id="reviewStep2" class="review-step" style="display: none;">
+                <h3 class="serif" style="margin-bottom: 0.5rem;">Step 2: Writing</h3>
+                <p class="step-instruction">Evaluate the quality of the narrative, character arcs, and dialogue.</p>
+                <div style="height: 150px; border: 1px dashed var(--border-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                    [Writing Section UI Pending]
+                </div>
+                <div class="step-actions" style="justify-content: space-between;">
+                    <button id="backToStep1Btn" class="btn-secondary">Back</button>
+                    <button class="btn-primary" disabled>Next Step</button>
+                </div>
             </div>
         </div>
     </div>
@@ -240,6 +268,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=53"></script>
+    <script src="app.js?v=54"></script>
 </body>
 </html>
