@@ -1369,6 +1369,10 @@ input:focus, select:focus, textarea:focus {
     transform: scale(1.1);
 }
 
+.admin-mobile-btn {
+    display: none !important;
+}
+
 .ranking-row .delete-btn {
     position: relative;
     top: auto;
@@ -1589,6 +1593,12 @@ body.read-only-mode #clearReviewBtn {
         width: 100%;
         justify-content: space-between;
         gap: 0.5rem;
+    }
+
+    .admin-mobile-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 
     .header-right .search-container {

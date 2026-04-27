@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return headers;
     };
 
-    const loginAdminBtn = document.getElementById('loginAdminBtn');
-    const logoutAdminBtn = document.getElementById('logoutAdminBtn');
+    const loginAdminBtns = [document.getElementById('loginAdminBtn'), document.getElementById('mobileLoginBtn')];
+    const logoutAdminBtns = [document.getElementById('logoutAdminBtn'), document.getElementById('mobileLogoutBtn')];
 
     // Make updateAuthUI safely globally accessible so it can run before and after media loads
     window.updateAuthUI = () => {
@@ -28,76 +28,74 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('reviewInputBox').readOnly = false;
             document.getElementById('reviewInputBox').placeholder = 'Type your review here...';
             
-            if (loginAdminBtn && logoutAdminBtn) {
-                if (!isReadOnly) {
-                    // Localhost, no need for auth buttons
-                    loginAdminBtn.style.display = 'none';
-                    logoutAdminBtn.style.display = 'none';
-                } else {
-                    // Logged in live
-                    loginAdminBtn.style.display = 'none';
-                    logoutAdminBtn.style.display = 'block';
-                }
+            if (!isReadOnly) {
+                // Localhost, no need for auth buttons
+                loginAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
+                logoutAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
+            } else {
+                // Logged in live
+                loginAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
+                logoutAdminBtns.forEach(btn => { if(btn) btn.style.display = 'block'; });
             }
         } else {
             document.body.classList.add('read-only-mode');
             document.getElementById('reviewInputBox').readOnly = true;
             document.getElementById('reviewInputBox').placeholder = 'There is no review setup for this entry.';
             
-            if (loginAdminBtn && logoutAdminBtn) {
-                logoutAdminBtn.style.display = 'none';
-                loginAdminBtn.style.display = 'block';
-            }
+            logoutAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
+            loginAdminBtns.forEach(btn => { if(btn) btn.style.display = 'block'; });
         }
     };
 
-    if (loginAdminBtn && logoutAdminBtn) {
-        const loginModal = document.getElementById('loginModal');
-        const adminPasswordInput = document.getElementById('adminPasswordInput');
-        const submitLoginBtn = document.getElementById('submitLoginBtn');
-        const closeLoginModalBtn = document.getElementById('closeLoginModalBtn');
+    const loginModal = document.getElementById('loginModal');
+    const adminPasswordInput = document.getElementById('adminPasswordInput');
+    const submitLoginBtn = document.getElementById('submitLoginBtn');
+    const closeLoginModalBtn = document.getElementById('closeLoginModalBtn');
 
-        const closeLogin = () => {
-            if(loginModal) loginModal.classList.remove('show');
-            if(adminPasswordInput) adminPasswordInput.value = '';
-        };
+    const closeLogin = () => {
+        if(loginModal) loginModal.classList.remove('show');
+        if(adminPasswordInput) adminPasswordInput.value = '';
+    };
 
-        logoutAdminBtn.onclick = () => {
+    logoutAdminBtns.forEach(btn => {
+        if(btn) btn.onclick = () => {
             window.runtimeAdminKey = null;
             isAdminUnlocked = false;
             window.updateAuthUI();
             if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
         };
+    });
 
-        loginAdminBtn.onclick = () => {
+    loginAdminBtns.forEach(btn => {
+        if(btn) btn.onclick = () => {
             if(loginModal) {
                 loginModal.classList.add('show');
                 if(adminPasswordInput) adminPasswordInput.focus();
             }
         };
+    });
 
-        if(closeLoginModalBtn) closeLoginModalBtn.onclick = closeLogin;
+    if(closeLoginModalBtn) closeLoginModalBtn.onclick = closeLogin;
 
-        if(submitLoginBtn) {
-            submitLoginBtn.onclick = () => {
-                const pwd = adminPasswordInput.value;
-                if (pwd === "Dn1h7M55!") {
-                    window.runtimeAdminKey = pwd;
-                    isAdminUnlocked = true;
-                    window.updateAuthUI();
-                    if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
-                    closeLogin();
-                } else {
-                    alert("Incorrect Developer Key. Viewing access only.");
-                }
-            };
-        }
-        
-        // Add native dismiss
-        window.addEventListener('click', (e) => {
-            if (e.target == loginModal) closeLogin();
-        });
+    if(submitLoginBtn) {
+        submitLoginBtn.onclick = () => {
+            const pwd = adminPasswordInput.value;
+            if (pwd === "Dn1h7M55!") {
+                window.runtimeAdminKey = pwd;
+                isAdminUnlocked = true;
+                window.updateAuthUI();
+                if (typeof window.triggerMediaRefresh === "function") window.triggerMediaRefresh();
+                closeLogin();
+            } else {
+                alert("Incorrect Developer Key. Viewing access only.");
+            }
+        };
     }
+    
+    // Add native dismiss
+    window.addEventListener('click', (e) => {
+        if (e.target == loginModal) closeLogin();
+    });
 
     // Run initial boot visually
     window.updateAuthUI();

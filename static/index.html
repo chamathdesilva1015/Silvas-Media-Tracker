@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=45">
+    <link rel="stylesheet" href="style.css?v=46">
 </head>
 <body class="read-only-mode">
     <div class="mesh-bg">
@@ -65,6 +65,10 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <!-- Admin Login (Mobile Friendly) -->
+                    <button id="mobileLoginBtn" class="icon-btn admin-mobile-btn" title="Developer Login" style="font-size: 1.1rem; padding: 0 8px; opacity: 0.7;">🔒</button>
+                    <button id="mobileLogoutBtn" class="icon-btn admin-mobile-btn" title="Developer Logout" style="display: none; font-size: 1.1rem; padding: 0 8px; color: #e74c3c;">🚪</button>
+                    
                     <!-- Sort Controls -->
                     <div class="custom-dropdown" id="sortDropdown">
                         <div class="dropdown-header"><span>Sort by...</span></div>
@@ -214,6 +218,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=49"></script>
+    <script src="app.js?v=51"></script>
 </body>
 </html>
