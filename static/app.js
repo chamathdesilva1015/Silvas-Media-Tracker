@@ -1200,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="rating-item">
                             <div class="rating-header-click">
                                 <div class="rating-score-label">
-                                    <span class="score-num">${num}/10</span>
+                                    <span class="score-num">${num}</span>
                                     <span class="score-title">${titles[num]}</span>
                                 </div>
                                 <span class="chevron-icon">▼</span>
