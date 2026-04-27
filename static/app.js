@@ -1171,7 +1171,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoSubtitles = {
         'Rating Scale': 'A standardized 1-10 numerical reference guide. Intermediate scores (e.g., 7.5 or 3.5) represent a qualitative hybrid, indicating the entry straddles the transition between two tiers. Click a tier to expand.',
         'Criteria Breakdown': 'This methodology isolates 8 core dimensions of craft to ensure structural consistency and reduce evaluation overlap. By separating technical cause from emotional effect, we maintain a measurable scoring framework. Click a category to view metrics.',
-        'Ranking Rules': 'The logic behind my personal Top 20 list. This section explains the relationship between Favorites and Scores, as well as the rules governing rank stability and fluidity.'
+        'Ranking Rules': 'The logic behind my personal Top 20 list. This section explains the relationship between Favorites and Scores, as well as the rules governing rank stability and fluidity.',
+        'Bias & Effects': 'A transparent look at the psychological and subjective factors that can distort objective evaluation. This identifies common leanings to minimize their impact on final scoring.'
     };
 
     const infoData = {
@@ -1274,7 +1275,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('')}
             </div>
         `,
-        'Context & Bias': '<p>An honest look at personal preferences, genre leanings, and the specific perspective from which these reviews are written.</p>'
+        'Bias & Effects': `
+            <div class="rating-accordion criteria-accordion">
+                ${[
+                    {title: 'Genre Preference Bias', text: 'Strong leanings toward Drama, Sci-Fi, and Thrillers can cause score inflation. We mitigate this by evaluating a film\'s success within its own genre constraints first.'},
+                    {title: 'Theme Presence Bias', text: 'Philosophical and psychological themes are often rated more favorably than conventional plots. Execution quality is prioritized over the "importance" of the subject matter.'},
+                    {title: 'Personnel Bias (Actor/Director)', text: 'Familiarity with specific talent can subconsciously shift perception. Performance and vision are judged independently of the individual\'s reputation or past catalog.'},
+                    {title: 'Expectation & Hype Bias', text: 'Hype can lead to "disappointment inflation" for strong films, while low expectations can lead to overvaluing mediocre ones. Scoring is based on execution, not anticipation.'},
+                    {title: 'Familiarity & Trope Bias', text: 'Recurring tropes may feel stale despite technical excellence, while novel ideas can mask poor execution. Originality is measured by the application of ideas, not just their novelty.'},
+                    {title: 'Recency Anchor Bias', text: 'Freshly watched media often feels more impactful. Older entries are flagged for re-review if the score feels "deflated" by time, ensuring rankings remain historically accurate.'},
+                    {title: 'Series Independence Bias', text: 'Sequels and franchises are first evaluated as standalone works. Success is measured by the current entry\'s effort, rather than relying on legacy brand momentum.'},
+                    {title: 'Production Scale Bias', text: 'High-budget films are held to higher technical standards, while indie projects are evaluated relative to their constraints. Effort is context, but execution remains the final metric.'}
+                ].map(item => `
+                    <div class="rating-item">
+                        <div class="rating-header-click">
+                            <div class="rating-score-label">
+                                <span class="score-title" style="padding-left: 0.5rem;">${item.title}</span>
+                            </div>
+                            <span class="chevron-icon">▼</span>
+                        </div>
+                        <div class="rating-content-pane">
+                            <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
+                                ${item.text}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `
     };
 
     if (iIntro && iDetail) {
