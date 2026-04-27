@@ -196,6 +196,28 @@
         </div>
     </div>
 
+    <!-- Confirm Review Prompt Modal -->
+    <div id="confirmReviewModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h2 class="serif" style="margin-bottom: 1rem;">Review this entry?</h2>
+            <div class="form-actions" style="display: flex; gap: 10px;">
+                <button id="noReviewBtn" class="btn-secondary" style="flex: 1;">No</button>
+                <button id="yesReviewBtn" class="btn-primary" style="flex: 1;">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviewing Structure Modal (Blank for now) -->
+    <div id="reviewingStructureModal" class="modal">
+        <div class="modal-content review-modal-content">
+            <span class="close-btn" id="closeReviewingStructureBtn">&times;</span>
+            <h2 class="serif">Reviewing Structure</h2>
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                Structured review content placeholder...
+            </div>
+        </div>
+    </div>
+
     <!-- Custom JS -->
     <nav class="bottom-nav" id="bottomNav">
         <a href="#" class="nav-link active" data-filter="Movies">
@@ -218,6 +240,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=51"></script>
+    <script src="app.js?v=52"></script>
 </body>
 </html>

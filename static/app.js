@@ -463,11 +463,43 @@ document.addEventListener('DOMContentLoaded', () => {
         currentReviewContext = null;
     };
 
+    const confirmReviewModal = document.getElementById('confirmReviewModal');
+    const noReviewBtn = document.getElementById('noReviewBtn');
+    const yesReviewBtn = document.getElementById('yesReviewBtn');
+    
+    const reviewingStructureModal = document.getElementById('reviewingStructureModal');
+    const closeReviewingStructureBtn = document.getElementById('closeReviewingStructureBtn');
+    
+    let pendingReviewData = null;
+
     closeReviewModalBtn.addEventListener('click', closeReviewModal);
+
+    noReviewBtn.addEventListener('click', () => {
+        confirmReviewModal.classList.remove('show');
+        pendingReviewData = null;
+    });
+
+    yesReviewBtn.addEventListener('click', () => {
+        confirmReviewModal.classList.remove('show');
+        reviewingStructureModal.classList.add('show');
+    });
+
+    closeReviewingStructureBtn.addEventListener('click', () => {
+        reviewingStructureModal.classList.remove('show');
+        pendingReviewData = null;
+    });
 
     window.addEventListener('click', (e) => {
         if (e.target === reviewModal && reviewModal.classList.contains('show')) {
             closeReviewModal();
+        }
+        if (e.target === confirmReviewModal) {
+            confirmReviewModal.classList.remove('show');
+            pendingReviewData = null;
+        }
+        if (e.target === reviewingStructureModal) {
+            reviewingStructureModal.classList.remove('show');
+            pendingReviewData = null;
         }
     });
 
@@ -481,12 +513,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Globally accessible for dynamically generated onclick handlers
     window.openReviewModal = (title, type, existingReview) => {
-        document.getElementById('reviewTitleDisplay').innerHTML = `Reviewing: <strong>${title}</strong>`;
-        const reviewText = isRealReview(existingReview) ? existingReview : '';
-        document.getElementById('reviewInputBox').value = reviewText;
+        const hasReview = isRealReview(existingReview);
         
-        currentReviewContext = { title: title, type: type };
-        reviewModal.classList.add('show');
+        if (hasReview) {
+            document.getElementById('reviewTitleDisplay').innerHTML = `Reviewing: <strong>${title}</strong>`;
+            const reviewText = existingReview;
+            document.getElementById('reviewInputBox').value = reviewText;
+            currentReviewContext = { title: title, type: type };
+            reviewModal.classList.add('show');
+        } else if (computeCanEdit()) {
+            // New Workflow for Admin: Confirm Reviewing
+            pendingReviewData = { title, type };
+            confirmReviewModal.classList.add('show');
+        }
+        // Guest + No Review = do nothing
     };
 
     const submitReview = async (reviewText) => {
