@@ -2102,18 +2102,62 @@ body.read-only-mode #clearReviewBtn {
 .rating-item:last-child .score-num { border-color: #e74c3c; color: #e74c3c; } /* 1 */
 
 @media (max-width: 800px) {
+    .info-main-title {
+        font-size: 1.3rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .info-subtitle {
+        font-size: 0.8rem !important;
+        margin-bottom: 1.2rem !important;
+    }
+
+    .info-btn {
+        padding: 1rem !important;
+    }
+
+    .info-btn-text {
+        font-size: 0.85rem !important;
+    }
+
+    .rating-item {
+        border-radius: 12px;
+        margin-bottom: 8px;
+    }
+
     .rating-header-click {
-        padding: 1.2rem 1rem;
+        padding: 0.8rem 0.6rem !important;
     }
     
     .score-num {
-        width: 50px;
-        height: 50px;
-        font-size: 1.1rem;
-        border-radius: 12px;
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 0.95rem !important;
+        border-radius: 8px !important;
+        min-width: 38px !important;
+        gap: 0;
     }
     
     .score-title {
-        font-size: 1rem;
+        font-size: 0.85rem !important;
+    }
+
+    .rating-item.open .rating-content-pane {
+        padding: 0 0.8rem 1.2rem 0.8rem !important;
+    }
+
+    .rating-detail-list {
+        padding: 0.8rem !important;
+        border-radius: 10px !important;
+    }
+
+    .rating-detail-list li {
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0 !important;
+    }
+
+    .chevron-icon {
+        padding: 0.3rem !important;
+        font-size: 0.6rem !important;
     }
 }
