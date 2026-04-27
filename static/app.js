@@ -547,8 +547,8 @@ document.addEventListener('DOMContentLoaded', () => {
             poor: "The story is confusing or inconsistent; events feel random; dialogue is awkward or unnatural; themes are shallow or overly obvious."
         },
         "Directing": {
-            def: "How the film is controlled and brought together—choices in tone, staging, and how scenes are presented.",
-            well: "Everything feels intentional; scenes are easy to follow; tone stays consistent; all parts of the film work together.",
+            def: "How the work is controlled and brought together—choices in tone, staging, and how scenes are presented.",
+            well: "Everything feels intentional; scenes are easy to follow; tone stays consistent; all parts of the work come together.",
             poor: "Feels messy or unfocused; scenes are unclear; tone shifts unintentionally; elements feel disconnected."
         },
         "Acting": {
@@ -557,27 +557,27 @@ document.addEventListener('DOMContentLoaded', () => {
             poor: "Acting feels stiff, exaggerated, or fake; emotions don’t land; characters feel flat or inconsistent."
         },
         "Visual Craft": {
-            def: "How the film looks—camera work, lighting, sets, and overall visual quality.",
+            def: "How the work looks—camera work, lighting, sets, and overall visual quality.",
             well: "Shots are clear and well-composed; lighting and design support the mood; visuals feel polished and intentional.",
             poor: "Shots are confusing or dull; visuals distract or feel cheap; noticeable visual mistakes break immersion."
         },
         "Flow": {
-            def: "How the film moves over time—pacing, editing, and sound working together.",
+            def: "How the story moves over time—pacing, editing, and sound working together.",
             well: "Scenes transition smoothly; pacing feels right; sound and cuts support tension and clarity.",
             poor: "Feels choppy, rushed, or too slow; cuts are confusing; sound or timing disrupts the experience."
         },
         "Emotion": {
-            def: "How strongly the film makes the viewer feel something.",
+            def: "How strongly the work makes the viewer feel something.",
             well: "Creates clear, meaningful emotional reactions that last beyond the scene.",
             poor: "Feels empty, forced, or forgettable; emotional moments don’t land."
         },
         "Originality": {
-            def: "How new or distinct the film feels in its ideas or execution.",
-            well: "Offers a fresh perspective or unique style; stands out from similar films.",
+            def: "How new or distinct the work feels in its ideas or execution.",
+            well: "Offers a fresh perspective or unique style; stands out from similar works.",
             poor: "Feels generic, predictable, or heavily copied from other works."
         },
         "Genre Fit": {
-            def: "How well the film delivers on what its genre is supposed to do.",
+            def: "How well the entry delivers on what its genre is supposed to do.",
             well: "Meets expectations (e.g., horror is tense, comedy is funny) while still feeling complete.",
             poor: "Fails to deliver the core experience the genre promises."
         }
@@ -1183,186 +1183,6 @@ document.addEventListener('DOMContentLoaded', () => {
         check(); // run immediately on load
     }
 
-    const getCategoryTerms = (cat) => {
-        const map = {
-            'Movies': { single: 'movie', plural: 'movies', medium: 'film' },
-            'TV Series': { single: 'show', plural: 'shows', medium: 'series' },
-            'Manga': { single: 'manga', plural: 'manga', medium: 'manga' },
-            'Anime': { single: 'anime', plural: 'anime', medium: 'anime' }
-        };
-        return map[cat] || map['Movies'];
-    };
-
-    const getDynamicText = (text, category) => {
-        const terms = getCategoryTerms(category);
-        return text
-            .replace(/movies/g, terms.plural)
-            .replace(/Movies/g, terms.plural.charAt(0).toUpperCase() + terms.plural.slice(1))
-            .replace(/movie/g, terms.single)
-            .replace(/Movie/g, terms.single.charAt(0).toUpperCase() + terms.single.slice(1))
-            .replace(/films/g, terms.plural)
-            .replace(/Films/g, terms.plural.charAt(0).toUpperCase() + terms.plural.slice(1))
-            .replace(/film/g, terms.medium)
-            .replace(/Film/g, terms.medium.charAt(0).toUpperCase() + terms.medium.slice(1));
-    };
-
-    const getInfoData = (category) => {
-        const terms = getCategoryTerms(category);
-        const isManga = category === 'Manga';
-
-        const criteria = isManga ? [
-            {title: 'Writing', text: 'Covers the core narrative: story, structure, dialogue, and themes. Evaluates plot logic, pacing, and meaningful character development. Strong writing is intentional and avoids convenient coincidences.'},
-            {title: 'Art/Illustration', text: 'Covers the technical quality of the drawings: linework, detail, backgrounds, and shading. Good art creates an immersive atmosphere that supports the narrative tone.'},
-            {title: 'Character Design', text: 'Covers the visual and personality construction of the cast. Evaluates how convincingly the designs and expressions portray their roles without breaking immersion.'},
-            {title: 'Paneling', text: 'Covers the visual layout and staging. Good paneling guides the eye seamlessly across the page, creating a controlled sense of time and impact.'},
-            {title: 'Flow & Sound', text: 'Measures the audio-visual rhythm (if applicable) or the reading pace. Strong flow feels seamless and keeps the momentum of the story consistent.'},
-            {title: 'Emotion', text: 'Measures the emotional effect on the reader. Successfully generates feelings like tension, joy, or discomfort. Strong impact stays with you; weak impact feels forced.'},
-            {title: 'Originality', text: 'Measures freshness in concept or art style. Evaluates whether the work offers something new or uniquely reinterprets existing tropes.'},
-            {title: 'Genre Fit', text: 'Measures effectiveness within its intended genre (Action should be exciting, etc.). Strong fit successfully delivers the intended experience for that specific category.'}
-        ] : [
-            {title: 'Writing', text: 'Covers the core narrative construction: story, structure, dialogue, and themes. Evaluates plot logic, scene connectivity, and meaningful development. Strong writing is intentional; weak writing relies on coincidence.'},
-            {title: 'Directing', text: 'Covers the unified vision: tone consistency, staging, and department coordination. Good directing makes the film feel controlled; weak directing feels disjointed or inconsistent.'},
-            {title: 'Acting', text: 'Covers performance and believability. Evaluates whether actors convincingly portray characters through emotion and behavior. Strong acting is grounded; weak acting breaks immersion.'},
-            {title: 'Visual Craft', text: 'Covers cinematography, lighting, production design, and costumes. Evaluates how the film is visually constructed to support tone. Strong craft is immersive; weak craft is plain or distracting.'},
-            {title: 'Flow', text: 'Combined category (Editing + Sound). Measures pacing, transitions, and audio-visual rhythm. Strong flow feels seamless; weak flow feels choppy or disrupted by poor timing.'},
-            {title: 'Emotion', text: 'Covers the emotional effect on the viewer. Successfully generates feelings like tension, joy, or discomfort. Strong impact lingers; weak impact feels forced or forgettable.'},
-            {title: 'Originality', text: 'Covers freshness in concept or style. Evaluates whether the film offers something new or reinterprets ideas. Strong originality is inventive; weak originality is formulaic.'},
-            {title: 'Genre Fit', text: 'Covers effectiveness within an intended category (Comedy should be funny, etc.). Strong fit successfully delivers the intended experience regardless of general quality.'}
-        ];
-
-        return {
-            'Rating Scale': `
-                <div class="rating-accordion">
-                    ${[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(num => {
-                        const titles = { 10: 'Peak', 9: 'Excellent', 8: 'Great', 7: 'Good', 6: 'Decent', 5: 'Average', 4: 'Weak', 3: 'Bad', 2: 'Flawed', 1: 'Awful' };
-                        const details = {
-                            10: [`My definition of "Peak" is a personal favorite ${terms.single}.`, 'Deep emotional and lasting impact.', 'Personally significant or defining experience.', 'Infinite rewatch value.', 'Absolute must-watch.', 'Would Never Forget.', `Definitely have re-watched/read this ${terms.single} over 3 times.`],
-                            9: [`Outstanding in almost all aspects of the ${terms.medium}.`, 'Strong emotional and intellectual impact.', 'Highly memorable.', `Would re-watch/read freely with no specific reason.`, 'Must-watch recommendation.', 'Hard to forget; vivid long-term recall.', `Definitely have re-watched/read this ${terms.single} over 3 times.`],
-                            8: [`Strong performance across most ${terms.medium} categories.`, 'Memorable and engaging experience.', 'Strong positive reaction.', `Would re-watch/read at almost any time.`, 'Highly recommended.', 'Easy to recall key moments in detail.', `Definitely have re-watched/read this ${terms.single} over 3 times.`],
-                            7: ['The true middle-ground option.', 'Positive emotional response throughout.', `Would re-watch/read occasionally.`, 'Recommended.', 'Scenes or ideas stay with you over time.', `Very Likely have re-watched/read this ${terms.single}.`],
-                            6: ['Noticeably better than average but inconsistent.', 'Some enjoyable or interesting parts.', 'Positive but restrained reaction.', `Would re-watch/read only for specific reasons.`, 'Mildly recommended.', 'Retains clear moments, but not strongly anchored.', `Likely have re-watched/read this ${terms.single}.`],
-                            5: ['Neither good nor bad in a meaningful way.', 'Neutral emotional response.', `Forgettable but not painful to finish.`, 'No desire to re-watch/read.', 'Not particularly recommended.', 'Quickly fades afterward.'],
-                            4: ['Tried to work but largely failed in execution.', 'Some effort or moments show potential.', 'Mixed reaction leaning negative.', `Unlikely to re-watch/read.`, 'Generally not recommended.', 'Remembered in parts, but not as a coherent whole.'],
-                            3: [`Poor overall, but with tolerable moments.`, 'Negative experience overall.', 'Barely worth finishing.', `Would not re-watch/read.`, 'Not recommended.', 'Fades quickly, only fragments remain.'],
-                            2: ['Significantly flawed with almost no structure.', 'Dislike outweighs any minor positives.', 'Glad it’s over.', `Would not re-watch/read.`, 'Not recommended.', 'Easily forgettable.'],
-                            1: [`High chance this was not finished due to unwatchability.`, 'Awful execution across most areas.', 'No enjoyment or value gained.', 'Strong negative reaction.', 'Not recommended under any circumstance.', 'Would forget if given the choice.']
-                        };
-
-                        return \`
-                            <div class="rating-item">
-                                <div class="rating-header-click">
-                                    <div class="rating-score-label">
-                                        <span class="score-num">\${num}</span>
-                                        <span class="score-title">\${titles[num]}</span>
-                                    </div>
-                                    <span class="chevron-icon">▼</span>
-                                </div>
-                                <div class="rating-content-pane">
-                                    <ul class="rating-detail-list">
-                                        \${details[num].map(d => \`<li>\${d}</li>\`).join('')}
-                                    </ul>
-                                </div>
-                            </div>
-                        \`;
-                    }).join('')}
-                </div>
-            `,
-            'Criteria Breakdown': `
-                <div class="rating-accordion criteria-accordion">
-                    \${criteria.map(cat => \`
-                        <div class="rating-item">
-                            <div class="rating-header-click">
-                                <div class="rating-score-label">
-                                    <span class="score-title" style="padding-left: 0.5rem;">\${cat.title}</span>
-                                </div>
-                                <span class="chevron-icon">▼</span>
-                            </div>
-                            <div class="rating-content-pane">
-                                <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
-                                    \${getDynamicText(cat.text, category)}
-                                </div>
-                            </div>
-                        </div>
-                    \`).join('')}
-                </div>
-            `,
-            'Ranking Rules': `
-                <div class="rating-accordion criteria-accordion">
-                    \${[
-                        {title: 'Subjective Favorite Bias', text: \`Unlike the global list, the Rankings tab is **explicitly biased**. It represents my personal "Favorites" rather than just technically superior \${terms.plural}. Emotional resonance and personal impact are the primary drivers here.\`},
-                        {title: 'Score Independence', text: \`An entry does **not** need a high numerical score (like 10/10) to enter the Top 20. A technically "flawed" 7/10 that I personally love can rank higher than an "excellent" 9/10.\`},
-                        {title: 'Rank Stability (Anchoring)', text: \`The list is fluid, but stability is tied to position. The higher an entry sits (especially the Top 5), the less likely it is to move. Lower positions (15-20) are more volatile and prone to being swapped out.\`},
-                        {title: 'Active Fluidity', text: \`This list is not static. As I watch/read more \${terms.medium}, entries will be added, shifted, and deleted. The Rankings tab is a living document reflecting my absolute best-of-the-best at any given moment.\`}
-                    ].map(item => \`
-                        <div class="rating-item">
-                            <div class="rating-header-click">
-                                <div class="rating-score-label">
-                                    <span class="score-title" style="padding-left: 0.5rem;">\${item.title}</span>
-                                </div>
-                                <span class="chevron-icon">▼</span>
-                            </div>
-                            <div class="rating-content-pane">
-                                <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
-                                    \${item.text}
-                                </div>
-                            </div>
-                        </div>
-                    \`).join('')}
-                </div>
-            `,
-            'Bias & Effects': `
-                <div class="rating-accordion criteria-accordion">
-                    \${[
-                        {
-                            title: 'Preference Bias & Favoritism', 
-                            text: \`I have a naturally high interest in grounded dramas, high-concept sci-fi, and psychological thrillers. I also tend to give more weight to philosophical or socially relevant themes.<br><br>
-                                   <strong>The Result:</strong> This creates a "lower barrier to entry" where a drama might score an 8 simply because it's engaging with my favorite topics, while a comedy that's technically just as good might feel less "important."<br><br>
-                                   <strong>What to understand:</strong> My "Average" for a preferred genre can still rank higher than a "Good" for a genre I'm less connected to. It's a measurement of personal resonance as much as craft.\`
-                        },
-                        {
-                            title: 'Expectation Bias & Anticipation', 
-                            text: \`I'm often already biased toward creators or talent I've liked in the past, and my expectations are heavily tied to marketing and general reputation.<br><br>
-                                   <strong>The Result:</strong> I walk into these \${terms.plural} *wanting* them to be great. If there's a big gap between what I expected and what I got, the score is driven by that disappointment. Conversely, a hidden gem I expected to be bad might get an "inflation" bump because I was pleasantly surprised.<br><br>
-                                   <strong>What to understand:</strong> These scores are a measurement of my personal surprise or letdown relative to the talent involved and the hype surrounding the release.\`
-                        },
-                        {
-                            title: 'Recency Bias & Drift', 
-                            text: \`Newer \${terms.plural} are fresher in my head; the music, the visuals, and the emotions are all high clarity. Older entries suffer from "memory decay" where I might only remember the biggest flaws or broadest strokes.<br><br>
-                                   <strong>The Result:</strong> Without active re-reviews, my rankings will naturally drift toward recent experiences. Older ratings can start to feel deflated or disconnected over time.<br><br>
-                                   <strong>What to understand:</strong> A 10-year-old 8/10 was likely just as impactful at the time as a 9/10 released today. If you see an old rating that looks way off, message me and I'll re-evaluate it.\`
-                        },
-                        {
-                            title: 'Legacy Bias & Momentum', 
-                            text: \`I find it hard to judge sequels in a vacuum. My emotional connection to an entire franchise often fills in the narrative gaps for a weaker individual entry.<br><br>
-                                   <strong>The Result:</strong> A sequel can be "carried" by the momentum of a series I love, or unfairly punished for just not being as legendary as its predecessor.<br><br>
-                                   <strong>What to understand:</strong> My ratings often reflect the weight of the entire franchise journey, rather than just the isolated effort of that one entry.\`
-                        },
-                        {
-                            title: 'Scale Bias & Efficiency', 
-                            text: \`I pay close attention to how a project uses its resources. I hold high-budget studio \${terms.plural} to a much higher technical standard and I definitely notice when that money produces uninspired "slop."<br><br>
-                                   <strong>The Result:</strong> I give a lot of credit to low-budget projects that perform well despite their limits. An indie "7" often feels more impressive to me than a massive studio "7."<br><br>
-                                   <strong>What to understand:</strong> This is an evaluation of resource efficiency. A high-budget failure feels like a larger loss, while a low-budget success is seen as a triumph of passion.\`
-                        }
-                    ].map(item => \`
-                        <div class="rating-item">
-                            <div class="rating-header-click">
-                                <div class="rating-score-label">
-                                    <span class="score-title" style="padding-left: 0.5rem;">\${item.title}</span>
-                                </div>
-                                <span class="chevron-icon">▼</span>
-                            </div>
-                            <div class="rating-content-pane">
-                                <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
-                                    \${item.text}
-                                </div>
-                            </div>
-                        </div>
-                    \`).join('')}
-                </div>
-            `
-        };
-    };
-
     // --- Info Hub Navigation Logic ---
     const iIntro = document.getElementById('infoIntro');
     const iDetail = document.getElementById('infoDetail');
@@ -1378,29 +1198,185 @@ document.addEventListener('DOMContentLoaded', () => {
         'Bias & Effects': 'These are my own personal biases and the common "shortcuts" my brain uses when I review media. I’m not trying to fix these—they’re just here to help you understand the perspective behind my scores and why I value certain things more than others.'
     };
 
+    const infoData = {
+        'Rating Scale': `
+            <div class="rating-accordion">
+                ${[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(num => {
+                    const titles = {
+                        10: 'Peak',
+                        9: 'Excellent',
+                        8: 'Great',
+                        7: 'Good',
+                        6: 'Decent',
+                        5: 'Average',
+                        4: 'Weak',
+                        3: 'Bad',
+                        2: 'Flawed',
+                        1: 'Awful'
+                    };
+                    const details = {
+                        10: ['My definition of "Peak" is a personal favorite.', 'Deep emotional and lasting impact.', 'Personally significant or defining experience.', 'Infinite rewatch value.', 'Absolute must-watch.', 'Would Never Forget.', 'Definitely have revisited this entry over 3 times.'],
+                        9: ['Outstanding in almost all aspects.', 'Strong emotional and intellectual impact.', 'Highly memorable.', 'Would revisit freely with no specific reason.', 'Must-watch recommendation.', 'Hard to forget; vivid long-term recall.', 'Definitely have revisited this entry over 3 times.'],
+                        8: ['Strong performance across most categories.', 'Memorable and engaging experience.', 'Strong positive reaction.', 'Would revisit at almost any time.', 'Highly recommended.', 'Easy to recall key moments in detail.', 'Definitely have revisited this entry over 3 times.'],
+                        7: ['The true middle-ground option.', 'Positive emotional response throughout.', 'Would revisit occasionally.', 'Recommended.', 'Scenes or ideas stay with you over time.', 'Very Likely have revisited this entry.'],
+                        6: ['Noticeably better than average but inconsistent.', 'Some enjoyable or interesting parts.', 'Positive but restrained reaction.', 'Would revisit only for specific reasons.', 'Mildly recommended.', 'Retains clear moments, but not strongly anchored.', 'Likely have revisited this entry.'],
+                        5: ['Neither good nor bad in a meaningful way.', 'Neutral emotional response.', 'Forgettable but not painful to watch.', 'No desire to rewatch.', 'Not particularly recommended.', 'Quickly fades afterward.'],
+                        4: ['Tried to work but largely failed in execution.', 'Some effort or moments show potential.', 'Mixed reaction leaning negative.', 'Unlikely to rewatch.', 'Generally not recommended.', 'Remembered in parts, but not as a coherent whole.'],
+                        3: ['Poor overall, but with tolerable moments.', 'Negative experience overall.', 'Barely worth finishing.', 'Would not rewatch.', 'Not recommended.', 'Fades quickly, only fragments remain.'],
+                        2: ['Significantly flawed with almost no structure.', 'Dislike outweighs any minor positives.', 'Glad it’s over.', 'Would not rewatch.', 'Not recommended.', 'Easily forgettable.'],
+                        1: ['High chance this was not finished due to unwatchability.', 'Awful execution across most areas.', 'No enjoyment or value gained.', 'Strong negative reaction.', 'Not recommended under any circumstance.', 'Would forget if given the choice.']
+                    };
+
+                    return `
+                        <div class="rating-item">
+                            <div class="rating-header-click">
+                                <div class="rating-score-label">
+                                    <span class="score-num">${num}</span>
+                                    <span class="score-title">${titles[num]}</span>
+                                </div>
+                                <span class="chevron-icon">▼</span>
+                            </div>
+                            <div class="rating-content-pane">
+                                <ul class="rating-detail-list">
+                                    ${details[num].map(d => `<li>${d}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `,
+        'Criteria Breakdown': `
+            <div class="rating-accordion criteria-accordion">
+                ${[
+                    {title: 'Writing', text: 'Covers the core narrative construction: story, structure, dialogue, and themes. Evaluates plot logic, scene connectivity, and meaningful development. Strong writing is intentional; weak writing relies on coincidence.'},
+                    {title: 'Directing', text: 'Covers the unified vision: tone consistency, staging, and department coordination. Good directing makes the work feel controlled; weak directing feels disjointed or inconsistent.'},
+                    {title: 'Acting', text: 'Covers performance and believability. Evaluates whether actors convincingly portray characters through emotion and behavior. Strong acting is grounded; weak acting breaks immersion.'},
+                    {title: 'Visual Craft', text: 'Covers cinematography, lighting, production design, and costumes. Evaluates how the piece is visually constructed to support tone. Strong craft is immersive; weak craft is plain or distracting.'},
+                    {title: 'Flow', text: 'Combined category (Editing + Sound). Measures pacing, transitions, and audio-visual rhythm. Strong flow feels seamless; weak flow feels choppy or disrupted by poor timing.'},
+                    {title: 'Emotion', text: 'Covers the emotional effect on the viewer. Successfully generates feelings like tension, joy, or discomfort. Strong impact lingers; weak impact feels forced or forgettable.'},
+                    {title: 'Originality', text: 'Covers freshness in concept or style. Evaluates whether the work offers something new or reinterprets ideas. Strong originality is inventive; weak originality is formulaic.'},
+                    {title: 'Genre Fit', text: 'Covers effectiveness within an intended category (Comedy should be funny, etc.). Strong fit successfully delivers the intended experience regardless of general quality.'}
+                ].map(cat => `
+                    <div class="rating-item">
+                        <div class="rating-header-click">
+                            <div class="rating-score-label">
+                                <span class="score-title" style="padding-left: 0.5rem;">${cat.title}</span>
+                            </div>
+                            <span class="chevron-icon">▼</span>
+                        </div>
+                        <div class="rating-content-pane">
+                            <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
+                                ${cat.text}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `,
+        'Ranking Rules': `
+            <div class="rating-accordion criteria-accordion">
+                ${[
+                    {title: 'Subjective Favorite Bias', text: 'Unlike the global list, the Rankings tab is **explicitly biased**. It represents my personal "Favorites" rather than just technically superior works. Emotional resonance and personal impact are the primary drivers here.'},
+                    {title: 'Score Independence', text: 'An entry does **not** need a high numerical score (like 10/10) to enter the Top 20. A technically "flawed" 7/10 that I personally love can higher rank than an "excellent" 9/10.'},
+                    {title: 'Rank Stability (Anchoring)', text: 'The list is fluid, but stability is tied to position. The higher an entry sits (especially the Top 5), the less likely it is to move. Lower positions (15-20) are more volatile and prone to being swapped out.'},
+                    {title: 'Active Fluidity', text: 'This list is not static. As I watch more media, entries will be added, shifted, and deleted. The Rankings tab is a living document reflecting my absolute best-of-the-best at any given moment.'}
+                ].map(item => `
+                    <div class="rating-item">
+                        <div class="rating-header-click">
+                            <div class="rating-score-label">
+                                <span class="score-title" style="padding-left: 0.5rem;">${item.title}</span>
+                            </div>
+                            <span class="chevron-icon">▼</span>
+                        </div>
+                        <div class="rating-content-pane">
+                            <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
+                                ${item.text}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `,
+        'Bias & Effects': `
+            <div class="rating-accordion criteria-accordion">
+                ${[
+                    {
+                        title: 'Preference Bias & Favoritism', 
+                        text: `I have a naturally high interest in grounded dramas, high-concept sci-fi, and psychological thrillers. I also tend to give more weight to philosophical or socially relevant themes.<br><br>
+                               <strong>The Result:</strong> This creates a "lower barrier to entry" where a drama might score an 8 simply because it's engaging with my favorite topics, while a comedy that's technically just as good might feel less "important."<br><br>
+                               <strong>What to understand:</strong> My "Average" for a preferred genre can still rank higher than a "Good" for a genre I'm less connected to. It's a measurement of personal resonance as much as craft.`
+                    },
+                    {
+                        title: 'Theme Bias & Weighting', 
+                        text: `I am inherently drawn to philosophical, psychological, and socially relevant themes. Unlike conventional popcorn entertainment, I look for a balance between *what* a work is saying and *how* it is saying it. I evaluate thematic weight and technical execution with equal importance, ensuring that a profound message is supported by meaningful craft.`
+                    },
+                    {
+                        title: 'Expectation Bias & Anticipation', 
+                        text: `I'm often already biased toward directors, creators, or actors I've liked in the past, and my expectations are heavily tied to marketing and general reputation.<br><br>
+                               <strong>The Result:</strong> I walk into these works *wanting* them to be great. If there's a big gap between what I expected and what I got, the score is driven by that disappointment. Conversely, a hidden gem I expected to be bad might get an "inflation" bump because I was pleasantly surprised.<br><br>
+                               <strong>What to understand:</strong> These scores are a measurement of my personal surprise or letdown relative to the talent involved and the hype surrounding the release.`
+                    },
+                    {
+                        title: 'Recency Bias & Drift', 
+                        text: `Newer entries are fresher in my head; the music, the visuals, and the emotions are all high clarity. Older entries suffer from "memory decay" where I might only remember the biggest flaws or broadest strokes.<br><br>
+                               <strong>The Result:</strong> Without active re-reviews, my rankings will naturally drift toward whatever I've experienced recently. Older ratings can start to feel deflated or disconnected over time.<br><br>
+                               <strong>What to understand:</strong> A 10-year-old 8/10 was likely just as impactful at the time as a 9/10 released today. If you see an old rating that looks way off, message me and I'll re-evaluate it.`
+                    },
+                    {
+                        title: 'Legacy Bias & Momentum', 
+                        text: `I find it hard to judge sequels or continuations in a vacuum. My emotional connection to an entire franchise often fills in the narrative gaps for a weaker individual entry.<br><br>
+                               <strong>The Result:</strong> A sequel can be "carried" by the momentum of a series I love, or unfairly punished for just not being as legendary as its predecessor.<br><br>
+                               <strong>What to understand:</strong> My ratings often reflect the weight of the entire franchise journey, rather than just the isolated effort of that single entry.`
+                    },
+                    {
+                        title: 'Scale Bias & Efficiency', 
+                        text: `I pay close attention to how a production uses its resources. I hold massive-budget blockbusters to a much higher technical standard and I definitely notice when that money produces uninspired "slop."<br><br>
+                               <strong>The Result:</strong> I give a lot of credit to low-budget projects that perform well despite their limits. An indie "7" often feels more impressive to me than a massive studio "7."<br><br>
+                               <strong>What to understand:</strong> This is an evaluation of resource efficiency. A high-budget failure feels like a larger loss, while a low-budget success is seen as a triumph of passion.`
+                    }
+                ].map(item => `
+                    <div class="rating-item">
+                        <div class="rating-header-click">
+                            <div class="rating-score-label">
+                                <span class="score-title" style="padding-left: 0.5rem;">${item.title}</span>
+                            </div>
+                            <span class="chevron-icon">▼</span>
+                        </div>
+                        <div class="rating-content-pane">
+                            <div style="padding: 1rem; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">
+                                ${item.text}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `
+    };
 
     if (iIntro && iDetail) {
-        // Delegate rating item clicks for accordions
+        // Delegate rating item clicks
         iBody.addEventListener('click', (e) => {
             const header = e.target.closest('.rating-header-click');
             if (header) {
                 const item = header.closest('.rating-item');
-                iBody.querySelectorAll('.rating-item').forEach(other => {
-                    if (other !== item) other.classList.remove('expanded');
+                // Close other items for clean accordion behavior
+                document.querySelectorAll('.rating-item').forEach(other => {
+                    if (other !== item) other.classList.remove('open');
                 });
-                item.classList.toggle('expanded');
+                item.classList.toggle('open');
             }
         });
 
         document.querySelectorAll('.info-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const section = btn.getAttribute('data-section');
-                const dynamicInfoData = getInfoData(currentCategory);
                 iTitle.innerText = section;
-                iSubtitle.innerText = getDynamicText(infoSubtitles[section] || '', currentCategory);
-                iBody.innerHTML = dynamicInfoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
+                iSubtitle.innerText = infoSubtitles[section] || 'Detailed methodology and project documentation.';
+                iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
                 iIntro.style.display = 'none';
                 iDetail.style.display = 'block';
+                // Scroll to top of content
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
