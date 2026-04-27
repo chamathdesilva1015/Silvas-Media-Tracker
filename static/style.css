@@ -1610,4 +1610,104 @@ body.read-only-mode #clearReviewBtn {
     h1#pageTitle {
         font-size: 1.8rem;
     }
+
+    /* --- Phase B: Adaptive Row-Cards & Touch Interactions --- */
+    .media-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .media-card {
+        min-height: auto;
+        padding: 1.2rem;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto auto;
+        grid-template-areas: 
+            "header rating"
+            "badges rating"
+            "footer footer";
+        gap: 0.6rem;
+    }
+
+    .card-header { grid-area: header; }
+    h3.media-title { font-size: 1.25rem; }
+    
+    .card-badges { 
+        grid-area: badges; 
+        margin-bottom: 0;
+        min-height: auto;
+        flex-wrap: wrap;
+    }
+    
+    .card-spacer { display: none; }
+    
+    .media-footer {
+        grid-area: footer;
+        margin-top: 0.2rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .media-card::before { display: none; }
+
+    /* Touch-to-Reveal Score Box */
+    .media-rating-container {
+        grid-area: rating;
+        position: relative;
+        top: 0; transform: none;
+        width: 65px; height: 65px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .media-rating-container::after {
+        content: "tap";
+        position: absolute;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        transition: opacity 0.2s;
+    }
+
+    .media-rating.default-rating {
+        position: relative;
+        font-size: 1.4rem;
+        transform: none;
+        opacity: 0;
+        text-shadow: none;
+    }
+
+    .media-rating.hover-rating { display: none !important; }
+
+    /* The .revealed state triggered via JS tap */
+    .media-card.revealed .media-rating-container {
+        border-color: var(--theme-accent);
+        box-shadow: 0 0 15px var(--theme-accent-glow);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .media-card.revealed .media-rating-container::after {
+        opacity: 0;
+    }
+
+    .media-card.revealed .media-rating.default-rating {
+        opacity: 1;
+        transform: scale(1.1);
+        text-shadow: 0 0 10px var(--theme-accent-glow);
+    }
+
+    /* Disable desktop hover scaling on mobile */
+    .media-card:hover {
+        transform: none;
+        box-shadow: var(--shadow-soft);
+        background: rgba(255, 255, 255, 0.03);
+    }
 }

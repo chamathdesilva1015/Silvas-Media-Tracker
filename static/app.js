@@ -734,6 +734,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     deleteMedia(item.id, item.title);
                 };
                 card.appendChild(delBtn);
+                // Touch-to-reveal click listener for mobile interactions
+                card.addEventListener('click', () => {
+                    // Only applies visual toggle if the CSS handles it
+                    card.classList.toggle('revealed');
+                });
                 
                 grid.appendChild(card);
             }
