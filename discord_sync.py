@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from sqlmodel import Session, select
 from sqlalchemy import text
 
-from database import engine, MediaItem, SyncState, create_db_and_tables
+from database import engine, MediaItem, SyncState, RatingHistory, create_db_and_tables
 
 # ─── Environment ────────────────────────────────────────────────────────────
 
@@ -526,6 +526,19 @@ class SyncClient(discord.Client):
                     continue
                 db_item = session.get(MediaItem, item_id)
                 if db_item:
+                    # Log rating change to history before applying it
+                    if "rating" in changes:
+                        old_r = db_item.rating or ""
+                        new_r = changes["rating"]
+                        # Only log meaningful score changes (ignore blank→rank resets from sync cycle)
+                        if old_r and old_r != new_r and "/" in old_r and "/" in new_r:
+                            session.add(RatingHistory(
+                                media_item_id=db_item.id,
+                                title=db_item.title,
+                                media_type=db_item.type,
+                                old_rating=old_r,
+                                new_rating=new_r,
+                            ))
                     for field, value in changes.items():
                         setattr(db_item, field, value)
                     session.add(db_item)

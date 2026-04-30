@@ -278,9 +278,132 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const statsPage = document.getElementById('statsPage');
+
+    const renderStats = async (category) => {
+        if (!statsPage) return;
+        statsPage.innerHTML = `<div class="stats-header"><h2 class="serif">${category} — Stats</h2><p>An overview of your ${category.toLowerCase()} collection.</p></div><p style="text-align:center;opacity:0.5;">Loading...</p>`;
+
+        let data;
+        try {
+            const res = await fetch(`/api/stats/${encodeURIComponent(category)}`);
+            data = await res.json();
+        } catch (e) {
+            statsPage.innerHTML = '<p style="text-align:center;color:#e74c3c;">Failed to load stats.</p>';
+            return;
+        }
+
+        if (!data.total) {
+            statsPage.innerHTML = `<div class="stats-header"><h2 class="serif">${category} — Stats</h2></div><p style="text-align:center;opacity:0.5;">No entries found for this category.</p>`;
+            return;
+        }
+
+        // Score distribution — sorted keys from 1..10
+        const distKeys = Object.keys(data.score_distribution || {}).sort((a, b) => parseFloat(a) - parseFloat(b));
+        const distMax = distKeys.length ? Math.max(...distKeys.map(k => data.score_distribution[k])) : 1;
+        const distBars = distKeys.map(k => {
+            const count = data.score_distribution[k];
+            const pct = Math.round((count / distMax) * 100);
+            return `<div class="dist-bar-row">
+                <span class="dist-bar-label">${k}/10</span>
+                <div class="dist-bar-track"><div class="dist-bar-fill" style="width:${pct}%"></div></div>
+                <span class="dist-bar-count">${count}</span>
+            </div>`;
+        }).join('');
+
+        // Decade distribution
+        const decKeys = Object.keys(data.decade_breakdown || {}).sort();
+        const decMax = decKeys.length ? Math.max(...decKeys.map(k => data.decade_breakdown[k])) : 1;
+        const decBars = decKeys.map(k => {
+            const count = data.decade_breakdown[k];
+            const pct = Math.round((count / decMax) * 100);
+            return `<div class="dist-bar-row">
+                <span class="dist-bar-label" style="min-width:52px">${k}</span>
+                <div class="dist-bar-track"><div class="dist-bar-fill" style="width:${pct}%"></div></div>
+                <span class="dist-bar-count">${count}</span>
+            </div>`;
+        }).join('');
+
+        const reviewPct = data.total ? Math.round((data.with_reviews / data.total) * 100) : 0;
+
+        statsPage.innerHTML = `
+            <div class="stats-header">
+                <h2 class="serif">${category} — Stats</h2>
+                <p>An overview of your ${category.toLowerCase()} collection.</p>
+            </div>
+
+            <div class="stats-hero-row">
+                <div class="stat-card">
+                    <div class="stat-card-value">${data.total}</div>
+                    <div class="stat-card-label">Total Entries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">${data.avg_score ?? '—'}</div>
+                    <div class="stat-card-label">Average Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">${data.with_reviews}</div>
+                    <div class="stat-card-label">With Reviews <span style="font-size:0.6em;opacity:0.6">(${reviewPct}%)</span></div>
+                </div>
+            </div>
+
+            <div class="stats-full-row">
+                <div class="stats-dist-card">
+                    <div class="stats-dist-title">Score Distribution</div>
+                    ${distBars || '<p style="opacity:0.4;font-size:0.85rem">No scored entries yet.</p>'}
+                </div>
+                <div class="stats-dist-card">
+                    <div class="stats-dist-title">Decade Breakdown</div>
+                    ${decBars || '<p style="opacity:0.4;font-size:0.85rem">No release years on record.</p>'}
+                </div>
+            </div>
+
+            <div class="stats-featured-pair">
+                ${data.highest_rated ? `
+                <div class="stats-featured-card">
+                    <div class="stats-featured-label">🏆 Highest Rated</div>
+                    <div class="stats-featured-title">${data.highest_rated.title}</div>
+                    <span class="stats-featured-score">${data.highest_rated.score}</span>
+                </div>` : ''}
+                ${data.lowest_rated ? `
+                <div class="stats-featured-card">
+                    <div class="stats-featured-label">📉 Lowest Rated</div>
+                    <div class="stats-featured-title">${data.lowest_rated.title}</div>
+                    <span class="stats-featured-score" style="background: rgba(231,76,60,0.7)">${data.lowest_rated.score}</span>
+                </div>` : ''}
+            </div>
+
+            <div class="stats-full-row">
+                <div class="stat-card">
+                    <div class="stat-card-value">${data.in_rankings}</div>
+                    <div class="stat-card-label">In Top Rankings</div>
+                </div>
+                ${data.most_recent ? `
+                <div class="stats-recent-card">
+                    <div>
+                        <div class="stats-recent-text">🕓 Most Recently Added</div>
+                        <div class="stats-recent-title">${data.most_recent.title}</div>
+                    </div>
+                    <div class="stats-recent-date">${data.most_recent.date}</div>
+                </div>` : ''}
+            </div>`;
+    };
+
     const filterAndRenderMedia = () => {
         const infoPage = document.getElementById('infoPage');
         const controls = document.querySelector('.top-controls');
+
+        if (currentSubTab === 'Stats') {
+            grid.style.display = 'none';
+            if (infoPage) infoPage.style.display = 'none';
+            if (statsPage) statsPage.style.display = 'block';
+            if (controls) controls.style.display = 'none';
+            if (addBtn) addBtn.style.display = 'none';
+            renderStats(currentCategory);
+            return;
+        } else {
+            if (statsPage) statsPage.style.display = 'none';
+        }
 
         if (currentSubTab === 'Info') {
             grid.style.display = 'none';
@@ -773,12 +896,61 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     };
 
+    // ── Rating History Modal ──────────────────────────────────────────────────
+    const ratingHistoryModal = document.getElementById('ratingHistoryModal');
+    const closeHistoryModalBtn = document.getElementById('closeHistoryModalBtn');
+    const historyBtn = document.getElementById('reviewHistoryBtn');
+
+    if (closeHistoryModalBtn) {
+        closeHistoryModalBtn.onclick = () => ratingHistoryModal.classList.remove('show');
+    }
+    window.addEventListener('click', (e) => {
+        if (e.target === ratingHistoryModal) ratingHistoryModal.classList.remove('show');
+    });
+
+    const openRatingHistory = async (itemId, title) => {
+        document.getElementById('historyModalTitle').textContent = `History — ${title}`;
+        document.getElementById('historyModalBody').innerHTML = '<p style="text-align:center;opacity:0.5;">Loading...</p>';
+        ratingHistoryModal.classList.add('show');
+
+        try {
+            const res = await fetch(`/api/history/${itemId}`);
+            const rows = await res.json();
+            if (!rows.length) {
+                document.getElementById('historyModalBody').innerHTML = '<p class="history-empty">No rating changes on record yet.<br><span style="opacity:0.5;font-size:0.8rem">Changes are logged the next time a Discord sync runs after you update a score.</span></p>';
+            } else {
+                document.getElementById('historyModalBody').innerHTML = rows.map(r => `
+                    <div class="history-row">
+                        <span class="history-old">${r.old_rating}</span>
+                        <span class="history-arrow">→</span>
+                        <span class="history-new">${r.new_rating}</span>
+                        <span class="history-date">${r.changed_at}</span>
+                    </div>`).join('');
+            }
+        } catch (e) {
+            document.getElementById('historyModalBody').innerHTML = '<p class="history-empty" style="color:#e74c3c">Failed to load history.</p>';
+        }
+    };
+
     // Globally accessible for dynamically generated onclick handlers
-    window.openReviewModal = (title, type, existingReview) => {
+    window.openReviewModal = (title, type, existingReview, itemId) => {
         const hasReview = isRealReview(existingReview);
         
         if (hasReview) {
             document.getElementById('reviewTitleDisplay').innerHTML = `Review For: <strong>${title}</strong>`;
+
+            // History button — only show if we have a DB id
+            const existingHistBtn = document.getElementById('reviewHistoryBtn');
+            if (existingHistBtn) existingHistBtn.remove();
+            if (itemId) {
+                const hBtn = document.createElement('button');
+                hBtn.id = 'reviewHistoryBtn';
+                hBtn.className = 'history-btn';
+                hBtn.innerHTML = '📜 Rating History';
+                hBtn.onclick = () => openRatingHistory(itemId, title);
+                document.getElementById('reviewTitleDisplay').insertAdjacentElement('afterend', hBtn);
+            }
+
             const reviewText = existingReview;
             document.getElementById('reviewInputBox').value = reviewText;
             currentReviewContext = { title: title, type: type };
@@ -790,7 +962,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     reviewModalContent.style.width  = saved.w + 'px';
                     reviewModalContent.style.height = saved.h + 'px';
                 } else {
-                    // Clear any previous inline size so CSS default kicks in
                     reviewModalContent.style.width  = '';
                     reviewModalContent.style.height = '';
                 }
@@ -1034,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (canClickReview) {
                     row.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        window.openReviewModal(item.title, item.type, item.review);
+                        window.openReviewModal(item.title, item.type, item.review, item.id);
                     });
                 }
 
@@ -1132,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (canClickReview) {
                     card.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        window.openReviewModal(item.title, item.type, item.review);
+                        window.openReviewModal(item.title, item.type, item.review, item.id);
                     });
                 }
 

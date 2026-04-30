@@ -9,7 +9,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 from typing import List, Optional
 
-from database import engine, create_db_and_tables, MediaItem
+from database import engine, create_db_and_tables, MediaItem, RatingHistory
 from discord_sync import run_sync
 from enrich_data import run_enrichment
 
@@ -233,6 +233,97 @@ def delete_media(item_id: str, session: Session = Depends(get_session), _: None 
     session.commit()
     print(f"[DEBUG] SUCCESS: DELETED ITEM {actual_id} ({item.title})")
     return {"ok": True}
+
+@app.get("/api/history/{item_id}")
+def get_rating_history(item_id: int, session: Session = Depends(get_session)):
+    """Returns all rating change records for a given MediaItem ID, newest first."""
+    rows = session.exec(
+        select(RatingHistory)
+        .where(RatingHistory.media_item_id == item_id)
+        .order_by(RatingHistory.changed_at.desc())
+    ).all()
+    return [
+        {
+            "old_rating": r.old_rating,
+            "new_rating": r.new_rating,
+            "changed_at": r.changed_at.strftime("%b %d, %Y"),
+        }
+        for r in rows
+    ]
+
+@app.get("/api/stats/{category}")
+def get_category_stats(category: str, session: Session = Depends(get_session)):
+    """Returns aggregated stats for a specific media category."""
+    # Fetch all items for this category (completed + rankings)
+    items = session.exec(
+        select(MediaItem).where(MediaItem.type.ilike(category))
+    ).all()
+
+    if not items:
+        return {"total": 0}
+
+    # Helper: extract numeric score from 'X/10' or 'X.Y/10'
+    def parse_score(item):
+        score_str = item.numeric_rating or (item.rating if "/" in (item.rating or "") else None)
+        if score_str and "/10" in score_str:
+            try:
+                return float(score_str.split("/")[0].strip())
+            except ValueError:
+                return None
+        return None
+
+    scores = [s for s in (parse_score(i) for i in items) if s is not None]
+    total = len(items)
+
+    # Average score
+    avg_score = round(sum(scores) / len(scores), 1) if scores else None
+
+    # Score distribution — buckets from 1 to 10
+    dist = {}
+    for s in scores:
+        bucket = str(int(s)) if s == int(s) else str(round(s * 2) / 2)
+        dist[bucket] = dist.get(bucket, 0) + 1
+
+    # Decade breakdown
+    decades = {}
+    for item in items:
+        if item.release_year:
+            decade = f"{(item.release_year // 10) * 10}s"
+            decades[decade] = decades.get(decade, 0) + 1
+
+    # Highest and lowest rated
+    scored_items = [(parse_score(i), i) for i in items if parse_score(i) is not None]
+    highest = max(scored_items, key=lambda x: x[0]) if scored_items else None
+    lowest  = min(scored_items, key=lambda x: x[0]) if scored_items else None
+
+    # Reviews
+    def has_real_review(r):
+        if not r: return False
+        r = r.strip().lower()
+        return len(r) > 10 and not r.startswith("imported from discord")
+    
+    with_reviews = sum(1 for i in items if has_real_review(i.review))
+
+    # Rankings
+    in_rankings = sum(1 for i in items if i.is_ranking)
+
+    # Most recently added (by date_added)
+    most_recent = max(items, key=lambda i: i.date_added)
+
+    return {
+        "total": total,
+        "avg_score": avg_score,
+        "score_distribution": dist,
+        "decade_breakdown": decades,
+        "highest_rated": {"title": highest[1].title, "score": highest[1].numeric_rating or highest[1].rating} if highest else None,
+        "lowest_rated":  {"title": lowest[1].title,  "score": lowest[1].numeric_rating or lowest[1].rating}  if lowest  else None,
+        "with_reviews": with_reviews,
+        "in_rankings": in_rankings,
+        "most_recent": {
+            "title": most_recent.title,
+            "date": most_recent.date_added.strftime("%b %d, %Y"),
+        },
+    }
 
 @app.post("/api/automation/sync")
 async def trigger_sync(background_tasks: BackgroundTasks, category: Optional[str] = None):

@@ -28,6 +28,16 @@ class SyncState(SQLModel, table=True):
     last_message_id: str  # Newest message ID seen during last sync
     last_sync_at: datetime = Field(default_factory=datetime.utcnow)
 
+class RatingHistory(SQLModel, table=True):
+    """Immutable log of every rating change for every media item."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    media_item_id: Optional[int] = Field(default=None, index=True)  # FK to MediaItem (soft ref, no cascade)
+    title: str
+    media_type: str
+    old_rating: str
+    new_rating: str
+    changed_at: datetime = Field(default_factory=datetime.utcnow)
+
 import os
 from dotenv import load_dotenv
 

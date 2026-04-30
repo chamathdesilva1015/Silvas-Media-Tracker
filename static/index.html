@@ -62,6 +62,7 @@
                             <button class="pill-tab" data-sub="Rankings">Rankings</button>
                             <button class="pill-tab pill-tab-liked" data-sub="Liked">♥ Liked</button>
                             <button class="pill-tab" data-sub="Info">Info</button>
+                            <button class="pill-tab" data-sub="Stats">Stats</button>
                         </div>
                     </div>
                 </div>
@@ -146,6 +147,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Stats Page (per-category, hidden by default) -->
+        <div id="statsPage" style="display: none; padding: 2rem 1.5rem; max-width: 900px; margin: 0 auto; color: var(--text-primary);"></div>
     </main>
 
     <!-- Add Entry Modal (Hidden by default) -->
@@ -189,6 +193,15 @@
         </div>
     </div>
 
+
+    <!-- Rating History Modal -->
+    <div id="ratingHistoryModal" class="modal">
+        <div class="modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+            <span class="close-btn" id="closeHistoryModalBtn">&times;</span>
+            <h2 class="serif" id="historyModalTitle">Rating History</h2>
+            <div id="historyModalBody" style="margin-top: 1.5rem;"></div>
+        </div>
+    </div>
 
     <!-- Admin Login Modal -->
     <div id="loginModal" class="modal">
@@ -323,6 +336,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=84"></script>
+    <script src="app.js?v=85"></script>
 </body>
 </html>

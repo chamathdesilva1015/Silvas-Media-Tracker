@@ -1015,7 +1015,260 @@ header p {
     box-sizing: border-box;
 }
 
+/* ═══════════════════════════════════════
+   STATS PAGE
+═══════════════════════════════════════ */
+
+.stats-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.stats-header h2 {
+    font-size: 2rem;
+    font-family: 'Lora', serif;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+}
+
+.stats-header p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+/* Hero stats row */
+.stats-hero-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem 1.2rem;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.stat-card-value {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--theme-accent, var(--accent));
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.stat-card-label {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+}
+
+/* Full-width stat cards */
+.stats-full-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-full-row.single {
+    grid-template-columns: 1fr;
+}
+
+/* Distribution chart */
+.stats-dist-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.stats-dist-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    margin-bottom: 1.2rem;
+}
+
+.dist-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.6rem;
+}
+
+.dist-bar-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    min-width: 42px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.dist-bar-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.dist-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--theme-accent, var(--accent));
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dist-bar-count {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    min-width: 20px;
+}
+
+/* Featured entry cards (highest/lowest) */
+.stats-featured-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-featured-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.2rem 1.5rem;
+}
+
+.stats-featured-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    margin-bottom: 0.6rem;
+}
+
+.stats-featured-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.stats-featured-score {
+    display: inline-block;
+    background: var(--theme-accent, var(--accent));
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 99px;
+}
+
+/* Recent entry */
+.stats-recent-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.stats-recent-text {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    margin-bottom: 0.3rem;
+}
+
+.stats-recent-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stats-recent-date {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════
+   RATING HISTORY MODAL
+═══════════════════════════════════════ */
+
+.history-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-family: 'Nunito', sans-serif;
+    padding: 4px 12px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.3rem;
+}
+
+.history-btn:hover {
+    border-color: var(--theme-accent, var(--accent));
+    color: var(--text-primary);
+}
+
+.history-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    font-size: 0.9rem;
+    padding: 2rem 0;
+}
+
+.history-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.history-row:last-child { border-bottom: none; }
+
+.history-old { color: var(--text-secondary); text-decoration: line-through; opacity: 0.6; }
+.history-arrow { color: var(--text-secondary); }
+.history-new { color: var(--theme-accent, var(--accent)); font-weight: 700; }
+.history-date { margin-left: auto; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.5; }
+
 /* Automation Terminal Modal */
+
 .modal-terminal {
     background: #141414;
     border: 1px solid #333;
