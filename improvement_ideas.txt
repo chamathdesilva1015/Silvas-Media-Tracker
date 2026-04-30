@@ -1,0 +1,216 @@
+SILVA'S MEDIA TRACKER — 10 IMPROVEMENT IDEAS
+==============================================
+Review these and let me know which ones to build.
+
+
+─────────────────────────────────────────────
+IDEA 1: SCORE HISTORY / RATING CHANGELOG
+─────────────────────────────────────────────
+What it is:
+Every time a rating changes (via sync or manual edit), log the old score and the
+new score with a timestamp in a separate table called "rating_history."
+
+How it works:
+- A small "History" button appears inside the review modal
+- Clicking it shows a timeline: "7/10 → 8/10 (Updated Apr 2025)"
+- This lets you track how your opinion on something evolved over time
+
+Why it's useful:
+Your ratings genuinely drift — you acknowledged this in the Recency Bias section.
+This is the definitive fix: hard evidence of how your opinion actually changed.
+
+Complexity: Medium (new DB table, small UI panel)
+
+
+─────────────────────────────────────────────
+IDEA 2: GLOBAL SEARCH BAR
+─────────────────────────────────────────────
+What it is:
+A floating search bar (keyboard shortcut: CMD+K / CTRL+K) that lets you search
+across ALL categories at once by title.
+
+How it works:
+- A spotlight-style overlay appears with a text input
+- As you type, results appear instantly below (filtered from the API)
+- Clicking a result jumps to that card and highlights it briefly
+- Supports fuzzy matching so "spirited" finds "Spirited Away"
+
+Why it's useful:
+Right now you have to know which tab something is in. With 400+ entries this gets
+annoying fast. Global search solves this completely.
+
+Complexity: Medium (frontend-only search with a debounced API call)
+
+
+─────────────────────────────────────────────
+IDEA 3: WATCHLIST / BACKLOG TAB
+─────────────────────────────────────────────
+What it is:
+A new "Backlog" category that tracks media you want to consume but haven't yet.
+Separate Discord channel → separate tab on the tracker.
+
+How it works:
+- Entries have no rating yet, just a title and optionally a year/cover
+- A "Mark as Watched/Read" button moves it to the correct Completed category
+- Optionally can show a "Priority" label (High / Normal / Low)
+
+Why it's useful:
+You almost certainly have a backlog in your head (or scattered across notes).
+Centralizing it makes the tracker a full-circle system — not just a log, but a plan.
+
+Complexity: Low-Medium (new channel config, reuse existing parsing logic)
+
+
+─────────────────────────────────────────────
+IDEA 4: ENTRY STATISTICS DASHBOARD
+─────────────────────────────────────────────
+What it is:
+A new "Stats" sub-tab inside Info (or its own top-level tab) showing real aggregate
+data from your entire database.
+
+Example stats shown:
+- Total entries per category (Movies: 182, Anime: 97, etc.)
+- Your average score per category
+- Score distribution histogram (how many 6/10s vs 9/10s)
+- Most common decade of your watched media (are you a 2000s person?)
+- Longest review you've ever written (word count)
+- Streak: days since last entry added
+
+Why it's useful:
+You built a rich dataset about your own taste. This surfaces the meta-patterns you
+can't see entry-by-entry. It's also just genuinely interesting to look at.
+
+Complexity: Medium (all data is already in the DB, just needs SQL aggregations + charts)
+
+
+─────────────────────────────────────────────
+IDEA 5: DARK/LIGHT MODE TOGGLE
+─────────────────────────────────────────────
+What it is:
+A sun/moon icon in the header that switches between the current dark theme
+and a clean warm-light mode.
+
+How it works:
+- CSS variables are already used throughout the codebase — swapping the theme
+  is just a matter of redefining those variables on the :root for a .light-mode class
+- User preference is saved to localStorage so it persists across sessions
+
+Why it's useful:
+Some people use the site during the day in bright conditions. Having both modes
+dramatically improves accessibility and just feels polished. It's the kind of
+tiny detail that makes a site feel like a real product.
+
+Complexity: Low (CSS variable swap + localStorage toggle)
+
+
+─────────────────────────────────────────────
+IDEA 6: REVIEW EXPORT (PDF / MARKDOWN)
+─────────────────────────────────────────────
+What it is:
+An "Export" button in the review modal that lets you save a formatted copy of
+a single review as either a PDF or a Markdown (.md) file.
+
+How it works:
+- The export generates a clean document with: Title, Rating, Year, Date Reviewed,
+  and the full review text
+- PDF uses the browser's print API (no server needed)
+- Markdown export is a simple text file download
+
+Why it's useful:
+If you ever write a really good long-form review, it's just floating in a database.
+This makes it shareable and permanent — you could post it on Discord, Reddit,
+or keep it in a personal Notion vault.
+
+Complexity: Low (pure frontend, no backend changes)
+
+
+─────────────────────────────────────────────
+IDEA 7: ADMIN SESSION TIMEOUT & AUTO-LOCK
+─────────────────────────────────────────────
+What it is:
+Right now, once you log in as admin, the session never expires unless you
+manually close the tab. This adds an auto-lock after X minutes of inactivity.
+
+How it works:
+- A configurable timer (e.g., 30 min) resets on any user interaction
+- When it expires, the admin session clears and the edit controls disappear
+- A subtle "Session locked" toast notification appears to explain what happened
+- Logging back in is instant (same password flow)
+
+Why it's useful:
+This is a real security improvement. If you leave your laptop unattended
+with the tracker open, nobody can silently edit or delete your entries.
+It's lightweight protection that doesn't get in your way.
+
+Complexity: Low (localStorage timestamp check + inactivity event listeners)
+
+
+─────────────────────────────────────────────
+IDEA 8: "SHUFFLE" BUTTON (RANDOM ENTRY PICKER)
+─────────────────────────────────────────────
+What it is:
+A single shuffle button (🎲 icon) that picks a random entry from the current
+filtered view and highlights it — great for "what should I watch next?"
+
+How it works:
+- The button appears in the filter bar area
+- Clicking it scrolls to a random card in the current list and applies a brief
+  golden pulse animation to draw attention to it
+- Clicking it again picks a new random entry
+- It respects the current active filters (category, sort, etc.)
+
+Why it's useful:
+Decision fatigue is real. You could use this on your Backlog once that's built,
+or just use it to rediscover something old. It's a fun, low-effort feature that
+gets a lot of use in practice.
+
+Complexity: Low (pure frontend, picks a random index from the rendered array)
+
+
+─────────────────────────────────────────────
+IDEA 9: COVER ART FALLBACK & PLACEHOLDER SYSTEM
+─────────────────────────────────────────────
+What it is:
+Right now, entries with no cover_url either show a broken image or nothing.
+This adds a smart, category-aware placeholder so every card always looks clean.
+
+How it works:
+- If cover_url is missing, generate a stylized placeholder card using the entry's
+  title initials and a color derived from the title string (consistent per title)
+- Example: "Berserk" → a deep dark-red card with large "BE" initials
+- A subtle "Cover Missing" label in the corner makes it honest
+
+Why it's useful:
+A broken image or blank card in a premium-looking grid immediately looks unprofessional.
+This makes every card render beautifully regardless of whether art was found.
+
+Complexity: Low-Medium (CSS-only placeholder + JS hash function for color)
+
+
+─────────────────────────────────────────────
+IDEA 10: DISCORD SYNC WEBHOOK NOTIFICATION
+─────────────────────────────────────────────
+What it is:
+After a Discord sync completes, automatically post a summary message to a
+designated Discord channel via a webhook.
+
+How it works:
+- You add a WEBHOOK_URL to the .env file
+- After sync completes, the backend POSTs a formatted embed to Discord:
+    ✅ Sync Complete
+    Added: 3 new entries
+    Updated: 12 ratings
+    Timestamp: 30 Apr 2025, 11:45 PM
+- Works whether the sync was triggered manually or by the GitHub Action schedule
+
+Why it's useful:
+Right now you have to open the app and check the automation logs to know if
+a sync ran correctly. This sends the confirmation directly to you in Discord —
+exactly where the data lives — without needing to open anything.
+
+Complexity: Low (one HTTP POST call at the end of run_sync() in discord_sync.py)
+
+
+==============================================
+END OF IDEAS — Reply with which numbers to build.
+==============================================

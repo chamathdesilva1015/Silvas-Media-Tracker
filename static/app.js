@@ -761,7 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasReview = isRealReview(existingReview);
         
         if (hasReview) {
-            document.getElementById('reviewTitleDisplay').innerHTML = `Reviewing: <strong>${title}</strong>`;
+            document.getElementById('reviewTitleDisplay').innerHTML = `Review For: <strong>${title}</strong>`;
             const reviewText = existingReview;
             document.getElementById('reviewInputBox').value = reviewText;
             currentReviewContext = { title: title, type: type };

@@ -984,7 +984,11 @@ header p {
 }
 
 .review-modal-content {
-    max-width: 600px; /* Slightly wider for reading reviews */
+    max-width: 700px;
+    resize: both;
+    overflow: auto;
+    min-width: 320px;
+    min-height: 300px;
 }
 
 /* Automation Terminal Modal */
@@ -1824,8 +1828,9 @@ body.read-only-mode #clearReviewBtn {
     .modal h2 { font-size: 1.3rem; margin-bottom: 1.2rem; text-align: center; }
     
     .form-group textarea {
-        height: 25vh; /* Shrunk height for mobile review forms */
+        height: 25vh;
         min-height: 180px;
+        resize: vertical; /* Allow vertical resize on mobile */
     }
 
     .category-selection-grid {
