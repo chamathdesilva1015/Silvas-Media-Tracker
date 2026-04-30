@@ -1,4 +1,4 @@
-AUTONOMOUS DISCOVERY AGENT (C.I.A) — IMPLEMENTATION PLAN
+AUTONOMOUS DISCOVERY AGENT — THE "ANTIGRAVITY" BLUEPRINT (PC-ONLY)
 ============================================================
 Goal: Transform the Media Tracker from a passive notebook into an active "Cinephile Intelligence Agency." This background agent scouts the internet, calculates "Gaps" in your knowledge, and presents them as high-priority suggestions.
 

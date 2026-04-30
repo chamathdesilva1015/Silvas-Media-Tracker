@@ -15,7 +15,6 @@ from database import engine, MediaItem, SyncState, RatingHistory, create_db_and_
 
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-WEBHOOK_URL = os.getenv('WEBHOOK_URL', '')
 
 
 def safe_getenv_int(key: str, default: int = 0) -> int:
@@ -465,6 +464,7 @@ class SyncClient(discord.Client):
                             if discord_year is not None and existing["release_year"] != discord_year:
                                 upd["release_year"] = discord_year
                                 if existing["release_year"] is not None:
+                                    upd["cover_url"] = None
                                     upd["enrichment_attempts"] = 0
 
                             # ── Cross-pollination: keep rank + score in separate fields ──
@@ -571,10 +571,6 @@ class SyncClient(discord.Client):
 
             session.commit()
             self._log(f"[Sync] Complete! Added {new_additions}, Updated {updated_items}.")
-            # Expose counts to run_sync for webhook notification
-            self._added_count   = new_additions
-            self._updated_count = updated_items
-
 
             # ── POST-SYNC: Score Cross-Linker ────────────────────────────
             self._log("[Sync] Running post-sync Score Cross-Linker...")
@@ -628,32 +624,6 @@ class SyncClient(discord.Client):
                     self._log(f"  [!] Audit failed for {mtype}: {e}")
 
 # ─── Public API ──────────────────────────────────────────────────────────────
-async def _send_webhook_notification(webhook_url: str, added: int, updated: int, log_func=print):
-    """POST a sync summary embed to a Discord webhook."""
-    import aiohttp
-    timestamp = datetime.utcnow().strftime("%b %d, %Y at %I:%M %p UTC")
-    payload = {
-        "embeds": [{
-            "title": "\u2705 Media Tracker — Sync Complete",
-            "color": 0x2ecc71,
-            "fields": [
-                {"name": "Added",   "value": str(added),   "inline": True},
-                {"name": "Updated", "value": str(updated), "inline": True},
-                {"name": "Time",    "value": timestamp,    "inline": False},
-            ],
-            "footer": {"text": "Silva's Media Tracker"}
-        }]
-    }
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(webhook_url, json=payload, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                if resp.status in (200, 204):
-                    log_func("[Webhook] Sync notification sent.")
-                else:
-                    log_func(f"[Webhook] Failed: HTTP {resp.status}")
-    except Exception as e:
-        log_func(f"[Webhook] Error sending notification: {e}")
-
 async def run_sync(log_func=print, category=None):
     """Entry point called by the FastAPI background task."""
     log_func("[Sync] Initializing...")
@@ -687,16 +657,7 @@ async def run_sync(log_func=print, category=None):
         if not client.is_closed():
             await client.close()
 
-    return_val = {"status": "success"}
-
-    # Idea 10: Send webhook notification if URL is configured
-    if WEBHOOK_URL:
-        # Scrape added/updated counts from the last sync log line
-        added_count   = getattr(client, '_added_count',   0)
-        updated_count = getattr(client, '_updated_count', 0)
-        await _send_webhook_notification(WEBHOOK_URL, added_count, updated_count, log_func)
-
-    return return_val
+    return {"status": "success"}
 
 
 def main():

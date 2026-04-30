@@ -148,7 +148,7 @@ def run_health_check(auto_fix=False):
 
                         if other.is_liked: keep.is_liked = True
                         if not keep.review and other.review: keep.review = other.review
-
+                        if not keep.cover_url and other.cover_url: keep.cover_url = other.cover_url
                         session.delete(other)
                         fixed_count += 1
                     session.add(keep)

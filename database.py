@@ -19,7 +19,7 @@ class MediaItem(SQLModel, table=True):
     discord_id: Optional[str] = None 
     enrichment_attempts: int = Field(default=0) # Track attempts to avoid infinite retries
     date_added: datetime = Field(default_factory=datetime.utcnow)
-
+    cover_url: Optional[str] = None
 
 class SyncState(SQLModel, table=True):
     """Tracks the last-synced Discord message ID per channel for incremental sync."""
@@ -37,28 +37,6 @@ class RatingHistory(SQLModel, table=True):
     old_rating: str
     new_rating: str
     changed_at: datetime = Field(default_factory=datetime.utcnow)
-
-
-class AuditQueue(SQLModel, table=True):
-    """Temporary holding table for Retroactive Auditor suggestions.
-    Movies stay here until the user confirms (→ MediaItem) or rejects (→ EternalBlacklist)."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    tmdb_id: int = Field(index=True, unique=True)       # Canonical TMDB ID — prevents duplicates
-    title: str
-    release_year: Optional[int] = None
-    scan_source: str                                     # 'franchise' | 'blockbuster' | 'childhood' | 'director'
-    reason: str                                          # Human-readable: "Franchise: Toy Story 1 in DB"
-    popularity: float = Field(default=0.0)              # TMDB popularity score — used for queue ordering
-    queued_at: datetime = Field(default_factory=datetime.utcnow)
-
-
-class EternalBlacklist(SQLModel, table=True):
-    """Movies the user has explicitly rejected — never surface these again."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    tmdb_id: int = Field(index=True, unique=True)
-    title: str
-    rejected_at: datetime = Field(default_factory=datetime.utcnow)
-
 
 import os
 from dotenv import load_dotenv

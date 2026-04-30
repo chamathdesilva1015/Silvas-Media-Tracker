@@ -11,7 +11,7 @@ The background script (Agent) crawls TMDB for "High-Probability" watches:
 - CHILDHOOD PEAKS: Animation hits from your 3-13 age window.
 - BLOCKBUSTER HITS: Top 50 most popular movies for every year of your life.
 - FRANCHISE GAPS: If you have "Toy Story 1," it checks for "Toy Story 2 & 3."
-- ACTOR/DIRECTOR STAPLES: Other films by creators you've rated 8 or higher.
+- ACTOR/DIRECTOR STAPLES: Other films by actors/directors you've rated 8 or higher.
 
 [STEP 2: THE SUGGESTION]
 The Agent populates a local `audit_queue` table with these findings, filtering out anything already in your database.
