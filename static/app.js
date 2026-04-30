@@ -710,16 +710,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let pendingReviewData = null;
 
-    closeReviewModalBtn.addEventListener('click', closeReviewModal);
-
-    noReviewBtn.addEventListener('click', () => {
-        confirmReviewModal.classList.remove('show');
+    if (closeReviewModalBtn) closeReviewModalBtn.addEventListener("click", closeReviewModal);
+    if (noReviewBtn) noReviewBtn.addEventListener("click", () => {
+        if (confirmReviewModal) confirmReviewModal.classList.remove("show");
         pendingReviewData = null;
     });
-
-    yesReviewBtn.addEventListener('click', () => {
-        confirmReviewModal.classList.remove('show');
-        reviewingStructureModal.classList.add('show');
+    if (yesReviewBtn) yesReviewBtn.addEventListener("click", () => {
+        if (confirmReviewModal) confirmReviewModal.classList.remove("show");
+        if (reviewingStructureModal) reviewingStructureModal.classList.add("show");
     });
 
     // --- Reviewing Structure Modal Logic Overhaul ---

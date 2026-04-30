@@ -209,7 +209,92 @@
         <a href="#" class="nav-link" data-filter="Anime">Anime</a>
     </nav>
 
+    <!-- Review Confirm Modal -->
+    <div id="confirmReviewModal" class="modal">
+        <div class="modal-content review-confirm-content">
+            <h3>Start Reviewing?</h3>
+            <p>Would you like to break down this entry using the 5-category scoring system?</p>
+            <div class="modal-actions">
+                <button id="noReviewBtn" class="btn-secondary">No, Just Text</button>
+                <button id="yesReviewBtn" class="btn-primary">Yes, Let's Rank</button>
+            </div>
+        </div>
+    </div>
 
-    <script src="app.js?v=105"></script>
+    <!-- Reviewing Structure Modal -->
+    <div id="reviewingStructureModal" class="modal">
+        <div class="modal-content review-structure-content">
+            <div class="modal-header">
+                <h2>Reviewing Structure</h2>
+                <button id="closeReviewingStructureBtn" class="icon-btn">&times;</button>
+            </div>
+            <div class="structure-grid" id="structureGrid">
+                <!-- Injected via JS -->
+            </div>
+            <div class="modal-footer">
+                <div class="final-score-preview">
+                    Total Score: <span id="finalScorePreview">0.0</span>/10
+                </div>
+                <button id="saveStructureBtn" class="btn-primary">Finalize & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retroactive Audit Modal -->
+    <div id="auditModal" class="modal">
+        <div class="modal-content audit-content">
+            <div class="modal-header">
+                <h2>Retroactive Auditor</h2>
+                <button id="closeAuditModalBtn" class="icon-btn">&times;</button>
+            </div>
+            <div class="audit-toolbar">
+                <div class="audit-meta" id="auditQueueMeta">0 Items Queued</div>
+                <button id="auditRunScanBtn" class="btn-secondary btn-small">Run Scan</button>
+            </div>
+            <div class="audit-grid" id="auditDeckGrid">
+                <!-- Cards injected here -->
+            </div>
+            <div class="audit-pagination">
+                <button id="auditPrevBtn" class="btn-icon" disabled>&larr;</button>
+                <span id="auditPageLabel">Page 1</span>
+                <button id="auditNextBtn" class="btn-icon" disabled>&rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Confirmation Modal -->
+    <div id="auditConfirmModal" class="modal">
+        <div class="modal-content audit-confirm-content">
+            <h3>I've seen this!</h3>
+            <p id="auditConfirmTitle">Movie Title (2024)</p>
+            <div class="confirm-inputs">
+                <label>Rating:</label>
+                <select id="auditRatingSelect">
+                    <option value="10/10">10/10 - Masterpiece</option>
+                    <option value="9.5/10">9.5/10</option>
+                    <option value="9/10">9/10 - Amazing</option>
+                    <option value="8.5/10">8.5/10</option>
+                    <option value="8/10">8/10 - Great</option>
+                    <option value="7.5/10">7.5/10</option>
+                    <option value="7/10" selected>7/10 - Good</option>
+                    <option value="6.5/10">6.5/10</option>
+                    <option value="6/10">6/10 - Fine</option>
+                    <option value="5.5/10">5.5/10</option>
+                    <option value="5/10">5/10 - Average</option>
+                    <option value="4/10">4/10 - Bad</option>
+                    <option value="3/10">3/10 - Terrible</option>
+                    <option value="2/10">2/10 - Why?</option>
+                    <option value="1/10">1/10 - Offensive</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button id="closeAuditConfirmBtn" class="btn-secondary">Cancel</button>
+                <button id="auditConfirmSubmitBtn" class="btn-primary">Add to Tracker</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="app.js?v=106"></script>
 </body>
 </html>
