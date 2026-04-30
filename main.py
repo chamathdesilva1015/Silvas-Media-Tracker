@@ -12,6 +12,8 @@ from typing import List, Optional
 from database import engine, create_db_and_tables, MediaItem, RatingHistory, AuditQueue, EternalBlacklist
 from discord_sync import run_sync
 from enrich_data import run_enrichment
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 app = FastAPI(title="Silva's Media Tracker API")
 
@@ -20,6 +22,8 @@ automation_status = {
     "sync":   {"running": False, "last_result": None, "logs": []},
     "enrich": {"running": False, "last_result": None, "logs": []},
 }
+
+audit_status = {"running": False, "last_result": None, "logs": []}
 
 # Add CORS middleware for local network/browser compatibility
 app.add_middleware(
@@ -69,6 +73,33 @@ async def on_startup():
     # Launch Discord sync in the background — site is immediately usable
     # while data refreshes from Discord in the background.
     asyncio.create_task(_background_sync())
+
+    # Start the Retroactive Auditor Scheduler (3 AM daily)
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(
+        _scheduled_audit_scan,
+        CronTrigger(hour=3, minute=0),
+        id="retroactive_audit_job"
+    )
+    scheduler.start()
+
+
+async def _scheduled_audit_scan():
+    """Background task for the daily 3 AM audit scan."""
+    print("[Scheduler] Starting daily 3 AM Retroactive Audit scan...")
+    audit_status["running"] = True
+    audit_status["logs"] = ["[System] Scheduled daily scan started at 3 AM..."]
+    try:
+        from audit_engine import run_full_audit
+        result = run_full_audit(log=lambda m: audit_status["logs"].append(m))
+        audit_status["last_result"] = {"added": result, "type": "scheduled"}
+        print(f"[Scheduler] Daily audit complete: {result} items added.")
+    except Exception as e:
+        print(f"[Scheduler] Daily audit error: {e}")
+        audit_status["logs"].append(f"[ERROR] {e}")
+        audit_status["last_result"] = {"error": str(e), "type": "scheduled"}
+    finally:
+        audit_status["running"] = False
 
 
 async def _background_sync():
@@ -391,8 +422,6 @@ def get_automation_logs(task: str):
     return {"logs": logs}
 
 # ─── RETROACTIVE AUDITOR ENDPOINTS (Admin-only, PC-only feature) ─────────────────
-
-audit_status = {"running": False, "last_result": None, "logs": []}
 
 @app.get("/api/audit/queue")
 def get_audit_queue(
