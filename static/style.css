@@ -208,6 +208,15 @@ header p {
 .page-tabs {
     display: flex;
     gap: 0.5rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    padding-bottom: 2px;
+}
+
+.page-tabs::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
 }
 
 .pill-tab {
@@ -1957,10 +1966,34 @@ body.read-only-mode #clearReviewBtn {
         font-size: 1.5rem;
     }
 
-    /* Shrink upper navigation pill tabs */
+    /* Shrink upper navigation pill tabs and keep them from wrapping */
     .pill-tab { 
-        font-size: 0.8rem; 
-        padding: 0.4rem 0.8rem; 
+        font-size: 0.75rem; 
+        padding: 0.35rem 0.75rem;
+        flex-shrink: 0; /* prevent tabs from compressing */
+    }
+
+    /* On mobile, hide the review filter (least essential) */
+    #reviewFilterDropdown {
+        display: none !important;
+    }
+
+    /* Make sort dropdown icon-only to reclaim header space */
+    .header-right #sortDropdown .dropdown-header span {
+        display: none;
+    }
+    .header-right #sortDropdown .dropdown-header::after {
+        content: '⇅';
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+    .header-right #sortDropdown {
+        flex: 0 0 auto !important;
+        min-width: unset !important;
+        width: auto !important;
+    }
+    .header-right #sortDropdown .dropdown-header {
+        padding: 0.55rem 0.75rem;
     }
     
     .top-controls {

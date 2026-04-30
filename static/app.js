@@ -105,6 +105,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run initial boot visually
     window.updateAuthUI();
 
+    // ── Idea 7: Admin Session Auto-Timeout (30 min inactivity) ─────────────
+    const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+    let _sessionTimer = null;
+
+    const resetSessionTimer = () => {
+        if (!isAdminUnlocked) return;
+        clearTimeout(_sessionTimer);
+        _sessionTimer = setTimeout(() => {
+            if (isAdminUnlocked) {
+                window.runtimeAdminKey = null;
+                isAdminUnlocked = false;
+                localStorage.removeItem('admin_key_temp');
+                window.updateAuthUI();
+                showNotification('Session locked due to inactivity.', 'info');
+            }
+        }, SESSION_TIMEOUT_MS);
+    };
+
+    ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(evt =>
+        document.addEventListener(evt, resetSessionTimer, { passive: true })
+    );
+
+    if (isAdminUnlocked) resetSessionTimer();
+
     let allMedia = [];
     let currentCategory = 'Movies'; // Default page
     let currentSubTab = 'Completed'; // Default subtab ('Completed' or 'Rankings')
@@ -356,36 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stats-dist-title">Decade Breakdown</div>
                     ${decBars || '<p style="opacity:0.4;font-size:0.85rem">No release years on record.</p>'}
                 </div>
-            </div>
-
-            <div class="stats-featured-pair">
-                ${data.highest_rated ? `
-                <div class="stats-featured-card">
-                    <div class="stats-featured-label">🏆 Highest Rated</div>
-                    <div class="stats-featured-title">${data.highest_rated.title}</div>
-                    <span class="stats-featured-score">${data.highest_rated.score}</span>
-                </div>` : ''}
-                ${data.lowest_rated ? `
-                <div class="stats-featured-card">
-                    <div class="stats-featured-label">📉 Lowest Rated</div>
-                    <div class="stats-featured-title">${data.lowest_rated.title}</div>
-                    <span class="stats-featured-score" style="background: rgba(231,76,60,0.7)">${data.lowest_rated.score}</span>
-                </div>` : ''}
-            </div>
-
-            <div class="stats-full-row">
-                <div class="stat-card">
-                    <div class="stat-card-value">${data.in_rankings}</div>
-                    <div class="stat-card-label">In Top Rankings</div>
-                </div>
-                ${data.most_recent ? `
-                <div class="stats-recent-card">
-                    <div>
-                        <div class="stats-recent-text">🕓 Most Recently Added</div>
-                        <div class="stats-recent-title">${data.most_recent.title}</div>
-                    </div>
-                    <div class="stats-recent-date">${data.most_recent.date}</div>
-                </div>` : ''}
             </div>`;
     };
 
@@ -946,7 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const hBtn = document.createElement('button');
                 hBtn.id = 'reviewHistoryBtn';
                 hBtn.className = 'history-btn';
-                hBtn.innerHTML = '📜 Rating History';
+                hBtn.innerHTML = 'Rating History';
                 hBtn.onclick = () => openRatingHistory(itemId, title);
                 document.getElementById('reviewTitleDisplay').insertAdjacentElement('afterend', hBtn);
             }
