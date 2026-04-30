@@ -26,3 +26,6 @@ typing_extensions==4.15.0
 uvicorn==0.39.0
 yarl==1.22.0
 psycopg2-binary==2.9.10
+requests==2.32.3
+thefuzz==0.22.1
+python-Levenshtein==0.25.1
