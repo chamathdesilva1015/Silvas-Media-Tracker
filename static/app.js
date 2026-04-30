@@ -1127,7 +1127,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             allMedia = await res.json();
-            loader.style.display = 'none';
             filterAndRenderMedia();
         } catch (error) {
             console.error('Error fetching media:', error);
@@ -1136,6 +1135,8 @@ document.addEventListener('DOMContentLoaded', () => {
                      <h3>Offline</h3>
                      <p>Cannot reach the Personal Media Tracker API.</p>
                 </div>`;
+        } finally {
+            if (loader) loader.style.display = 'none';
         }
     };
 
