@@ -3,15 +3,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const hostname = window.location.hostname;
     const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
 
-    // Admin Auth Hook (In-Memory Only, Wipes on Refresh)
+    // Admin Auth Hook: Use sessionStorage to persist login across refreshes in the same tab
+    let adminKey = sessionStorage.getItem('admin_key');
     const tempKey = localStorage.getItem('admin_key_temp');
+    
     if (tempKey === "Dn1h7M55!") {
-        window.runtimeAdminKey = tempKey;
-        localStorage.removeItem('admin_key_temp'); // Burn after reading so next refresh is guest
-    } else {
-        window.runtimeAdminKey = null;
+        adminKey = tempKey;
+        sessionStorage.setItem('admin_key', tempKey);
+        localStorage.removeItem('admin_key_temp');
     }
     
+    window.runtimeAdminKey = adminKey;
     let isAdminUnlocked = (window.runtimeAdminKey !== null);
 
     // Helper to evaluate auth bounds
@@ -27,10 +29,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginAdminBtns = [document.getElementById('loginAdminBtn'), document.getElementById('mobileLoginBtn')];
     const logoutAdminBtns = [document.getElementById('logoutAdminBtn'), document.getElementById('mobileLogoutBtn')];
 
+    const _adminKey = () => window.runtimeAdminKey || localStorage.getItem('admin_key_temp') || '';
+
+    window.updateAuditStatus = async () => {
+        const badge = document.getElementById('auditBadge');
+        const quickLink = document.getElementById('auditQuickLink');
+        const quickText = document.getElementById('auditQuickText');
+        
+        if (!computeCanEdit()) {
+            if (badge) badge.style.display = 'none';
+            if (quickLink) quickLink.style.display = 'none';
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/audit/status', { headers: { 'x-admin-key': _adminKey() } });
+            const status = await res.json();
+            
+            if (status.total > 0) {
+                if (badge) {
+                    badge.textContent = status.total;
+                    badge.style.display = 'block';
+                }
+                if (quickLink) quickLink.style.display = 'inline-flex';
+                if (quickText) quickText.textContent = `${status.total} Audit Items Waiting`;
+            } else {
+                if (badge) badge.style.display = 'none';
+                if (quickLink) quickLink.style.display = 'none';
+            }
+        } catch (e) {
+            // Silently fail
+        }
+    };
+
     // Make updateAuthUI safely globally accessible so it can run before and after media loads
     window.updateAuthUI = () => {
-        const canEdit = computeCanEdit();
-        if (canEdit) {
+        const isAuthorizedToEdit = computeCanEdit();
+        if (isAuthorizedToEdit) {
             document.body.classList.remove('read-only-mode');
             document.getElementById('reviewInputBox').readOnly = false;
             document.getElementById('reviewInputBox').placeholder = 'Type your review here...';
@@ -54,7 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Retroactive Audit button — show only when admin is unlocked (PC mode)
         const _auditBtn = document.getElementById('auditDeckBtn');
-        if (_auditBtn) _auditBtn.style.display = computeCanEdit() ? 'block' : 'none';
+        console.log("[Audit Debug] isAuthorizedToEdit:", isAuthorizedToEdit, "isReadOnly:", isReadOnly, "isAdminUnlocked:", isAdminUnlocked);
+        if (_auditBtn) {
+            _auditBtn.style.setProperty('display', isAuthorizedToEdit ? 'block' : 'none', 'important');
+        }
+
+        if (isAuthorizedToEdit) {
+            window.updateAuditStatus();
+        } else {
+            const quickLink = document.getElementById('auditQuickLink');
+            if (quickLink) quickLink.style.display = 'none';
+        }
     };
 
     const loginModal = document.getElementById('loginModal');
@@ -71,8 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(btn) btn.onclick = () => {
             window.runtimeAdminKey = null;
             isAdminUnlocked = false;
+            sessionStorage.removeItem('admin_key');
             localStorage.removeItem('admin_key_temp');
-            window.location.reload(); // Hard reset for clean logout sweep
+            window.location.reload(); 
         };
     });
 
@@ -91,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitLoginBtn.onclick = () => {
             const pwd = adminPasswordInput.value;
             if (pwd === "Dn1h7M55!") {
-                // Set temporary key to survive the RELOAD
+                // Set temporary key to survive the RELOAD, then it moves to sessionStorage
                 localStorage.setItem('admin_key_temp', pwd);
                 window.location.reload(); 
             } else {
@@ -1618,7 +1664,15 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchMedia().then(() => {
         updateCategoryTitleCount();
         watchStartupSync();
+        if (computeCanEdit()) window.updateAuditStatus();
     });
+
+    if (document.getElementById('auditQuickLink')) {
+        document.getElementById('auditQuickLink').onclick = () => {
+            const auditBtn = document.getElementById('auditDeckBtn');
+            if (auditBtn) auditBtn.click();
+        };
+    }
 
     // \u2500\u2500 RETROACTIVE AUDIT DECK \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     const auditModal        = document.getElementById('auditModal');
@@ -1705,6 +1759,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     if (card) card.remove();
                     showNotification(`'${btn.dataset.title}' added to blacklist.`, 'info');
+                    window.updateAuditStatus();
                 } catch (e) {
                     if (card) card.style.opacity = '1';
                     showNotification('Failed to reject.', 'error');
@@ -1761,6 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Remove the confirmed card from grid
                 auditDeckGrid?.querySelector(`.audit-card[data-tmdb="${_pendingConfirmId}"]`)?.remove();
                 showNotification(`'${_pendingConfirmTitle}' logged as ${rating}.`, 'success');
+                window.updateAuditStatus();
                 _pendingConfirmId = null;
             } catch (e) {
                 showNotification('Failed to log movie.', 'error');

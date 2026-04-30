@@ -465,7 +465,6 @@ class SyncClient(discord.Client):
                             if discord_year is not None and existing["release_year"] != discord_year:
                                 upd["release_year"] = discord_year
                                 if existing["release_year"] is not None:
-                                    upd["cover_url"] = None
                                     upd["enrichment_attempts"] = 0
 
                             # ── Cross-pollination: keep rank + score in separate fields ──

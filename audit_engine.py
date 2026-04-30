@@ -367,7 +367,9 @@ def run_director_scan(min_rating_threshold: float = 8.0, log=print) -> int:
         high_affinity = []
         for m in highly_rated:
             try:
-                rating_val = float((m.numeric_rating or "").replace("/10", ""))
+                # Try numeric_rating first, then fallback to standard rating
+                r_str = m.numeric_rating or m.rating or ""
+                rating_val = float(r_str.replace("/10", "").replace("#", ""))
                 if rating_val >= min_rating_threshold:
                     high_affinity.append(m)
             except (ValueError, AttributeError):
