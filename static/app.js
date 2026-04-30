@@ -1696,7 +1696,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let _pendingConfirmId = null;
     let _pendingConfirmTitle = '';
 
-    const _adminKey = () => window.runtimeAdminKey || localStorage.getItem('admin_key_temp') || '';
+    // Removed duplicate _adminKey declaration to fix SyntaxError
 
     const renderAuditDeck = async () => {
         if (!auditDeckGrid) return;
