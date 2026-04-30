@@ -9,7 +9,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 from typing import List, Optional
 
-from database import engine, create_db_and_tables, MediaItem, RatingHistory
+from database import engine, create_db_and_tables, MediaItem, RatingHistory, AuditQueue, EternalBlacklist
 from discord_sync import run_sync
 from enrich_data import run_enrichment
 
@@ -389,6 +389,157 @@ def get_automation_logs(task: str):
     logs = list(automation_status[task]["logs"])
     automation_status[task]["logs"] = []
     return {"logs": logs}
+
+# ─── RETROACTIVE AUDITOR ENDPOINTS (Admin-only, PC-only feature) ─────────────────
+
+audit_status = {"running": False, "last_result": None, "logs": []}
+
+@app.get("/api/audit/queue")
+def get_audit_queue(
+    page: int = 1,
+    limit: int = 20,
+    source: Optional[str] = None,
+    session: Session = Depends(get_session),
+    _: None = Depends(check_readonly),
+):
+    """Return paginated audit queue items, sorted by TMDB popularity (highest first)."""
+    stmt = select(AuditQueue)
+    if source:
+        stmt = stmt.where(AuditQueue.scan_source == source)
+    stmt = stmt.order_by(AuditQueue.popularity.desc())
+    all_items = session.exec(stmt).all()
+    total = len(all_items)
+    start = (page - 1) * limit
+    items = all_items[start : start + limit]
+    return {
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit,
+        "items": [
+            {
+                "id": i.id,
+                "tmdb_id": i.tmdb_id,
+                "title": i.title,
+                "release_year": i.release_year,
+                "scan_source": i.scan_source,
+                "reason": i.reason,
+                "popularity": round(i.popularity, 1),
+                "queued_at": i.queued_at.strftime("%b %d, %Y"),
+            }
+            for i in items
+        ],
+    }
+
+
+class AuditConfirmPayload(BaseModel):
+    rating: str = "7/10"          # e.g. "8/10"
+    review: Optional[str] = None
+
+
+@app.post("/api/audit/confirm/{tmdb_id}")
+def confirm_audit_item(
+    tmdb_id: int,
+    payload: AuditConfirmPayload,
+    session: Session = Depends(get_session),
+    _: None = Depends(check_readonly),
+):
+    """Confirm a movie from the audit queue — permanently logs it to MediaItem as source='retroactive_audit'."""
+    item = session.exec(select(AuditQueue).where(AuditQueue.tmdb_id == tmdb_id)).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found in audit queue.")
+
+    # Check it isn't already logged
+    existing = session.exec(
+        select(MediaItem).where(MediaItem.title == item.title, MediaItem.type == "Movies")
+    ).first()
+    if existing:
+        # Already exists — just remove from queue silently
+        session.delete(item)
+        session.commit()
+        return {"status": "already_logged", "message": f"'{item.title}' already exists in your tracker."}
+
+    # Validate rating format
+    import re
+    if not re.match(r'^\d+(\.\d+)?/10$|^#\d+$', payload.rating):
+        raise HTTPException(status_code=422, detail="Rating must be in format '7/10' or '#1'.")
+
+    new_entry = MediaItem(
+        title=item.title,
+        release_year=item.release_year,
+        type="Movies",
+        rating=payload.rating,
+        review=payload.review,
+        source="retroactive_audit",
+        discord_id=None,
+    )
+    session.add(new_entry)
+    session.delete(item)
+    session.commit()
+    return {"status": "logged", "title": item.title, "rating": payload.rating}
+
+
+@app.post("/api/audit/reject/{tmdb_id}")
+def reject_audit_item(
+    tmdb_id: int,
+    session: Session = Depends(get_session),
+    _: None = Depends(check_readonly),
+):
+    """Reject a movie — removes from audit queue and adds to EternalBlacklist."""
+    item = session.exec(select(AuditQueue).where(AuditQueue.tmdb_id == tmdb_id)).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found in audit queue.")
+
+    # Check not already blacklisted
+    already = session.exec(select(EternalBlacklist).where(EternalBlacklist.tmdb_id == tmdb_id)).first()
+    if not already:
+        session.add(EternalBlacklist(tmdb_id=tmdb_id, title=item.title))
+
+    session.delete(item)
+    session.commit()
+    return {"status": "rejected", "title": item.title}
+
+
+@app.get("/api/audit/status")
+def get_audit_status(session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    """Returns queue size and scan-source breakdown."""
+    all_items = session.exec(select(AuditQueue)).all()
+    sources = {}
+    for i in all_items:
+        sources[i.scan_source] = sources.get(i.scan_source, 0) + 1
+    return {
+        "total": len(all_items),
+        "by_source": sources,
+        "running": audit_status["running"],
+    }
+
+
+@app.post("/api/audit/run")
+def trigger_audit_scan(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    _: None = Depends(check_readonly),
+):
+    """Trigger all four audit scanners in the background. Admin-only."""
+    if audit_status["running"]:
+        return {"status": "already_running", "message": "An audit scan is already in progress."}
+
+    def _run():
+        import threading
+        audit_status["running"] = True
+        audit_status["logs"] = []
+        try:
+            from audit_engine import run_full_audit
+            result = run_full_audit(log=lambda m: audit_status["logs"].append(m))
+            audit_status["last_result"] = {"added": result}
+        except Exception as e:
+            audit_status["logs"].append(f"[ERROR] {e}")
+            audit_status["last_result"] = {"error": str(e)}
+        finally:
+            audit_status["running"] = False
+
+    background_tasks.add_task(_run)
+    return {"status": "started", "message": "Audit scan started in the background."}
+
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

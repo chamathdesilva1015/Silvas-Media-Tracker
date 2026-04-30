@@ -45,6 +45,7 @@
             </nav>
             <div class="sidebar-footer">
                 <button id="addMediaBtn" class="btn-primary btn-full">+ Add Entry</button>
+                <button id="auditDeckBtn" class="btn-audit btn-full" style="display:none; margin-top: 8px;">🎬 Retroactive Audit</button>
                 <button id="loginAdminBtn" class="btn-secondary btn-full" style="margin-top: 10px; opacity: 0.6; font-size: 0.8rem;">Login</button>
             </div>
         </aside>
@@ -200,6 +201,56 @@
             <span class="close-btn" id="closeHistoryModalBtn">&times;</span>
             <h2 class="serif" id="historyModalTitle">Rating History</h2>
             <div id="historyModalBody" style="margin-top: 1.5rem;"></div>
+        </div>
+
+    <!-- Retroactive Audit Deck Modal (Admin-only, PC-only) -->
+    <div id="auditModal" class="modal">
+        <div class="modal-content audit-deck-modal">
+            <span class="close-btn" id="closeAuditModalBtn">&times;</span>
+            <div class="audit-deck-header">
+                <h2 class="serif">&#127916; Retroactive Audit</h2>
+                <p class="audit-deck-sub">Movies you've probably already watched. Confirm or dismiss each one.</p>
+                <div class="audit-source-tabs" id="auditSourceTabs">
+                    <button class="audit-source-tab active" data-source="">All</button>
+                    <button class="audit-source-tab" data-source="franchise">Franchise Gaps</button>
+                    <button class="audit-source-tab" data-source="blockbuster">Blockbusters</button>
+                    <button class="audit-source-tab" data-source="childhood">Childhood</button>
+                    <button class="audit-source-tab" data-source="director">Director Staples</button>
+                </div>
+                <div class="audit-queue-meta" id="auditQueueMeta"></div>
+            </div>
+            <div id="auditDeckGrid" class="audit-deck-grid"></div>
+            <div class="audit-deck-footer">
+                <button id="auditPrevBtn" class="btn-secondary">&#8592; Prev</button>
+                <span id="auditPageLabel"></span>
+                <button id="auditNextBtn" class="btn-secondary">Next &#8594;</button>
+                <button id="auditRunScanBtn" class="btn-primary" style="margin-left:auto;">&#8635; Run Scan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Confirm Modal (quick log) -->
+    <div id="auditConfirmModal" class="modal">
+        <div class="modal-content" style="max-width:380px;">
+            <span class="close-btn" id="closeAuditConfirmBtn">&times;</span>
+            <h2 class="serif" id="auditConfirmTitle">Log Movie</h2>
+            <p style="color:var(--text-secondary);font-size:0.85rem;margin:0.5rem 0 1.2rem;">Select a score and confirm.</p>
+            <label style="display:block;margin-bottom:6px;font-size:0.85rem;">Score</label>
+            <select id="auditRatingSelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-base);color:var(--text-primary);margin-bottom:1.2rem;">
+                <option value="10/10">10/10 - Masterpiece</option>
+                <option value="9/10">9/10</option>
+                <option value="8.5/10">8.5/10</option>
+                <option value="8/10">8/10</option>
+                <option value="7.5/10">7.5/10</option>
+                <option value="7/10" selected>7/10 - Default</option>
+                <option value="6/10">6/10</option>
+                <option value="5/10">5/10</option>
+                <option value="4/10">4/10</option>
+                <option value="3/10">3/10</option>
+                <option value="2/10">2/10</option>
+                <option value="1/10">1/10 - Terrible</option>
+            </select>
+            <button id="auditConfirmSubmitBtn" class="btn-primary btn-full">Log as Watched</button>
         </div>
     </div>
 

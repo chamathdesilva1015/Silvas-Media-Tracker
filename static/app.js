@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
             logoutAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
             loginAdminBtns.forEach(btn => { if(btn) btn.style.display = 'block'; });
         }
+        // Retroactive Audit button — show only when admin is unlocked (PC mode)
+        const _auditBtn = document.getElementById('auditDeckBtn');
+        if (_auditBtn) _auditBtn.style.display = computeCanEdit() ? 'block' : 'none';
     };
 
     const loginModal = document.getElementById('loginModal');
@@ -1616,4 +1619,188 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCategoryTitleCount();
         watchStartupSync();
     });
+
+    // \u2500\u2500 RETROACTIVE AUDIT DECK \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    const auditModal        = document.getElementById('auditModal');
+    const auditConfirmModal = document.getElementById('auditConfirmModal');
+    const auditDeckBtn      = document.getElementById('auditDeckBtn');
+    const closeAuditModalBtn    = document.getElementById('closeAuditModalBtn');
+    const closeAuditConfirmBtn  = document.getElementById('closeAuditConfirmBtn');
+    const auditDeckGrid     = document.getElementById('auditDeckGrid');
+    const auditQueueMeta    = document.getElementById('auditQueueMeta');
+    const auditPageLabel    = document.getElementById('auditPageLabel');
+    const auditPrevBtn      = document.getElementById('auditPrevBtn');
+    const auditNextBtn      = document.getElementById('auditNextBtn');
+    const auditRunScanBtn   = document.getElementById('auditRunScanBtn');
+    const auditRatingSelect = document.getElementById('auditRatingSelect');
+    const auditConfirmSubmitBtn = document.getElementById('auditConfirmSubmitBtn');
+    const auditConfirmTitle = document.getElementById('auditConfirmTitle');
+
+    let _auditPage        = 1;
+    let _auditTotalPages  = 1;
+    let _auditSource      = '';
+    let _pendingConfirmId = null;
+    let _pendingConfirmTitle = '';
+
+    const _adminKey = () => window.runtimeAdminKey || localStorage.getItem('admin_key_temp') || '';
+
+    const renderAuditDeck = async () => {
+        if (!auditDeckGrid) return;
+        auditDeckGrid.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">Loading...</p>';
+
+        let data;
+        try {
+            const url = `/api/audit/queue?page=${_auditPage}&limit=20${_auditSource ? '&source=' + _auditSource : ''}`;
+            const res = await fetch(url, { headers: { 'x-admin-key': _adminKey() } });
+            data = await res.json();
+        } catch (e) {
+            auditDeckGrid.innerHTML = '<p style="text-align:center;color:#ef4444;">Failed to load audit queue.</p>';
+            return;
+        }
+
+        _auditTotalPages = data.pages || 1;
+        auditPageLabel.textContent = `Page ${data.page} of ${_auditTotalPages}`;
+        auditPrevBtn.disabled = data.page <= 1;
+        auditNextBtn.disabled = data.page >= _auditTotalPages;
+        auditQueueMeta.textContent = `${data.total} movie${data.total !== 1 ? 's' : ''} in queue`;
+
+        if (!data.items || !data.items.length) {
+            auditDeckGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;opacity:0.5;">Queue is empty. Run a scan to populate it.</div>';
+            return;
+        }
+
+        auditDeckGrid.innerHTML = data.items.map(item => `
+            <div class="audit-card" data-tmdb="${item.tmdb_id}">
+                <span class="audit-card-source ${item.scan_source}">${item.scan_source}</span>
+                <div class="audit-card-title">${item.title}</div>
+                <div class="audit-card-year">${item.release_year || 'Year unknown'}</div>
+                <div class="audit-card-reason">${item.reason}</div>
+                <div class="audit-card-actions">
+                    <button class="audit-btn-confirm" data-tmdb="${item.tmdb_id}" data-title="${item.title.replace(/"/g, '&quot;')}">Watched It</button>
+                    <button class="audit-btn-reject"  data-tmdb="${item.tmdb_id}" data-title="${item.title.replace(/"/g, '&quot;')}">Never Seen It</button>
+                </div>
+            </div>`).join('');
+
+        // Wire up Watched It
+        auditDeckGrid.querySelectorAll('.audit-btn-confirm').forEach(btn => {
+            btn.onclick = () => {
+                _pendingConfirmId    = parseInt(btn.dataset.tmdb);
+                _pendingConfirmTitle = btn.dataset.title;
+                if (auditConfirmTitle) auditConfirmTitle.textContent = `Log: ${_pendingConfirmTitle}`;
+                if (auditRatingSelect) auditRatingSelect.value = '7/10';
+                if (auditConfirmModal) auditConfirmModal.classList.add('show');
+            };
+        });
+
+        // Wire up Never Seen It
+        auditDeckGrid.querySelectorAll('.audit-btn-reject').forEach(btn => {
+            btn.onclick = async () => {
+                const tmdb = parseInt(btn.dataset.tmdb);
+                const card = auditDeckGrid.querySelector(`.audit-card[data-tmdb="${tmdb}"]`);
+                if (card) card.style.opacity = '0.3';
+                try {
+                    await fetch(`/api/audit/reject/${tmdb}`, {
+                        method: 'POST',
+                        headers: { 'x-admin-key': _adminKey() },
+                    });
+                    if (card) card.remove();
+                    showNotification(`'${btn.dataset.title}' added to blacklist.`, 'info');
+                } catch (e) {
+                    if (card) card.style.opacity = '1';
+                    showNotification('Failed to reject.', 'error');
+                }
+            };
+        });
+    };
+
+    // Source tab switching
+    document.getElementById('auditSourceTabs')?.querySelectorAll('.audit-source-tab').forEach(tab => {
+        tab.onclick = () => {
+            document.querySelectorAll('.audit-source-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            _auditSource = tab.dataset.source;
+            _auditPage   = 1;
+            renderAuditDeck();
+        };
+    });
+
+    // Pagination
+    if (auditPrevBtn) auditPrevBtn.onclick = () => { if (_auditPage > 1) { _auditPage--; renderAuditDeck(); } };
+    if (auditNextBtn) auditNextBtn.onclick = () => { if (_auditPage < _auditTotalPages) { _auditPage++; renderAuditDeck(); } };
+
+    // Open audit deck
+    if (auditDeckBtn) auditDeckBtn.onclick = () => {
+        _auditPage = 1;
+        auditModal?.classList.add('show');
+        renderAuditDeck();
+    };
+
+    // Close audit deck
+    if (closeAuditModalBtn) closeAuditModalBtn.onclick = () => auditModal?.classList.remove('show');
+    window.addEventListener('click', e => { if (e.target === auditModal) auditModal?.classList.remove('show'); });
+
+    // Close confirm modal
+    if (closeAuditConfirmBtn) closeAuditConfirmBtn.onclick = () => auditConfirmModal?.classList.remove('show');
+    window.addEventListener('click', e => { if (e.target === auditConfirmModal) auditConfirmModal?.classList.remove('show'); });
+
+    // Submit confirm (log as watched)
+    if (auditConfirmSubmitBtn) {
+        auditConfirmSubmitBtn.onclick = async () => {
+            if (!_pendingConfirmId) return;
+            const rating = auditRatingSelect?.value || '7/10';
+            auditConfirmSubmitBtn.disabled = true;
+            auditConfirmSubmitBtn.textContent = 'Logging...';
+            try {
+                const res = await fetch(`/api/audit/confirm/${_pendingConfirmId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-admin-key': _adminKey() },
+                    body: JSON.stringify({ rating }),
+                });
+                const data = await res.json();
+                auditConfirmModal?.classList.remove('show');
+                // Remove the confirmed card from grid
+                auditDeckGrid?.querySelector(`.audit-card[data-tmdb="${_pendingConfirmId}"]`)?.remove();
+                showNotification(`'${_pendingConfirmTitle}' logged as ${rating}.`, 'success');
+                _pendingConfirmId = null;
+            } catch (e) {
+                showNotification('Failed to log movie.', 'error');
+            } finally {
+                auditConfirmSubmitBtn.disabled = false;
+                auditConfirmSubmitBtn.textContent = 'Log as Watched';
+            }
+        };
+    }
+
+    // Run Scan button
+    if (auditRunScanBtn) {
+        auditRunScanBtn.onclick = async () => {
+            auditRunScanBtn.disabled = true;
+            auditRunScanBtn.textContent = 'Scanning...';
+            showNotification('Audit scan started. This may take a few minutes.', 'info');
+            try {
+                await fetch('/api/audit/run', {
+                    method: 'POST',
+                    headers: { 'x-admin-key': _adminKey() },
+                });
+                // Poll for completion
+                const poll = setInterval(async () => {
+                    const st = await fetch('/api/audit/status', { headers: { 'x-admin-key': _adminKey() } });
+                    const status = await st.json();
+                    if (!status.running) {
+                        clearInterval(poll);
+                        auditRunScanBtn.disabled = false;
+                        auditRunScanBtn.textContent = '\u21BB Run Scan';
+                        showNotification(`Scan complete. ${status.total} items in queue.`, 'success');
+                        renderAuditDeck();
+                    }
+                }, 3000);
+            } catch (e) {
+                showNotification('Scan failed to start.', 'error');
+                auditRunScanBtn.disabled = false;
+                auditRunScanBtn.textContent = '\u21BB Run Scan';
+            }
+        };
+    }
+    // \u2500\u2500 END RETROACTIVE AUDIT DECK \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
 });
