@@ -984,11 +984,35 @@ header p {
 }
 
 .review-modal-content {
-    max-width: 700px;
+    /* Explicit px width so resize: both isn't capped by the parent's width: 90% rule */
+    width: 680px;
+    height: 520px;
+    max-width: 95vw;
+    max-height: 92vh;
+    min-width: 360px;
+    min-height: 320px;
     resize: both;
-    overflow: auto;
-    min-width: 320px;
-    min-height: 300px;
+    overflow: hidden; /* children handle their own scroll */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Textarea fills all space between title and action buttons */
+#reviewModal .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
+    min-height: 0; /* required for flex shrink to work correctly */
+}
+
+#reviewModal #reviewInputBox {
+    flex: 1;
+    height: 100% !important;
+    min-height: 150px;
+    resize: none; /* the modal itself is the resize target */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Automation Terminal Modal */
@@ -1807,7 +1831,7 @@ body.read-only-mode #clearReviewBtn {
     .modal-content {
         width: 100% !important;
         max-width: 100% !important;
-        margin: 2rem auto !important; /* Spacing for top/bottom */
+        margin: 2rem auto !important;
         border-radius: 20px;
         border: 1px solid var(--border-color);
         padding: 2rem 1.2rem 1.5rem 1.2rem;
@@ -1826,11 +1850,20 @@ body.read-only-mode #clearReviewBtn {
     }
     
     .modal h2 { font-size: 1.3rem; margin-bottom: 1.2rem; text-align: center; }
-    
-    .form-group textarea {
-        height: 25vh;
-        min-height: 180px;
-        resize: vertical; /* Allow vertical resize on mobile */
+
+    /* On mobile: disable modal resize, revert to natural height, let textarea resize vertically */
+    .review-modal-content {
+        width: 100% !important;
+        height: auto !important;
+        resize: none !important;
+        overflow: visible !important;
+    }
+
+    #reviewModal #reviewInputBox {
+        flex: none !important;
+        height: 35vh !important;
+        min-height: 200px !important;
+        resize: vertical !important;
     }
 
     .category-selection-grid {

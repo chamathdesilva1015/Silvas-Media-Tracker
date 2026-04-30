@@ -508,6 +508,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Review Modal Event Handlers ---
     const reviewModal = document.getElementById('reviewModal');
+    const reviewModalContent = reviewModal.querySelector('.modal-content');
+    const REVIEW_MODAL_SIZE_KEY = 'smt_review_modal_size';
+
+    // Persist user-chosen modal dimensions across opens
+    if (typeof ResizeObserver !== 'undefined') {
+        const _rmo = new ResizeObserver(() => {
+            if (reviewModal.classList.contains('show') && window.innerWidth > 768) {
+                const w = reviewModalContent.offsetWidth;
+                const h = reviewModalContent.offsetHeight;
+                if (w > 0 && h > 0) {
+                    localStorage.setItem(REVIEW_MODAL_SIZE_KEY, JSON.stringify({ w, h }));
+                }
+            }
+        });
+        _rmo.observe(reviewModalContent);
+    }
+
     const closeReviewModalBtn = document.getElementById('closeReviewModalBtn');
     const saveReviewBtn = document.getElementById('saveReviewBtn');
     const clearReviewBtn = document.getElementById('clearReviewBtn');
@@ -765,6 +782,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const reviewText = existingReview;
             document.getElementById('reviewInputBox').value = reviewText;
             currentReviewContext = { title: title, type: type };
+
+            // Restore user's preferred size (desktop only)
+            if (window.innerWidth > 768) {
+                const saved = JSON.parse(localStorage.getItem(REVIEW_MODAL_SIZE_KEY) || 'null');
+                if (saved && saved.w && saved.h) {
+                    reviewModalContent.style.width  = saved.w + 'px';
+                    reviewModalContent.style.height = saved.h + 'px';
+                } else {
+                    // Clear any previous inline size so CSS default kicks in
+                    reviewModalContent.style.width  = '';
+                    reviewModalContent.style.height = '';
+                }
+            }
+
             reviewModal.classList.add('show');
         } else if (computeCanEdit()) {
             // New Workflow for Admin: Confirm Reviewing
