@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <br><br>
                         1. <b>The Floor (4.5):</b> Ratings below 4.5 contribute 0 points. This mathematically filters out genres that are only watched occasionally or disliked.
                         <br><br>
-                        2. <b>Cubic Growth (³):</b> High ratings carry exponential weight. A 10/10 movie is worth 216x more than a 5/0 movie. Additionally, <b>any movie marked with a Heart receives a 25% "Passion Bonus,"</b> ensuring masterpieces and personal favorites define the top list.
+                        2. <b>Cubic Growth (³):</b> High ratings carry exponential weight. A 10/10 movie is worth 216x more than a 5/0 movie. <b>Masterpieces marked with a Heart receive a 25% "Passion Bonus,"</b> and <b>movies with a Review receive a 10% "Review Bonus,"</b> ensuring personal involvement defines the top list.
                         <br><br>
                         3. <b>The Confidence Filter:</b> A genre needs a track record. A single 10/10 movie results in 0 points, while 10 movies retain 90% of their score. This eliminates "one-hit wonder" categories.</span>
                     </div>
@@ -401,8 +401,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${data.favorite_genres.map((g, i) => `
                         <div class="hof-entry">
                             <span class="hof-entry-rank" style="color: var(--theme-accent);">${i + 1}</span>
-                            <span class="hof-entry-title" style="text-transform: capitalize; font-weight: 600;">${g}</span>
-                            <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.5;">Favorite</span>
+                            <span class="hof-entry-title" style="text-transform: capitalize; font-weight: 600;">${g.name}</span>
+                            <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.7; color: var(--theme-accent);">${g.score} pts</span>
                         </div>
                     `).join('')}
                 </div>
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     Examples: ${d.examples.join(', ')}
                                 </span>
                             </div>
-                            <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.5; align-self: center;">Favorite</span>
+                            <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.7; color: var(--theme-accent); align-self: center;">${d.score} pts</span>
                         </div>
                     `).join('')}
                 </div>

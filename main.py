@@ -378,9 +378,12 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
     # Reviews
     def has_real_review(r):
-        if not r: return False
+        if not r or not isinstance(r, str): return False
         r = r.strip().lower()
-        return len(r) > 10 and not r.startswith("imported from discord")
+        if r == "": return False
+        if r.startswith("imported from discord"): return False
+        if r.startswith("imported from letterboxd"): return False
+        return True
     
     with_reviews = sum(1 for i in items if has_real_review(i.review))
 
@@ -427,6 +430,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
                 weight = max(0, (s - 4.5)) ** 3
                 if i.is_liked:
                     weight *= 1.25 # 25% Bonus for personal favorites
+                if has_real_review(i.review):
+                    weight *= 1.10 # 10% Review Bonus (User requested slight bonus)
                 total_passion += weight
             
             # 2. Confidence Filter: (1 - 1/v)
@@ -437,7 +442,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             
         if genre_scores:
             genre_scores.sort(key=lambda x: x[1], reverse=True)
-            favorite_genre = [g for g, s in genre_scores[:5]]
+            favorite_genre = [{"name": g, "score": round(s, 1)} for g, s in genre_scores[:5]]
 
     # Favorite Directors (Movies ONLY) - Same Passion-Volume Model
     favorite_directors = []
@@ -459,6 +464,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
                 weight = max(0, (s - 4.5)) ** 3
                 if i.is_liked:
                     weight *= 1.25
+                if has_real_review(i.review):
+                    weight *= 1.10 # 10% Review Bonus
                 total_passion += weight
             
             confidence = (1.0 - (1.0 / v))
