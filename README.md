@@ -25,7 +25,7 @@ The application utilizes a Python-based backend and a vanilla frontend stack:
 The system monitors specific Discord channels to capture media entries. Regular expressions parse message content to extract titles, release years, and numeric ratings into the database.
 
 ### Interface Design
-Numerical ratings are hidden by default to maintain a clean visual grid. Scores are revealed via hover effects to keep the focus on cover art and titles.
+The dashboard prioritizes visual density and high information throughput. Cover art is front-and-center, with metadata (Director, Year, Genres) accessible at a glance. Visual clutter, such as secondary ratings and interaction buttons, is intelligently hidden for viewers but remains accessible for administrators.
 
 ### Multi-Tab Synchronization
 The dashboard links standard "Completed" logs with "Rankings" leaderboards.
@@ -149,6 +149,18 @@ Focus: Predictive metrics and interactive dashboard logic.
 - **Hero Row Optimization**: Reorganized the stats dashboard to elevate Total Likes to the primary metric row.
 - **Pattern Strictness**: Fine-tuned taste detection to prioritize 8/10+ scores for more accurate interest modeling.
 - **Hall of Fame**: Developed a scrollable list section for high-value entries (9+ ratings).
+
+### Update 8: High-Density UI and Advanced Filtering
+Focus: Modernized navigation and robust statistical modeling.
+
+- **Unified Filter System**: Replaced legacy tabs with a persistent "Sort & Filter" dropdown, enabling multi-select genre, status, and sort combinations.
+- **Mobile Bottom-Sheet**: Optimized the mobile experience with a premium, viewport-anchored bottom-sheet for all filtering interactions, resolving stacking context issues.
+- **Passion-Volume Index**: Developed a weighted statistical scoring model `Σ (Rating - 4.5)³ × (1 - 1/Count)` to return highly accurate Top 10 rankings for Genres and Directors.
+- **Director Indexing**: Expanded the global search engine and metadata pipeline to support comprehensive Director-based lookups and rankings.
+- **Visual Density Optimization**: Removed hover-based ratings and reduced card heights to maximize metadata visibility and information density on the primary grid.
+- **Discovery Shuffling**: Implemented a randomized default sorting logic to encourage media discovery on every page load.
+- **The Hub**: Rebranded the Developer Console to "The Hub" and streamlined the interface by removing redundant entry counts and the legacy "Hall of Fame" section.
+- **Viewer Role Logic**: Implemented read-only "Liked" status for unauthenticated users, hiding unliked interaction points for a cleaner guest experience.
 
 ---
 
