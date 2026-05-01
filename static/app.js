@@ -1638,28 +1638,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 const likedIcon = item.is_liked ? '♥' : '♡';
 
                 // --- DUAL-DISPLAY PRIORITY LOGIC ---
-                const ratingStr = item.rating || '';
-                const numRatingStr = item.numeric_rating || '';
+                const ratingStr = String(item.rating || '').trim();
+                const numRatingStr = String(item.numeric_rating || '').trim();
                 
-                // Identify which one is the Score (10/10) and which is the Rank (#1)
-                const isRatingA_Rank = ratingStr.startsWith('#');
-                const isRatingB_Rank = numRatingStr.startsWith('#');
-                
+                const isRank = (s) => s.startsWith('#');
+                const isValidVal = (s) => s && !['none', 'null', 'undefined', 'nan'].includes(s.toLowerCase());
+                const isScore = (s) => isValidVal(s) && !isRank(s);
+
                 // The "Prime" rating for the card center should ALWAYS be a score if possible
                 let displayRating = '';
-                if (!isRatingA_Rank && ratingStr) {
+                if (isScore(ratingStr)) {
                     displayRating = ratingStr;
-                } else if (!isRatingB_Rank && numRatingStr) {
+                } else if (isScore(numRatingStr)) {
+                    displayRating = numRatingStr;
+                } else if (isValidVal(ratingStr)) {
+                    displayRating = ratingStr;
+                } else if (isValidVal(numRatingStr)) {
                     displayRating = numRatingStr;
                 }
 
                 // The Rank Badge (#1) should always show the Rank string if we have one
-                const rankFromFields = isRatingA_Rank ? ratingStr : (isRatingB_Rank ? numRatingStr : '');
+                let rankFromFields = '';
+                if (isRank(ratingStr)) rankFromFields = ratingStr;
+                else if (isRank(numRatingStr)) rankFromFields = numRatingStr;
                 
                 // Final Check: Check the rankMap (from the Rankings tab) as a second source
                 const rankKey = (item.title + '|' + item.type).toLowerCase();
                 const globalRank = rankMap[rankKey];
-                const finalRank = rankFromFields || (globalRank ? `#${globalRank}` : '');
+                const finalRank = isValidVal(rankFromFields) ? rankFromFields : (globalRank ? `#${globalRank}` : '');
 
                 card.innerHTML = `
                     <div class="card-header">
@@ -1678,10 +1684,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="media-rating-container">
                         <div class="media-rating default-rating">${displayRating}</div>
                         ${(() => {
-                            const hoverCandidate = item.numeric_rating || displayRating;
+                            const hc = String(item.numeric_rating || '').trim();
                             // Only render a separate hover rating if it provides new information (e.g. score over rank)
-                            if (hoverCandidate && hoverCandidate !== displayRating && !String(hoverCandidate).startsWith('#')) {
-                                return `<div class="media-rating hover-rating">${hoverCandidate}</div>`;
+                            if (isScore(hc) && hc !== displayRating) {
+                                return `<div class="media-rating hover-rating">${hc}</div>`;
                             }
                             return '';
                         })()}
