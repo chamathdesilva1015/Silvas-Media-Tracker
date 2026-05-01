@@ -358,10 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-label">Total Entries</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-value">${data.avg_score ?? '—'}</div>
-                    <div class="stat-card-label">Average Score</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-card-value">${data.with_reviews}</div>
                     <div class="stat-card-label">With Reviews <span style="font-size:0.6em;opacity:0.6">(${reviewPct}%)</span></div>
                 </div>
@@ -422,10 +418,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="stats-dist-card">
                     <div class="stats-dist-title">Score Distribution</div>
                     ${distBars || '<p style="opacity:0.4;font-size:0.85rem">No scored entries yet.</p>'}
+                    <div class="dist-card-footer">
+                        <span class="dist-footer-label">Average Score</span>
+                        <span class="dist-footer-value">${data.avg_score}/10</span>
+                    </div>
                 </div>
                 <div class="stats-dist-card">
                     <div class="stats-dist-title">Decade Breakdown</div>
                     ${decBars || '<p style="opacity:0.4;font-size:0.85rem">No release years on record.</p>'}
+                    <div class="dist-card-footer">
+                        <span class="dist-footer-label">Average Release Year</span>
+                        <span class="dist-footer-value">${data.avg_year}</span>
+                    </div>
                 </div>
             </div>`;
 

@@ -370,6 +370,11 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     scored_items = [(parse_score(i), i) for i in items if parse_score(i) is not None]
     highest = max(scored_items, key=lambda x: x[0]) if scored_items else None
     lowest  = min(scored_items, key=lambda x: x[0]) if scored_items else None
+    avg_score = round(sum(s for s, i in scored_items) / len(scored_items), 1) if scored_items else 0
+    
+    # Average Release Year
+    years = [i.release_year for i in items if i.release_year]
+    avg_year = int(sum(years) / len(years)) if years else 0
 
     # Reviews
     def has_real_review(r):
@@ -437,6 +442,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     return {
         "total": total,
         "avg_score": avg_score,
+        "avg_year": avg_year,
         "score_distribution": dist,
         "decade_breakdown": decades,
         "highest_rated": {"title": highest[1].title, "score": highest[1].numeric_rating or highest[1].rating} if highest else None,

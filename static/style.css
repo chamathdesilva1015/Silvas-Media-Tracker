@@ -1203,6 +1203,31 @@ delete-btn {
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.dist-card-footer {
+    margin-top: auto;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dist-footer-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.dist-footer-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--theme-accent);
 }
 
 .stats-dist-title {
