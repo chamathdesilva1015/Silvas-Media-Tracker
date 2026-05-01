@@ -376,15 +376,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle"><b>The Passion-Volume Model:</b> This ranking identifies top categories by blending total viewing volume with high-quality ratings.
+                        <span class="hof-subtitle"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
                         <br><br>
-                        1. <b>The Accumulator:</b> Every high rating adds points to a genre’s total score. Categories with many entries naturally rank higher than those with only a few items, rewarding long-term dedication to a specific genre.
+                        1. <b>The Floor (4.5):</b> Ratings below 4.5 contribute 0 points. This mathematically filters out genres that are only watched occasionally or disliked.
                         <br><br>
-                        2. <b>The Quality Multiplier:</b> Masterpieces carry exponentially more weight than average entries. A high rating (8-10) provides a massive boost, ensuring the list reflects genuine favorites rather than just frequently watched categories.
+                        2. <b>Cubic Growth (³):</b> High ratings carry exponential weight. A 10/10 movie is worth 216x more than a 5/0 movie, ensuring masterpieces define the top list.
                         <br><br>
-                        3. <b>The Confidence Filter:</b> The system applies a penalty to genres with very low counts. This prevents "one-hit wonders" from appearing at the top by requiring a genre to have multiple entries before it can qualify as a favorite.
-                        <br><br>
-                        <b>The Result:</b> A list that accurately highlights the categories with the highest concentration of quality and volume.</span>
+                        3. <b>The Confidence Filter:</b> A genre needs a track record. A single 10/10 movie results in 0 points, while 10 movies retain 90% of their score. This eliminates "one-hit wonder" categories.</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
