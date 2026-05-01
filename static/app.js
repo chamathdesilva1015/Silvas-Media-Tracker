@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const count = data.decade_breakdown[k];
             const pct = Math.round((count / decMax) * 100);
             return `<div class="dist-bar-row">
-                <span class="dist-bar-label" style="min-width:52px">${k}</span>
+                <span class="dist-bar-label" style="min-width:85px">${k}</span>
                 <div class="dist-bar-track"><div class="dist-bar-fill" style="width:${pct}%"></div></div>
                 <span class="dist-bar-count">${count}</span>
             </div>`;
@@ -492,9 +492,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCategoryTitleCount = () => {
         if (!currentCategory) return;
-        const items = allMedia.filter(i => i.type.toLowerCase() === currentCategory.toLowerCase());
-        const uniqueTitles = new Set(items.map(i => normalizeTitle(i.title)));
-        const count = uniqueTitles.size;
+        // Filter by category (case-insensitive for safety)
+        const items = allMedia.filter(i => (i.type || '').toLowerCase() === currentCategory.toLowerCase());
+        const count = items.length;
         
         pageTitle.innerHTML = `<span class="serif">${currentCategory}</span> <span class="header-count">Total Entries ${count}</span>`;
     };

@@ -264,10 +264,15 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
     # Helper: extract numeric score from 'X/10' or 'X.Y/10'
     def parse_score(item):
-        score_str = item.numeric_rating or (item.rating if "/" in (item.rating or "") else None)
-        if score_str and "/10" in score_str:
+        if item.numeric_rating:
             try:
-                return float(score_str.split("/")[0].strip())
+                return float(item.numeric_rating)
+            except ValueError:
+                pass
+        
+        if item.rating and "/10" in item.rating:
+            try:
+                return float(item.rating.split("/")[0].strip())
             except ValueError:
                 return None
         return None
@@ -284,12 +289,13 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         bucket = str(int(s)) if s == int(s) else str(round(s * 2) / 2)
         dist[bucket] = dist.get(bucket, 0) + 1
 
-    # Decade breakdown
+    # Half-Decade breakdown (e.g., 2010-2014, 2015-2019)
     decades = {}
     for item in items:
         if item.release_year:
-            decade = f"{(item.release_year // 10) * 10}s"
-            decades[decade] = decades.get(decade, 0) + 1
+            start_year = (item.release_year // 5) * 5
+            label = f"{start_year}-{start_year+4}"
+            decades[label] = decades.get(label, 0) + 1
 
     # Highest and lowest rated
     scored_items = [(parse_score(i), i) for i in items if parse_score(i) is not None]
