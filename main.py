@@ -447,7 +447,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             genre_scores.sort(key=lambda x: x[1], reverse=True)
             favorite_genre = [
                 {"name": g, "score": round(s, 1), "examples": ex} 
-                for g, s, ex in genre_scores[:5]
+                for g, s, ex in genre_scores[:10]
             ]
 
     # Favorite Directors (Movies ONLY) - Same Passion-Volume Model
@@ -480,7 +480,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             
         if dir_scores:
             dir_scores.sort(key=lambda x: x[1], reverse=True)
-            top_dirs = dir_scores[:5]
+            top_dirs = dir_scores[:10]
             
             for d_name, score, items_list in top_dirs:
                 if score <= 0: continue
