@@ -205,10 +205,11 @@ def normalize_title(title: str) -> str:
 
 # ─── Sync Client ────────────────────────────────────────────────────────────
 class SyncClient(discord.Client):
-    def __init__(self, *args, log_func=print, category=None, **kwargs):
+    def __init__(self, *args, log_func=print, category=None, fast_mode=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.log_func = log_func
         self.target_category = category  # e.g. "Movie", "Anime", None for all
+        self.fast_mode = fast_mode
         self.sync_started = False
 
     # ── Dual-output logger: UI terminal + server console ─────────────────
@@ -334,7 +335,7 @@ class SyncClient(discord.Client):
             # Doing a full historical scan up to 1000 messages ensures we always catch edits,
             # whereas incremental sync (using 'after=cursor') misses edits to old messages.
             cid_str = str(channel_id)
-            if fast_mode:
+            if self.fast_mode:
                 history_kwargs = {"limit": 50}
                 scan_mode = "fast"
             else:
@@ -667,7 +668,8 @@ async def run_sync(log_func=print, category=None, fast_mode=False):
     intents = discord.Intents.default()
     intents.message_content = True
 
-    client = SyncClient(intents=intents, log_func=log_func, category=category)
+    client = SyncClient(intents=intents, log_func=log_func, category=category, fast_mode=fast_mode)
+    
     try:
         await asyncio.wait_for(client.start(DISCORD_TOKEN), timeout=600)
     except asyncio.TimeoutError:
