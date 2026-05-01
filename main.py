@@ -338,6 +338,23 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
 
+    # Favorite Genre (Movies ONLY)
+    favorite_genre = None
+    if category.lower() == "movies":
+        # Look at top-tier items (8.5 and above) to determine "Favorite" pattern
+        top_tier = [i for s, i in scored_items if s >= 8.5]
+        if top_tier:
+            genre_counts = {}
+            for i in top_tier:
+                if i.genres:
+                    parts = [g.strip() for g in i.genres.split(",")]
+                    for p in parts:
+                        genre_counts[p] = genre_counts.get(p, 0) + 1
+            if genre_counts:
+                # Sort by count desc, then alphabetically
+                sorted_genres = sorted(genre_counts.items(), key=lambda x: (-x[1], x[0]))
+                favorite_genre = sorted_genres[0][0]
+
     return {
         "total": total,
         "avg_score": avg_score,
@@ -354,6 +371,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             "title": most_recent.title,
             "date": most_recent.date_added.strftime("%b %d, %Y"),
         },
+        "favorite_genre": favorite_genre
     }
 
 @app.post("/api/automation/sync")
