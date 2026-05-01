@@ -253,17 +253,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterTrigger) {
         filterTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isActive = filterMenu.classList.toggle('active');
-            if (window.innerWidth < 800) {
-                document.body.style.overflow = isActive ? 'hidden' : '';
+            
+            // Dynamic Positioning for Desktop (since menu is now at body root)
+            if (window.innerWidth > 800) {
+                const rect = filterTrigger.getBoundingClientRect();
+                filterMenu.style.top = `${rect.bottom + 12}px`;
+                filterMenu.style.right = `${window.innerWidth - rect.right}px`;
+                filterMenu.style.left = 'auto';
+                filterMenu.style.bottom = 'auto';
+            } else {
+                // Reset for Mobile Bottom Sheet (CSS handles this, but safety first)
+                filterMenu.style.top = 'auto';
+                filterMenu.style.right = '0';
+                filterMenu.style.left = '0';
+                filterMenu.style.bottom = '0';
             }
+            
+            filterMenu.classList.toggle('active');
         });
     }
 
     document.addEventListener('click', (e) => {
         if (filterMenu && !filterMenu.contains(e.target) && filterTrigger && !filterTrigger.contains(e.target)) {
             filterMenu.classList.remove('active');
-            document.body.style.overflow = '';
         }
     });
 
@@ -315,7 +327,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateActiveFilterCount();
             filterMenu.classList.remove('active');
-            document.body.style.overflow = '';
             filterAndRenderMedia();
         });
     }

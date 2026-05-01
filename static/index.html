@@ -83,43 +83,6 @@
                                 <span>Sort & Filter</span>
                                 <span class="filter-count" id="activeFilterCount" style="display: none;">0</span>
                             </button>
-                            
-                            <div class="filter-menu" id="filterMenu">
-                                <div class="filter-section">
-                                    <h4>Sort By</h4>
-                                    <div class="filter-options-grid sort-options">
-                                        <label class="filter-option"><input type="radio" name="sort" value="rating-desc" checked><span>Rating: High to Low</span></label>
-                                        <label class="filter-option"><input type="radio" name="sort" value="rating-asc"><span>Rating: Low to High</span></label>
-                                        <label class="filter-option"><input type="radio" name="sort" value="year-desc"><span>Year: Newest First</span></label>
-                                        <label class="filter-option"><input type="radio" name="sort" value="year-asc"><span>Year: Oldest First</span></label>
-                                        <label class="filter-option"><input type="radio" name="sort" value="title-asc"><span>Title: A-Z</span></label>
-                                        <label class="filter-option"><input type="radio" name="sort" value="title-desc"><span>Title: Z-A</span></label>
-                                    </div>
-                                </div>
-                                
-                                <div class="filter-section">
-                                    <h4>Status</h4>
-                                    <div class="filter-options-grid">
-                                        <label class="filter-option checkbox"><input type="checkbox" id="filterLiked"><span>Liked Only</span></label>
-                                        <label class="filter-option checkbox"><input type="checkbox" id="filterReviewed"><span>Has Review</span></label>
-                                        <label class="filter-option checkbox"><input type="checkbox" id="filterUnreviewed"><span>No Review</span></label>
-                                    </div>
-                                </div>
-                                
-                                <div class="filter-section">
-                                    <h4>Genres</h4>
-                                    <div class="filter-options-grid" id="genreFilterList">
-                                        <!-- Populated via JS -->
-                                    </div>
-                                </div>
-                                
-                                <div class="filter-actions">
-                                    <button id="resetFilters" class="btn-text">Reset</button>
-                                    <div class="mobile-filter-btns">
-                                        <button id="applyFilters" class="btn-primary">Apply</button>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -441,6 +404,42 @@
         </a>
     </nav>
     </div> <!-- End app-layout -->
+
+    <!-- Global Filter Menu (Relocated for stacking context safety) -->
+    <div class="filter-menu" id="filterMenu">
+        <div class="filter-section">
+            <h4>Sort By</h4>
+            <div class="filter-options-grid sort-options">
+                <label class="filter-option"><input type="radio" name="sort" value="rating-desc" checked><span>Rating: High to Low</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="rating-asc"><span>Rating: Low to High</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="year-desc"><span>Year: Newest First</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="year-asc"><span>Year: Oldest First</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="title-asc"><span>Title: A-Z</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="title-desc"><span>Title: Z-A</span></label>
+            </div>
+        </div>
+        
+        <div class="filter-section">
+            <h4>Status</h4>
+            <div class="filter-options-grid">
+                <label class="filter-option checkbox"><input type="checkbox" id="filterLiked"><span>Liked Only</span></label>
+                <label class="filter-option checkbox"><input type="checkbox" id="filterReviewed"><span>Has Review</span></label>
+                <label class="filter-option checkbox"><input type="checkbox" id="filterUnreviewed"><span>No Review</span></label>
+            </div>
+        </div>
+        
+        <div class="filter-section">
+            <h4>Genres</h4>
+            <div class="filter-options-grid" id="genreFilterList">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+        
+        <div class="filter-actions">
+            <button id="resetFilters" class="btn-text">Reset</button>
+            <button id="applyFilters" class="btn-primary">Apply</button>
+        </div>
+    </div>
 
     <!-- Core App Logic -->
     <script src="app.js?v=130"></script>

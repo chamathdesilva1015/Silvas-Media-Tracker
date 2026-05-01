@@ -469,16 +469,16 @@ header p {
 }
 
 .filter-menu {
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    width: 380px; /* Widened for 2-column grid */
+    position: fixed; /* BREAKS OUT of all parent stacking contexts */
+    top: 80px;
+    right: 2rem;
+    width: 380px;
     background: rgba(15, 12, 10, 0.98);
     backdrop-filter: blur(25px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
     padding: 1.25rem;
-    z-index: 1000;
+    z-index: 10000; /* Max priority */
     display: none;
     flex-direction: column;
     gap: 1.25rem;
@@ -2796,80 +2796,73 @@ body.read-only-mode #clearReviewBtn {
     }
 
     .filter-controls {
-        position: static;
+        flex-direction: column;
+        width: 100%;
+        gap: 0.6rem;
+    }
+
+    .search-container {
+        width: 100% !important;
     }
 
     .unified-filter-dropdown {
-        position: static;
+        position: static; /* Allows fixed child to break out of sticky header */
     }
 
-    /* Aggressive Mobile Bottom Sheet Fix */
+    .filter-trigger {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem;
+    }
+
+    /* Mobile Bottom Sheet */
     .filter-menu {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        top: auto !important;
-        width: 100vw !important;
-        height: auto !important;
-        max-height: 85vh !important; /* Prevents pushing off top of screen */
-        overflow-y: auto !important;
-        z-index: 10001 !important;
-        background: #12100e !important;
-        border-radius: 28px 28px 0 0 !important;
-        padding: 2.5rem 1.5rem 2.5rem !important;
-        box-shadow: 0 -15px 50px rgba(0,0,0,0.9) !important;
-        display: none; /* Controlled by .active */
-        border-top: 1px solid rgba(255,255,255,0.15) !important;
-        margin: 0 !important;
-        transform: none !important;
+        width: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        position: fixed;
+        top: auto;
+        border-radius: 28px 28px 0 0;
+        padding: 2rem 1.5rem 2.5rem;
+        z-index: 9999;
+        background: #12100e;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .filter-menu.active {
-        display: flex !important;
-        animation: slideUpAggr 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    }
-
-    @keyframes slideUpAggr {
-        from { transform: translateY(100%) !important; }
-        to { transform: translateY(0) !important; }
-    }
-
+    /* Add a visual "handle" for the bottom sheet */
     .filter-menu::after {
         content: '';
         position: absolute;
-        top: 12px;
+        top: 10px;
         left: 50%;
         transform: translateX(-50%);
-        width: 45px;
-        height: 5px;
-        background: rgba(255, 255, 255, 0.25);
-        border-radius: 3px;
+        width: 40px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
     }
 
     /* Modal Backdrop */
     .filter-menu.active::before {
         content: '';
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background: rgba(0, 0, 0, 0.8) !important;
-        backdrop-filter: blur(8px) !important;
-        z-index: -1 !important;
-        pointer-events: none;
-    }
-
-    .mobile-filter-btns {
-        flex: 1;
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    #applyFilters {
-        width: 100%;
-        max-width: 200px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: -1;
+        pointer-events: none; /* Let clicks pass to menu */
     }
 
     .admin-mobile-btn {
