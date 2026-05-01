@@ -421,6 +421,138 @@ header p {
     align-items: center;
 }
 
+/* --- Unified Filter System (v160) --- */
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.unified-filter-dropdown {
+    position: relative;
+}
+
+.filter-trigger {
+    background: var(--theme-accent-muted);
+    border: 1px solid var(--theme-accent-glow);
+    color: var(--theme-accent);
+    padding: 0.6rem 1.2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.filter-trigger:hover {
+    background: rgba(var(--theme-accent-rgb), 0.2);
+    transform: translateY(-1px);
+}
+
+.filter-count {
+    background: var(--theme-accent);
+    color: var(--bg-color);
+    font-size: 0.65rem;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
+.filter-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 320px;
+    background: rgba(20, 18, 16, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    animation: filterMenuIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes filterMenuIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.filter-menu.active {
+    display: flex;
+}
+
+.filter-section h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.4rem;
+}
+
+.filter-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    transition: color 0.2s;
+}
+
+.filter-option:hover {
+    color: var(--theme-accent);
+}
+
+.filter-option input {
+    accent-color: var(--theme-accent);
+    cursor: pointer;
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollable genre list if it gets too long */
+#genreFilterList {
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+#genreFilterList::-webkit-scrollbar {
+    width: 4px;
+}
+
+#genreFilterList::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
 .custom-dropdown {
     position: relative;
     width: 180px;

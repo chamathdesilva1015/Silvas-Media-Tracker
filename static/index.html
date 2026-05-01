@@ -60,7 +60,6 @@
                         <div class="page-tabs" id="pageTabs">
                             <button class="pill-tab active" data-sub="Completed">Completed</button>
                             <button class="pill-tab" data-sub="Rankings">Rankings</button>
-                            <button class="pill-tab pill-tab-liked" data-sub="Liked">Liked</button>
                             <button class="pill-tab" data-sub="Info">Developer Console</button>
                             <button class="pill-tab" data-sub="Stats">Run Stats</button>
                         </div>
@@ -72,28 +71,54 @@
                     <button id="mobileLogoutBtn" class="icon-btn admin-mobile-btn" title="Developer Logout" style="display: none; font-size: 1.1rem; padding: 0 8px; color: #e74c3c;">Logout</button>
                     
                     <!-- Sort Controls -->
-                    <div class="custom-dropdown" id="sortDropdown">
-                        <div class="dropdown-header"><span>Sort by...</span></div>
-                        <ul class="dropdown-options">
-                            <li data-value="rating-desc">Rating: High to Low</li>
-                            <li data-value="rating-asc">Rating: Low to High</li>
-                            <li data-value="year-desc">Year: Newest First</li>
-                            <li data-value="year-asc">Year: Oldest First</li>
-                            <li data-value="title-asc">Title: A-Z</li>
-                            <li data-value="title-desc">Title: Z-A</li>
-                        </ul>
-                    </div>
-                    <div class="custom-dropdown" id="reviewFilterDropdown">
-                        <div class="dropdown-header"><span>Reviews: All</span></div>
-                        <ul class="dropdown-options">
-                            <li data-value="all" class="selected">All</li>
-                            <li data-value="reviewed">Reviewed</li>
-                            <li data-value="unreviewed">Unreviewed</li>
-                        </ul>
-                    </div>
-                    <div class="search-container">
-                        <span class="search-icon"></span>
-                        <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
+                    <div class="filter-controls">
+                        <div class="search-container">
+                            <span class="search-icon"></span>
+                            <input type="text" id="searchInput" class="search-bar" placeholder="Search titles or directors...">
+                        </div>
+                        
+                        <div class="unified-filter-dropdown" id="unifiedFilter">
+                            <button class="filter-trigger" id="filterTrigger">
+                                <span class="filter-icon"></span>
+                                <span>Sort & Filter</span>
+                                <span class="filter-count" id="activeFilterCount" style="display: none;">0</span>
+                            </button>
+                            
+                            <div class="filter-menu" id="filterMenu">
+                                <div class="filter-section">
+                                    <h4>Sort By</h4>
+                                    <div class="filter-options-grid sort-options">
+                                        <label class="filter-option"><input type="radio" name="sort" value="rating-desc" checked><span>Rating: High to Low</span></label>
+                                        <label class="filter-option"><input type="radio" name="sort" value="rating-asc"><span>Rating: Low to High</span></label>
+                                        <label class="filter-option"><input type="radio" name="sort" value="year-desc"><span>Year: Newest First</span></label>
+                                        <label class="filter-option"><input type="radio" name="sort" value="year-asc"><span>Year: Oldest First</span></label>
+                                        <label class="filter-option"><input type="radio" name="sort" value="title-asc"><span>Title: A-Z</span></label>
+                                        <label class="filter-option"><input type="radio" name="sort" value="title-desc"><span>Title: Z-A</span></label>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-section">
+                                    <h4>Status</h4>
+                                    <div class="filter-options-grid">
+                                        <label class="filter-option checkbox"><input type="checkbox" id="filterLiked"><span>Liked Only</span></label>
+                                        <label class="filter-option checkbox"><input type="checkbox" id="filterReviewed"><span>Has Review</span></label>
+                                        <label class="filter-option checkbox"><input type="checkbox" id="filterUnreviewed"><span>No Review</span></label>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-section">
+                                    <h4>Genres</h4>
+                                    <div class="filter-options-grid" id="genreFilterList">
+                                        <!-- Populated via JS -->
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-actions">
+                                    <button id="resetFilters" class="btn-text">Reset</button>
+                                    <button id="applyFilters" class="btn-primary">Apply</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>

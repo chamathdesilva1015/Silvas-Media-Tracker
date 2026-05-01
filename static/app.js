@@ -230,68 +230,111 @@ document.addEventListener('DOMContentLoaded', () => {
             filterAndRenderMedia();
         });
     });
-
     searchInput.addEventListener('input', () => {
         filterAndRenderMedia();
     });
 
-    // Custom Sort Dropdown Logic
-    const sortDropdown = document.getElementById('sortDropdown');
-    const sortHeader = sortDropdown.querySelector('.dropdown-header');
-    const sortHeaderSpan = sortHeader.querySelector('span');
-    const sortOptions = sortDropdown.querySelectorAll('.dropdown-options li');
-    let currentSortValue = "";
+    // --- Unified Filter System (v160) ---
+    const filterTrigger = document.getElementById('filterTrigger');
+    const filterMenu = document.getElementById('filterMenu');
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    const resetFiltersBtn = document.getElementById('resetFilters');
+    const activeFilterCount = document.getElementById('activeFilterCount');
+    const genreFilterList = document.getElementById('genreFilterList');
 
-    sortHeader.addEventListener('click', (e) => {
-        e.stopPropagation();
-        sortDropdown.classList.toggle('open');
-    });
+    let filterState = {
+        sort: 'rating-desc',
+        likedOnly: false,
+        reviewed: false,
+        unreviewed: false,
+        genres: new Set()
+    };
 
-    sortOptions.forEach(option => {
-        option.addEventListener('click', (e) => {
+    if (filterTrigger) {
+        filterTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            sortOptions.forEach(opt => opt.classList.remove('selected'));
-            option.classList.add('selected');
-            currentSortValue = option.getAttribute('data-value');
-            sortHeaderSpan.innerHTML = option.innerHTML;
-            sortDropdown.classList.remove('open');
-            filterAndRenderMedia();
+            filterMenu.classList.toggle('active');
         });
-    });
+    }
 
-    // Close dropdowns on outside click
     document.addEventListener('click', (e) => {
-        if (!sortDropdown.contains(e.target)) {
-            sortDropdown.classList.remove('open');
-        }
-        if (!reviewFilterDropdown.contains(e.target)) {
-            reviewFilterDropdown.classList.remove('open');
+        if (filterMenu && !filterMenu.contains(e.target) && filterTrigger && !filterTrigger.contains(e.target)) {
+            filterMenu.classList.remove('active');
         }
     });
 
-    // Review Filter Dropdown Logic
-    const reviewFilterDropdown = document.getElementById('reviewFilterDropdown');
-    const reviewFilterHeader = reviewFilterDropdown.querySelector('.dropdown-header');
-    const reviewFilterHeaderSpan = reviewFilterHeader.querySelector('span');
-    const reviewFilterOptions = reviewFilterDropdown.querySelectorAll('.dropdown-options li');
-    let currentReviewFilter = "all";
+    const updateActiveFilterCount = () => {
+        let count = 0;
+        if (filterState.likedOnly) count++;
+        if (filterState.reviewed) count++;
+        if (filterState.unreviewed) count++;
+        count += filterState.genres.size;
+        
+        if (count > 0) {
+            activeFilterCount.innerText = count;
+            activeFilterCount.style.display = 'flex';
+        } else {
+            activeFilterCount.style.display = 'none';
+        }
+    };
 
-    reviewFilterHeader.addEventListener('click', (e) => {
-        e.stopPropagation();
-        reviewFilterDropdown.classList.toggle('open');
-    });
+    const populateGenreFilters = () => {
+        if (!genreFilterList) return;
+        const genres = new Set();
+        allMedia.forEach(item => {
+            if (item.genres && item.type.toLowerCase() === currentCategory.toLowerCase()) {
+                item.genres.split(',').forEach(g => genres.add(g.trim()));
+            }
+        });
+        
+        const sortedGenres = Array.from(genres).sort();
+        genreFilterList.innerHTML = sortedGenres.map(g => `
+            <label class="filter-option checkbox">
+                <input type="checkbox" class="genre-filter-check" value="${g}" ${filterState.genres.has(g) ? 'checked' : ''}>
+                <span>${g}</span>
+            </label>
+        `).join('');
+    };
 
-    reviewFilterOptions.forEach(option => {
-        option.addEventListener('click', (e) => {
-            e.stopPropagation();
-            reviewFilterOptions.forEach(opt => opt.classList.remove('selected'));
-            option.classList.add('selected');
-            currentReviewFilter = option.getAttribute('data-value');
-            reviewFilterHeaderSpan.innerHTML = `Reviews: ${option.innerHTML}`;
-            reviewFilterDropdown.classList.remove('open');
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', () => {
+            const sortRadio = document.querySelector('input[name="sort"]:checked');
+            filterState.sort = sortRadio ? sortRadio.value : 'rating-desc';
+            filterState.likedOnly = document.getElementById('filterLiked').checked;
+            filterState.reviewed = document.getElementById('filterReviewed').checked;
+            filterState.unreviewed = document.getElementById('filterUnreviewed').checked;
+            
+            filterState.genres = new Set();
+            document.querySelectorAll('.genre-filter-check:checked').forEach(cb => {
+                filterState.genres.add(cb.value);
+            });
+
+            updateActiveFilterCount();
+            filterMenu.classList.remove('active');
             filterAndRenderMedia();
         });
-    });
+    }
+
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', () => {
+            filterState = {
+                sort: 'rating-desc',
+                likedOnly: false,
+                reviewed: false,
+                unreviewed: false,
+                genres: new Set()
+            };
+            const defaultSort = document.querySelector('input[name="sort"][value="rating-desc"]');
+            if (defaultSort) defaultSort.checked = true;
+            document.getElementById('filterLiked').checked = false;
+            document.getElementById('filterReviewed').checked = false;
+            document.getElementById('filterUnreviewed').checked = false;
+            populateGenreFilters();
+            
+            updateActiveFilterCount();
+            filterAndRenderMedia();
+        });
+    }
 
     const statsPage = document.getElementById('statsPage');
 
@@ -551,82 +594,81 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Filter by Sub Tab
         const isRankingRequired = currentSubTab === 'Rankings';
-        const isLikedRequired = currentSubTab === 'Liked';
 
-        // 1. Filter by Tab Status (Completed vs Ranking vs Liked)
-        if (isLikedRequired) {
-            filtered = filtered.filter(item => item.is_liked === true || item.is_liked === 1);
-        } else if (isRankingRequired) {
-            // Rankings Tab: ONLY show items where is_ranking is explicitly true.
-            // This is the single source of truth to avoid "ghost" duplicates.
+        // 1. Filter by Tab Status (Completed vs Ranking)
+        if (isRankingRequired) {
             filtered = filtered.filter(item =>
                 item.is_ranking === true || item.is_ranking === 1
             );
-        } else {
-            // Completed Tab: Show EVERYTHING (Standard list)
-            // Note: We no longer exclude rankings from the main list!
         }
 
-        // 2. Bulletproof Identity deduplication (Gatekeeper)
-        // We ensure that each Title+Type+Year combination only appears ONCE on the screen.
-        // We sort by is_ranking DESC initially so that the "ranked" version of a movie wins the dedup.
+        // 2. Bulletproof Identity deduplication
         filtered.sort((a, b) => (b.is_ranking ? 1 : 0) - (a.is_ranking ? 1 : 0));
 
         const activeIds = new Set();
         const activeMediaKeys = new Set();
         
         filtered = filtered.filter(item => {
-            // Check by database ID
-            if (item.id && activeIds.has(item.id)) return false;
-            
-            // Check by semantic identity (Title + Type + Year)
             const identityKey = `${item.title.toLowerCase().trim()}|${item.type.toLowerCase()}|${item.release_year || 'any'}`;
             if (activeMediaKeys.has(identityKey)) return false;
-
-            if (item.id) activeIds.add(item.id);
             activeMediaKeys.add(identityKey);
             return true;
         });
 
-        // 3. Filter by Search Query
+        // 3. Filter by Search Query (Upgraded to include Director)
         const query = searchInput.value.toLowerCase().trim();
         if (query) {
-            filtered = filtered.filter(item => item.title.toLowerCase().includes(query));
+            filtered = filtered.filter(item => 
+                item.title.toLowerCase().includes(query) || 
+                (item.director && item.director.toLowerCase().includes(query))
+            );
         }
 
-        // Filter by Review Status
-        if (currentReviewFilter === 'reviewed') {
+        // 4. Unified Multi-Select Filters
+        if (filterState.likedOnly) {
+            filtered = filtered.filter(item => item.is_liked);
+        }
+        
+        if (filterState.reviewed && !filterState.unreviewed) {
             filtered = filtered.filter(item => isRealReview(item.review));
-        } else if (currentReviewFilter === 'unreviewed') {
+        } else if (filterState.unreviewed && !filterState.reviewed) {
             filtered = filtered.filter(item => !isRealReview(item.review));
         }
 
-        // Sort Rankings Numerically (always, if Rankings tab)
-        if (isRankingRequired) {
-            filtered.sort((a, b) => {
-                const rankA = parseInt((a.rating || '').replace('#', ''), 10) || 999;
-                const rankB = parseInt((b.rating || '').replace('#', ''), 10) || 999;
-                return rankA - rankB;
+        if (filterState.genres.size > 0) {
+            filtered = filtered.filter(item => {
+                if (!item.genres) return false;
+                const itemGenres = item.genres.split(',').map(g => g.trim());
+                return Array.from(filterState.genres).some(g => itemGenres.includes(g));
             });
-        } else {
-            // Apply user-selected sort
-            if (currentSortValue === 'rating-desc') {
-                filtered.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
-            } else if (currentSortValue === 'rating-asc') {
-                filtered.sort((a, b) => parseFloat(a.rating) - parseFloat(b.rating));
-            } else if (currentSortValue === 'year-desc') {
-                filtered.sort((a, b) => (b.release_year || 0) - (a.release_year || 0));
-            } else if (currentSortValue === 'year-asc') {
-                filtered.sort((a, b) => (a.release_year || 9999) - (b.release_year || 9999));
-            } else if (currentSortValue === 'title-asc') {
-                filtered.sort((a, b) => a.title.localeCompare(b.title));
-            } else if (currentSortValue === 'title-desc') {
-                filtered.sort((a, b) => b.title.localeCompare(a.title));
-            }
         }
 
-        renderMedia(filtered, isRankingRequired, isLikedRequired);
+        // 5. Sorting (Using unified filter state)
+        const sortVal = filterState.sort;
+        if (sortVal === 'rating-desc') {
+            filtered.sort((a, b) => (parseRating(b.rating) || 0) - (parseRating(a.rating) || 0));
+        } else if (sortVal === 'rating-asc') {
+            filtered.sort((a, b) => (parseRating(a.rating) || 0) - (parseRating(b.rating) || 0));
+        } else if (sortVal === 'year-desc') {
+            filtered.sort((a, b) => (b.release_year || 0) - (a.release_year || 0));
+        } else if (sortVal === 'year-asc') {
+            filtered.sort((a, b) => (a.release_year || 0) - (b.release_year || 0));
+        } else if (sortVal === 'title-asc') {
+            filtered.sort((a, b) => a.title.localeCompare(b.title));
+        } else if (sortVal === 'title-desc') {
+            filtered.sort((a, b) => b.title.localeCompare(a.title));
+        }
+
+        renderMedia(filtered, isRankingRequired);
     };
+
+    const parseRating = (r) => {
+        if (!r) return 0;
+        if (typeof r === 'number') return r;
+        if (r.includes('/')) return parseFloat(r.split('/')[0]);
+        return parseFloat(r) || 0;
+    };
+
 
     const normalizeTitle = (title) => {
         if (!title) return "";
@@ -1382,6 +1424,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             allMedia = await res.json();
+            populateGenreFilters();
             loader.style.display = 'none';
             filterAndRenderMedia();
         } catch (error) {
@@ -1461,7 +1504,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const renderMedia = (items, isRankingRequired, isLikedRequired) => {
+    const renderMedia = (items, isRankingRequired) => {
         // Explicit sort for rankings (numerical #1, #2...)
         if (isRankingRequired) {
             items.sort((a, b) => {
@@ -1481,8 +1524,8 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.classList.add('media-grid'); // default back to square grid limits
             if (query) {
                 grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">No results found for "<strong>${query}</strong>" in ${currentSubTab.toLowerCase()} ${currentCategory.toLowerCase()}s.</p>`;
-            } else if (currentSubTab === 'Liked') {
-                grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">No liked ${currentCategory.toLowerCase()}s yet. Hover over a card and click ♡ to mark one!</p>`;
+            } else if (filterState.likedOnly) {
+                grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">No liked ${currentCategory.toLowerCase()}s match your search or filter.</p>`;
             } else {
                 grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">Completed ${currentCategory.toLowerCase()}s were not listed yet.</p>`;
             }
