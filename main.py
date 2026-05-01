@@ -346,9 +346,9 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             if not i.genres:
                 continue
             
-            # Math: Exponential weighting. Weight = 2^(Score - 7)
-            # This ensures a 10/10 movie carries 8x the weight of a 7/10 movie.
-            weight = 2 ** (s - 7)
+            # Math: Quadratic weighting. Weight = Score^2
+            # This ensures 9/10 and 10/10 are close, while 10/10 still holds the edge.
+            weight = s ** 2
             
             parts = [g.strip() for g in i.genres.split(",")]
             for p in parts:
