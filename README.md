@@ -139,6 +139,17 @@ Focus: Cross-platform data and library analytics.
 - **Hall of Fame**: Developed a scrollable list for high-value entries (9+ ratings).
 - **Library Metrics**: Added KPI tiles for Total Likes and Review Coverage.
 - **Badge Normalization**: Standardized source badges into a minimalist lowercase aesthetic.
+- **Enrichment Pipeline**: Integrated TMDB metadata for automated poster and genre retrieval.
+
+### Update 7: Dynamic Analysis and Taste Patterns
+Focus: Interactive metrics and personal taste modeling.
+
+- **Run Stats Simulation**: Implemented a 1-second dynamic analysis engine for an interactive processing feel.
+- **Taste Modeling**: Engineered a favorite genre algorithm to identify the Top 5 genres from high-rated (8+) movies.
+- **Interactive Accordions**: Converted the Top Genres list into a collapsible accordion, matching the Hall of Fame UI.
+- **Dashboard Refactor**: Consolidated the Stats Hero Row to include Total Likes for better information density.
+- **Stricter Logic**: Elevated the "Top Tier" threshold to 8/10 to improve the accuracy of taste pattern detection.
+- **Analytical Loading**: Added progress-based loading states with contextual messages ("Processing metadata...").
 
 ---
 
