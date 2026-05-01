@@ -2194,4 +2194,28 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCategoryTitleCount();
         watchStartupSync();
     });
+
+    // --- Global Scroll-Based Navigation Visibility (v177) ---
+    let lastScrollY = window.scrollY;
+    const mainHeader = document.getElementById('mainHeader');
+    const bottomNav = document.getElementById('bottomNav');
+
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        
+        // Tolerance to prevent flickering on small movements
+        if (Math.abs(currentScrollY - lastScrollY) < 10) return;
+
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+            // Scrolling DOWN (towards bottom) -> Hide Header, Show Footer
+            mainHeader?.classList.add('header-hidden');
+            bottomNav?.classList.remove('footer-hidden');
+        } else if (currentScrollY < lastScrollY) {
+            // Scrolling UP (towards top) -> Show Header, Hide Footer
+            mainHeader?.classList.remove('header-hidden');
+            bottomNav?.classList.add('footer-hidden');
+        }
+        
+        lastScrollY = currentScrollY;
+    }, { passive: true });
 });

@@ -23,6 +23,25 @@
     --accent-yellow: #ffd700;
 }
 
+/* Global Scroll Hiding Framework */
+header {
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
+    will-change: transform;
+}
+
+.header-hidden {
+    transform: translateY(-100%) !important;
+}
+
+.bottom-nav {
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
+    will-change: transform;
+}
+
+.footer-hidden {
+    transform: translateY(100%) !important;
+}
+
 /* Theme Overrides */
 [data-theme="movies"] {
     --theme-accent: #3498db;
@@ -2812,8 +2831,8 @@ body.read-only-mode #clearReviewBtn {
         display: flex;
         flex-direction: column;
         width: 100%;
-        gap: 0.6rem;
-        margin-top: 0.4rem;
+        gap: 0.4rem;
+        margin-top: 0.2rem;
         padding: 0;
         background: transparent;
         border: none;
@@ -2848,6 +2867,22 @@ body.read-only-mode #clearReviewBtn {
         position: fixed;
         top: auto;
         border-radius: 28px 28px 0 0;
+        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        will-change: transform;
+    }
+
+    .footer-hidden {
+        transform: translateY(100%);
+    }
+
+    header {
+        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        will-change: transform;
+    }
+
+    .header-hidden {
+        transform: translateY(-100%);
+    }
         padding: 2rem 1.5rem 2.5rem;
         z-index: 9999;
         background: #12100e;
@@ -2936,7 +2971,7 @@ body.read-only-mode #clearReviewBtn {
     }
 
     .card-header {
-        margin-bottom: auto;
+        margin-bottom: 0.2rem;
     }
 
     h3.media-title {
@@ -2967,8 +3002,24 @@ body.read-only-mode #clearReviewBtn {
     }
 
     .card-badges .source-badge {
-        font-size: 0.5rem;
-        padding: 0.1rem 0.25rem;
+        font-size: 0.45rem;
+        padding: 0.08rem 0.2rem;
+    }
+
+    .genre-container {
+        gap: 0.2rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .genre-badge {
+        font-size: 0.45rem !important;
+        padding: 0.05rem 0.2rem !important;
+    }
+
+    .director-badge {
+        font-size: 0.45rem !important;
+        padding: 0.05rem 0.2rem !important;
+        margin-bottom: 0.2rem !important;
     }
 
     .card-spacer {
