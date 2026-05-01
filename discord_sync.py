@@ -334,8 +334,12 @@ class SyncClient(discord.Client):
             # Doing a full historical scan up to 1000 messages ensures we always catch edits,
             # whereas incremental sync (using 'after=cursor') misses edits to old messages.
             cid_str = str(channel_id)
-            history_kwargs = {"limit": 500 if is_ranking else 1000}
-            scan_mode = "full"
+            if fast_mode:
+                history_kwargs = {"limit": 50}
+                scan_mode = "fast"
+            else:
+                history_kwargs = {"limit": 500 if is_ranking else 1000}
+                scan_mode = "full"
 
             self._log(f"  [{scan_mode.upper()}] mode for #{channel.name}")
 
@@ -643,7 +647,7 @@ class SyncClient(discord.Client):
             await self.close()
 
 # ─── Public API ──────────────────────────────────────────────────────────────
-async def run_sync(log_func=print, category=None):
+async def run_sync(log_func=print, category=None, fast_mode=False):
     """Entry point called by the FastAPI background task."""
     log_func("[Sync] Initializing...")
 

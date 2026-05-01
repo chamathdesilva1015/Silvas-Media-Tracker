@@ -1947,60 +1947,41 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let pollingInterval = null;
 
-            const pollLogs = (task) => {
-                if (pollingInterval) clearInterval(pollingInterval);
-                pollingInterval = setInterval(async () => {
-                    try {
-                        const res = await fetch(`/api/automation/logs/${task}`, { headers: getAuthHeaders() });
-                        const data = await res.json();
-                        if (data.logs && data.logs.length > 0) {
-                            data.logs.forEach(msg => {
-                                const line = document.createElement('div');
-                                line.style.marginBottom = '2px';
-                                line.innerText = msg;
-                                if (msg.includes('Error')) line.style.color = '#ff6b6b';
-                                if (msg.includes('successful')) line.style.color = '#51cf66';
-                                log.appendChild(line);
-                                log.scrollTop = log.scrollHeight;
-                            });
-                        }
-                        
-                        // Check if task finished
-                        const statusRes = await fetch('/api/automation/status', { headers: getAuthHeaders() });
-                        const statusData = await statusRes.json();
-                        if (!statusData[task].running) {
-                            clearInterval(pollingInterval);
-                            spinner.style.display = 'none';
-                            const final = document.createElement('div');
-                            final.style.marginTop = '10px';
-                            final.style.paddingTop = '5px';
-                            final.style.borderTop = '1px dashed #444';
-                            final.style.color = '#fff';
-                            final.innerText = `[System] Task "${task}" completed.`;
-                            log.appendChild(final);
-                            log.scrollTop = log.scrollHeight;
-                            
-                            // If sync finished, refresh local data
-                            if (task === 'sync') fetchMedia();
-                        }
-                    } catch (err) {
-                        console.error('Polling error:', err);
-                    }
-                }, 1000);
-            };
-
             if (syncBtn) syncBtn.onclick = async () => {
                 wrapper.style.display = 'block';
                 spinner.style.display = 'block';
                 log.innerHTML = '<div style="color: #64b4ff;">[System] Initializing Discord Sync...</div>';
                 try {
                     const res = await fetch('/api/automation/sync', { method: 'POST', headers: getAuthHeaders() });
-                    const data = await res.json();
-                    if (data.ok) pollLogs('sync');
-                    else {
-                        log.innerHTML += `<div style="color: #ff6b6b;">Failed: ${data.message}</div>`;
-                        spinner.style.display = 'none';
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n');
+                        lines.forEach(msg => {
+                            if (!msg.trim()) return;
+                            const line = document.createElement('div');
+                            line.style.marginBottom = '2px';
+                            line.innerText = msg;
+                            if (msg.includes('Error') || msg.includes('[!]')) line.style.color = '#ff6b6b';
+                            if (msg.includes('successful')) line.style.color = '#51cf66';
+                            log.appendChild(line);
+                            log.scrollTop = log.scrollHeight;
+                        });
                     }
+                    spinner.style.display = 'none';
+                    const final = document.createElement('div');
+                    final.style.marginTop = '10px';
+                    final.style.paddingTop = '5px';
+                    final.style.borderTop = '1px dashed #444';
+                    final.style.color = '#fff';
+                    final.innerText = `[System] Task "sync" completed.`;
+                    log.appendChild(final);
+                    log.scrollTop = log.scrollHeight;
+                    fetchMedia();
                 } catch (err) {
                     log.innerHTML += `<div style="color: #ff6b6b;">Request Error: ${err.message}</div>`;
                     spinner.style.display = 'none';
@@ -2013,12 +1994,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 log.innerHTML = '<div style="color: #64b4ff;">[System] Initializing Metadata Enrichment...</div>';
                 try {
                     const res = await fetch('/api/automation/enrich', { method: 'POST', headers: getAuthHeaders() });
-                    const data = await res.json();
-                    if (data.ok) pollLogs('enrich');
-                    else {
-                        log.innerHTML += `<div style="color: #ff6b6b;">Failed: ${data.message}</div>`;
-                        spinner.style.display = 'none';
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n');
+                        lines.forEach(msg => {
+                            if (!msg.trim()) return;
+                            const line = document.createElement('div');
+                            line.style.marginBottom = '2px';
+                            line.innerText = msg;
+                            if (msg.includes('Error')) line.style.color = '#ff6b6b';
+                            if (msg.includes('Complete')) line.style.color = '#51cf66';
+                            log.appendChild(line);
+                            log.scrollTop = log.scrollHeight;
+                        });
                     }
+                    spinner.style.display = 'none';
+                    const final = document.createElement('div');
+                    final.style.marginTop = '10px';
+                    final.style.paddingTop = '5px';
+                    final.style.borderTop = '1px dashed #444';
+                    final.style.color = '#fff';
+                    final.innerText = `[System] Task "enrichment" completed.`;
+                    log.appendChild(final);
+                    log.scrollTop = log.scrollHeight;
+                    fetchMedia();
                 } catch (err) {
                     log.innerHTML += `<div style="color: #ff6b6b;">Request Error: ${err.message}</div>`;
                     spinner.style.display = 'none';

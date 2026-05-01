@@ -1,7 +1,7 @@
 import asyncio
 import os
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -503,74 +503,56 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     }
 
 @app.post("/api/automation/sync")
-async def trigger_sync(background_tasks: BackgroundTasks, category: Optional[str] = None):
-    if automation_status["sync"]["running"]:
-        return {"ok": False, "message": "Sync already in progress"}
-    
-    automation_status["sync"]["running"] = True
-    automation_status["sync"]["logs"] = [f"[System] Starting Discord Sync for {category or 'All Categories'}..."]
-    
-    def log_sync(msg):
-        automation_status["sync"]["logs"].append(msg)
-    
-    async def run_sync_task():
-        try:
-            res = await run_sync(log_func=log_sync, category=category)
-            automation_status["sync"]["last_result"] = res
+async def trigger_sync(category: Optional[str] = None):
+    async def log_generator():
+        q = asyncio.Queue()
+        def log_sync(msg):
+            q.put_nowait(msg)
             
-            # AUTOMATIC ENRICHMENT: If sync succeeded, trigger magic auto-fill for Movies
-            if res.get("status") == "success":
-                log_sync("[System] Sync successful. Triggering automatic enrichment for Movies...")
-                await run_enrichment(log_func=log_sync, category="Movies")
-        except Exception as e:
-            log_sync(f"[System] Critical Error: {str(e)}")
-            automation_status["sync"]["last_result"] = {"status": "error", "message": str(e)}
-        finally:
-            automation_status["sync"]["running"] = False
+        async def run():
+            try:
+                res = await run_sync(log_func=log_sync, category=category, fast_mode=True)
+                if res.get("status") == "success":
+                    log_sync("[System] Sync successful.")
+            except Exception as e:
+                log_sync(f"[System] Critical Error: {str(e)}")
+            finally:
+                q.put_nowait(None)
+                
+        asyncio.create_task(run())
+        
+        while True:
+            msg = await q.get()
+            if msg is None:
+                break
+            yield msg + "\n"
             
-    background_tasks.add_task(run_sync_task)
-    return {"ok": True, "message": "Sync started (Enrichment will follow automatically)"}
+    return StreamingResponse(log_generator(), media_type="text/plain")
 
 @app.post("/api/automation/enrich")
-async def trigger_enrich(background_tasks: BackgroundTasks, category: Optional[str] = None):
-    if automation_status["enrich"]["running"]:
-        return {"ok": False, "message": "Enrichment already in progress"}
-    
-    automation_status["enrich"]["running"] = True
-    automation_status["enrich"]["logs"] = [f"[System] Starting Magic Auto-Fill for {category or 'All Categories'}..."]
-
-    def log_enrich(msg):
-        automation_status["enrich"]["logs"].append(msg)
-    
-    async def run_enrich_task():
-        try:
-            res = await run_enrichment(log_func=log_enrich, category=category)
-            automation_status["enrich"]["last_result"] = res
-        except Exception as e:
-            log_enrich(f"[System] Critical Error: {str(e)}")
-            automation_status["enrich"]["last_result"] = {"status": "error", "message": str(e)}
-        finally:
-            automation_status["enrich"]["running"] = False
+async def trigger_enrich(category: Optional[str] = None):
+    async def log_generator():
+        q = asyncio.Queue()
+        def log_enrich(msg):
+            q.put_nowait(msg)
             
-    background_tasks.add_task(run_enrich_task)
-    return {"ok": True, "message": "Data enrichment started"}
-
-@app.get("/api/automation/status")
-def get_automation_status():
-    return {
-        "sync": {k: v for k, v in automation_status["sync"].items() if k != "logs"},
-        "enrich": {k: v for k, v in automation_status["enrich"].items() if k != "logs"}
-    }
-
-@app.get("/api/automation/logs/{task}")
-def get_automation_logs(task: str):
-    if task not in automation_status:
-        raise HTTPException(status_code=404, detail="Task not found")
-    
-    # Return all logs and clear them (destructive read for the frontend)
-    logs = list(automation_status[task]["logs"])
-    automation_status[task]["logs"] = []
-    return {"logs": logs}
+        async def run():
+            try:
+                await run_enrichment(log_func=log_enrich, category=category)
+            except Exception as e:
+                log_enrich(f"[System] Critical Error: {str(e)}")
+            finally:
+                q.put_nowait(None)
+                
+        asyncio.create_task(run())
+        
+        while True:
+            msg = await q.get()
+            if msg is None:
+                break
+            yield msg + "\n"
+            
+    return StreamingResponse(log_generator(), media_type="text/plain")
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
