@@ -204,10 +204,49 @@ document.addEventListener('DOMContentLoaded', () => {
     pillTabs.forEach(tab => {
         tab.addEventListener('click', (e) => {
             e.preventDefault();
-            pillTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
             
-            currentSubTab = tab.getAttribute('data-sub');
+            const filter = tab.getAttribute('data-filter');
+            const sub = tab.getAttribute('data-sub');
+
+            if (filter) {
+                // This is a category tab (Desktop Category Nav)
+                currentCategory = filter;
+                currentSubTab = 'Completed'; // Reset to Completed on category switch
+                
+                // Sync ALL category buttons (Desktop + Mobile)
+                navLinks.forEach(l => {
+                    l.classList.remove('active');
+                    if (l.getAttribute('data-filter') === currentCategory) l.classList.add('active');
+                });
+                
+                document.querySelectorAll('.pill-tab[data-filter]').forEach(t => {
+                    t.classList.remove('active');
+                    if (t.getAttribute('data-filter') === currentCategory) t.classList.add('active');
+                });
+
+                // Sync the sub-tabs to "Completed"
+                document.querySelectorAll('.pill-tab[data-sub]').forEach(t => {
+                    t.classList.remove('active');
+                    if (t.getAttribute('data-sub') === 'Completed') t.classList.add('active');
+                });
+
+                updateCategoryTitleCount();
+                updateTheme();
+            } else if (sub) {
+                // This is a sub-tab (Header Sub Nav)
+                pillTabs.forEach(t => {
+                    if (t.getAttribute('data-sub')) t.classList.remove('active');
+                });
+                tab.classList.add('active');
+                currentSubTab = sub;
+
+                // Sync Mobile Info Tab if needed
+                if (sub === 'Info') {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    const mobileInfo = Array.from(navLinks).find(l => l.getAttribute('data-sub') === 'Info');
+                    if (mobileInfo) mobileInfo.classList.add('active');
+                }
+            }
             
             filterAndRenderMedia();
         });
@@ -1056,14 +1095,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Helper: determine if a review is a real user-written review vs a Discord placeholder
+    // Helper: determine if a review is a real user-written review vs a placeholder
     const isRealReview = (review) => {
         if (!review || typeof review !== 'string') return false;
         const trimmed = review.trim();
         if (trimmed === '') return false;
         const lower = trimmed.toLowerCase();
-        if (lower.startsWith('imported from letterboxd')) return false;
-        return true;
+        
+        // Block known placeholders and system messages
+        const placeholders = [
+            'imported from letterboxd',
+            'discord sync',
+            'imported from discord',
+            'automatically imported',
+            'no review provided'
+        ];
+        
+        if (placeholders.some(p => lower.includes(p))) return false;
+        
+        // Basic length check - a review should probably be at least a few characters
+        // if it's supposed to be "real" content. 
+        return trimmed.length > 5;
     };
 
     // ── Rating History Modal ──────────────────────────────────────────────────
@@ -2093,6 +2145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialization
     updateCategoryTitleCount();
     updateTheme();
+    window.updateAuthUI(); // Ensure auth UI is set before media loads
     fetchMedia().then(() => {
         updateCategoryTitleCount();
     });
