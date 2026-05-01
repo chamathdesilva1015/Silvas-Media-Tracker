@@ -565,23 +565,10 @@ header p {
     border-radius: 10px;
 }
 
-.filter-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    z-index: 9998;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.filter-overlay.active {
-    display: block;
-    opacity: 1;
+.custom-dropdown {
+    position: relative;
+    width: 180px;
+    font-family: 'Nunito', sans-serif;
 }
 
 .dropdown-header {
@@ -2819,7 +2806,7 @@ body.read-only-mode #clearReviewBtn {
     }
 
     .unified-filter-dropdown {
-        width: 100%;
+        position: static; /* Allows fixed child to break out of sticky header */
     }
 
     .filter-trigger {
@@ -2828,31 +2815,54 @@ body.read-only-mode #clearReviewBtn {
         padding: 0.7rem;
     }
 
+    /* Mobile Bottom Sheet */
     .filter-menu {
-        width: 100% !important;
-        max-width: none !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        top: auto !important;
-        position: fixed !important;
-        border-radius: 24px 24px 0 0 !important;
-        padding: 2rem 1.5rem 3rem !important;
-        z-index: 9999 !important;
-        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-bottom: none !important;
-        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        display: none;
+        width: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        position: fixed;
+        top: auto;
+        border-radius: 28px 28px 0 0;
+        padding: 2rem 1.5rem 2.5rem;
+        z-index: 9999;
+        background: #12100e;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .filter-menu.active {
-        display: flex !important;
+    /* Add a visual "handle" for the bottom sheet */
+    .filter-menu::after {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
     }
 
     @keyframes slideUp {
         from { transform: translateY(100%); }
         to { transform: translateY(0); }
+    }
+
+    /* Modal Backdrop */
+    .filter-menu.active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: -1;
+        pointer-events: none; /* Let clicks pass to menu */
     }
 
     .admin-mobile-btn {
