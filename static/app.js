@@ -785,7 +785,8 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmReviewModal.classList.remove('show');
         if (pendingReviewData) {
             currentReviewContext = { title: pendingReviewData.title, type: pendingReviewData.type };
-            reviewModalTitle.innerText = `Review: ${pendingReviewData.title}`;
+            const displayTitle = document.getElementById('reviewTitleDisplay');
+            if (displayTitle) displayTitle.innerText = `Review: ${pendingReviewData.title}`;
             document.getElementById('reviewInputBox').value = '';
             
             // Restore user's preferred size for the text modal (desktop only)
