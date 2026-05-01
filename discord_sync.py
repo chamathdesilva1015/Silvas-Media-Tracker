@@ -638,6 +638,10 @@ class SyncClient(discord.Client):
                 except Exception as e:
                     self._log(f"  [!] Audit failed for {mtype}: {e}")
 
+            # ── Disconnect so the background task completes ──
+            self._log("[Sync] Disconnecting client...")
+            await self.close()
+
 # ─── Public API ──────────────────────────────────────────────────────────────
 async def run_sync(log_func=print, category=None):
     """Entry point called by the FastAPI background task."""
