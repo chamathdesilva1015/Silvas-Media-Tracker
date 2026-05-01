@@ -390,6 +390,11 @@ async def trigger_sync(background_tasks: BackgroundTasks, category: Optional[str
         try:
             res = await run_sync(log_func=log_sync, category=category)
             automation_status["sync"]["last_result"] = res
+            
+            # AUTOMATIC ENRICHMENT: If sync succeeded, trigger magic auto-fill for Movies
+            if res.get("status") == "success":
+                log_sync("[System] Sync successful. Triggering automatic enrichment for Movies...")
+                await trigger_enrich(background_tasks, category="Movies")
         except Exception as e:
             log_sync(f"[System] Critical Error: {str(e)}")
             automation_status["sync"]["last_result"] = {"status": "error", "message": str(e)}
@@ -397,7 +402,7 @@ async def trigger_sync(background_tasks: BackgroundTasks, category: Optional[str
             automation_status["sync"]["running"] = False
             
     background_tasks.add_task(run_sync_task)
-    return {"ok": True, "message": "Sync started"}
+    return {"ok": True, "message": "Sync started (Enrichment will follow automatically)"}
 
 @app.post("/api/automation/enrich")
 async def trigger_enrich(background_tasks: BackgroundTasks, category: Optional[str] = None):
