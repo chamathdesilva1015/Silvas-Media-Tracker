@@ -441,9 +441,37 @@ header p {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    gap: 0.8rem;
+    flex-wrap: nowrap;
     justify-content: flex-end;
+}
+
+#addMediaBtn .mobile-text {
+    display: none;
+}
+
+@media (max-width: 800px) {
+    #addMediaBtn {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50% !important;
+        display: none; /* Controlled by JS */
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        padding: 0;
+        font-size: 1.5rem;
+    }
+    #addMediaBtn .desktop-text {
+        display: none;
+    }
+    #addMediaBtn .mobile-text {
+        display: block;
+    }
 }
 
 /* Search and Custom Dropdown */

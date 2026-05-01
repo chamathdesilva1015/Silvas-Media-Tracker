@@ -38,15 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('reviewInputBox').readOnly = false;
             document.getElementById('reviewInputBox').placeholder = 'Type your review here...';
             
-            if (!isReadOnly) {
-                // Localhost
-                if(guestActions) guestActions.style.display = 'none';
-                if(devActions) devActions.style.display = 'block';
-            } else {
-                // Logged in live
-                if(guestActions) guestActions.style.display = 'none';
-                if(devActions) devActions.style.display = 'block';
-            }
+            if(guestActions) guestActions.style.display = 'none';
+            if(devActions) devActions.style.display = 'block';
+            
+            // Show global add button in header
+            const globalAddBtn = document.getElementById('addMediaBtn');
+            if (globalAddBtn) globalAddBtn.style.display = 'flex';
         } else {
             document.body.classList.add('read-only-mode');
             document.getElementById('reviewInputBox').readOnly = true;
@@ -54,6 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if(guestActions) guestActions.style.display = 'block';
             if(devActions) devActions.style.display = 'none';
+            
+            // Hide global add button
+            const globalAddBtn = document.getElementById('addMediaBtn');
+            if (globalAddBtn) globalAddBtn.style.display = 'none';
         }
     };
 
@@ -603,7 +604,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.updateAuthUI();
             }
             if (controls) controls.style.display = 'none';
-            if (addBtn) addBtn.style.display = 'none';
+            // KEEP the add button visible even in Info/Stats if admin is unlocked
+            if (isAdminUnlocked && addBtn) addBtn.style.display = 'block';
             return;
         } else {
             grid.style.display = (currentSubTab === 'Rankings') ? 'block' : 'grid';
