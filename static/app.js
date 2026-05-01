@@ -376,7 +376,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle">Cubic Favoritism Model: Σ (Rating - 4)³. This ranking uses a "Quality Bias" algorithm that subtracts a mediocre baseline (4.0) and cubes the difference. It ensures that a single 10/10 masterpiece carries more weight than dozens of average 6/10 entries, highlighting the genres you truly love over those you simply watch the most.</span>
+                        <span class="hof-subtitle"><b>The Bayesian Passion Model:</b> This ranking uses a sophisticated statistical blend of <b>Volume</b>, <b>Quality</b>, and <b>Consistency</b>.
+                        <br><br>
+                        1. <b>The Anchor (Bayesian Weighting):</b> We don't just look at a genre's average score; we "anchor" it against your entire collection's average. This prevents a single 10/10 movie from making a random genre your "favorite" by mistake. It requires multiple high-rated movies to build confidence.
+                        <br><br>
+                        2. <b>The Connoisseur Factor (Consistency):</b> We mathematically reward genres where you consistently give high ratings. If you've seen 10 Horror movies and loved every single one of them, Horror will rank higher than a genre where your scores are wildly inconsistent.
+                        <br><br>
+                        <b>The Result:</b> A list that represents your true expertise and long-term passion, filtering out "one-hit wonders" and statistical noise.</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>

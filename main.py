@@ -397,28 +397,49 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
 
-    # Favorite Genre (Movies ONLY) - Mathematical Weighted Analysis
+    # Favorite Genre (Movies ONLY) - "Bayesian Passion" Model (Mix of 1 & 3)
     favorite_genre = None
-    if category.lower() == "movies":
-        genre_weights = {}
+    if category.lower() == "movies" and scored_items:
+        import statistics
+        
+        # 1. Calculate Global Average (C)
+        global_scores = [s for s, i in scored_items]
+        global_avg = sum(global_scores) / len(global_scores)
+        m = 3.0 # Minimum "confidence" count
+        
+        genre_data = {} # {name: [scores]}
         for s, i in scored_items:
-            if not i.genres or s < 5:
-                continue
-            
-            # Math: Cubic weight model. Weight = (Score - 4)^3
-            # This makes 8+ ratings "pop" significantly while keeping 9 and 10 relatively proportional.
-            # 10/10 = 216 pts | 9/10 = 125 pts | 8/10 = 64 pts | 7/10 = 27 pts
-            weight = (s - 4) ** 3
-            
+            if not i.genres: continue
             parts = [g.strip() for g in i.genres.split(",")]
             for p in parts:
-                genre_weights[p] = genre_weights.get(p, 0) + weight
+                if p not in genre_data: genre_data[p] = []
+                genre_data[p].append(s)
         
-        if genre_weights:
-            # Sort by total weight desc
-            sorted_genres = sorted(genre_weights.items(), key=lambda x: (-x[1], x[0]))
-            # Return Top 5
-            favorite_genre = [g for g, w in sorted_genres[:5]]
+        genre_scores = []
+        for g_name, scores in genre_data.items():
+            v = len(scores)
+            avg_r = sum(scores) / v
+            
+            # Bayesian Weighted Average: (v*R + m*C) / (v+m)
+            bayesian_avg = (v * avg_r + m * global_avg) / (v + m)
+            
+            # Consistency / Stability Factor (Standard Deviation)
+            # Low standard deviation = high stability
+            if v > 1:
+                stdev = statistics.stdev(scores)
+                # We normalize stdev: 0 stdev (perfect consistency) = 1.0 multiplier
+                # Higher stdev reduces the score
+                stability_factor = 1.0 / (1.0 + (stdev * 0.5))
+            else:
+                stability_factor = 0.7 # Penalty for single-item genres
+            
+            final_score = bayesian_avg * stability_factor
+            genre_scores.append((g_name, final_score))
+            
+        if genre_scores:
+            # Sort by final_score desc
+            genre_scores.sort(key=lambda x: x[1], reverse=True)
+            favorite_genre = [g for g, s in genre_scores[:5]]
 
     return {
         "total": total,
