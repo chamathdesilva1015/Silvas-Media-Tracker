@@ -348,6 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
             populateGenreFilters();
             
             updateActiveFilterCount();
+            filterMenu.classList.remove('active');
             filterAndRenderMedia();
         });
     }
@@ -1664,16 +1665,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const actionsDiv = row.querySelector('.ranking-row-actions');
                     
-                    const likeBtn = document.createElement('button');
-                    likeBtn.className = `like-btn-inline${item.is_liked ? ' liked' : ''}`;
-                    likeBtn.innerHTML = item.is_liked ? '♥' : '♡';
-                    likeBtn.style.background = 'transparent';
-                    likeBtn.style.border = 'none';
-                    likeBtn.style.cursor = 'pointer';
-                    likeBtn.style.fontSize = '1.2rem';
-                    likeBtn.style.color = item.is_liked ? '#ff6b6b' : 'var(--text-muted)';
-                    likeBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleLike(item.id); });
-                    actionsDiv.appendChild(likeBtn);
+                    if (isAdminUnlocked || item.is_liked) {
+                        const likeBtn = document.createElement('button');
+                        likeBtn.className = `like-btn-inline${item.is_liked ? ' liked' : ''}`;
+                        likeBtn.innerHTML = item.is_liked ? '♥' : '♡';
+                        likeBtn.style.background = 'transparent';
+                        likeBtn.style.border = 'none';
+                        likeBtn.style.cursor = isAdminUnlocked ? 'pointer' : 'default';
+                        likeBtn.style.fontSize = '1.2rem';
+                        likeBtn.style.color = item.is_liked ? '#ff6b6b' : 'var(--text-muted)';
+                        if (isAdminUnlocked) {
+                            likeBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleLike(item.id); });
+                        } else {
+                            likeBtn.style.pointerEvents = 'none';
+                        }
+                        actionsDiv.appendChild(likeBtn);
+                    }
 
                     const delBtn = document.createElement('button');
                     delBtn.className = 'delete-btn';
@@ -1766,7 +1773,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="${sourceBadgeClass}">
                             ${sourceText}
                         </div>
-                        <button class="like-btn-inline ${likedClass}" title="${item.is_liked ? 'Unlike' : 'Like'}">${likedIcon}</button>
+                        ${(isAdminUnlocked || item.is_liked) ? `
+                            <button class="like-btn-inline ${likedClass}" 
+                                    title="${isAdminUnlocked ? (item.is_liked ? 'Unlike' : 'Like') : ''}"
+                                    style="${!isAdminUnlocked ? 'pointer-events: none; cursor: default;' : ''}">${likedIcon}</button>
+                        ` : ''}
                     </div>
                 `;
 
@@ -1781,10 +1792,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Wire up like button click
-                card.querySelector('.like-btn-inline').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    toggleLike(item.id);
-                });
+                const cardLikeBtn = card.querySelector('.like-btn-inline');
+                if (cardLikeBtn && isAdminUnlocked) {
+                    cardLikeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleLike(item.id);
+                    });
+                }
 
                 // Delete button for cards (all sources allowed)
                 const delBtn = document.createElement('button');
