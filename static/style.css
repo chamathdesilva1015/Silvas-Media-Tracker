@@ -1293,11 +1293,15 @@ delete-btn {
 }
 
 .hof-subtitle {
+    display: block;
     font-size: 0.72rem;
     font-weight: 400;
-    opacity: 0.5;
+    opacity: 0.6;
     text-transform: none;
     letter-spacing: 0;
+    margin-top: 0.4rem;
+    line-height: 1.4;
+    max-width: 90%;
 }
 
 .hof-chevron {

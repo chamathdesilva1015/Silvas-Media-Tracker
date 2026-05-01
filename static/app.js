@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle">Quality Weighted: High ratings (8-10) carry exponentially more weight than average ones.</span>
+                        <span class="hof-subtitle">Cubic Favoritism Model: Σ (Rating - 4)³. This ranking uses a "Quality Bias" algorithm that subtracts a mediocre baseline (4.0) and cubes the difference. It ensures that a single 10/10 masterpiece carries more weight than dozens of average 6/10 entries, highlighting the genres you truly love over those you simply watch the most.</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
