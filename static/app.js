@@ -1542,12 +1542,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     [top3[1], top3[0], top3[2]].forEach((it, idx) => {
                         if (!it) return;
                         const node = podiumContainer.children[idx];
-                        if (isRealReview(it.review) || computeCanEdit()) {
-                            node.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                window.openReviewModal(it.title, it.type, it.review, it.id);
-                            });
-                        }
+                        node.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            window.openQuickInfo(it);
+                        });
                     });
 
                     grid.appendChild(podiumContainer);
@@ -1588,12 +1586,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
 
-                    if (canClickReview) {
-                        row.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            window.openReviewModal(item.title, item.type, item.review, item.id);
-                        });
-                    }
+                    row.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.openQuickInfo(item);
+                    });
 
                     const actionsDiv = row.querySelector('.ranking-row-actions');
                     
