@@ -2195,27 +2195,26 @@ document.addEventListener('DOMContentLoaded', () => {
         watchStartupSync();
     });
 
-    // --- Global Scroll-Based Navigation Visibility (v177) ---
-    let lastScrollY = window.scrollY;
-    const mainHeader = document.getElementById('mainHeader');
-    const bottomNav = document.getElementById('bottomNav');
+    // --- Smart Scroll Navigation (v177) ---
+    let lastScrollTop = 0;
+    const header = document.querySelector('header');
+    const bNav = document.querySelector('.bottom-nav');
 
     window.addEventListener('scroll', () => {
-        const currentScrollY = window.scrollY;
+        let st = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Tolerance to prevent flickering on small movements
-        if (Math.abs(currentScrollY - lastScrollY) < 10) return;
+        // Threshold to prevent flickering on tiny scrolls
+        if (Math.abs(st - lastScrollTop) < 5) return;
 
-        if (currentScrollY > lastScrollY && currentScrollY > 100) {
-            // Scrolling DOWN (towards bottom) -> Hide Header, Show Footer
-            mainHeader?.classList.add('header-hidden');
-            bottomNav?.classList.remove('footer-hidden');
-        } else if (currentScrollY < lastScrollY) {
-            // Scrolling UP (towards top) -> Show Header, Hide Footer
-            mainHeader?.classList.remove('header-hidden');
-            bottomNav?.classList.add('footer-hidden');
+        if (st > lastScrollTop && st > 80) {
+            // Scrolling Down -> Hide Header, Show Footer
+            header.classList.add('header-hidden');
+            if (bNav) bNav.classList.remove('footer-hidden');
+        } else if (st < lastScrollTop) {
+            // Scrolling Up -> Show Header, Hide Footer
+            header.classList.remove('header-hidden');
+            if (bNav) bNav.classList.add('footer-hidden');
         }
-        
-        lastScrollY = currentScrollY;
-    }, { passive: true });
+        lastScrollTop = st <= 0 ? 0 : st;
+    }, false);
 });
