@@ -399,10 +399,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="hof-accordion-body" id="genresBody">
                     ${data.favorite_genres.map((g, i) => `
-                        <div class="hof-entry">
+                        <div class="hof-entry" style="align-items: flex-start;">
                             <span class="hof-entry-rank" style="color: var(--theme-accent);">${i + 1}</span>
-                            <span class="hof-entry-title" style="text-transform: capitalize; font-weight: 600;">${g.name}</span>
-                            <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.7; color: var(--theme-accent);">${g.score} pts</span>
+                            <div style="display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0;">
+                                <span class="hof-entry-title" style="text-transform: capitalize; font-weight: 600;">${g.name}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; line-height: 1.4;">
+                                    Key Examples: ${g.examples.join(', ')}
+                                </span>
+                            </div>
+                            <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.7; color: var(--theme-accent); align-self: center;">${g.score} pts</span>
                         </div>
                     `).join('')}
                 </div>
@@ -431,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div style="display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0;">
                                 <span class="hof-entry-title" style="font-weight: 700;">${d.name}</span>
                                 <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; line-height: 1.4;">
-                                    Examples: ${d.examples.join(', ')}
+                                    Key Examples: ${d.examples.join(', ')}
                                 </span>
                             </div>
                             <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.7; color: var(--theme-accent); align-self: center;">${d.score} pts</span>

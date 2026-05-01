@@ -438,11 +438,17 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             confidence = (1.0 - (1.0 / v))
             
             final_score = total_passion * confidence
-            genre_scores.append((g_name, final_score))
+            # Get top 10 movies for this genre as examples
+            sorted_m = sorted(items, key=lambda x: x[0], reverse=True)
+            examples = [i.title for s, i in sorted_m[:10]]
+            genre_scores.append((g_name, final_score, examples))
             
         if genre_scores:
             genre_scores.sort(key=lambda x: x[1], reverse=True)
-            favorite_genre = [{"name": g, "score": round(s, 1)} for g, s in genre_scores[:5]]
+            favorite_genre = [
+                {"name": g, "score": round(s, 1), "examples": ex} 
+                for g, s, ex in genre_scores[:5]
+            ]
 
     # Favorite Directors (Movies ONLY) - Same Passion-Volume Model
     favorite_directors = []
@@ -478,9 +484,9 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             
             for d_name, score, items_list in top_dirs:
                 if score <= 0: continue
-                # Get top 4 movies as examples
+                # Get top 10 movies as examples
                 sorted_movies = sorted(items_list, key=lambda x: x[0], reverse=True)
-                examples = [i.title for s, i in sorted_movies[:4]]
+                examples = [i.title for s, i in sorted_movies[:10]]
                 favorite_directors.append({
                     "name": d_name,
                     "score": round(score, 1),
