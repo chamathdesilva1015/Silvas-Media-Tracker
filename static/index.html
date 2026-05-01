@@ -60,7 +60,7 @@
                         <div class="page-tabs" id="pageTabs">
                             <button class="pill-tab active" data-sub="Completed">Completed</button>
                             <button class="pill-tab" data-sub="Rankings">Rankings</button>
-                            <button class="pill-tab pill-tab-liked" data-sub="Liked">♥ Liked</button>
+                            <button class="pill-tab pill-tab-liked" data-sub="Liked">Liked</button>
                             <button class="pill-tab" data-sub="Info">Developer Console</button>
                             <button class="pill-tab" data-sub="Stats">Run Stats</button>
                         </div>
@@ -68,8 +68,8 @@
                 </div>
                 <div class="header-right">
                     <!-- Admin Login (Mobile Friendly) -->
-                    <button id="mobileLoginBtn" class="icon-btn admin-mobile-btn" title="Developer Login" style="font-size: 1.1rem; padding: 0 8px; opacity: 0.7;">🔒</button>
-                    <button id="mobileLogoutBtn" class="icon-btn admin-mobile-btn" title="Developer Logout" style="display: none; font-size: 1.1rem; padding: 0 8px; color: #e74c3c;">🚪</button>
+                    <button id="mobileLoginBtn" class="icon-btn admin-mobile-btn" title="Developer Login" style="font-size: 1.1rem; padding: 0 8px; opacity: 0.7;">Login</button>
+                    <button id="mobileLogoutBtn" class="icon-btn admin-mobile-btn" title="Developer Logout" style="display: none; font-size: 1.1rem; padding: 0 8px; color: #e74c3c;">Logout</button>
                     
                     <!-- Sort Controls -->
                     <div class="custom-dropdown" id="sortDropdown">
@@ -92,7 +92,7 @@
                         </ul>
                     </div>
                     <div class="search-container">
-                        <span class="search-icon">🔍</span>
+                        <span class="search-icon"></span>
                         <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
                     </div>
                 </div>
@@ -136,12 +136,10 @@
                     <h3 class="serif" style="margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--theme-accent);">Live Database Sync</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                         <button id="triggerSyncBtn" class="btn-primary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto;">
-                            <span style="font-size: 1.5rem;">🔄</span>
                             <strong>Sync Now</strong>
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Pull latest from Discord</span>
                         </button>
                         <button id="triggerEnrichBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
-                            <span style="font-size: 1.5rem;">✨</span>
                             <strong>Magic Auto-Fill</strong>
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Enrich Movie Metadata</span>
                         </button>
@@ -276,7 +274,6 @@
         <div class="modal-content" style="max-width: 380px; text-align: center; background: rgba(30, 30, 35, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
             <span class="close-btn" id="closeLoginModalBtn" style="right: 20px; top: 15px;">&times;</span>
             <div style="margin-top: 1.5rem; margin-bottom: 2rem;">
-                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔐</div>
                 <h2 class="serif" style="margin-bottom: 8px; font-size: 1.8rem;">Developer Portal</h2>
                 <p style="color: var(--text-secondary); font-size: 0.85rem; opacity: 0.8;">
                     Enter the 4-digit key to unlock database write access.
