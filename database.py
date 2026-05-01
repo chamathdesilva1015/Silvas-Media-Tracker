@@ -20,6 +20,8 @@ class MediaItem(SQLModel, table=True):
     enrichment_attempts: int = Field(default=0) # Track attempts to avoid infinite retries
     date_added: datetime = Field(default_factory=datetime.utcnow)
     cover_url: Optional[str] = None
+    genres: Optional[str] = None
+    tmdb_id: Optional[int] = None
 
 class SyncState(SQLModel, table=True):
     """Tracks the last-synced Discord message ID per channel for incremental sync."""

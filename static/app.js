@@ -1282,6 +1282,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-header">
                         <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
+                    ${item.genres ? `
+                        <div class="genre-container">
+                            ${item.genres.split(',').map(g => `<span class="genre-badge">${g.trim()}</span>`).join('')}
+                        </div>
+                    ` : ''}
                     <div class="media-rating-container">
                         <div class="media-rating default-rating">${displayRating}</div>
                         ${(() => {

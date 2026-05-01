@@ -72,7 +72,7 @@ async def on_startup():
 
 
 async def _background_sync():
-    """Runs a full Discord sync every time the server starts."""
+    """Runs a full Discord sync every time the server starts, followed by enrichment."""
     automation_status["sync"]["running"] = True
     automation_status["sync"]["logs"] = ["[System] Auto-sync started on launch..."]
 
@@ -84,6 +84,9 @@ async def _background_sync():
         res = await run_sync(log_func=log_sync, category=None)
         automation_status["sync"]["last_result"] = res
         print(f"[Startup] Discord sync complete: {res}")
+        
+        # Trigger enrichment for Movies automatically after sync
+        await run_enrichment(category="Movies")
     except Exception as e:
         print(f"[Startup] Discord sync error: {e}")
         automation_status["sync"]["last_result"] = {"status": "error", "message": str(e)}
@@ -112,7 +115,7 @@ def delete_media_item(item_id: int, session: Session = Depends(get_session), _: 
     return {"status": "success", "message": "Item deleted"}
 
 @app.post("/api/media", response_model=MediaItem)
-def create_media(item: MediaItem, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     # Error-Proof Duplicate Check
     stmt = select(MediaItem).where(
         MediaItem.title == item.title,
@@ -129,6 +132,11 @@ def create_media(item: MediaItem, session: Session = Depends(get_session), _: No
     session.add(item)
     session.commit()
     session.refresh(item)
+
+    # Auto-enrich if it's a Movie
+    if item.type == "Movies":
+        background_tasks.add_task(run_enrichment, category="Movies")
+
     return item
 
 class ReviewPayload(BaseModel):
