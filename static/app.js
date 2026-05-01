@@ -1736,17 +1736,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="director-badge">${item.director}</span>
                         </div>
                     ` : ''}
-                    <div class="media-rating-container">
-                        <div class="media-rating default-rating">${displayRating}</div>
-                        ${(() => {
-                            const hc = String(item.numeric_rating || '').trim();
-                            // Only render a separate hover rating if it provides new information (e.g. score over rank)
-                            if (isScore(hc) && hc !== displayRating) {
-                                return `<div class="media-rating hover-rating">${hc}</div>`;
-                            }
-                            return '';
-                        })()}
-                    </div>
                     <div class="card-badges">
                         <div class="badge-slot-left">
                             ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
