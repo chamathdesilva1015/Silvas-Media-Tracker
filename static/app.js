@@ -1289,14 +1289,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Update ALL elements representing this item in the DOM
-        // (This handles cases where the item appears in both Movies and Rankings)
         const allMatchingTiles = document.querySelectorAll(`[data-item-id]`);
         allMatchingTiles.forEach(el => {
             const elId = el.getAttribute('data-item-id');
             const cachedItem = allMedia.find(m => m.id == elId);
             
             if (cachedItem && cachedItem.title === targetTitle && cachedItem.type === targetType) {
-                const likeBtn = el.querySelector('.like-btn');
+                // Find either like-btn (rankings) or like-btn-inline (cards)
+                const likeBtn = el.querySelector('.like-btn, .like-btn-inline');
                 if (likeBtn) {
                     if (newState) {
                         likeBtn.classList.add('liked');
