@@ -1283,6 +1283,7 @@ delete-btn {
     border-radius: 16px;
     margin-bottom: 1.5rem;
     overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .hof-accordion-header {
@@ -1346,6 +1347,18 @@ delete-btn {
 .hof-accordion-body.open {
     max-height: 400px;
     border-top-width: 1px;
+}
+
+.hof-accordion.active {
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 20px rgba(var(--theme-accent-rgb, 100, 180, 255), 0.2);
+    transform: translateY(-2px);
+}
+
+/* Specific theme for Directors if desired, but using generic accent for consistency */
+#directorsAccordion.active {
+    border-color: #14a08c;
+    box-shadow: 0 0 20px rgba(20, 160, 140, 0.25);
 }
 
 /* Custom scrollbar for HOF */

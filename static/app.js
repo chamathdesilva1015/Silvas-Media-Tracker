@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ` : ''}
 
             ${data.favorite_directors && data.favorite_directors.length ? `
-            <div class="hof-accordion" id="directorsAccordion" style="margin-bottom: 1.5rem; border-color: #14a08c;">
+            <div class="hof-accordion" id="directorsAccordion" style="margin-bottom: 1.5rem;">
                 <div class="hof-accordion-header" id="directorsHeader">
                     <div class="hof-accordion-title">
                         Top Directors
@@ -467,8 +467,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const chevron = statsPage.querySelector(`#${chevronId}`);
             if (header && body) {
                 header.addEventListener('click', () => {
+                    const parent = header.closest('.hof-accordion');
                     const isOpening = !body.classList.contains('open');
                     body.classList.toggle('open');
+                    if (parent) parent.classList.toggle('active', isOpening);
                     if (chevron) chevron.style.transform = isOpening ? 'rotate(180deg)' : 'rotate(0deg)';
                 });
             }
