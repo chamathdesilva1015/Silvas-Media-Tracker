@@ -2648,13 +2648,23 @@ body.read-only-mode #clearReviewBtn {
 
     .header-left {
         width: 100%;
-        gap: 0.5rem;
+        gap: 0.8rem;
         flex-direction: column;
         align-items: center;
+        text-align: center;
     }
 
     #pageTitle {
-        margin-bottom: 0.2rem;
+        margin-bottom: 0;
+        line-height: 1.2;
+    }
+
+    .header-count {
+        font-size: 0.7rem !important;
+        padding: 0.15rem 0.5rem !important;
+        margin-left: 0.4rem !important;
+        background: rgba(var(--theme-accent-rgb), 0.1) !important;
+        border-radius: 12px !important;
     }
 
     /* Make pill tabs scrollable instead of wrapping */
@@ -2685,8 +2695,12 @@ body.read-only-mode #clearReviewBtn {
         display: grid;
         grid-template-columns: 1fr 1fr;
         width: 100%;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
+        gap: 0.4rem;
+        margin-top: 0.2rem;
+        padding: 0.8rem;
+        background: rgba(0,0,0,0.2);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.05);
     }
 
     .header-right .search-container {
@@ -2755,8 +2769,13 @@ body.read-only-mode #clearReviewBtn {
     }
 
     h3.media-title {
-        font-size: 0.75rem;
-        line-height: 1.15;
+        font-size: 0.7rem;
+        line-height: 1.1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .card-badges {
@@ -2832,13 +2851,14 @@ body.read-only-mode #clearReviewBtn {
 
     .media-rating.default-rating {
         position: relative;
-        font-size: 0.75rem;
-        /* Shrunk for 3-column layout */
-        font-weight: 800;
-        opacity: 0;
+        font-size: 0.65rem;
+        /* Ultra shrunk for 3-column layout */
+        font-weight: 900;
+        opacity: 0.9; /* Show it subtle by default on mobile for better glanceability */
         transform: none;
         transition: opacity 0.3s ease;
-        text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.9);
+        color: var(--theme-accent);
     }
 
     .media-rating.hover-rating {
