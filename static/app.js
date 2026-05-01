@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statsPage.innerHTML = `
             <div class="stats-header">
                 <h2 class="serif">${category} — Analysis Complete</h2>
-                <p>Insights generated from your ${category.toLowerCase()} collection.</p>
+                <p>Insights generated from ${category.toLowerCase()} collection.</p>
             </div>
 
             <div class="stats-hero-row">
@@ -708,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const items = allMedia.filter(i => (i.type || '').toLowerCase() === currentCategory.toLowerCase());
         const count = items.length;
         
-        pageTitle.innerHTML = `<span class="serif">${currentCategory}</span> <span class="header-count">Total Entries ${count}</span>`;
+        pageTitle.innerHTML = `<span class="serif">${currentCategory}</span>`;
     };
 
     const grid = document.getElementById('mediaGrid');
