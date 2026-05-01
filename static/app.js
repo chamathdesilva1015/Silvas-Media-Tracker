@@ -340,8 +340,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 unreviewed: false,
                 genres: new Set()
             };
-            const defaultSort = document.querySelector('input[name="sort"][value="shuffle"]');
-            if (defaultSort) defaultSort.checked = true;
+            const defaultSort = document.querySelector('input[name="sort"][value="rating-desc"]');
+            if (defaultSort) defaultSort.checked = false; // Don't pre-check anything on reset to imply shuffle
             document.getElementById('filterLiked').checked = false;
             document.getElementById('filterReviewed').checked = false;
             document.getElementById('filterUnreviewed').checked = false;
