@@ -22,38 +22,10 @@
         <div class="mesh-blob blob-3"></div>
     </div>
     <div class="app-layout">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>Tabs</h2>
-                <button id="closeSidebarBtn" class="icon-btn">&times;</button>
-            </div>
-            <nav class="sidebar-nav" id="sidebarNav">
-                <a href="#" class="nav-link active" data-filter="Movies">
-                    <span class="nav-text">Movies</span>
-                </a>
-                <a href="#" class="nav-link" data-filter="TV Series">
-                    <span class="nav-text">TV Series</span>
-                </a>
-                <a href="#" class="nav-link" data-filter="Manga">
-                    <span class="nav-text">Manga</span>
-                </a>
-
-                <a href="#" class="nav-link" data-filter="Anime">
-                    <span class="nav-text">Anime</span>
-                </a>
-            </nav>
-            <div class="sidebar-footer">
-                <button id="addMediaBtn" class="btn-primary btn-full">+ Add Entry</button>
-                <button id="loginAdminBtn" class="btn-secondary btn-full" style="margin-top: 10px; opacity: 0.6; font-size: 0.8rem;">Login</button>
-            </div>
-        </aside>
-
         <div class="main-content">
             <div id="pageBanner" class="page-banner"></div>
             <header>
                 <div class="header-left">
-                    <button id="openSidebarBtn" class="icon-btn hamburger">&#9776;</button>
                     <div class="header-content">
                         <h1 id="pageTitle"><span class="serif">Movies</span></h1>
                         
@@ -66,10 +38,6 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <!-- Admin Login (Mobile Friendly) -->
-                    <button id="mobileLoginBtn" class="icon-btn admin-mobile-btn" title="Developer Login" style="font-size: 1.1rem; padding: 0 8px; opacity: 0.7;">Login</button>
-                    <button id="mobileLogoutBtn" class="icon-btn admin-mobile-btn" title="Developer Logout" style="display: none; font-size: 1.1rem; padding: 0 8px; color: #e74c3c;">Logout</button>
-                    
                     <!-- Sort Controls -->
                     <div class="filter-controls">
                         <div class="search-container">
@@ -123,15 +91,29 @@
                 
                 <!-- Admin-Only Actions Container -->
                 <div id="devConsoleActions" style="display: none; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <h3 class="serif" style="margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--theme-accent);">Media Metadata & Enrichment</h3>
-                    <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <h3 class="serif" style="margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--theme-accent);">Developer Console</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                         <button id="triggerEnrichBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
                             <strong>Magic Auto-Fill</strong>
-                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Enrich Movie Metadata (Genres, Posters, Directors)</span>
+                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Enrich Movie Metadata</span>
+                        </button>
+                        <button id="logoutAdminBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.2); color: #e74c3c;">
+                            <strong>Logout</strong>
+                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Revoke Admin Access</span>
                         </button>
                     </div>
 
-                    <div id="consoleWrapper" style="display: none;">
+                    <div style="margin-bottom: 2rem;">
+                        <button id="addMediaBtn" class="btn-primary" style="width: 100%; padding: 1.2rem; border-radius: 12px; font-weight: 800;">+ ADD NEW ENTRY</button>
+                    </div>
+
+                <div id="guestConsoleActions" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <button id="loginAdminBtn" class="btn-secondary" style="width: 100%; padding: 1.2rem; border-radius: 12px; opacity: 0.6; font-size: 0.9rem;">
+                        Developer Login
+                    </button>
+                </div>
+
+                <div id="consoleWrapper" style="display: none;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                             <h4 style="font-family: 'Inter', sans-serif; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; opacity: 0.6;">Live Console Log</h4>
                             <div id="consoleSpinner" class="spinner-sm" style="display: none;"></div>

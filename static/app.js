@@ -24,35 +24,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return headers;
     };
 
-    const loginAdminBtns = [document.getElementById('loginAdminBtn'), document.getElementById('mobileLoginBtn')];
-    const logoutAdminBtns = [document.getElementById('logoutAdminBtn'), document.getElementById('mobileLogoutBtn')];
+    const loginAdminBtns = [document.getElementById('loginAdminBtn')];
+    const logoutAdminBtns = [document.getElementById('logoutAdminBtn')];
 
     // Make updateAuthUI safely globally accessible so it can run before and after media loads
     window.updateAuthUI = () => {
         const canEdit = computeCanEdit();
+        const guestActions = document.getElementById('guestConsoleActions');
+        const devActions = document.getElementById('devConsoleActions');
+
         if (canEdit) {
             document.body.classList.remove('read-only-mode');
             document.getElementById('reviewInputBox').readOnly = false;
             document.getElementById('reviewInputBox').placeholder = 'Type your review here...';
             
             if (!isReadOnly) {
-                // Localhost, no need for auth buttons
-                loginAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
-                logoutAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
+                // Localhost
+                if(guestActions) guestActions.style.display = 'none';
+                if(devActions) devActions.style.display = 'block';
             } else {
                 // Logged in live
-                loginAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
-                logoutAdminBtns.forEach(btn => { if(btn) btn.style.display = 'block'; });
-                const devActions = document.getElementById('devConsoleActions');
-                if (devActions) devActions.style.display = 'block';
+                if(guestActions) guestActions.style.display = 'none';
+                if(devActions) devActions.style.display = 'block';
             }
         } else {
             document.body.classList.add('read-only-mode');
             document.getElementById('reviewInputBox').readOnly = true;
             document.getElementById('reviewInputBox').placeholder = 'There is no review setup for this entry.';
             
-            logoutAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
-            loginAdminBtns.forEach(btn => { if(btn) btn.style.display = 'block'; });
+            if(guestActions) guestActions.style.display = 'block';
+            if(devActions) devActions.style.display = 'none';
         }
     };
 
@@ -126,21 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSubTab = 'Completed'; // Default subtab ('Completed' or 'Rankings')
 
     const searchInput = document.getElementById('searchInput');
-    
-    // Sidebar Toggles
-    const sidebar = document.getElementById('sidebar');
-    const openSidebarBtn = document.getElementById('openSidebarBtn');
-    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-
-    // Initial state check for mobile
-    if (window.innerWidth < 800) {
-        sidebar.classList.add('collapsed');
-    }
-
-    openSidebarBtn.onclick = () => sidebar.classList.remove('collapsed');
-    closeSidebarBtn.onclick = () => sidebar.classList.add('collapsed');
-
-    // Sidebar Tabs Navigation
     const navLinks = document.querySelectorAll('.nav-link');
     const pageTitle = document.getElementById('pageTitle');
     const pageBanner = document.getElementById('pageBanner');
@@ -207,11 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateTheme();
             filterAndRenderMedia();
-            
-            // Auto close sidebar on small mobile screens
-            if (window.innerWidth < 800) {
-                sidebar.classList.add('collapsed');
-            }
         });
     });
 
