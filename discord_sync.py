@@ -467,18 +467,18 @@ class SyncClient(discord.Client):
 
                             if existing["discord_id"] != msg_id:
                                 upd["discord_id"] = msg_id
-                            
-                            # If year changes, we invalidate enrichment data so the new movie is re-fetched
-                            if discord_year is not None and existing["release_year"] != discord_year:
-                                upd["release_year"] = discord_year
-                                if existing["release_year"] is not None:
-                                    upd["cover_url"] = None
-                                    upd["enrichment_attempts"] = 0
 
                             # ── Cross-pollination: keep rank + score in separate fields ──
                             is_currently_ranking = is_ranking or upd.get("is_ranking") or existing.get("is_ranking") or (existing["rating"] or "").startswith('#')
                             
                             if not existing.get("is_manual_rating"):
+                                # If year changes, we invalidate enrichment data so the new movie is re-fetched
+                                if discord_year is not None and existing["release_year"] != discord_year:
+                                    upd["release_year"] = discord_year
+                                    if existing["release_year"] is not None:
+                                        upd["cover_url"] = None
+                                        upd["enrichment_attempts"] = 0
+                                        
                                 if rating.startswith('#'):
                                     # Incoming = RANK
                                     if existing["rating"] and not existing["rating"].startswith('#'):
