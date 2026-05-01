@@ -1268,15 +1268,50 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Toggle like on a media item (optimistic UI + cascade via API)
+    // Toggle like on a media item (optimistic UI)
     const toggleLike = async (itemId) => {
+        // Find all elements representing this item in the DOM
+        const targetElements = document.querySelectorAll(`[data-item-id="${itemId}"]`);
+        
+        // Update local cache immediately
+        const itemIdx = allMedia.findIndex(m => m.id === itemId);
+        if (itemIdx === -1) return;
+        
+        const newState = !allMedia[itemIdx].is_liked;
+        allMedia[itemIdx].is_liked = newState;
+
+        // Update UI immediately (Optimistic UI)
+        targetElements.forEach(el => {
+            const likeBtn = el.querySelector('.like-btn');
+            if (likeBtn) {
+                if (newState) {
+                    likeBtn.classList.add('liked');
+                    likeBtn.innerHTML = '♥';
+                    likeBtn.title = 'Unlike';
+                } else {
+                    likeBtn.classList.remove('liked');
+                    likeBtn.innerHTML = '♡';
+                    likeBtn.title = 'Mark as personally liked';
+                    
+                    // If we are currently on the "Liked" sub-tab, fade out and remove the item
+                    if (currentSubTab === 'Liked') {
+                        el.style.opacity = '0';
+                        el.style.transform = 'scale(0.9)';
+                        el.style.transition = 'all 0.3s ease';
+                        setTimeout(() => el.remove(), 300);
+                    }
+                }
+            }
+        });
+
+        // Fire and forget (or handle error)
         try {
             const res = await fetch(`/api/media/like/${itemId}`, { 
                 method: 'POST',
                 headers: getAuthHeaders(false)
             });
-            if (res.ok) {
-                fetchMedia(); // refresh to reflect the new liked state everywhere
-            } else {
+            if (!res.ok) {
+                // Revert UI on error (simple alert or silent fail)
                 console.error('Failed to toggle like');
             }
         } catch (err) {
@@ -1346,6 +1381,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isRankingRequired) {
                 const row = document.createElement('div');
                 row.className = 'ranking-row stagger-in';
+                row.setAttribute('data-item-id', item.id);
                 row.style.animationDelay = `${index * 0.02}s`;
                 
                 const rankNum = parseInt(item.rating.replace('#', ''), 10);
@@ -1405,6 +1441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Traditional Grid Block 
                 const card = document.createElement('div');
                 card.className = 'media-card stagger-in';
+                card.setAttribute('data-item-id', item.id);
                 card.style.animationDelay = `${index * 0.02}s`;
                 
                 const yearBadge = item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : '';
