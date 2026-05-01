@@ -80,20 +80,18 @@ Focus: Modernized navigation and robust statistical modeling.
 - **Director Indexing**: Expanded search and metadata pipelines for Director-based lookups.
 - **Smart Scroll**: Implemented intelligent navigation visibility for immersive browsing.
 
-### Update 9: Standalone Evolution
-Focus: Decoupling from external platforms for true independence.
-- **Discord Decommissioning**: Removed all legacy synchronization logic and channel-based ingestion.
-- **Standalone Architecture**: Transitioned the core engine to support direct manual entry and TMDB-first enrichment.
-- **Interface Rebranding**: Rebranded "The Hub" and refined the UI to focus on direct database management.
-- **Workflow Optimization**: Streamlined the deployment process by removing external platform dependencies.
+### Update 9: Standalone Transition
+Focus: Total independence from external platforms.
+- **Discord Decommission**: Nuked all legacy Discord sync logic and channel-based ingestion.
+- **Standalone Engine**: Shifted to a manual-first database with TMDB-direct enrichment.
+- **Interface Overhaul**: Rebranded "The Hub" and optimized UI for standalone database management.
 
-### Update 10: Administrative Console & Data Integrity
-Focus: Centralized management and content validation.
-- **Desktop Navigation Restoration**: Reintegrated category-based navigation into the desktop header for improved accessibility.
-- **Authentication Consolidation**: Centralized all administrative login and logout controls within "The Hub" for both mobile and desktop.
-- **Review Content Guard**: Implemented a length-based and placeholder-aware safety filter to ensure "Reviewed" badges only display for entries with legitimate user content.
-- **Integrated Entry Tool**: Relocated the "+ Add Entry" button to the global header (and a compact mobile action button) for immediate access during browsing.
-- **Stability Fixes**: Resolved critical `TypeError` exceptions by implementing null-safe DOM updates and restoring missing UI anchors.
+### Update 10: Admin Console & Content Integrity
+Focus: Power-user tools and data validation.
+- **Header Add Tool**: Integrated a global "+ Add Entry" button (Desktop & Mobile FAB).
+- **Review Safety Filter**: Refined badge logic to block system placeholders and "fake" reviews.
+- **Navigation Sync**: Restored desktop category nav and centralized auth controls in The Hub.
+- **Stability Pass**: Fixed critical TypeError crashes and normalized UI anchor points.
 
 ---
 
