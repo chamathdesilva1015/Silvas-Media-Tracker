@@ -1566,18 +1566,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     let metaStr = [];
                     if (item.director) metaStr.push(`${item.director}`);
-                    if (item.genres) metaStr.push(item.genres.split(',').slice(0, 2).join(', '));
+                    if (item.genres) metaStr.push(item.genres.split(',').slice(0, 1).join(', '));
+                    if (item.runtime) metaStr.push(`${item.runtime}m`);
+                    if (item.content_rating) metaStr.push(item.content_rating);
                     const metaHtml = metaStr.length > 0 ? `<div class="ranking-row-meta">${metaStr.join(' • ')}</div>` : '';
 
                     const hasReview = isRealReview(item.review);
                     const canClickReview = hasReview || computeCanEdit();
+                    const reviewSnippet = hasReview ? `<div class="ranking-row-snippet">"${item.review.substring(0, 120)}${item.review.length > 120 ? '...' : ''}"</div>` : '';
 
                     row.innerHTML = `
                         <div class="ranking-row-rank">#${rankNum}</div>
                         ${posterHtml}
                         <div class="ranking-row-info">
-                            <div class="ranking-row-title ${canClickReview ? 'clickable-review-trigger' : ''}" style="${canClickReview ? 'cursor:pointer;' : ''}">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</div>
+                            <div class="ranking-row-title ${canClickReview ? 'clickable-review-trigger' : ''}" title="${item.title}">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</div>
                             ${metaHtml}
+                            ${reviewSnippet}
                         </div>
                         <div class="ranking-row-actions">
                             ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
