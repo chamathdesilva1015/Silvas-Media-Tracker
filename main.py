@@ -338,23 +338,27 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
 
-    # Favorite Genre (Movies ONLY)
+    # Favorite Genre (Movies ONLY) - Mathematical Weighted Analysis
     favorite_genre = None
     if category.lower() == "movies":
-        # Look at top-tier items (8 and above) to determine "Favorite" pattern
-        top_tier = [i for s, i in scored_items if s >= 8]
-        if top_tier:
-            genre_counts = {}
-            for i in top_tier:
-                if i.genres:
-                    parts = [g.strip() for g in i.genres.split(",")]
-                    for p in parts:
-                        genre_counts[p] = genre_counts.get(p, 0) + 1
-            if genre_counts:
-                # Sort by count desc, then alphabetically
-                sorted_genres = sorted(genre_counts.items(), key=lambda x: (-x[1], x[0]))
-                # Return Top 5
-                favorite_genre = [g for g, count in sorted_genres[:5]]
+        genre_weights = {}
+        for s, i in scored_items:
+            if not i.genres:
+                continue
+            
+            # Math: Exponential weighting. Weight = 2^(Score - 7)
+            # This ensures a 10/10 movie carries 8x the weight of a 7/10 movie.
+            weight = 2 ** (s - 7)
+            
+            parts = [g.strip() for g in i.genres.split(",")]
+            for p in parts:
+                genre_weights[p] = genre_weights.get(p, 0) + weight
+        
+        if genre_weights:
+            # Sort by total weight desc
+            sorted_genres = sorted(genre_weights.items(), key=lambda x: (-x[1], x[0]))
+            # Return Top 5
+            favorite_genre = [g for g, w in sorted_genres[:5]]
 
     return {
         "total": total,

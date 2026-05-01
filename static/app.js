@@ -300,10 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fetch the real data
             const fetchPromise = fetch(`/api/stats/${encodeURIComponent(category)}`).then(res => res.json());
             
-            // Wait for both the data AND at least 1000ms to give the "Run" effect
+            // Wait for both the data AND at least 2000ms to give the "Run" effect
             const results = await Promise.all([
                 fetchPromise,
-                new Promise(resolve => setTimeout(resolve, 1000))
+                new Promise(resolve => setTimeout(resolve, 2000))
             ]);
             data = results[0];
         } catch (e) {
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle">Based on items rated 8+</span>
+                        <span class="hof-subtitle">Weighted Bias: Σ 2<sup>(Rating - 7)</sup></span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
