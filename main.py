@@ -382,8 +382,10 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Rankings
     in_rankings = sum(1 for i in items if i.is_ranking)
 
-    # Total likes & Hall of Fame
+    # Total likes & Like Ratio
     total_likes = sum(1 for i in items if i.is_liked)
+    like_ratio = round(total / total_likes, 1) if total_likes > 0 else 0
+    
     hof_items = sorted(
         [(parse_score(i), i) for i in items if parse_score(i) is not None and parse_score(i) >= 9.0],
         key=lambda x: x[0], reverse=True
@@ -441,6 +443,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         "lowest_rated":  {"title": lowest[1].title,  "score": lowest[1].numeric_rating or lowest[1].rating}  if lowest  else None,
         "with_reviews": with_reviews,
         "total_likes": total_likes,
+        "like_ratio": like_ratio,
         "hall_of_fame": hall_of_fame,
         "hall_of_fame_items": hall_of_fame_items,
         "in_rankings": in_rankings,

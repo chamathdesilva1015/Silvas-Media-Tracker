@@ -366,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-label">With Reviews <span style="font-size:0.6em;opacity:0.6">(${reviewPct}%)</span></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-value">♥ ${data.total_likes}</div>
-                    <div class="stat-card-label">Total Likes</div>
+                    <div class="stat-card-value">1 in ${data.like_ratio || '—'}</div>
+                    <div class="stat-card-label">Like Ratio <span style="font-size:0.6em;opacity:0.6">(Exclusivity)</span></div>
                 </div>
             </div>
 
