@@ -469,20 +469,20 @@ header p {
 }
 
 .filter-menu {
-    position: fixed; /* BREAKS OUT of all parent stacking contexts */
+    position: fixed;
     top: 80px;
     right: 2rem;
-    width: 380px;
-    background: rgba(15, 12, 10, 0.98);
-    backdrop-filter: blur(25px);
+    width: 340px; /* Slimmer for elegance */
+    background: #0f0d0c; /* Deeper, richer background */
+    backdrop-filter: blur(30px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    padding: 1.25rem;
-    z-index: 10000; /* Max priority */
+    border-radius: 24px;
+    padding: 1rem;
+    z-index: 10000;
     display: none;
     flex-direction: column;
-    gap: 1.25rem;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+    gap: 1rem; /* Tighter section gaps */
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9);
     animation: filterMenuIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -496,30 +496,30 @@ header p {
 }
 
 .filter-section h4 {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
     color: var(--theme-accent);
-    margin-bottom: 0.75rem;
-    opacity: 0.8;
+    margin-bottom: 0.6rem;
     font-weight: 800;
+    opacity: 0.9;
 }
 
 .filter-options-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 2 columns for high density */
-    gap: 0.6rem 1rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 0.8rem; /* Tighter grid gaps */
 }
 
 .filter-option {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     cursor: pointer;
-    font-size: 0.82rem;
-    color: var(--text-primary);
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.85);
     transition: all 0.2s;
-    padding: 0.3rem 0;
+    padding: 0.2rem 0;
 }
 
 .filter-option:hover {
@@ -529,8 +529,8 @@ header p {
 .filter-option input {
     accent-color: var(--theme-accent);
     cursor: pointer;
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     margin: 0;
 }
 
@@ -542,26 +542,48 @@ header p {
 
 .filter-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.4rem;
+    gap: 0.8rem;
+    margin-top: 0.2rem;
     padding-top: 0.8rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.filter-actions .btn-primary {
+    flex: 2;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+}
+
+.filter-actions .btn-text {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 0.6rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.filter-actions .btn-text:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
 }
 
 /* Scrollable genre list if it gets too long */
 #genreFilterList {
-    max-height: 180px;
+    max-height: 140px;
     overflow-y: auto;
-    padding-right: 0.5rem;
+    padding-right: 0.4rem;
 }
 
 #genreFilterList::-webkit-scrollbar {
-    width: 3px;
+    width: 2px;
 }
 
 #genreFilterList::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
 }
 
