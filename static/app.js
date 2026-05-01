@@ -1009,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const res = await fetch(`/api/media/update-rating/${item.id}`, {
                         method: 'POST',
                         headers: getAuthHeaders(),
-                        body: JSON.stringify({ rating: newVal })
+                        body: JSON.stringify({ rating: newVal.toString() })
                     });
                     const data = await res.json();
                     if (data.ok) {
