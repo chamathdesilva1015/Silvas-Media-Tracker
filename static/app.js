@@ -1510,63 +1510,118 @@ document.addEventListener('DOMContentLoaded', () => {
             const sourceText = item.source.toLowerCase() === 'discord' ? 'discord' : 'letterboxd';
 
             if (isRankingRequired) {
-                const row = document.createElement('div');
-                row.className = 'ranking-row stagger-in';
-                row.setAttribute('data-item-id', item.id);
-                row.style.animationDelay = `${index * 0.02}s`;
-                
-                const rankNum = parseInt(item.rating.replace('#', ''), 10);
-                
                 // Podium Logic (1, 2, 3)
-                let podiumClass = '';
-                if (rankNum === 1) podiumClass = 'rank-gold';
-                else if (rankNum === 2) podiumClass = 'rank-silver';
-                else if (rankNum === 3) podiumClass = 'rank-bronze';
+                if (index === 0) {
+                    const top3 = items.slice(0, 3);
+                    const podiumContainer = document.createElement('div');
+                    podiumContainer.className = 'ranking-podium stagger-in';
+                    
+                    const renderPodiumItem = (podiumItem, rankPos) => {
+                        if (!podiumItem) return '';
+                        const fallbackImg = `<div class="podium-poster" style="background:#2b2b2b;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.9rem;">No<br>Cover</div>`;
+                        const posterHtml = podiumItem.cover_url ? `<img src="${podiumItem.cover_url}" class="podium-poster">` : fallbackImg;
+                        const rankNum = parseInt((podiumItem.rating || '').replace('#', ''), 10) || rankPos;
+                        return `
+                            <div class="podium-item podium-rank-${rankPos}" data-item-id="${podiumItem.id}">
+                                <div class="podium-badge">#${rankNum}</div>
+                                ${posterHtml}
+                                <div class="podium-title">${podiumItem.title}</div>
+                                ${podiumItem.director ? `<div class="podium-director">${podiumItem.director}</div>` : ''}
+                            </div>
+                        `;
+                    };
 
-                const hasReview = isRealReview(item.review);
-                const canClickReview = hasReview || computeCanEdit();
+                    // Render Order: 2, 1, 3 for visual podium
+                    podiumContainer.innerHTML = `
+                        ${renderPodiumItem(top3[1], 2)}
+                        ${renderPodiumItem(top3[0], 1)}
+                        ${renderPodiumItem(top3[2], 3)}
+                    `;
 
-                row.innerHTML = `
-                    <div class="rank-badge ${podiumClass}">#${rankNum}</div>
-                    <div class="ranking-info">
-                        <div class="ranking-header">
-                            <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" style="${canClickReview ? 'cursor:pointer;' : ''}">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</h3>
-                        </div>
-                        ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
-                    </div>
-                `;
-
-                // Action group for ranking rows (Heart + Delete)
-                const actions = document.createElement('div');
-                actions.className = 'row-actions';
-
-                // Wire up review modal trigger for ranking row
-                if (canClickReview) {
-                    row.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        window.openReviewModal(item.title, item.type, item.review, item.id);
+                    // Wire up podium click events
+                    [top3[1], top3[0], top3[2]].forEach((it, idx) => {
+                        if (!it) return;
+                        const node = podiumContainer.children[idx];
+                        if (isRealReview(it.review) || computeCanEdit()) {
+                            node.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                window.openReviewModal(it.title, it.type, it.review, it.id);
+                            });
+                        }
                     });
+
+                    grid.appendChild(podiumContainer);
                 }
 
-                const likeBtn = document.createElement('button');
-                likeBtn.className = `like-btn${item.is_liked ? ' liked' : ''}`;
-                likeBtn.title = item.is_liked ? 'Unlike' : 'Mark as personally liked';
-                likeBtn.innerHTML = item.is_liked ? '♥' : '♡';
-                likeBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleLike(item.id); });
-                actions.appendChild(likeBtn);
+                // Rich Row Logic (4+)
+                if (index >= 3) {
+                    const rankNum = parseInt((item.rating || '').replace('#', ''), 10) || (index + 1);
+                    const row = document.createElement('div');
+                    row.className = 'ranking-row-rich stagger-in';
+                    row.setAttribute('data-item-id', item.id);
+                    row.style.animationDelay = `${(index - 3) * 0.02}s`;
 
-                const delBtn = document.createElement('button');
-                delBtn.className = 'delete-btn';
-                delBtn.innerHTML = '&times;';
-                delBtn.title = 'Delete Entry';
-                delBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteMedia(item.id, item.title);
-                });
-                actions.appendChild(delBtn);
-                
-                row.appendChild(actions);
-                grid.appendChild(row);
+                    const fallbackImg = `<div class="ranking-row-thumb-fallback">No<br>Cover</div>`;
+                    const posterHtml = item.cover_url ? `<img src="${item.cover_url}" class="ranking-row-thumb">` : fallbackImg;
+
+                    let metaStr = [];
+                    if (item.director) metaStr.push(`${item.director}`);
+                    if (item.genres) metaStr.push(item.genres.split(',').slice(0, 2).join(', '));
+                    const metaHtml = metaStr.length > 0 ? `<div class="ranking-row-meta">${metaStr.join(' • ')}</div>` : '';
+
+                    const hasReview = isRealReview(item.review);
+                    const canClickReview = hasReview || computeCanEdit();
+
+                    row.innerHTML = `
+                        <div class="ranking-row-rank">#${rankNum}</div>
+                        ${posterHtml}
+                        <div class="ranking-row-info">
+                            <div class="ranking-row-title ${canClickReview ? 'clickable-review-trigger' : ''}" style="${canClickReview ? 'cursor:pointer;' : ''}">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</div>
+                            ${metaHtml}
+                        </div>
+                        <div class="ranking-row-actions">
+                            ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
+                        </div>
+                    `;
+
+                    if (canClickReview) {
+                        row.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            window.openReviewModal(item.title, item.type, item.review, item.id);
+                        });
+                    }
+
+                    const actionsDiv = row.querySelector('.ranking-row-actions');
+                    
+                    const likeBtn = document.createElement('button');
+                    likeBtn.className = `like-btn-inline${item.is_liked ? ' liked' : ''}`;
+                    likeBtn.innerHTML = item.is_liked ? '♥' : '♡';
+                    likeBtn.style.background = 'transparent';
+                    likeBtn.style.border = 'none';
+                    likeBtn.style.cursor = 'pointer';
+                    likeBtn.style.fontSize = '1.2rem';
+                    likeBtn.style.color = item.is_liked ? '#ff6b6b' : 'var(--text-muted)';
+                    likeBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleLike(item.id); });
+                    actionsDiv.appendChild(likeBtn);
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'delete-btn';
+                    delBtn.innerHTML = '&times;';
+                    delBtn.style.background = 'transparent';
+                    delBtn.style.border = 'none';
+                    delBtn.style.cursor = 'pointer';
+                    delBtn.style.fontSize = '1.5rem';
+                    delBtn.style.color = '#ff6b6b';
+                    delBtn.style.padding = '0 5px';
+                    delBtn.title = 'Delete Entry';
+                    delBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteMedia(item.id, item.title);
+                    });
+                    actionsDiv.appendChild(delBtn);
+
+                    grid.appendChild(row);
+                }
 
             } else {
                 // Traditional Grid Block 

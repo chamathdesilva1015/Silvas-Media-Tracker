@@ -746,64 +746,178 @@ delete-btn {
     /* Override grid */
 }
 
-.ranking-row {
+/* Rankings Page Redesign */
+.ranking-podium {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 2rem;
+    margin: 3rem 0 4rem 0;
+    padding: 0 1rem;
+    grid-column: 1 / -1; /* spans full width if inside grid container */
+}
+
+.podium-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.podium-item:hover {
+    transform: translateY(-10px);
+}
+
+.podium-poster {
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 1rem;
+    border: 2px solid transparent;
+}
+
+.podium-rank-1 .podium-poster {
+    width: 200px;
+    height: 300px;
+    border-color: #d4af37;
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+}
+
+.podium-rank-2 .podium-poster {
+    width: 160px;
+    height: 240px;
+    border-color: #aaa9ad;
+    box-shadow: 0 8px 20px rgba(170, 169, 173, 0.3);
+}
+
+.podium-rank-3 .podium-poster {
+    width: 160px;
+    height: 240px;
+    border-color: #cd7f32;
+    box-shadow: 0 8px 20px rgba(205, 127, 50, 0.3);
+}
+
+.podium-badge {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-surface);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Lora', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    z-index: 2;
+}
+
+.podium-rank-1 .podium-badge { color: #d4af37; border: 2px solid #d4af37; }
+.podium-rank-2 .podium-badge { color: #aaa9ad; border: 2px solid #aaa9ad; }
+.podium-rank-3 .podium-badge { color: #cd7f32; border: 2px solid #cd7f32; }
+
+.podium-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    max-width: 200px;
+    color: var(--text-primary);
+}
+
+.podium-director {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 0.2rem;
+}
+
+/* Rich Ranking List (#4+) */
+.ranking-list-rich {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    grid-column: 1 / -1;
+}
+
+.ranking-row-rich {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 1.2rem 2rem;
+    padding: 1rem 1.5rem;
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
     box-shadow: var(--shadow-soft);
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-.ranking-row:hover {
+.ranking-row-rich:hover {
     transform: translateX(6px);
     box-shadow: 0 5px 20px var(--theme-accent-glow);
     border-color: var(--theme-accent);
 }
 
-.rank-badge {
+.ranking-row-rank {
     font-family: 'Lora', serif;
-    font-size: 2.8rem;
+    font-size: 2.2rem;
     font-weight: 700;
     color: var(--text-secondary);
-    min-width: 80px;
+    min-width: 60px;
     text-align: center;
-    opacity: 0.8;
+    opacity: 0.7;
 }
 
-/* Podium Colors */
-.rank-gold {
-    color: #d4af37;
-    opacity: 1;
-    text-shadow: 0 2px 4px rgba(212, 175, 55, 0.3);
+.ranking-row-thumb {
+    width: 60px;
+    height: 90px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
-.rank-silver {
-    color: #aaa9ad;
-    opacity: 1;
-    text-shadow: 0 2px 4px rgba(170, 169, 173, 0.3);
+.ranking-row-thumb-fallback {
+    width: 60px;
+    height: 90px;
+    border-radius: 6px;
+    background: var(--bg-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 0.5rem;
 }
 
-.rank-bronze {
-    color: #cd7f32;
-    opacity: 1;
-    text-shadow: 0 2px 4px rgba(205, 127, 50, 0.3);
-}
-
-.ranking-info {
+.ranking-row-info {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    justify-content: center;
 }
 
-.ranking-header {
+.ranking-row-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    color: var(--text-primary);
+}
+
+.ranking-row-meta {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.ranking-row-actions {
     display: flex;
     align-items: center;
-    gap: 1.2rem;
+    gap: 10px;
 }
 
 .media-rating-container {
