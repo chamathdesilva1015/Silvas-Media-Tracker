@@ -389,7 +389,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
     # Total likes & Like Ratio
     total_likes = sum(1 for i in items if i.is_liked)
-    like_ratio = round(total / total_likes, 1) if total_likes > 0 else 0
+    like_ratio = int(round(total / total_likes)) if total_likes > 0 else 0
     
     hof_items = sorted(
         [(parse_score(i), i) for i in items if parse_score(i) is not None and parse_score(i) >= 9.0],
