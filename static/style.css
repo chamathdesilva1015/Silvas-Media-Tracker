@@ -953,11 +953,32 @@ delete-btn {
 
 .media-rating-container {
     position: relative;
-    height: 80px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    perspective: 1000px;
+}
+
+/* The "Glow Stage" for the rating */
+.media-rating-container::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, var(--theme-accent-glow) 0%, transparent 75%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.media-card:hover .media-rating-container::before {
+    width: 220px;
+    height: 220px;
+    opacity: 0.4;
 }
 
 .media-rating {
@@ -965,40 +986,42 @@ delete-btn {
     top: 50%;
     left: 0;
     width: 100%;
-    transform: translateY(-50%);
-    font-size: 2.6rem;
-    font-weight: 800;
+    transform: translateY(-50%) scale(0.6) rotateX(-30deg);
+    font-size: 3.2rem;
+    font-weight: 900;
     color: var(--theme-accent);
-    text-shadow: 0 0 15px var(--theme-accent-glow);
-    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-shadow: 0 0 20px var(--theme-accent-glow);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     font-family: 'Lora', serif;
     text-align: center;
     pointer-events: none;
     z-index: 5;
     opacity: 0;
-    /* Minimalist: Hidden until hovered */
-}
-
-.hover-rating {
-    opacity: 0;
-    transform: scale(0.8);
-    color: var(--theme-accent) !important;
-    text-shadow: 0 0 25px var(--theme-accent-glow) !important;
+    filter: blur(10px);
+    letter-spacing: -2px;
 }
 
 .media-card:hover .media-rating {
     opacity: 1;
+    filter: blur(0);
+    transform: translateY(-50%) scale(1) rotateX(0deg);
 }
 
+.hover-rating {
+    color: var(--text-primary) !important;
+    text-shadow: 0 0 30px var(--theme-accent-glow) !important;
+    font-weight: 400;
+    opacity: 0;
+}
+
+/* If there's a second rating to show on hover, we use a slight offset */
 .media-card:hover .default-rating {
-    opacity: 1;
-    /* Revealed on hover */
-    transform: translateY(-50%) scale(1.05);
+    transform: translateY(-50%) scale(1);
 }
 
 .media-card:hover .hover-rating {
     opacity: 1 !important;
-    transform: translateY(-50%) scale(1.1);
+    transform: translateY(-50%) scale(0.85) translateZ(20px);
 }
 
 .card-badges {
