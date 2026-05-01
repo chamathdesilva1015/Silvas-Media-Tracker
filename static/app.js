@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle">Based on items rated 7.5+</span>
+                        <span class="hof-subtitle">Based on items rated 8+</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
