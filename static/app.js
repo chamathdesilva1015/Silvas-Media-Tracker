@@ -347,22 +347,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-value">${data.with_reviews}</div>
                     <div class="stat-card-label">With Reviews <span style="font-size:0.6em;opacity:0.6">(${reviewPct}%)</span></div>
                 </div>
-                ${data.favorite_genres && data.favorite_genres.length ? `
-                <div class="stat-card favorite-genre-card">
-                    <div class="stat-card-value" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 45px; align-content: center;">
-                        ${data.favorite_genres.map(g => `<span class="genre-badge" style="opacity: 1; font-size: 0.6rem;">${g}</span>`).join('')}
-                    </div>
-                    <div class="stat-card-label">Top Genres</div>
-                </div>
-                ` : ''}
-            </div>
-
-            <div class="stats-hero-row" style="margin-top: 1rem;">
                 <div class="stat-card">
                     <div class="stat-card-value">♥ ${data.total_likes}</div>
                     <div class="stat-card-label">Total Likes</div>
                 </div>
             </div>
+
+            ${data.favorite_genres && data.favorite_genres.length ? `
+            <div class="hof-accordion" style="margin-bottom: 1.5rem; border-color: var(--theme-accent-muted);">
+                <div class="hof-accordion-header" style="cursor: default; background: rgba(var(--theme-accent-rgb), 0.03);">
+                    <div class="hof-accordion-title">
+                        Top Genres
+                        <span class="hof-subtitle">Based on items rated 7.5+</span>
+                    </div>
+                </div>
+                <div class="hof-accordion-body" style="display: block; padding-top: 0;">
+                    ${data.favorite_genres.map((g, i) => `
+                        <div class="hof-entry">
+                            <span class="hof-entry-rank" style="color: var(--theme-accent);">${i + 1}</span>
+                            <span class="hof-entry-title" style="text-transform: capitalize; font-weight: 600;">${g}</span>
+                            <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.5;">Favorite</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
 
             <div class="hof-accordion" id="hofAccordion">
                 <div class="hof-accordion-header" id="hofHeader">
