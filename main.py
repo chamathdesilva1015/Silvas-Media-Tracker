@@ -343,12 +343,13 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     if category.lower() == "movies":
         genre_weights = {}
         for s, i in scored_items:
-            if not i.genres:
+            if not i.genres or s < 5:
                 continue
             
-            # Math: Quadratic weighting. Weight = Score^2
-            # This ensures 9/10 and 10/10 are close, while 10/10 still holds the edge.
-            weight = s ** 2
+            # Math: Cubic weight model. Weight = (Score - 4)^3
+            # This makes 8+ ratings "pop" significantly while keeping 9 and 10 relatively proportional.
+            # 10/10 = 216 pts | 9/10 = 125 pts | 8/10 = 64 pts | 7/10 = 27 pts
+            weight = (s - 4) ** 3
             
             parts = [g.strip() for g in i.genres.split(",")]
             for p in parts:

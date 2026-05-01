@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle">Weighted Bias: Σ (Rating)<sup>2</sup></span>
+                        <span class="hof-subtitle">Cubic Favoritism Model: Σ (Rating - 4)<sup>3</sup></span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
