@@ -506,25 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             ` : ''}
 
-            <div class="hof-accordion" id="hofAccordion">
-                <div class="hof-accordion-header" id="hofHeader">
-                    <div class="hof-accordion-title">
-                        <span class="hof-count">${data.hall_of_fame}</span>
-                        Hall of Fame
-                        <span class="hof-subtitle">Rated 9/10 or higher</span>
-                    </div>
-                    <span class="hof-chevron" id="hofChevron">▼</span>
-                </div>
-                <div class="hof-accordion-body" id="hofBody">
-                    ${(data.hall_of_fame_items || []).map((e, i) => `
-                        <div class="hof-entry">
-                            <span class="hof-entry-rank">${i + 1}</span>
-                            <span class="hof-entry-title">${e.title}${e.year ? ` <span class="hof-entry-year">(${e.year})</span>` : ''}</span>
-                            <span class="hof-entry-score">${e.score}/10</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
+
 
             <div class="stats-full-row">
                 <div class="stats-dist-card">
@@ -561,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        setupAccordion('hofHeader', 'hofBody', 'hofChevron');
+
         setupAccordion('genresHeader', 'genresBody', 'genresChevron');
         setupAccordion('directorsHeader', 'directorsBody', 'directorsChevron');
     };
