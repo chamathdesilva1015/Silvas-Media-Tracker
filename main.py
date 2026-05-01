@@ -37,7 +37,7 @@ def get_session():
 def check_readonly(request: Request):
     # Detect Vercel environment automatically
     if os.environ.get("VERCEL") == "1":
-        if request.headers.get("x-admin-key") == "Dn1h7M55!":
+        if request.headers.get("x-admin-key") == "9745":
             return # Unlock for valid admin
         raise HTTPException(status_code=403, detail="Action disabled in public read-only mode.")
 
@@ -521,7 +521,7 @@ async def trigger_sync(background_tasks: BackgroundTasks, category: Optional[str
             # AUTOMATIC ENRICHMENT: If sync succeeded, trigger magic auto-fill for Movies
             if res.get("status") == "success":
                 log_sync("[System] Sync successful. Triggering automatic enrichment for Movies...")
-                await trigger_enrich(background_tasks, category="Movies")
+                await run_enrichment(log_func=log_sync, category="Movies")
         except Exception as e:
             log_sync(f"[System] Critical Error: {str(e)}")
             automation_status["sync"]["last_result"] = {"status": "error", "message": str(e)}

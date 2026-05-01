@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Admin Auth Hook (In-Memory Only, Wipes on Refresh)
     const tempKey = localStorage.getItem('admin_key_temp');
-    if (tempKey === "Dn1h7M55!") {
+    if (tempKey === "9745") {
         window.runtimeAdminKey = tempKey;
         localStorage.removeItem('admin_key_temp'); // Burn after reading so next refresh is guest
     } else {
@@ -86,10 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(submitLoginBtn) {
         submitLoginBtn.onclick = () => {
-            const pwd = adminPasswordInput.value;
-            if (pwd === "Dn1h7M55!") {
+            const key = adminPasswordInput.value;
+            if (key === "9745") {
                 // Set temporary key to survive the RELOAD
-                localStorage.setItem('admin_key_temp', pwd);
+                localStorage.setItem('admin_key_temp', key);
                 window.location.reload(); 
             } else {
                 alert("Incorrect Developer Key. Viewing access only.");
@@ -97,6 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     
+    // Fancy focus effect for the key input
+    if(adminPasswordInput) {
+        adminPasswordInput.onfocus = () => {
+            adminPasswordInput.style.borderColor = 'var(--theme-accent)';
+            adminPasswordInput.style.boxShadow = '0 0 20px rgba(var(--theme-accent-rgb), 0.3)';
+        };
+        adminPasswordInput.onblur = () => {
+            adminPasswordInput.style.borderColor = 'var(--border-color)';
+            adminPasswordInput.style.boxShadow = 'none';
+        };
+    }
+
     // Add native dismiss
     window.addEventListener('click', (e) => {
         if (e.target == loginModal) closeLogin();
