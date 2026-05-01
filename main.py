@@ -397,16 +397,9 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
 
-    # Favorite Genre (Movies ONLY) - "Bayesian Passion" Model (Mix of 1 & 3)
+    # Favorite Genre (Movies ONLY) - "Volume-Weighted Passion" Model (v120)
     favorite_genre = None
     if category.lower() == "movies" and scored_items:
-        import statistics
-        
-        # 1. Calculate Global Average (C)
-        global_scores = [s for s, i in scored_items]
-        global_avg = sum(global_scores) / len(global_scores)
-        m = 3.0 # Minimum "confidence" count
-        
         genre_data = {} # {name: [scores]}
         for s, i in scored_items:
             if not i.genres: continue
@@ -418,26 +411,21 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         genre_scores = []
         for g_name, scores in genre_data.items():
             v = len(scores)
-            avg_r = sum(scores) / v
+            if v < 1: continue
             
-            # Bayesian Weighted Average: (v*R + m*C) / (v+m)
-            bayesian_avg = (v * avg_r + m * global_avg) / (v + m)
+            # 1. Total Cubic Passion: Sum of (Rating - 4.5)^3
+            total_passion = sum(max(0, (s - 4.5)) ** 3 for s in scores)
             
-            # Consistency / Stability Factor (Standard Deviation)
-            # Low standard deviation = high stability
-            if v > 1:
-                stdev = statistics.stdev(scores)
-                # We normalize stdev: 0 stdev (perfect consistency) = 1.0 multiplier
-                # Higher stdev reduces the score
-                stability_factor = 1.0 / (1.0 + (stdev * 0.5))
-            else:
-                stability_factor = 0.7 # Penalty for single-item genres
+            # 2. Confidence Filter: (1 - 1/v)
+            # v=1 -> 0 points (filter out single-item genres)
+            # v=2 -> 50% points
+            # v=10 -> 90% points
+            confidence = (1.0 - (1.0 / v))
             
-            final_score = bayesian_avg * stability_factor
+            final_score = total_passion * confidence
             genre_scores.append((g_name, final_score))
             
         if genre_scores:
-            # Sort by final_score desc
             genre_scores.sort(key=lambda x: x[1], reverse=True)
             favorite_genre = [g for g, s in genre_scores[:5]]
 

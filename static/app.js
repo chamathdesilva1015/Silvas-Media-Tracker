@@ -376,13 +376,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle"><b>The Bayesian Passion Model:</b> This ranking uses a sophisticated statistical blend of <b>Volume</b>, <b>Quality</b>, and <b>Consistency</b>.
+                        <span class="hof-subtitle"><b>The Passion-Volume Model:</b> This ranking identifies top categories by blending total viewing volume with high-quality ratings.
                         <br><br>
-                        1. <b>The Anchor (Bayesian Weighting):</b> We don't just look at a genre's average score; we "anchor" it against your entire collection's average. This prevents a single 10/10 movie from making a random genre your "favorite" by mistake. It requires multiple high-rated movies to build confidence.
+                        1. <b>The Accumulator:</b> Every high rating adds points to a genre’s total score. Categories with many entries naturally rank higher than those with only a few items, rewarding long-term dedication to a specific genre.
                         <br><br>
-                        2. <b>The Connoisseur Factor (Consistency):</b> We mathematically reward genres where you consistently give high ratings. If you've seen 10 Horror movies and loved every single one of them, Horror will rank higher than a genre where your scores are wildly inconsistent.
+                        2. <b>The Quality Multiplier:</b> Masterpieces carry exponentially more weight than average entries. A high rating (8-10) provides a massive boost, ensuring the list reflects genuine favorites rather than just frequently watched categories.
                         <br><br>
-                        <b>The Result:</b> A list that represents your true expertise and long-term passion, filtering out "one-hit wonders" and statistical noise.</span>
+                        3. <b>The Confidence Filter:</b> The system applies a penalty to genres with very low counts. This prevents "one-hit wonders" from appearing at the top by requiring a genre to have multiple entries before it can qualify as a favorite.
+                        <br><br>
+                        <b>The Result:</b> A list that accurately highlights the categories with the highest concentration of quality and volume.</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
