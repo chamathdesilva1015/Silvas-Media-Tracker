@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Unified Filter System (v160) ---
     const filterTrigger = document.getElementById('filterTrigger');
     const filterMenu = document.getElementById('filterMenu');
+    const filterOverlay = document.getElementById('filterOverlay');
     const applyFiltersBtn = document.getElementById('applyFilters');
     const resetFiltersBtn = document.getElementById('resetFilters');
     const activeFilterCount = document.getElementById('activeFilterCount');
@@ -254,12 +255,21 @@ document.addEventListener('DOMContentLoaded', () => {
         filterTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
             filterMenu.classList.toggle('active');
+            if (filterOverlay) filterOverlay.classList.toggle('active');
+        });
+    }
+
+    if (filterOverlay) {
+        filterOverlay.addEventListener('click', () => {
+            filterMenu.classList.remove('active');
+            filterOverlay.classList.remove('active');
         });
     }
 
     document.addEventListener('click', (e) => {
         if (filterMenu && !filterMenu.contains(e.target) && filterTrigger && !filterTrigger.contains(e.target)) {
             filterMenu.classList.remove('active');
+            if (filterOverlay) filterOverlay.classList.remove('active');
         }
     });
 
@@ -311,6 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateActiveFilterCount();
             filterMenu.classList.remove('active');
+            if (filterOverlay) filterOverlay.classList.remove('active');
             filterAndRenderMedia();
         });
     }
