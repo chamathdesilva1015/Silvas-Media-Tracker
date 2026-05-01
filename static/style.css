@@ -1226,6 +1226,122 @@ delete-btn {
     min-width: 20px;
 }
 
+/* Hall of Fame Accordion */
+.hof-accordion {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.hof-accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.hof-accordion-header:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.hof-accordion-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.hof-count {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent-primary);
+    line-height: 1;
+}
+
+.hof-subtitle {
+    font-size: 0.72rem;
+    font-weight: 400;
+    opacity: 0.5;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.hof-chevron {
+    font-size: 0.7rem;
+    opacity: 0.5;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hof-accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top: 0px solid var(--border-color);
+}
+
+.hof-accordion-body.open {
+    max-height: 1200px;
+    border-top-width: 1px;
+}
+
+.hof-entry {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: background 0.15s;
+}
+
+.hof-entry:last-child {
+    border-bottom: none;
+}
+
+.hof-entry:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.hof-entry-rank {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    opacity: 0.4;
+    min-width: 20px;
+    text-align: right;
+}
+
+.hof-entry-title {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.hof-entry-year {
+    font-weight: 300;
+    opacity: 0.55;
+    font-size: 0.82rem;
+}
+
+.hof-entry-score {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    background: rgba(var(--accent-primary-rgb, 59, 130, 246), 0.12);
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+}
+
+
 /* Featured entry cards (highest/lowest) */
 .stats-featured-pair {
     display: grid;

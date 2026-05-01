@@ -354,13 +354,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-value">♥ ${data.total_likes}</div>
                     <div class="stat-card-label">Total Likes</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-card-value">🏆 ${data.hall_of_fame}</div>
-                    <div class="stat-card-label">Hall of Fame <span style="font-size:0.6em;opacity:0.6">(9+)</span></div>
+            </div>
+
+            <div class="hof-accordion" id="hofAccordion">
+                <div class="hof-accordion-header" id="hofHeader">
+                    <div class="hof-accordion-title">
+                        <span class="hof-count">${data.hall_of_fame}</span>
+                        Hall of Fame
+                        <span class="hof-subtitle">Rated 9/10 or higher</span>
+                    </div>
+                    <span class="hof-chevron" id="hofChevron">▼</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-card-value">${data.in_rankings}</div>
-                    <div class="stat-card-label">In Rankings</div>
+                <div class="hof-accordion-body" id="hofBody">
+                    ${(data.hall_of_fame_items || []).map((e, i) => `
+                        <div class="hof-entry">
+                            <span class="hof-entry-rank">${i + 1}</span>
+                            <span class="hof-entry-title">${e.title}${e.year ? ` <span class="hof-entry-year">(${e.year})</span>` : ''}</span>
+                            <span class="hof-entry-score">${e.score}/10</span>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
 
@@ -374,6 +386,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${decBars || '<p style="opacity:0.4;font-size:0.85rem">No release years on record.</p>'}
                 </div>
             </div>`;
+
+        // Wire up accordion toggle AFTER innerHTML is set
+        const hofHeader = statsPage.querySelector('#hofHeader');
+        const hofBody   = statsPage.querySelector('#hofBody');
+        const hofChevron = statsPage.querySelector('#hofChevron');
+        if (hofHeader) {
+            hofHeader.addEventListener('click', () => {
+                const isOpen = hofBody.classList.toggle('open');
+                hofChevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+        }
     };
 
     const filterAndRenderMedia = () => {

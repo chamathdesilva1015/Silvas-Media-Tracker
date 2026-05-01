@@ -317,7 +317,15 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
     # Total likes & Hall of Fame
     total_likes = sum(1 for i in items if i.is_liked)
-    hall_of_fame = sum(1 for s in scores if s >= 9.0)
+    hof_items = sorted(
+        [(parse_score(i), i) for i in items if parse_score(i) is not None and parse_score(i) >= 9.0],
+        key=lambda x: x[0], reverse=True
+    )
+    hall_of_fame = len(hof_items)
+    hall_of_fame_items = [
+        {"title": i.title, "score": s, "year": i.release_year}
+        for s, i in hof_items
+    ]
 
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
@@ -332,6 +340,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         "with_reviews": with_reviews,
         "total_likes": total_likes,
         "hall_of_fame": hall_of_fame,
+        "hall_of_fame_items": hall_of_fame_items,
         "in_rankings": in_rankings,
         "most_recent": {
             "title": most_recent.title,
