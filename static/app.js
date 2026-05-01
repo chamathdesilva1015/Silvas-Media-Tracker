@@ -975,20 +975,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Rating — prefer numeric score over rank string
         let ratingStr = item.numeric_rating || item.rating || '';
-        // Remove existing /10 if present to avoid double display (e.g. 7.5/10 / 10)
-        let displayScore = (!ratingStr.startsWith('#')) ? ratingStr.toString().replace('/10', '').trim() : (item.numeric_rating || '');
-        document.getElementById('quickInfoRating').textContent = displayScore ? `${displayScore} / 10` : '';
+        // Remove existing /10 if present to avoid double display
+        let rawScore = (!ratingStr.startsWith('#')) ? ratingStr.toString().replace('/10', '').trim() : (item.numeric_rating || '');
+        document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
 
         // Edit Button (Admin Only)
         const editBtn = document.getElementById('quickInfoEditBtn');
+        const ratingEditSection = document.getElementById('quickInfoRatingEditSection');
+        const ratingInput = document.getElementById('quickInfoRatingInput');
+        const saveRatingBtn = document.getElementById('quickInfoSaveRatingBtn');
+
         if (computeCanEdit()) {
             editBtn.style.display = 'block';
             editBtn.onclick = () => {
                 quickInfoModal.classList.remove('show');
                 window.openReviewModal(item.title, item.type, item.review, item.id);
             };
+
+            // Rating Override UI
+            ratingEditSection.style.display = 'block';
+            ratingInput.value = rawScore || '';
+            saveRatingBtn.onclick = async () => {
+                const newVal = ratingInput.value.trim();
+                if (!newVal) return;
+                
+                saveRatingBtn.disabled = true;
+                saveRatingBtn.textContent = 'Saving...';
+                
+                try {
+                    const res = await fetch(`/api/media/update-rating/${item.id}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rating: newVal })
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                        alert(`Rating updated to ${data.rating} across ${data.updated_count} entries!\n\nIMPORTANT: Please remember to also update this rating on Letterboxd and Discord to maintain data consistency across platforms.`);
+                        quickInfoModal.classList.remove('show');
+                        fetchMedia(); // Refresh data
+                    } else {
+                        alert("Failed to update rating: " + (data.detail || "Unknown error"));
+                    }
+                } catch (e) {
+                    alert("Error updating rating: " + e.message);
+                } finally {
+                    saveRatingBtn.disabled = false;
+                    saveRatingBtn.textContent = 'Save Rating';
+                }
+            };
+
         } else {
             editBtn.style.display = 'none';
+            ratingEditSection.style.display = 'none';
         }
 
         // Genres

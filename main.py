@@ -217,6 +217,57 @@ def toggle_like(item_id: str, session: Session = Depends(get_session), _: None =
     print(f"[DEBUG] TOGGLED LIKE for '{item.title}' (Norm: '{target_norm}') -> {new_liked} ({len(related)} rows)")
     return {"ok": True, "is_liked": new_liked, "updated_count": len(related)}
 
+class RatingUpdateRequest(BaseModel):
+    rating: str
+
+@app.post("/api/media/update-rating/{item_id}")
+@app.post("/api/media/update-rating/{item_id}/")
+def update_rating(item_id: int, request: RatingUpdateRequest, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    item = session.get(MediaItem, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    new_rating = request.rating.strip()
+    if not new_rating.endswith("/10"):
+        # Auto-append /10 if they just typed a number
+        try:
+            float(new_rating)
+            new_rating = f"{new_rating}/10"
+        except:
+            pass
+
+    target_norm = normalize_title(item.title)
+    all_related = session.exec(
+        select(MediaItem).where(MediaItem.type == item.type)
+    ).all()
+    related = [r for r in all_related if normalize_title(r.title) == target_norm]
+
+    for r in related:
+        # Log to history
+        old_r = r.rating or ""
+        if old_r != new_rating:
+            session.add(RatingHistory(
+                media_item_id=r.id,
+                title=r.title,
+                media_type=r.type,
+                old_rating=old_r,
+                new_rating=new_rating,
+            ))
+        
+        # If it's a ranking, we preserve the #N prefix in 'rating' but update 'numeric_rating'
+        if (r.rating or "").startswith("#"):
+            r.numeric_rating = new_rating
+        else:
+            r.rating = new_rating
+            r.numeric_rating = new_rating
+            
+        r.is_manual_rating = True
+        session.add(r)
+
+    session.commit()
+    print(f"[DEBUG] UPDATED RATING for '{item.title}' -> {new_rating} ({len(related)} rows, MANUALLY PROTECTED)")
+    return {"ok": True, "rating": new_rating, "updated_count": len(related)}
+
 @app.post("/api/media/delete/{item_id}")
 @app.post("/api/media/delete/{item_id}/") # Trailing slash support
 def delete_media(item_id: str, session: Session = Depends(get_session), _: None = Depends(check_readonly)):

@@ -250,6 +250,7 @@ class SyncClient(discord.Client):
                     "release_year": m.release_year, "rating": m.rating,
                     "numeric_rating": m.numeric_rating,
                     "discord_id": m.discord_id, "is_ranking": m.is_ranking,
+                    "is_manual_rating": m.is_manual_rating,
                 }
                 for m in all_items
             ]
@@ -470,29 +471,31 @@ class SyncClient(discord.Client):
                             # ── Cross-pollination: keep rank + score in separate fields ──
                             is_currently_ranking = is_ranking or upd.get("is_ranking") or existing.get("is_ranking") or (existing["rating"] or "").startswith('#')
                             
-                            if rating.startswith('#'):
-                                # Incoming = RANK
-                                if existing["rating"] and not existing["rating"].startswith('#'):
-                                    if not existing["numeric_rating"] or existing["numeric_rating"] != existing["rating"]:
-                                        upd["numeric_rating"] = existing["rating"]
-                                if existing["rating"] != rating:
-                                    upd["rating"] = rating
-                                    upd["is_ranking"] = True
+                            if not existing.get("is_manual_rating"):
+                                if rating.startswith('#'):
+                                    # Incoming = RANK
+                                    if existing["rating"] and not existing["rating"].startswith('#'):
+                                        if not existing["numeric_rating"] or existing["numeric_rating"] != existing["rating"]:
+                                            upd["numeric_rating"] = existing["rating"]
+                                    if existing["rating"] != rating:
+                                        upd["rating"] = rating
+                                        upd["is_ranking"] = True
+                                else:
+                                    # Incoming = SCORE
+                                    if is_currently_ranking:
+                                        # It's already a ranking! Just keep score in numeric_rating
+                                        if existing["numeric_rating"] != rating:
+                                            upd["numeric_rating"] = rating
+                                            self._log(f"  [~] Score linked: {title} <- {rating}")
+                                    elif existing["rating"] != rating:
+                                        upd["rating"] = rating
+
+                                if num_rating and existing["numeric_rating"] != num_rating:
+                                    upd["numeric_rating"] = num_rating
                             else:
-                                # Incoming = SCORE
-                                if is_currently_ranking:
-                                    # It's already a ranking! Just keep score in numeric_rating
-                                    if existing["numeric_rating"] != rating:
-                                        upd["numeric_rating"] = rating
-                                        self._log(f"  [~] Score linked: {title} <- {rating}")
-                                elif existing["rating"] != rating:
-                                    upd["rating"] = rating
-
-                            if num_rating and existing["numeric_rating"] != num_rating:
-                                upd["numeric_rating"] = num_rating
-
-                            if not existing["is_ranking"] and is_ranking:
-                                upd["is_ranking"] = True
+                                # Still update ranking status even if manual rating, but don't touch the scores
+                                if not existing["is_ranking"] and is_ranking:
+                                    upd["is_ranking"] = True
 
                             if upd:
                                 updated_items += 1

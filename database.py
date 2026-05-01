@@ -12,6 +12,7 @@ class MediaItem(SQLModel, table=True):
     type: str # Movies, TV Series, Manga, Book, Anime
     is_ranking: bool = Field(default=False)
     is_liked: bool = Field(default=False)
+    is_manual_rating: bool = Field(default=False)
     rating: str 
     numeric_rating: Optional[str] = None # Stores 1-10 rating even for ranked items
     review: Optional[str] = None
