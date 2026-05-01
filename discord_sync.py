@@ -185,11 +185,16 @@ def is_valid_year(year_str: str) -> bool:
 
 
 def normalize_title(title: str) -> str:
-    """Universal normalizer – strips articles, punctuation, collapses whitespace."""
+    """Universal normalizer – strips articles, punctuation, collapses whitespace, and ignores trailing years."""
     if not title:
         return ""
     import string
+    import re
     t = title.lower().strip()
+    
+    # Strip trailing year (e.g. " (2010)" or " 2010") – requires space before to protect titles like "1917"
+    t = re.sub(r"\s+\(?\b(?:19|20)\d{2}\b\)?\s*$", "", t).strip()
+    
     for prefix in ["the ", "a ", "an "]:
         if t.startswith(prefix):
             t = t[len(prefix):]
