@@ -341,8 +341,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Favorite Genre (Movies ONLY)
     favorite_genre = None
     if category.lower() == "movies":
-        # Look at top-tier items (8.5 and above) to determine "Favorite" pattern
-        top_tier = [i for s, i in scored_items if s >= 8.5]
+        # Look at top-tier items (8 and above) to determine "Favorite" pattern
+        top_tier = [i for s, i in scored_items if s >= 8]
         if top_tier:
             genre_counts = {}
             for i in top_tier:
