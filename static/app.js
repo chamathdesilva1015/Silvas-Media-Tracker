@@ -372,14 +372,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             ${data.favorite_genres && data.favorite_genres.length ? `
-            <div class="hof-accordion" style="margin-bottom: 1.5rem; border-color: var(--theme-accent-muted);">
-                <div class="hof-accordion-header" style="cursor: default; background: rgba(var(--theme-accent-rgb), 0.03);">
+            <div class="hof-accordion" id="genresAccordion" style="margin-bottom: 1.5rem; border-color: var(--theme-accent-muted);">
+                <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
                         <span class="hof-subtitle">Based on items rated 7.5+</span>
                     </div>
+                    <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
-                <div class="hof-accordion-body" style="display: block; padding-top: 0;">
+                <div class="hof-accordion-body" id="genresBody">
                     ${data.favorite_genres.map((g, i) => `
                         <div class="hof-entry">
                             <span class="hof-entry-rank" style="color: var(--theme-accent);">${i + 1}</span>
@@ -423,15 +424,21 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
 
         // Wire up accordion toggle AFTER innerHTML is set
-        const hofHeader = statsPage.querySelector('#hofHeader');
-        const hofBody   = statsPage.querySelector('#hofBody');
-        const hofChevron = statsPage.querySelector('#hofChevron');
-        if (hofHeader) {
-            hofHeader.addEventListener('click', () => {
-                const isOpen = hofBody.classList.toggle('open');
-                hofChevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-            });
-        }
+        const setupAccordion = (headerId, bodyId, chevronId) => {
+            const header = statsPage.querySelector(`#${headerId}`);
+            const body   = statsPage.querySelector(`#${bodyId}`);
+            const chevron = statsPage.querySelector(`#${chevronId}`);
+            if (header && body) {
+                header.addEventListener('click', () => {
+                    const isOpening = !body.classList.contains('open');
+                    body.classList.toggle('open');
+                    if (chevron) chevron.style.transform = isOpening ? 'rotate(180deg)' : 'rotate(0deg)';
+                });
+            }
+        };
+
+        setupAccordion('hofHeader', 'hofBody', 'hofChevron');
+        setupAccordion('genresHeader', 'genresBody', 'genresChevron');
     };
 
     const filterAndRenderMedia = () => {
