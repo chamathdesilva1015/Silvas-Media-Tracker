@@ -439,6 +439,47 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             genre_scores.sort(key=lambda x: x[1], reverse=True)
             favorite_genre = [g for g, s in genre_scores[:5]]
 
+    # Favorite Directors (Movies ONLY) - Same Passion-Volume Model
+    favorite_directors = []
+    if category.lower() == "movies" and scored_items:
+        dir_data = {} # {name: [(score, item)]}
+        for s, i in scored_items:
+            if not i.director: continue
+            d = i.director.strip()
+            if d not in dir_data: dir_data[d] = []
+            dir_data[d].append((s, i))
+            
+        dir_scores = []
+        for d_name, items_list in dir_data.items():
+            v = len(items_list)
+            if v < 1: continue
+            
+            total_passion = 0
+            for s, i in items_list:
+                weight = max(0, (s - 4.5)) ** 3
+                if i.is_liked:
+                    weight *= 1.25
+                total_passion += weight
+            
+            confidence = (1.0 - (1.0 / v))
+            final_score = total_passion * confidence
+            dir_scores.append((d_name, final_score, items_list))
+            
+        if dir_scores:
+            dir_scores.sort(key=lambda x: x[1], reverse=True)
+            top_dirs = dir_scores[:5]
+            
+            for d_name, score, items_list in top_dirs:
+                if score <= 0: continue
+                # Get top 2 movies as examples
+                sorted_movies = sorted(items_list, key=lambda x: x[0], reverse=True)
+                examples = [i.title for s, i in sorted_movies[:2]]
+                favorite_directors.append({
+                    "name": d_name,
+                    "score": round(score, 1),
+                    "examples": examples
+                })
+
     return {
         "total": total,
         "avg_score": avg_score,
@@ -457,7 +498,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             "title": most_recent.title,
             "date": most_recent.date_added.strftime("%b %d, %Y"),
         },
-        "favorite_genres": favorite_genre
+        "favorite_genres": favorite_genre,
+        "favorite_directors": favorite_directors
     }
 
 @app.post("/api/automation/sync")

@@ -395,6 +395,32 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             ` : ''}
 
+            ${data.favorite_directors && data.favorite_directors.length ? `
+            <div class="hof-accordion" id="directorsAccordion" style="margin-bottom: 1.5rem; border-color: #14a08c;">
+                <div class="hof-accordion-header" id="directorsHeader">
+                    <div class="hof-accordion-title">
+                        Top Directors
+                        <span class="hof-subtitle">Calculated using the same <b>Passion-Volume Index</b>.</span>
+                    </div>
+                    <span class="hof-chevron" id="directorsChevron">▼</span>
+                </div>
+                <div class="hof-accordion-body" id="directorsBody">
+                    ${data.favorite_directors.map((d, i) => `
+                        <div class="hof-entry" style="align-items: flex-start;">
+                            <span class="hof-entry-rank" style="color: #14a08c;">${i + 1}</span>
+                            <div style="display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0;">
+                                <span class="hof-entry-title" style="font-weight: 700;">${d.name}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    Examples: ${d.examples.join(', ')}
+                                </span>
+                            </div>
+                            <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.5; align-self: center;">Favorite</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
             <div class="hof-accordion" id="hofAccordion">
                 <div class="hof-accordion-header" id="hofHeader">
                     <div class="hof-accordion-title">
@@ -450,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setupAccordion('hofHeader', 'hofBody', 'hofChevron');
         setupAccordion('genresHeader', 'genresBody', 'genresChevron');
+        setupAccordion('directorsHeader', 'directorsBody', 'directorsChevron');
     };
 
     const filterAndRenderMedia = () => {
