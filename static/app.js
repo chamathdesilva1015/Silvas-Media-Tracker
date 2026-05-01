@@ -237,7 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Unified Filter System (v160) ---
     const filterTrigger = document.getElementById('filterTrigger');
     const filterMenu = document.getElementById('filterMenu');
-    const filterOverlay = document.getElementById('filterOverlay');
     const applyFiltersBtn = document.getElementById('applyFilters');
     const resetFiltersBtn = document.getElementById('resetFilters');
     const activeFilterCount = document.getElementById('activeFilterCount');
@@ -254,22 +253,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterTrigger) {
         filterTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            filterMenu.classList.toggle('active');
-            if (filterOverlay) filterOverlay.classList.toggle('active');
-        });
-    }
-
-    if (filterOverlay) {
-        filterOverlay.addEventListener('click', () => {
-            filterMenu.classList.remove('active');
-            filterOverlay.classList.remove('active');
+            const isActive = filterMenu.classList.toggle('active');
+            if (window.innerWidth < 800) {
+                document.body.style.overflow = isActive ? 'hidden' : '';
+            }
         });
     }
 
     document.addEventListener('click', (e) => {
         if (filterMenu && !filterMenu.contains(e.target) && filterTrigger && !filterTrigger.contains(e.target)) {
             filterMenu.classList.remove('active');
-            if (filterOverlay) filterOverlay.classList.remove('active');
+            document.body.style.overflow = '';
         }
     });
 
@@ -321,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateActiveFilterCount();
             filterMenu.classList.remove('active');
-            if (filterOverlay) filterOverlay.classList.remove('active');
+            document.body.style.overflow = '';
             filterAndRenderMedia();
         });
     }
