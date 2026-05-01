@@ -315,6 +315,10 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Rankings
     in_rankings = sum(1 for i in items if i.is_ranking)
 
+    # Total likes & Hall of Fame
+    total_likes = sum(1 for i in items if i.is_liked)
+    hall_of_fame = sum(1 for s in scores if s >= 9.0)
+
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
 
@@ -326,6 +330,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         "highest_rated": {"title": highest[1].title, "score": highest[1].numeric_rating or highest[1].rating} if highest else None,
         "lowest_rated":  {"title": lowest[1].title,  "score": lowest[1].numeric_rating or lowest[1].rating}  if lowest  else None,
         "with_reviews": with_reviews,
+        "total_likes": total_likes,
+        "hall_of_fame": hall_of_fame,
         "in_rankings": in_rankings,
         "most_recent": {
             "title": most_recent.title,

@@ -349,6 +349,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
 
+            <div class="stats-hero-row" style="margin-top: 1rem;">
+                <div class="stat-card">
+                    <div class="stat-card-value">♥ ${data.total_likes}</div>
+                    <div class="stat-card-label">Total Likes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">🏆 ${data.hall_of_fame}</div>
+                    <div class="stat-card-label">Hall of Fame <span style="font-size:0.6em;opacity:0.6">(9+)</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">${data.in_rankings}</div>
+                    <div class="stat-card-label">In Rankings</div>
+                </div>
+            </div>
+
             <div class="stats-full-row">
                 <div class="stats-dist-card">
                     <div class="stats-dist-title">Score Distribution</div>
@@ -1142,7 +1157,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const typeClass = `type-${item.type.toLowerCase().replace(' ', '-')}`;
             const sourceBadgeClass = item.source.toLowerCase() === 'discord' ? 'source-badge source-discord' : 'source-badge';
-            const sourceIcon = item.source.toLowerCase() === 'discord' ? '🎮' : '✍️'; 
+            const sourceIcon = ''; 
+            const sourceText = item.source.toLowerCase() === 'discord' ? 'discord' : 'letterboxd';
 
             if (isRankingRequired) {
                 const row = document.createElement('div');
@@ -1266,7 +1282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="media-footer">
                         <div class="date-added">${dateStr}</div>
                         <div class="${sourceBadgeClass}">
-                            <span>${sourceIcon}</span> ${item.source}
+                            ${sourceText}
                         </div>
                         <button class="like-btn-inline ${likedClass}" title="${item.is_liked ? 'Unlike' : 'Like'}">${likedIcon}</button>
                     </div>
