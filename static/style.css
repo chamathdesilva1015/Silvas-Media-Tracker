@@ -1701,12 +1701,6 @@ delete-btn {
     white-space: nowrap;
 }
 
-.director-badge::before {
-    content: '🎬';
-    font-style: normal;
-    font-size: 0.75em;
-}
-
 .quick-info-details {
     flex: 1;
     display: flex;
