@@ -186,10 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             updateCategoryTitleCount();
             
-            // Update Add Button Text
+            // Update Add Button Text (Desktop only - mobile uses +)
             const addBtn = document.getElementById('addMediaBtn');
             if (addBtn) {
-                addBtn.innerText = `+ Add ${currentCategory}`;
+                const desktopLabel = addBtn.querySelector('.desktop-text');
+                if (desktopLabel) desktopLabel.innerText = `+ Add ${currentCategory}`;
             }
 
             updateTheme();
@@ -605,13 +606,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (controls) controls.style.display = 'none';
             // KEEP the add button visible even in Info/Stats if admin is unlocked
-            if (isAdminUnlocked && addBtn) addBtn.style.display = 'block';
+            if (isAdminUnlocked && addBtn) addBtn.style.display = 'flex';
             return;
         } else {
             grid.style.display = (currentSubTab === 'Rankings') ? 'block' : 'grid';
             if (infoPage) infoPage.style.display = 'none';
             if (controls) controls.style.display = 'flex';
-            if (isAdminUnlocked && addBtn) addBtn.style.display = 'block';
+            if (isAdminUnlocked && addBtn) addBtn.style.display = 'flex';
         }
 
         // Filter by current Category
