@@ -111,8 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Add native dismiss
-    window.addEventListener('click', (e) => {
+    // Add native dismiss (double-click background to close)
+    window.addEventListener('dblclick', (e) => {
         if (e.target == loginModal) closeLogin();
     });
 
@@ -1002,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeReviewingStructureBtn.addEventListener('click', closeReviewingStructure);
 
-    window.addEventListener('click', (e) => {
+    window.addEventListener('dblclick', (e) => {
         if (e.target === reviewModal && reviewModal.classList.contains('show')) {
             closeReviewModal();
         }
@@ -1035,14 +1035,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeHistoryModalBtn) {
         closeHistoryModalBtn.onclick = () => ratingHistoryModal.classList.remove('show');
     }
-    window.addEventListener('click', (e) => {
+    window.addEventListener('dblclick', (e) => {
         if (e.target === ratingHistoryModal) ratingHistoryModal.classList.remove('show');
     });
 
     // ── Quick Info Modal ──────────────────────────────────────────────────────
     const quickInfoModal = document.getElementById('quickInfoModal');
     document.getElementById('closeQuickInfoBtn').onclick = () => quickInfoModal.classList.remove('show');
-    window.addEventListener('click', (e) => {
+    window.addEventListener('dblclick', (e) => {
         if (e.target === quickInfoModal) quickInfoModal.classList.remove('show');
     });
 
@@ -1312,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cancelDeleteBtn.addEventListener('click', closeDeleteModal);
 
-    window.addEventListener('click', (e) => {
+    window.addEventListener('dblclick', (e) => {
         if (e.target === deleteModal) closeDeleteModal();
     });
 
