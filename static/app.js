@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const genreFilterList = document.getElementById('genreFilterList');
 
     let filterState = {
-        sort: 'rating-desc',
+        sort: 'shuffle',
         likedOnly: false,
         reviewed: false,
         unreviewed: false,
@@ -334,13 +334,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resetFiltersBtn) {
         resetFiltersBtn.addEventListener('click', () => {
             filterState = {
-                sort: 'rating-desc',
+                sort: 'shuffle',
                 likedOnly: false,
                 reviewed: false,
                 unreviewed: false,
                 genres: new Set()
             };
-            const defaultSort = document.querySelector('input[name="sort"][value="rating-desc"]');
+            const defaultSort = document.querySelector('input[name="sort"][value="shuffle"]');
             if (defaultSort) defaultSort.checked = true;
             document.getElementById('filterLiked').checked = false;
             document.getElementById('filterReviewed').checked = false;
@@ -662,7 +662,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 5. Sorting (Using unified filter state)
         const sortVal = filterState.sort;
-        if (sortVal === 'rating-desc') {
+        if (sortVal === 'shuffle') {
+            // Fisher-Yates Shuffle
+            for (let i = filtered.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+            }
+        } else if (sortVal === 'rating-desc') {
             filtered.sort((a, b) => (parseRating(b.rating) || 0) - (parseRating(a.rating) || 0));
         } else if (sortVal === 'rating-asc') {
             filtered.sort((a, b) => (parseRating(a.rating) || 0) - (parseRating(b.rating) || 0));
