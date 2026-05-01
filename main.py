@@ -353,7 +353,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             if genre_counts:
                 # Sort by count desc, then alphabetically
                 sorted_genres = sorted(genre_counts.items(), key=lambda x: (-x[1], x[0]))
-                favorite_genre = sorted_genres[0][0]
+                # Return Top 4
+                favorite_genre = [g for g, count in sorted_genres[:4]]
 
     return {
         "total": total,
@@ -371,7 +372,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             "title": most_recent.title,
             "date": most_recent.date_added.strftime("%b %d, %Y"),
         },
-        "favorite_genre": favorite_genre
+        "favorite_genres": favorite_genre
     }
 
 @app.post("/api/automation/sync")

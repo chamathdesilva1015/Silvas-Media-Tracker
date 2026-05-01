@@ -347,10 +347,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-value">${data.with_reviews}</div>
                     <div class="stat-card-label">With Reviews <span style="font-size:0.6em;opacity:0.6">(${reviewPct}%)</span></div>
                 </div>
-                ${data.favorite_genre ? `
+                ${data.favorite_genres && data.favorite_genres.length ? `
                 <div class="stat-card favorite-genre-card">
-                    <div class="stat-card-value" style="font-size: 1.25rem; font-weight: 700; text-transform: capitalize;">${data.favorite_genre}</div>
-                    <div class="stat-card-label">Favorite Genre</div>
+                    <div class="stat-card-value" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 45px; align-content: center;">
+                        ${data.favorite_genres.map(g => `<span class="genre-badge" style="opacity: 1; font-size: 0.6rem;">${g}</span>`).join('')}
+                    </div>
+                    <div class="stat-card-label">Top Genres</div>
                 </div>
                 ` : ''}
             </div>
