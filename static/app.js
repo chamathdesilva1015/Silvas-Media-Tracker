@@ -919,6 +919,60 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === ratingHistoryModal) ratingHistoryModal.classList.remove('show');
     });
 
+    // ── Quick Info Modal ──────────────────────────────────────────────────────
+    const quickInfoModal = document.getElementById('quickInfoModal');
+    document.getElementById('closeQuickInfoBtn').onclick = () => quickInfoModal.classList.remove('show');
+    window.addEventListener('click', (e) => {
+        if (e.target === quickInfoModal) quickInfoModal.classList.remove('show');
+    });
+
+    window.openQuickInfo = (item) => {
+        // Title & Year
+        document.getElementById('quickInfoTitle').textContent = item.title;
+        document.getElementById('quickInfoYear').textContent = item.release_year ? `${item.release_year}` : '';
+
+        // Rating — prefer numeric score over rank string
+        const ratingStr = item.numeric_rating || item.rating || '';
+        const displayScore = (!ratingStr.startsWith('#')) ? ratingStr : (item.numeric_rating || '');
+        document.getElementById('quickInfoRating').textContent = displayScore ? `${displayScore} / 10` : '';
+
+        // Genres
+        const genresEl = document.getElementById('quickInfoGenres');
+        if (item.genres) {
+            genresEl.innerHTML = item.genres.split(',').map(g =>
+                `<span class="genre-badge">${g.trim()}</span>`
+            ).join('');
+        } else {
+            genresEl.innerHTML = '';
+        }
+
+        // Review
+        const reviewEl = document.getElementById('quickInfoReview');
+        const hasReview = isRealReview(item.review);
+        reviewEl.textContent = hasReview ? item.review : '';
+
+        // Poster
+        const posterImg = document.getElementById('quickInfoPoster');
+        const posterPlaceholder = document.getElementById('quickInfoPosterPlaceholder');
+        posterImg.classList.remove('loaded');
+        posterPlaceholder.style.display = 'flex';
+        if (item.cover_url) {
+            posterImg.onload = () => {
+                posterImg.classList.add('loaded');
+                posterPlaceholder.style.display = 'none';
+            };
+            posterImg.onerror = () => {
+                posterPlaceholder.style.display = 'flex';
+            };
+            posterImg.src = item.cover_url;
+        } else {
+            posterImg.src = '';
+        }
+
+        quickInfoModal.classList.add('show');
+    };
+
+
     const openRatingHistory = async (itemId, title) => {
         document.getElementById('historyModalTitle').textContent = `History — ${title}`;
         document.getElementById('historyModalBody').innerHTML = '<p style="text-align:center;opacity:0.5;">Loading...</p>';
@@ -1340,10 +1394,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     deleteMedia(item.id, item.title);
                 };
                 card.appendChild(delBtn);
-                // Touch-to-reveal click listener for mobile interactions
-                card.addEventListener('click', () => {
-                    // Only applies visual toggle if the CSS handles it
-                    card.classList.toggle('revealed');
+                // Card click → Quick Info popup (Movies only have poster/genres, but works for all)
+                card.addEventListener('click', (e) => {
+                    // Don't intercept clicks on action buttons or title
+                    if (e.target.closest('button') || e.target.closest('.clickable-review-trigger')) return;
+                    window.openQuickInfo(item);
                 });
                 
                 grid.appendChild(card);

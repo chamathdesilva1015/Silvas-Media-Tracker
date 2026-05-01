@@ -724,17 +724,17 @@ delete-btn {
     font-weight: 600;
     text-transform: lowercase;
     letter-spacing: 0.02em;
-    padding: 0.15rem 0.4rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
+    padding: 0.15rem 0.45rem;
+    background: var(--theme-accent-muted);
+    border: 1px solid var(--theme-accent);
+    color: var(--theme-accent);
     border-radius: 4px;
-    transition: all 0.2s ease;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
 }
 
 .media-card:hover .genre-badge {
-    border-color: var(--theme-accent);
-    color: var(--text-primary);
+    opacity: 1;
 }
 
 /* --- Ranking Layout (Leaderboards) --- */
@@ -1526,7 +1526,117 @@ delete-btn {
     opacity: 0.5;
 }
 
-/* Automation Terminal Modal */
+/* ── Quick Info Modal ──────────────────────────────────────────────────── */
+.quick-info-content {
+    max-width: 680px;
+    padding: 2rem;
+}
+
+.quick-info-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.quick-info-poster-wrap {
+    flex-shrink: 0;
+    width: 160px;
+    height: 240px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.quick-info-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.quick-info-poster.loaded {
+    display: block;
+}
+
+.quick-info-poster-placeholder {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.4;
+    text-align: center;
+}
+
+.quick-info-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.quick-info-details h2 {
+    font-size: 1.4rem;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.quick-info-year {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+    opacity: 0.6;
+}
+
+.quick-info-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+}
+
+.quick-info-rating {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--theme-accent);
+    line-height: 1;
+    margin-top: 0.5rem;
+}
+
+.quick-info-review {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin: 0.5rem 0 0 0;
+    max-height: 120px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.75rem;
+    scrollbar-width: thin;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.quick-info-review:empty {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .quick-info-layout {
+        flex-direction: column;
+        align-items: center;
+    }
+    .quick-info-poster-wrap {
+        width: 120px;
+        height: 180px;
+    }
+}
+
 
 .modal-terminal {
     background: #141414;

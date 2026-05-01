@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body class="read-only-mode">
     <div class="mesh-bg">
@@ -203,6 +203,26 @@
         </div>
     </div>
 
+    <!-- Quick Info Popup -->
+    <div id="quickInfoModal" class="modal">
+        <div class="modal-content quick-info-content">
+            <span class="close-btn" id="closeQuickInfoBtn">&times;</span>
+            <div class="quick-info-layout">
+                <div class="quick-info-poster-wrap">
+                    <img id="quickInfoPoster" class="quick-info-poster" src="" alt="Poster" />
+                    <div class="quick-info-poster-placeholder" id="quickInfoPosterPlaceholder">No Poster</div>
+                </div>
+                <div class="quick-info-details">
+                    <h2 class="serif" id="quickInfoTitle"></h2>
+                    <p class="quick-info-year" id="quickInfoYear"></p>
+                    <div class="quick-info-genres" id="quickInfoGenres"></div>
+                    <div class="quick-info-rating" id="quickInfoRating"></div>
+                    <p class="quick-info-review" id="quickInfoReview"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
@@ -336,6 +356,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=97"></script>
+    <script src="app.js?v=98"></script>
 </body>
 </html>
