@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.reload(); 
             } else {
                 alert("Incorrect Developer Key. Viewing access only.");
+                adminPasswordInput.value = '';
             }
         };
     }
@@ -1227,8 +1228,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Review
         const reviewEl = document.getElementById('quickInfoReview');
-        const hasReview = isRealReview(item.review);
-        reviewEl.textContent = hasReview ? item.review : '';
+        let reviewText = item.review || '';
+        // Strip legacy import markers
+        reviewText = reviewText.replace(/Imported from Discord/gi, '').trim();
+        const hasReview = isRealReview(reviewText);
+        reviewEl.textContent = hasReview ? reviewText : '';
 
         // Poster
         const posterImg = document.getElementById('quickInfoPoster');
@@ -1631,7 +1635,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const hasReview = isRealReview(item.review);
                     const canClickReview = hasReview || computeCanEdit();
-                    const reviewSnippet = hasReview ? `<div class="ranking-row-snippet">"${item.review.substring(0, 120)}${item.review.length > 120 ? '...' : ''}"</div>` : '';
+                    let snippet = (item.review || '').replace(/Imported from Discord/gi, '').trim();
+                    const reviewSnippet = hasReview ? `<div class="ranking-row-snippet">"${snippet.substring(0, 120)}${snippet.length > 120 ? '...' : ''}"</div>` : '';
 
                     row.innerHTML = `
                         <div class="ranking-row-rank">#${rankNum}</div>
@@ -1756,17 +1761,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
-                    <div class="media-footer">
-                        <div class="date-added">${dateStr}</div>
-                        <div class="${sourceBadgeClass}">
-                            ${sourceText}
-                        </div>
-                        ${(isAdminUnlocked || item.is_liked) ? `
+                    ${(isAdminUnlocked || item.is_liked) ? `
+                        <div class="card-actions-row">
                             <button class="like-btn-inline ${likedClass}" 
                                     title="${isAdminUnlocked ? (item.is_liked ? 'Unlike' : 'Like') : ''}"
                                     style="${!isAdminUnlocked ? 'pointer-events: none; cursor: default;' : ''}">${likedIcon}</button>
-                        ` : ''}
-                    </div>
+                        </div>
+                    ` : ''}
                 `;
 
                 // Wire up review modal trigger -> Now opens Quick Info if item has review
@@ -1822,43 +1823,6 @@ document.addEventListener('DOMContentLoaded', () => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 500);
         }, 4000);
-    }
-
-    // --- Startup Sync Watcher ---
-    // The server runs a Discord sync automatically on launch.
-    // Monitor its status and refresh media data once it completes.
-    async function watchStartupSync() {
-        let syncWasRunning = false;
-        let idleChecks = 0;
-        const MAX_IDLE = 10; // give up after 10 × 2s = 20s with no activity
-
-        const check = async () => {
-            try {
-                const res = await fetch('/api/automation/status');
-                if (!res.ok) return;
-                const data = await res.json();
-
-                if (data.sync.running) {
-                    syncWasRunning = true;
-                    idleChecks = 0; // reset while actively syncing
-                } else if (syncWasRunning) {
-                    // Sync just finished — refresh data silently
-                    clearInterval(poll);
-                    await fetchMedia();
-                    updateCategoryTitleCount();
-                    if (data.sync.last_result?.status === 'success') {
-                        showNotification('✓ Discord data updated', 'success');
-                    }
-                } else {
-                    // Sync never started or already done before page loaded
-                    idleChecks++;
-                    if (idleChecks >= MAX_IDLE) clearInterval(poll);
-                }
-            } catch (_) { /* server still starting — keep trying */ }
-        };
-
-        const poll = setInterval(check, 2000);
-        check(); // run immediately on load
     }
 
     // --- Info Hub Navigation Logic ---
@@ -2150,7 +2114,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTheme();
     fetchMedia().then(() => {
         updateCategoryTitleCount();
-        watchStartupSync();
     });
 
     // --- Smart Scroll Navigation (v177) ---
