@@ -471,9 +471,9 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             
             for d_name, score, items_list in top_dirs:
                 if score <= 0: continue
-                # Get top 2 movies as examples
+                # Get top 4 movies as examples
                 sorted_movies = sorted(items_list, key=lambda x: x[0], reverse=True)
-                examples = [i.title for s, i in sorted_movies[:2]]
+                examples = [i.title for s, i in sorted_movies[:4]]
                 favorite_directors.append({
                     "name": d_name,
                     "score": round(score, 1),
