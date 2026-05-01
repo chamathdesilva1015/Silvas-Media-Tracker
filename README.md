@@ -87,6 +87,14 @@ Focus: Decoupling from external platforms for true independence.
 - **Interface Rebranding**: Rebranded "The Hub" and refined the UI to focus on direct database management.
 - **Workflow Optimization**: Streamlined the deployment process by removing external platform dependencies.
 
+### Update 10: Administrative Console & Data Integrity
+Focus: Centralized management and content validation.
+- **Desktop Navigation Restoration**: Reintegrated category-based navigation into the desktop header for improved accessibility.
+- **Authentication Consolidation**: Centralized all administrative login and logout controls within "The Hub" for both mobile and desktop.
+- **Review Content Guard**: Implemented a length-based and placeholder-aware safety filter to ensure "Reviewed" badges only display for entries with legitimate user content.
+- **Integrated Entry Tool**: Relocated the "+ Add Entry" button to the global header (and a compact mobile action button) for immediate access during browsing.
+- **Stability Fixes**: Resolved critical `TypeError` exceptions by implementing null-safe DOM updates and restoring missing UI anchors.
+
 ---
 
 ## License
