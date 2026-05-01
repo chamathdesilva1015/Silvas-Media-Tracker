@@ -298,8 +298,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Score distribution — sorted keys from 1..10
-        const distKeys = Object.keys(data.score_distribution || {}).sort((a, b) => parseFloat(a) - parseFloat(b));
+        // Score distribution — sorted keys from 1..10, skip empty/sub-1 buckets
+        const distKeys = Object.keys(data.score_distribution || {})
+            .filter(k => parseFloat(k) >= 1 && data.score_distribution[k] > 0)
+            .sort((a, b) => parseFloat(a) - parseFloat(b));
         const distMax = distKeys.length ? Math.max(...distKeys.map(k => data.score_distribution[k])) : 1;
         const distBars = distKeys.map(k => {
             const count = data.score_distribution[k];

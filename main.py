@@ -264,17 +264,19 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
     # Helper: extract numeric score from 'X/10' or 'X.Y/10'
     def parse_score(item):
-        if item.numeric_rating:
+        for field in [item.numeric_rating, item.rating]:
+            if not field: continue
+            # Try parsing raw number
             try:
-                return float(item.numeric_rating)
+                return float(field)
             except ValueError:
                 pass
-        
-        if item.rating and "/10" in item.rating:
-            try:
-                return float(item.rating.split("/")[0].strip())
-            except ValueError:
-                return None
+            # Try parsing "X/10"
+            if "/10" in field:
+                try:
+                    return float(field.split("/")[0].strip())
+                except ValueError:
+                    pass
         return None
 
     scores = [s for s in (parse_score(i) for i in items) if s is not None]
@@ -283,8 +285,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Average score
     avg_score = round(sum(scores) / len(scores), 1) if scores else None
 
-    # Score distribution — buckets from 1 to 10
-    dist = {}
+    # Score distribution — buckets from 0 to 10 in 0.5 increments
+    dist = {str(i/2.0) if i/2.0 != int(i/2.0) else str(int(i/2.0)): 0 for i in range(21)}
     for s in scores:
         bucket = str(int(s)) if s == int(s) else str(round(s * 2) / 2)
         dist[bucket] = dist.get(bucket, 0) + 1
