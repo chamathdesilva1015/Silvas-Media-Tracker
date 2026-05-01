@@ -130,26 +130,25 @@ Focus: Codebase maintenance and universal logic.
 - **Legacy Purge**: Deleted 200+ lines of deprecated logic and obsolete scripts.
 - **Auditor Hardening**: Updated health checks to strictly validate new schema integrity.
 
-### Update 6: Analytics and Integration
-Focus: Cross-platform data and library analytics.
+### Update 6: Metadata Enrichment and Visual Density
+Focus: Automated data lookup and high-fidelity media presentation.
 
-- **Letterboxd Pipeline**: Built a CSV import engine to migrate legacy movie data.
-- **Rating Standardization**: Converted 5-star ratings to a unified 10-point scale.
-- **Analytics Dashboard**: Implemented a Stats view featuring half-decade release trends.
-- **Hall of Fame**: Developed a scrollable list for high-value entries (9+ ratings).
-- **Library Metrics**: Added KPI tiles for Total Likes and Review Coverage.
-- **Badge Normalization**: Standardized source badges into a minimalist lowercase aesthetic.
-- **Enrichment Pipeline**: Integrated TMDB metadata for automated poster and genre retrieval.
+- **TMDB Integration**: Engineered a background enrichment pipeline to fetch official posters and genre metadata via API.
+- **Quick-Info Modal**: Implemented a comprehensive media popup featuring full posters, scrollable reviews, and metadata cards.
+- **Genre Badging**: Added dynamic genre badges to all media cards with color-coded category recognition.
+- **Letterboxd Bridge**: Built a CSV migration engine to import and standardize legacy 5-star movie data.
+- **Unified Ratings**: Normalized disparate rating sources into a single, high-precision 10-point scale.
+- **Sanitized Metadata**: Implemented year-parsing and title normalization to resolve ambiguous Discord logs.
 
-### Update 7: Dynamic Analysis and Taste Patterns
-Focus: Interactive metrics and personal taste modeling.
+### Update 7: Dynamic Analytics and Taste Modeling
+Focus: Predictive metrics and interactive dashboard logic.
 
-- **Run Stats Simulation**: Implemented a 1-second dynamic analysis engine for an interactive processing feel.
-- **Taste Modeling**: Engineered a favorite genre algorithm to identify the Top 5 genres from high-rated (8+) movies.
-- **Interactive Accordions**: Converted the Top Genres list into a collapsible accordion, matching the Hall of Fame UI.
-- **Dashboard Refactor**: Consolidated the Stats Hero Row to include Total Likes for better information density.
-- **Stricter Logic**: Elevated the "Top Tier" threshold to 8/10 to improve the accuracy of taste pattern detection.
-- **Analytical Loading**: Added progress-based loading states with contextual messages ("Processing metadata...").
+- **Run Stats Simulation**: Added a 1-second analytical processing delay with contextual loading messages for an interactive feel.
+- **Personal Taste Profile**: Developed an algorithm to identify the Top 5 favorite genres based on high-rated (8+) entries.
+- **Interactive Accordions**: Converted the Top Genres list into a collapsible accordion for better vertical space management.
+- **Hero Row Optimization**: Reorganized the stats dashboard to elevate Total Likes to the primary metric row.
+- **Pattern Strictness**: Fine-tuned taste detection to prioritize 8/10+ scores for more accurate interest modeling.
+- **Hall of Fame**: Developed a scrollable list section for high-value entries (9+ ratings).
 
 ---
 
