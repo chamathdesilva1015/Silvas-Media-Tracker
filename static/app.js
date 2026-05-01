@@ -1755,7 +1755,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
                         </div>
                     </div>
-                    <div class="card-spacer"></div>
+
                     <div class="media-footer">
                         <div class="date-added">${dateStr}</div>
                         <div class="${sourceBadgeClass}">
