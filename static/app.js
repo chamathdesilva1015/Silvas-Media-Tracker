@@ -1080,7 +1080,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const trimmed = review.trim();
         if (trimmed === '') return false;
         const lower = trimmed.toLowerCase();
-        if (lower.startsWith('imported from discord')) return false;
         if (lower.startsWith('imported from letterboxd')) return false;
         return true;
     };
@@ -1565,9 +1564,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const typeClass = `type-${item.type.toLowerCase().replace(' ', '-')}`;
-            const sourceBadgeClass = item.source.toLowerCase() === 'discord' ? 'source-badge source-discord' : 'source-badge';
-            const sourceIcon = ''; 
-            const sourceText = item.source.toLowerCase() === 'discord' ? 'discord' : 'letterboxd';
+            const isDiscord = item.source.toLowerCase() === 'discord';
+            const sourceBadgeClass = isDiscord ? 'source-badge source-discord' : 'source-badge';
+            const sourceText = isDiscord ? 'discord' : 'manual'; 
+            // Note: keeping 'discord' as a visual text for existing legacy items, but default to manual for others.
 
             if (isRankingRequired) {
                 // Podium Logic (1, 2, 3)
@@ -2085,54 +2085,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         function setupDevConsole() {
-            const syncBtn = document.getElementById('triggerSyncBtn');
+
+
             const enrichBtn = document.getElementById('triggerEnrichBtn');
             const wrapper = document.getElementById('consoleWrapper');
             const log = document.getElementById('consoleLog');
             const spinner = document.getElementById('consoleSpinner');
-            
-            let pollingInterval = null;
-
-            if (syncBtn) syncBtn.onclick = async () => {
-                wrapper.style.display = 'block';
-                spinner.style.display = 'block';
-                log.innerHTML = '<div style="color: #64b4ff;">[System] Initializing Discord Sync...</div>';
-                try {
-                    const res = await fetch('/api/automation/sync', { method: 'POST', headers: getAuthHeaders() });
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    const reader = res.body.getReader();
-                    const decoder = new TextDecoder("utf-8");
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        const chunk = decoder.decode(value, { stream: true });
-                        const lines = chunk.split('\n');
-                        lines.forEach(msg => {
-                            if (!msg.trim()) return;
-                            const line = document.createElement('div');
-                            line.style.marginBottom = '2px';
-                            line.innerText = msg;
-                            if (msg.includes('Error') || msg.includes('[!]')) line.style.color = '#ff6b6b';
-                            if (msg.includes('successful')) line.style.color = '#51cf66';
-                            log.appendChild(line);
-                            log.scrollTop = log.scrollHeight;
-                        });
-                    }
-                    spinner.style.display = 'none';
-                    const final = document.createElement('div');
-                    final.style.marginTop = '10px';
-                    final.style.paddingTop = '5px';
-                    final.style.borderTop = '1px dashed #444';
-                    final.style.color = '#fff';
-                    final.innerText = `[System] Task "sync" completed.`;
-                    log.appendChild(final);
-                    log.scrollTop = log.scrollHeight;
-                    fetchMedia();
-                } catch (err) {
-                    log.innerHTML += `<div style="color: #ff6b6b;">Request Error: ${err.message}</div>`;
-                    spinner.style.display = 'none';
-                }
-            };
 
             if (enrichBtn) enrichBtn.onclick = async () => {
                 wrapper.style.display = 'block';

@@ -10,14 +10,12 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 from database import engine, create_db_and_tables, MediaItem, RatingHistory
-from discord_sync import run_sync
 from enrich_data import run_enrichment
 
 app = FastAPI(title="Silva's Media Tracker API")
 
 # Automation state — defined early so startup hook and background task can reference it
 automation_status = {
-    "sync":   {"running": False, "last_result": None, "logs": []},
     "enrich": {"running": False, "last_result": None, "logs": []},
 }
 
@@ -66,32 +64,8 @@ async def on_startup():
     except Exception as e:
         print(f"[Startup] Score Cross-Linker skipped: {e}")
 
-    # Launch Discord sync in the background — site is immediately usable
-    # while data refreshes from Discord in the background.
-    asyncio.create_task(_background_sync())
-
-
-async def _background_sync():
-    """Runs a full Discord sync every time the server starts, followed by enrichment."""
-    automation_status["sync"]["running"] = True
-    automation_status["sync"]["logs"] = ["[System] Auto-sync started on launch..."]
-
-    def log_sync(msg):
-        print(msg)  # visible in terminal
-        automation_status["sync"]["logs"].append(msg)
-
-    try:
-        res = await run_sync(log_func=log_sync, category=None)
-        automation_status["sync"]["last_result"] = res
-        print(f"[Startup] Discord sync complete: {res}")
-        
-        # Trigger enrichment for Movies automatically after sync
-        await run_enrichment(category="Movies")
-    except Exception as e:
-        print(f"[Startup] Discord sync error: {e}")
-        automation_status["sync"]["last_result"] = {"status": "error", "message": str(e)}
-    finally:
-        automation_status["sync"]["running"] = False
+    # Launch enrichment in the background — site is immediately usable
+    asyncio.create_task(run_enrichment(category="Movies"))
 
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
@@ -515,32 +489,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         "favorite_directors": favorite_directors
     }
 
-@app.post("/api/automation/sync")
-async def trigger_sync(category: Optional[str] = None):
-    async def log_generator():
-        q = asyncio.Queue()
-        def log_sync(msg):
-            q.put_nowait(msg)
-            
-        async def run():
-            try:
-                res = await run_sync(log_func=log_sync, category=category, fast_mode=True)
-                if res.get("status") == "success":
-                    log_sync("[System] Sync successful.")
-            except Exception as e:
-                log_sync(f"[System] Critical Error: {str(e)}")
-            finally:
-                q.put_nowait(None)
-                
-        asyncio.create_task(run())
-        
-        while True:
-            msg = await q.get()
-            if msg is None:
-                break
-            yield msg + "\n"
-            
-    return StreamingResponse(log_generator(), media_type="text/plain")
+
 
 @app.post("/api/automation/enrich")
 async def trigger_enrich(category: Optional[str] = None):
