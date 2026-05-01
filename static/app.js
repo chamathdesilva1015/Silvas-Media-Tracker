@@ -706,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateCategoryTitleCount = () => {
-        if (!currentCategory) return;
+        if (!currentCategory || !pageTitle) return;
         // Filter by category (case-insensitive for safety)
         const items = allMedia.filter(i => (i.type || '').toLowerCase() === currentCategory.toLowerCase());
         const count = items.length;
