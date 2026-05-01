@@ -282,14 +282,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderStats = async (category) => {
         if (!statsPage) return;
-        statsPage.innerHTML = `<div class="stats-header"><h2 class="serif">${category} — Stats</h2><p>An overview of your ${category.toLowerCase()} collection.</p></div><p style="text-align:center;opacity:0.5;">Loading...</p>`;
+        
+        // Initial "Running" state for the simulation effect
+        statsPage.innerHTML = `
+            <div class="stats-header">
+                <h2 class="serif">${category} — Stats</h2>
+                <p>Analyzing the ${category.toLowerCase()} collection...</p>
+            </div>
+            <div style="text-align:center; padding: 4rem 0;">
+                <div class="spinner" style="margin: 0 auto 1.5rem; width: 40px; height: 40px; border-width: 3px;"></div>
+                <p style="opacity:0.6; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; animation: pulse 1.5s infinite;">Processing metadata & patterns...</p>
+            </div>
+        `;
 
         let data;
         try {
-            const res = await fetch(`/api/stats/${encodeURIComponent(category)}`);
-            data = await res.json();
+            // Fetch the real data
+            const fetchPromise = fetch(`/api/stats/${encodeURIComponent(category)}`).then(res => res.json());
+            
+            // Wait for both the data AND at least 1000ms to give the "Run" effect
+            const results = await Promise.all([
+                fetchPromise,
+                new Promise(resolve => setTimeout(resolve, 1000))
+            ]);
+            data = results[0];
         } catch (e) {
-            statsPage.innerHTML = '<p style="text-align:center;color:#e74c3c;">Failed to load stats.</p>';
+            statsPage.innerHTML = '<p style="text-align:center;color:#e74c3c;padding: 2rem;">Failed to load dynamic stats.</p>';
             return;
         }
 
@@ -330,8 +348,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         statsPage.innerHTML = `
             <div class="stats-header">
-                <h2 class="serif">${category} — Stats</h2>
-                <p>An overview of the ${category.toLowerCase()} collection.</p>
+                <h2 class="serif">${category} — Analysis Complete</h2>
+                <p>Insights generated from your ${category.toLowerCase()} collection.</p>
             </div>
 
             <div class="stats-hero-row">
