@@ -598,6 +598,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const mainTitle = infoPage.querySelector('.info-main-title');
                 if (mainTitle) mainTitle.innerText = `${currentCategory} Information Hub`;
+
+                // CRITICAL: Refresh Auth UI visibility when entering The Hub
+                window.updateAuthUI();
             }
             if (controls) controls.style.display = 'none';
             if (addBtn) addBtn.style.display = 'none';
