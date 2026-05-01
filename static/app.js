@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statsPage.innerHTML = `
             <div class="stats-header">
                 <h2 class="serif">${category} — Stats</h2>
-                <p>An overview of your ${category.toLowerCase()} collection.</p>
+                <p>An overview of the ${category.toLowerCase()} collection.</p>
             </div>
 
             <div class="stats-hero-row">
