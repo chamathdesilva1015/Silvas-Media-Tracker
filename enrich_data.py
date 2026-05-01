@@ -7,7 +7,8 @@ from tmdb_helper import search_movie, get_movie_details
 async def run_enrichment(log_func: Optional[Callable] = None, category: Optional[str] = None):
     """
     Main enrichment loop.
-    Iterates through movies with missing genres and attempts to fill them from TMDB.
+    Iterates through movies with missing genres OR missing director metadata
+    and attempts to fill them from TMDB.
     Only processes 'Movies' category as per user requirement.
     """
     def log(msg):
@@ -24,8 +25,10 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
     log(f"Starting Movie Enrichment...")
     
     with Session(engine) as session:
-        # Select items that are Movies and haven't failed too many times
-        # We process if genres are missing OR look like generic placeholders
+        # Select items that need enrichment:
+        # - Missing genres (new entries), OR
+        # - Have genres but missing director (existing entries pre-dating this feature)
+        # In both cases, cap at 5 attempts to avoid infinite loops.
         statement = select(MediaItem).where(
             MediaItem.type == "Movies",
             MediaItem.enrichment_attempts < 5
@@ -33,7 +36,8 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
             (MediaItem.genres == None) | 
             (MediaItem.genres == "") | 
             (MediaItem.genres == "documentary") | 
-            (MediaItem.genres.contains("Imported"))
+            (MediaItem.genres.contains("Imported")) |
+            (MediaItem.director == None)   # Re-enrich movies missing new metadata
         )
         
         items = session.exec(statement).all()
@@ -50,7 +54,7 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
             
             try:
                 # 1. Search for TMDB ID (Primary search with year)
-                tmdb_id = search_movie(item.title, item.release_year)
+                tmdb_id = item.tmdb_id or search_movie(item.title, item.release_year)
                 
                 # Fallback: If not found with year, try without year
                 if not tmdb_id and item.release_year:
@@ -64,25 +68,37 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     session.commit()
                     continue
                 
-                # 2. Get details
-                genres, poster_url = get_movie_details(tmdb_id)
+                # 2. Get full details (genres, poster, director, runtime, content_rating)
+                details = get_movie_details(tmdb_id)
                 
-                if genres:
-                    item.genres = genres
-                    item.tmdb_id = tmdb_id
-                    # Update cover if not already set manually
-                    if poster_url and (not item.cover_url or "discordapp" in item.cover_url):
-                        item.cover_url = poster_url
-                    
-                    session.add(item)
-                    session.commit()
-                    enriched_count += 1
-                    log(f"  [+] Enriched: {genres}")
-                else:
-                    log(f"  [!] No genre data found. Skipping.")
+                if not details:
+                    log(f"  [!] No data returned from TMDB. Skipping.")
                     item.enrichment_attempts += 1
                     session.add(item)
                     session.commit()
+                    continue
+
+                # 3. Write data to DB
+                if details.get("genres"):
+                    item.genres = details["genres"]
+                    item.tmdb_id = tmdb_id
+                
+                # Update cover only if not already set from a non-Discord source
+                if details.get("poster_url") and (not item.cover_url or "discordapp" in item.cover_url):
+                    item.cover_url = details["poster_url"]
+                
+                # Always update new metadata fields if we get them
+                if details.get("director"):
+                    item.director = details["director"]
+                if details.get("runtime"):
+                    item.runtime = details["runtime"]
+                if details.get("content_rating"):
+                    item.content_rating = details["content_rating"]
+                    
+                session.add(item)
+                session.commit()
+                enriched_count += 1
+                log(f"  [+] Enriched: {details.get('genres')} | Dir: {details.get('director')} | {details.get('runtime')}min | {details.get('content_rating')}")
                 
                 # Polite rate limiting
                 await asyncio.sleep(0.2)

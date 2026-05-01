@@ -62,14 +62,19 @@ def search_movie(title: str, year: Optional[int] = None) -> Optional[int]:
     
     return None
 
-def get_movie_details(tmdb_id: int) -> Tuple[Optional[str], Optional[str]]:
-    """Fetches genres and poster path for a given TMDB ID."""
+def get_movie_details(tmdb_id: int) -> dict:
+    """
+    Fetches genres, poster, director, runtime, and content_rating for a given TMDB ID.
+    Uses append_to_response to get everything in a single API call.
+    Returns a dict with keys: genres, poster_url, director, runtime, content_rating.
+    """
     if not TMDB_API_KEY:
-        return None, None
+        return {}
     
     url = f"{BASE_URL}/movie/{tmdb_id}"
     params = {
         "api_key": TMDB_API_KEY,
+        "append_to_response": "credits,releases",
     }
     
     try:
@@ -77,14 +82,48 @@ def get_movie_details(tmdb_id: int) -> Tuple[Optional[str], Optional[str]]:
         response.raise_for_status()
         data = response.json()
         
+        # --- Genres ---
         genres = [g["name"] for g in data.get("genres", [])]
         genres_str = ", ".join(genres) if genres else None
         
+        # --- Poster ---
         poster_path = data.get("poster_path")
         poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
         
-        return genres_str, poster_url
+        # --- Runtime (minutes) ---
+        runtime = data.get("runtime") or None
+        
+        # --- Director (from credits.crew, pick first Director credit) ---
+        director = None
+        crew = data.get("credits", {}).get("crew", [])
+        for person in crew:
+            if person.get("job") == "Director":
+                director = person.get("name")
+                break
+        
+        # --- Content Rating (US certification preferred, fallback to first available) ---
+        content_rating = None
+        countries = data.get("releases", {}).get("countries", [])
+        # Prefer US rating
+        for c in countries:
+            if c.get("iso_3166_1") == "US" and c.get("certification"):
+                content_rating = c["certification"]
+                break
+        # Fallback: first non-empty certification
+        if not content_rating:
+            for c in countries:
+                if c.get("certification"):
+                    content_rating = c["certification"]
+                    break
+        
+        return {
+            "genres": genres_str,
+            "poster_url": poster_url,
+            "director": director,
+            "runtime": runtime,
+            "content_rating": content_rating,
+        }
     except Exception as e:
         print(f"TMDB Details Error for ID {tmdb_id}: {e}")
     
-    return None, None
+    return {}

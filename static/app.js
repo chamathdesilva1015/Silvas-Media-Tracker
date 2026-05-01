@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.updateAuthUI();
 
     let allMedia = [];
+    let rankMap = {}; // title|type -> rank number; populated in renderMedia, read by openQuickInfo
     let currentCategory = 'Movies'; // Default page
     let currentSubTab = 'Completed'; // Default subtab ('Completed' or 'Rankings')
 
@@ -983,6 +984,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoTitle').textContent = item.title;
         document.getElementById('quickInfoYear').textContent = item.release_year ? `${item.release_year}` : '';
 
+        // --- Ranking Ribbon ---
+        const ribbon = document.getElementById('quickInfoRibbon');
+        const rankKey = (item.title + '|' + item.type).toLowerCase();
+        const rank = rankMap[rankKey];
+        if (rank) {
+            ribbon.style.display = 'flex';
+            ribbon.textContent = `#${rank}`;
+            // Color: gold=1, silver=2, bronze=3, accent=4+
+            ribbon.className = 'rank-ribbon';
+            if (rank === 1)      ribbon.classList.add('ribbon-gold');
+            else if (rank === 2) ribbon.classList.add('ribbon-silver');
+            else if (rank === 3) ribbon.classList.add('ribbon-bronze');
+            else                 ribbon.classList.add('ribbon-ranked');
+        } else {
+            ribbon.style.display = 'none';
+            ribbon.className = 'rank-ribbon';
+        }
+
         // Rating — prefer numeric score over rank string
         let ratingStr = item.numeric_rating || item.rating || '';
         // Remove existing /10 if present to avoid double display
@@ -1051,6 +1070,30 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             genresEl.innerHTML = '';
         }
+
+        // --- Movie-only metadata (director, runtime, content_rating) ---
+        const metaEl = document.getElementById('quickInfoMeta');
+        const isMovie = (item.type === 'Movies');
+        const hasAnyMeta = isMovie && (item.content_rating || item.runtime || item.director);
+        metaEl.style.display = hasAnyMeta ? 'flex' : 'none';
+
+        const crEl = document.getElementById('quickInfoContentRating');
+        crEl.textContent = item.content_rating || '';
+        crEl.style.display = item.content_rating ? 'inline-flex' : 'none';
+
+        const rtEl = document.getElementById('quickInfoRuntime');
+        if (item.runtime) {
+            const h = Math.floor(item.runtime / 60);
+            const m = item.runtime % 60;
+            rtEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
+            rtEl.style.display = 'inline-flex';
+        } else {
+            rtEl.style.display = 'none';
+        }
+
+        const dirEl = document.getElementById('quickInfoDirector');
+        dirEl.textContent = item.director ? `Dir. ${item.director}` : '';
+        dirEl.style.display = item.director ? 'inline-flex' : 'none';
 
         // Review
         const reviewEl = document.getElementById('quickInfoReview');
@@ -1370,7 +1413,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Build a lookup map: title+type -> rank number (from ranking entries)
-        const rankMap = {};
+        // This writes to the module-level rankMap so openQuickInfo can read it
+        rankMap = {};
         allMedia.forEach(m => {
             if (m.is_ranking) {
                 const key = (m.title + '|' + m.type).toLowerCase();

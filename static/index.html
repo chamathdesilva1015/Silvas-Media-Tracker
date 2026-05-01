@@ -211,11 +211,19 @@
                 <div class="quick-info-poster-wrap">
                     <img id="quickInfoPoster" class="quick-info-poster" src="" alt="Poster" />
                     <div class="quick-info-poster-placeholder" id="quickInfoPosterPlaceholder">No Poster</div>
+                    <!-- Ranking ribbon — shown if entry is in the Top 20 -->
+                    <div id="quickInfoRibbon" class="rank-ribbon" style="display:none;"></div>
                 </div>
                 <div class="quick-info-details">
                     <h2 class="serif" id="quickInfoTitle"></h2>
                     <p class="quick-info-year" id="quickInfoYear"></p>
                     <div class="quick-info-genres" id="quickInfoGenres"></div>
+                    <!-- Movie-only metadata row -->
+                    <div class="quick-info-meta" id="quickInfoMeta" style="display:none;">
+                        <span class="meta-chip" id="quickInfoContentRating"></span>
+                        <span class="meta-chip" id="quickInfoRuntime"></span>
+                        <span class="meta-chip" id="quickInfoDirector"></span>
+                    </div>
                     <div class="quick-info-rating" id="quickInfoRating"></div>
                     <p class="quick-info-review" id="quickInfoReview"></p>
                     <button id="quickInfoEditBtn" class="btn-secondary" style="margin-top: 1rem; display: none;">Edit Review</button>
@@ -365,6 +373,6 @@
     </div> <!-- End app-layout -->
 
     <!-- Core App Logic -->
-    <script src="app.js?v=120"></script>
+    <script src="app.js?v=130"></script>
 </body>
 </html>
