@@ -863,6 +863,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (trimmed === '') return false;
         const lower = trimmed.toLowerCase();
         if (lower.startsWith('imported from discord')) return false;
+        if (lower.startsWith('imported from letterboxd')) return false;
         return true;
     };
 
