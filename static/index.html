@@ -218,13 +218,17 @@
                     <h2 class="serif" id="quickInfoTitle"></h2>
                     <p class="quick-info-year" id="quickInfoYear"></p>
                     <div class="quick-info-genres" id="quickInfoGenres"></div>
-                    <!-- Movie-only metadata row -->
+                    <!-- Content rating + runtime chips (movie-only) -->
                     <div class="quick-info-meta" id="quickInfoMeta" style="display:none;">
                         <span class="meta-chip" id="quickInfoContentRating"></span>
                         <span class="meta-chip" id="quickInfoRuntime"></span>
-                        <span class="meta-chip" id="quickInfoDirector"></span>
                     </div>
                     <div class="quick-info-rating" id="quickInfoRating"></div>
+                    <!-- Director — exclusive labeled section (movie-only) -->
+                    <div class="quick-info-director-section" id="quickInfoDirectorSection" style="display:none;">
+                        <span class="director-label">Directed by</span>
+                        <span class="director-name" id="quickInfoDirector"></span>
+                    </div>
                     <p class="quick-info-review" id="quickInfoReview"></p>
                     <button id="quickInfoEditBtn" class="btn-secondary" style="margin-top: 1rem; display: none;">Edit Review</button>
                     

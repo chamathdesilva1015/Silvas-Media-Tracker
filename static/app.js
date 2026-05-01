@@ -1071,11 +1071,11 @@ document.addEventListener('DOMContentLoaded', () => {
             genresEl.innerHTML = '';
         }
 
-        // --- Movie-only metadata (director, runtime, content_rating) ---
+        // --- Movie-only metadata (content_rating, runtime) ---
         const metaEl = document.getElementById('quickInfoMeta');
         const isMovie = (item.type === 'Movies');
-        const hasAnyMeta = isMovie && (item.content_rating || item.runtime || item.director);
-        metaEl.style.display = hasAnyMeta ? 'flex' : 'none';
+        const hasChipMeta = isMovie && (item.content_rating || item.runtime);
+        metaEl.style.display = hasChipMeta ? 'flex' : 'none';
 
         const crEl = document.getElementById('quickInfoContentRating');
         crEl.textContent = item.content_rating || '';
@@ -1091,9 +1091,15 @@ document.addEventListener('DOMContentLoaded', () => {
             rtEl.style.display = 'none';
         }
 
+        // --- Director — exclusive labeled section ---
+        const dirSection = document.getElementById('quickInfoDirectorSection');
         const dirEl = document.getElementById('quickInfoDirector');
-        dirEl.textContent = item.director ? `Dir. ${item.director}` : '';
-        dirEl.style.display = item.director ? 'inline-flex' : 'none';
+        if (isMovie && item.director) {
+            dirEl.textContent = item.director;
+            dirSection.style.display = 'flex';
+        } else {
+            dirSection.style.display = 'none';
+        }
 
         // Review
         const reviewEl = document.getElementById('quickInfoReview');
@@ -1541,6 +1547,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${item.genres ? `
                         <div class="genre-container">
                             ${item.genres.split(',').map(g => `<span class="genre-badge">${g.trim()}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    ${(item.type === 'Movies' && item.director) ? `
+                        <div style="margin-top: 0.3rem;">
+                            <span class="director-badge">${item.director}</span>
                         </div>
                     ` : ''}
                     <div class="media-rating-container">

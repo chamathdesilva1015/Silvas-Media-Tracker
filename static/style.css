@@ -1601,42 +1601,42 @@ delete-btn {
 }
 
 /* Ranking ribbon — positioned at bottom-left of the poster */
+/* Ranking corner flag — top-left of poster, solid so it never blends */
 .rank-ribbon {
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
-    right: 0;
-    padding: 0.4rem 0;
-    font-size: 0.85rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-align: center;
+    z-index: 3;
+    padding: 0.35rem 0.7rem 0.35rem 0.55rem;
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    border-radius: 0 0 10px 0;
     display: flex;
     align-items: center;
-    justify-content: center;
-    z-index: 2;
-    backdrop-filter: blur(6px);
+    gap: 0.2rem;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.45);
 }
 
 .ribbon-gold {
-    background: linear-gradient(135deg, rgba(255,200,50,0.92), rgba(200,140,0,0.92));
+    background: linear-gradient(135deg, #ffd700, #b8860b);
     color: #1a1000;
 }
 .ribbon-silver {
-    background: linear-gradient(135deg, rgba(210,215,220,0.92), rgba(140,148,158,0.92));
+    background: linear-gradient(135deg, #d0d5db, #8c949e);
     color: #111;
 }
 .ribbon-bronze {
-    background: linear-gradient(135deg, rgba(200,130,70,0.92), rgba(140,80,30,0.92));
+    background: linear-gradient(135deg, #cd8246, #8b4513);
     color: #fff;
 }
 .ribbon-ranked {
-    background: rgba(var(--theme-accent-rgb, 100,180,255), 0.18);
-    color: var(--theme-accent);
-    border-top: 1px solid rgba(var(--theme-accent-rgb, 100,180,255), 0.4);
+    background: var(--theme-accent);
+    color: #000;
+    opacity: 0.92;
 }
 
-/* Movie metadata chips (content_rating / runtime / director) */
+/* Movie metadata chips (content_rating / runtime) — director removed to its own section */
 .quick-info-meta {
     display: flex;
     flex-wrap: wrap;
@@ -1658,6 +1658,54 @@ delete-btn {
     white-space: nowrap;
 }
 
+/* Director — exclusive section in the popup */
+.quick-info-director-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+}
+
+.director-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.45;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.director-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+}
+
+/* Director badge on entry tiles — visually distinct from genre badges */
+.director-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.15rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    font-style: italic;
+    background: rgba(20, 160, 140, 0.15);
+    color: #14a08c;
+    border: 1px solid rgba(20, 160, 140, 0.35);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.director-badge::before {
+    content: '🎬';
+    font-style: normal;
+    font-size: 0.75em;
+}
 
 .quick-info-details {
     flex: 1;
