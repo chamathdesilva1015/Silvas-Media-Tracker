@@ -66,6 +66,7 @@ body {
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
+    touch-action: manipulation;
 }
 
 h1,
