@@ -786,7 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pendingReviewData) {
             currentReviewContext = { title: pendingReviewData.title, type: pendingReviewData.type };
             reviewModalTitle.innerText = `Review: ${pendingReviewData.title}`;
-            reviewInput.value = '';
+            document.getElementById('reviewInputBox').value = '';
             
             // Restore user's preferred size for the text modal (desktop only)
             if (window.innerWidth > 768) {
