@@ -953,11 +953,11 @@ delete-btn {
 
 .media-rating-container {
     position: relative;
-    height: 100px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 1.5rem 0;
+    margin: 1.2rem 0;
     perspective: 1000px;
 }
 
@@ -976,9 +976,9 @@ delete-btn {
 }
 
 .media-card:hover .media-rating-container::before {
-    width: 220px;
-    height: 220px;
-    opacity: 0.4;
+    width: 180px;
+    height: 180px;
+    opacity: 0.3;
 }
 
 .media-rating {
@@ -987,7 +987,7 @@ delete-btn {
     left: 0;
     width: 100%;
     transform: translateY(-50%) scale(0.6) rotateX(-30deg);
-    font-size: 3.2rem;
+    font-size: 2.4rem;
     font-weight: 900;
     color: var(--theme-accent);
     text-shadow: 0 0 20px var(--theme-accent-glow);
