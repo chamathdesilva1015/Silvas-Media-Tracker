@@ -1611,15 +1611,12 @@ delete-btn {
     color: var(--text-secondary);
     line-height: 1.65;
     margin: 0.5rem 0 0 0;
-    max-height: 120px;
+    max-height: 250px;
     overflow-y: auto;
     border-top: 1px solid var(--border-color);
     padding-top: 0.75rem;
     scrollbar-width: thin;
-    display: -webkit-box;
-    -webkit-line-clamp: 6;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    /* Removed line-clamp to allow full scrolling */
 }
 
 .quick-info-review:empty {

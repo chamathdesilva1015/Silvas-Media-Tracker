@@ -932,9 +932,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoYear').textContent = item.release_year ? `${item.release_year}` : '';
 
         // Rating — prefer numeric score over rank string
-        const ratingStr = item.numeric_rating || item.rating || '';
-        const displayScore = (!ratingStr.startsWith('#')) ? ratingStr : (item.numeric_rating || '');
+        let ratingStr = item.numeric_rating || item.rating || '';
+        // Remove existing /10 if present to avoid double display (e.g. 7.5/10 / 10)
+        let displayScore = (!ratingStr.startsWith('#')) ? ratingStr.toString().replace('/10', '').trim() : (item.numeric_rating || '');
         document.getElementById('quickInfoRating').textContent = displayScore ? `${displayScore} / 10` : '';
+
+        // Edit Button (Admin Only)
+        const editBtn = document.getElementById('quickInfoEditBtn');
+        if (computeCanEdit()) {
+            editBtn.style.display = 'block';
+            editBtn.onclick = () => {
+                quickInfoModal.classList.remove('show');
+                window.openReviewModal(item.title, item.type, item.review, item.id);
+            };
+        } else {
+            editBtn.style.display = 'none';
+        }
 
         // Genres
         const genresEl = document.getElementById('quickInfoGenres');
@@ -1370,11 +1383,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
 
-                // Wire up review modal trigger
+                // Wire up review modal trigger -> Now opens Quick Info if item has review
                 if (canClickReview) {
                     card.querySelector('.clickable-review-trigger').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        window.openReviewModal(item.title, item.type, item.review, item.id);
+                        // Instead of opening the editor directly, open the info popup
+                        // This matches the "Premium" feel where the info is the first touchpoint
+                        window.openQuickInfo(item);
                     });
                 }
 
