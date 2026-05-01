@@ -43,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Logged in live
                 loginAdminBtns.forEach(btn => { if(btn) btn.style.display = 'none'; });
                 logoutAdminBtns.forEach(btn => { if(btn) btn.style.display = 'block'; });
+                const devBtn = document.getElementById('devConsoleBtn');
+                if (devBtn) devBtn.style.display = 'flex';
             }
         } else {
             document.body.classList.add('read-only-mode');
@@ -1905,6 +1907,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `).join('')}
             </div>
+        `,
+        'Developer Console': `
+            <div style="padding: 1rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <button id="triggerSyncBtn" class="btn-primary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto;">
+                        <span style="font-size: 1.5rem;">🔄</span>
+                        <strong>Sync Now</strong>
+                        <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Pull latest from Discord</span>
+                    </button>
+                    <button id="triggerEnrichBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
+                        <span style="font-size: 1.5rem;">✨</span>
+                        <strong>Magic Auto-Fill</strong>
+                        <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Enrich Movie Metadata</span>
+                    </button>
+                </div>
+
+                <div id="consoleWrapper" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="font-family: 'Inter', sans-serif; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; opacity: 0.6;">Live Console Log</h4>
+                        <div id="consoleSpinner" class="spinner-sm" style="display: none;"></div>
+                    </div>
+                    <div id="consoleLog" style="background: #000; border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #a0a0a0; height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); line-height: 1.5;">
+                        <div style="color: #666;">Waiting for task start...</div>
+                    </div>
+                </div>
+            </div>
         `
     };
 
@@ -1930,10 +1958,102 @@ document.addEventListener('DOMContentLoaded', () => {
                 iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
                 iIntro.style.display = 'none';
                 iDetail.style.display = 'block';
-                // Scroll to top of content
+                
+                if (section === 'Developer Console') {
+                    setupDevConsole();
+                }
+
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
+
+        function setupDevConsole() {
+            const syncBtn = document.getElementById('triggerSyncBtn');
+            const enrichBtn = document.getElementById('triggerEnrichBtn');
+            const wrapper = document.getElementById('consoleWrapper');
+            const log = document.getElementById('consoleLog');
+            const spinner = document.getElementById('consoleSpinner');
+            
+            let pollingInterval = null;
+
+            const pollLogs = (task) => {
+                if (pollingInterval) clearInterval(pollingInterval);
+                pollingInterval = setInterval(async () => {
+                    try {
+                        const res = await fetch(`/api/automation/logs/${task}`, { headers: getAuthHeaders() });
+                        const data = await res.json();
+                        if (data.logs && data.logs.length > 0) {
+                            data.logs.forEach(msg => {
+                                const line = document.createElement('div');
+                                line.style.marginBottom = '2px';
+                                line.innerText = msg;
+                                if (msg.includes('Error')) line.style.color = '#ff6b6b';
+                                if (msg.includes('successful')) line.style.color = '#51cf66';
+                                log.appendChild(line);
+                                log.scrollTop = log.scrollHeight;
+                            });
+                        }
+                        
+                        // Check if task finished
+                        const statusRes = await fetch('/api/automation/status', { headers: getAuthHeaders() });
+                        const statusData = await statusRes.json();
+                        if (!statusData[task].running) {
+                            clearInterval(pollingInterval);
+                            spinner.style.display = 'none';
+                            const final = document.createElement('div');
+                            final.style.marginTop = '10px';
+                            final.style.paddingTop = '5px';
+                            final.style.borderTop = '1px dashed #444';
+                            final.style.color = '#fff';
+                            final.innerText = `[System] Task "${task}" completed.`;
+                            log.appendChild(final);
+                            log.scrollTop = log.scrollHeight;
+                            
+                            // If sync finished, refresh local data
+                            if (task === 'sync') fetchMedia();
+                        }
+                    } catch (err) {
+                        console.error('Polling error:', err);
+                    }
+                }, 1000);
+            };
+
+            if (syncBtn) syncBtn.onclick = async () => {
+                wrapper.style.display = 'block';
+                spinner.style.display = 'block';
+                log.innerHTML = '<div style="color: #64b4ff;">[System] Initializing Discord Sync...</div>';
+                try {
+                    const res = await fetch('/api/automation/sync', { method: 'POST', headers: getAuthHeaders() });
+                    const data = await res.json();
+                    if (data.ok) pollLogs('sync');
+                    else {
+                        log.innerHTML += `<div style="color: #ff6b6b;">Failed: ${data.message}</div>`;
+                        spinner.style.display = 'none';
+                    }
+                } catch (err) {
+                    log.innerHTML += `<div style="color: #ff6b6b;">Request Error: ${err.message}</div>`;
+                    spinner.style.display = 'none';
+                }
+            };
+
+            if (enrichBtn) enrichBtn.onclick = async () => {
+                wrapper.style.display = 'block';
+                spinner.style.display = 'block';
+                log.innerHTML = '<div style="color: #64b4ff;">[System] Initializing Metadata Enrichment...</div>';
+                try {
+                    const res = await fetch('/api/automation/enrich', { method: 'POST', headers: getAuthHeaders() });
+                    const data = await res.json();
+                    if (data.ok) pollLogs('enrich');
+                    else {
+                        log.innerHTML += `<div style="color: #ff6b6b;">Failed: ${data.message}</div>`;
+                        spinner.style.display = 'none';
+                    }
+                } catch (err) {
+                    log.innerHTML += `<div style="color: #ff6b6b;">Request Error: ${err.message}</div>`;
+                    spinner.style.display = 'none';
+                }
+            };
+        }
 
         if (iBack) {
             iBack.addEventListener('click', () => {
