@@ -24,9 +24,39 @@ def search_movie(title: str, year: Optional[int] = None) -> Optional[int]:
         data = response.json()
         
         results = data.get("results", [])
-        if results:
-            # First result is usually the best match
-            return results[0]["id"]
+        if not results:
+            return None
+            
+        # Weighted Scoring Logic:
+        # We look at the top 5 results and pick the best match
+        best_id = None
+        best_score = -1
+        
+        for r in results[:5]:
+            score = 0
+            r_title = r.get("title", "").lower()
+            r_release = r.get("release_date", "")
+            r_pop = r.get("popularity", 0)
+            
+            # 1. Title Match (Case Insensitive)
+            if r_title == title.lower():
+                score += 100
+            elif title.lower() in r_title:
+                score += 20
+                
+            # 2. Year Match (If year was provided)
+            if year and r_release.startswith(str(year)):
+                score += 50
+                
+            # 3. Popularity (Tie-breaker)
+            # Normalize popularity (capped at 100)
+            score += min(r_pop, 50)
+            
+            if score > best_score:
+                best_score = score
+                best_id = r["id"]
+                
+        return best_id
     except Exception as e:
         print(f"TMDB Search Error for '{title}': {e}")
     

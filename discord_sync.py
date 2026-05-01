@@ -451,6 +451,13 @@ class SyncClient(discord.Client):
                         if not existing:
                             for c in candidates:
                                 if c["release_year"] and discord_year and c["release_year"] != discord_year:
+                                    # If years differ but one is from discord and one is manual, 
+                                    # we might still want to merge if they are "close enough" or if 
+                                    # the existing one was a manual placeholder.
+                                    if c.get("discord_id") is None:
+                                        # Existing is manual. If title is exact, allow merge
+                                        # This fixes the "Sinister" duplication.
+                                        existing = c; break
                                     continue
                                 existing = c; break
 
