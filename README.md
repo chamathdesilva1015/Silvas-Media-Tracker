@@ -80,70 +80,65 @@ chmod +x Run_on_Mac.command
 
 ## Development Roadmap
 
-### Update 1: Metadata and Genre Optimization
-Focus focused on data accuracy and structured classification for all media types.
+### Update 1: Metadata and Genre Logic
+Focus: Data accuracy and structured classification.
 
-- **Wikipedia Category Scoring**: Implemented a scoring model to parse detailed film classifications from the Wikipedia API.
-- **Genre Constraints**: Established a mandatory two-genre display for movie entries to ensure visual consistency.
-- **High-Priority Mapping**: Logic was added to prioritize core themes (Action, Drama, Romance) while deprioritizing background settings.
-- **Rate-Limit Handling**: Added back-off algorithms to manage API request frequency for Wikipedia and MyAnimeList.
-- **Manual Overrides**: Created a matching dictionary to allow for the manual correction of complex titles.
+- **Wikipedia Scoring**: Implemented a scoring model to parse film classifications from Wikipedia.
+- **Genre Constraints**: Enforced a two-genre display for consistent visual alignment.
+- **Priority Mapping**: Logic to prioritize core genres (Action, Drama) over background themes.
+- **Rate-Limit Handling**: Added back-off algorithms for Wikipedia and MyAnimeList APIs.
+- **Manual Overrides**: Created a matching dictionary to correct complex or ambiguous titles.
+- **Data Validation**: Added logic to sanitize year formats and title strings during ingestion.
 
 ### Update 2: Cloud Migration and Reliability
-Focus shifted to infrastructure stability, security, and ranking integrity.
+Focus: Infrastructure stability and ranking integrity.
 
-- **Supabase Migration**: Transitioned the data layer to a high-availability PostgreSQL backend on Supabase.
-- **Streamlined Sync**: Removed the genre scraping system to improve synchronization speeds and simplify the interface.
-- **Public Read-Only Mode**: Added an environment-aware protection layer that disables editing features when deployed to production.
-- **Message ID Anchoring**: Updated the sync engine to use unique Discord Message IDs as primary keys, enabling reliable message updates.
-- **Ranking Safety Engine**: Implemented strict rank prioritization logic and automated post-sync audits to detect sequence gaps.
-- **Typo Protection**: Added a fuzzy-year matching system (±2 years) to merge duplicate entries caused by manual typing errors.
+- **Supabase Migration**: Transitioned the data layer to a high-availability PostgreSQL backend.
+- **Streamlined Sync**: Optimized synchronization by removing legacy genre scraping.
+- **Production Safety**: Added a read-only protection layer for public deployments.
+- **ID Anchoring**: Used Discord Message IDs as primary keys for reliable record updates.
+- **Ranking Audits**: Implemented automated post-sync audits to detect sequence gaps.
+- **Deduplication**: Added fuzzy-year matching (±2 years) to merge duplicate entries.
 
-### Update 3: UX Modernization and Dynamic Aesthetics
-Focus focused on visual excellence, performance perception, and functional reliability.
+### Update 3: UX Modernization and Aesthetics
+Focus: Visual performance and interface refinement.
 
-- **Style System Overhaul**: Implemented a comprehensive high-end design pattern including category-themed mesh gradients and frosted glass components (Glassmorphism).
-- **Skeleton Loading State**: Replaced standard loading indicators with animated "skeleton" placeholders to improve navigation speed perception.
-- **Micro-Interactions**: Added staggered entry animations and themed soft-glow shadows to enhance the physical feedback of interface elements.
-- **Robust Event Handling**: Refactored the core review system to use centralized event delegation, resolving a critical bug caused by complex character sets in user critiques.
-- **Premium Typography**: Upgraded the font system to a curated pairing of Plus Jakarta Sans for UI legibility and Playfair Display for elegant serif headers.
-- **Ranking Integrity Fix**: Resolved a memory-snapshot conflict in the sync module, ensuring that leaderboard positions are always correctly force-written to the database after resets.
-- **Deduplication Refinement**: Improved item identity matching to ensure the correct original media versions are prioritized over legacy or unintentional live-action entries.
+- **Glassmorphism Design**: Implemented a design system using mesh gradients and frosted glass.
+- **Skeleton States**: Added animated loading placeholders for better navigation speed perception.
+- **Event Delegation**: Refactored the review system to resolve character-set encoding issues.
+- **Typography Upgrade**: Standardized Plus Jakarta Sans and Playfair Display across the UI.
+- **Leaderboard Fixes**: Resolved memory conflicts to ensure ranking persistence after resets.
+- **Identity Matching**: Refined logic to prioritize original media over legacy versions.
 
-### Update 4: Responsive Architecture and Touch-Forward Mobility
-Focus shifted to maximizing data density across varying viewport dimensions and engineering native-feeling touch logic.
+### Update 4: Responsive Architecture
+Focus: Data density and native-feeling mobile interactions.
 
-- **Mobile First Compact Grid**: Redesigned the entire mobile constraints into a hyper-dense, 3-column architecture, aggressively trimming non-essential metadata and stretching edge margins to maximize screen real estate.
-- **Widescreen Data Density**: Engineered the desktop grid logic to systematically expand from standard layouts into a precise 5-column landscape on large monitors, re-balancing internal card paddings to maintain elegance.
-- **Organic Touch Interactions**: Scrapped dedicated interaction buttons on mobile devices in favor of full-card tap logic; tapping an entry organically highlights the bounds in a blue ambient glow while gracefully pulling the rating score to the forefront.
-- **Contextual Sheet Engineering**: Reverted awkward bottom-sheet overlays back to centrally anchored modals with optimized viewing heights, ensuring long-form movie critiques remain highly readable without complex scrolling.
-- **Conditional Click Execution**: Refactored the JavaScript event loop to conditionally bind modal triggers; unreviewed media is now fully locked against pointer interactions, preventing empty data states.
-- **Responsive Dynamic Scaling**: Rebuilt badge sizing logic per-device threshold; ranked leaderboard badges intelligently upscale to match spacious PC cards, whilst shrinking down smoothly to preserve layout integrity on phones.
+- **Dense Mobile Grid**: Built a 3-column mobile architecture for maximum data visibility.
+- **Widescreen Scaling**: Expanded desktop grid to 5 columns on large monitors.
+- **Touch Interactions**: Implemented full-card tap logic to trigger mobile ratings.
+- **Contextual Modals**: Optimized review viewing heights for better long-form readability.
+- **Pointer Locking**: Disabled interactions for unreviewed items to prevent empty states.
+- **Adaptive Badges**: Engineered badge scaling logic to match device-specific grid sizes.
 
-### Update 5: Evaluative Philosophy and Information Hub Finalization
-Focus shifted to documentation transparency, terminology generalization, and massive codebase maintenance.
+### Update 5: Documentation and Generalization
+Focus: Codebase maintenance and universal logic.
 
-- **Category-Agnostic Refactoring**: Stripped media-specific terminology ("movie/film") across the entire engine and UI, replacing it with universal logic ("work/entry") to natively support Anime, Manga, and TV Series within the same documentation framework.
-- **Information Hub Consolidation**: Centralized all meta-content into a refined "Info" dashboard, unifying the Rating Scale, Criteria Breakdown, Ranking Rules, and Bias documentation into a single interactive registry.
-- **Bias & Effects Narrative**: Overhauled the personal bias documentation into five core pillars: *Preference, Expectation, Recency, Legacy,* and *Scale*. Each section was rewritten into a grounded "Bias -> Result -> Understanding" framework.
-- **Grading Criteria Professionalism**: Rewrote the criteria breakdown (Writing, Acting, Visual Craft, etc.) from robotic definitions into meaningful, human-centric paragraphs that articulate specific evaluative standards.
-- **Review System Generalization**: Upgraded the internal review schema to be fully category-agnostic, ensuring the critique-writing interface provides standardized, detailed guidance whether evaluating a feature film, a manga volume, or a seasonal anime.
-- **Legacy Logic Purge**: Executed a systemic cleanup of the repository, deleting seven obsolete scripts and stripping over 200 lines of deprecated genre-mapping logic from the automated enrichment engine.
-- **Health Auditor Hardening**: Updated the custom `health_check.py` auditor to support the new schema, strictly validating release years and ranking integrity whilst preventing crashes caused by missing legacy columns.
-- **Mobile Navigation Integration**: Synchronized the "Info" hub into the mobile bottom navigation bar, ensuring documentation accessibility is maintained across all device types.
-- **Ranking Fluidity Rules**: Crystalized the "Ranking Rules" logic, formally documenting the relationship between an entry's position and its stability within the Top 20 leaderboards.
+- **Category Agnostic**: Refactored the engine to natively support Anime, Manga, and TV.
+- **Information Hub**: Unified all meta-documentation into a centralized registry.
+- **Bias Documentation**: Formalized documentation for Recency, Legacy, and Scale biases.
+- **Criteria Refinement**: Standardized grading definitions for Writing, Visuals, and Craft.
+- **Legacy Purge**: Deleted 200+ lines of deprecated logic and obsolete scripts.
+- **Auditor Hardening**: Updated health checks to strictly validate new schema integrity.
 
-### Update 6: Analytics Architecture and Cross-Platform Integration
-Focus shifted to cross-platform data unification, granular library analytics, and the finalization of the Stats dashboard.
+### Update 6: Analytics and Integration
+Focus: Cross-platform data and library analytics.
 
-- **Letterboxd Data Ingestion**: Engineered a robust CSV import pipeline to migrate legacy Letterboxd data, including title normalization and rating conversion from a 5-star to a 10-point scale.
-- **Granular Analytics Dashboard**: Implemented a comprehensive Statistics view featuring dynamic score distribution charts and high-resolution half-decade (5-year) release trends.
-- **Dynamic Hall of Fame**: Developed an expandable, scrollable accordion for high-value entries (9+ ratings), allowing for a deep-dive into top-tier content without cluttering the interface.
-- **Library Momentum Metrics**: Added high-level KPI tiles for Total Likes, Average Score, and Review Coverage, providing an at-a-glance health check of the collection.
-- **Source Badge Normalization**: Standardized third-party data badges (Discord/Letterboxd) into a minimalist, emoji-free lowercase aesthetic for visual consistency.
-- **Data Pipeline Hardening**: Refactored the core score-parsing engine to robustly handle diverse rating formats (raw floats vs. strings) across all integrated platforms.
-- **Metadata Transparency**: Refined the UI to emphasize the collective library over personal ownership, stripping personal pronouns from the main headers.
-- **Repository Optimization**: Executed a systemic cleanup of temporary import scripts and legacy files to maintain codebase integrity after major migrations.
+- **Letterboxd Pipeline**: Built a CSV import engine to migrate legacy movie data.
+- **Rating Standardization**: Converted 5-star ratings to a unified 10-point scale.
+- **Analytics Dashboard**: Implemented a Stats view featuring half-decade release trends.
+- **Hall of Fame**: Developed a scrollable list for high-value entries (9+ ratings).
+- **Library Metrics**: Added KPI tiles for Total Likes and Review Coverage.
+- **Badge Normalization**: Standardized source badges into a minimalist lowercase aesthetic.
 
 ---
 
