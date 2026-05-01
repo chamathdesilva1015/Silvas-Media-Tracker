@@ -414,7 +414,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="directorsHeader">
                     <div class="hof-accordion-title">
                         Top Directors
-                        <span class="hof-subtitle">Calculated using the same <b>Passion-Volume Index</b>.</span>
+                        <span class="hof-subtitle"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
+                        <br><br>
+                        1. <b>Quality Threshold:</b> Only movies rated above 4.5 contribute points. This mathematically filters out directors whose work you found mediocre or disliked.
+                        <br><br>
+                        2. <b>Cubic Weighting (³):</b> Near-perfect scores carry exponential weight. Masterpieces marked with a <b>Heart (25% bonus)</b> or a <b>Review (10% bonus)</b> significantly increase a director's standing.
+                        <br><br>
+                        3. <b>The Confidence Multiplier:</b> A director's score is scaled by their filmography's depth. A single high-rated movie results in 0 points; a director needs a consistent track record to reach the top.</span>
                     </div>
                     <span class="hof-chevron" id="directorsChevron">▼</span>
                 </div>
