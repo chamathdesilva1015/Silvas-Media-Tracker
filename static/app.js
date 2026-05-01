@@ -766,6 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const confirmReviewModal = document.getElementById('confirmReviewModal');
     const noReviewBtn = document.getElementById('noReviewBtn');
+    const textReviewBtn = document.getElementById('textReviewBtn');
     const yesReviewBtn = document.getElementById('yesReviewBtn');
     
     const reviewingStructureModal = document.getElementById('reviewingStructureModal');
@@ -778,6 +779,28 @@ document.addEventListener('DOMContentLoaded', () => {
     noReviewBtn.addEventListener('click', () => {
         confirmReviewModal.classList.remove('show');
         pendingReviewData = null;
+    });
+
+    textReviewBtn.addEventListener('click', () => {
+        confirmReviewModal.classList.remove('show');
+        if (pendingReviewData) {
+            currentReviewContext = { title: pendingReviewData.title, type: pendingReviewData.type };
+            reviewModalTitle.innerText = `Review: ${pendingReviewData.title}`;
+            reviewInput.value = '';
+            
+            // Restore user's preferred size for the text modal (desktop only)
+            if (window.innerWidth > 768) {
+                const saved = JSON.parse(localStorage.getItem(REVIEW_MODAL_SIZE_KEY) || 'null');
+                if (saved && saved.w && saved.h) {
+                    reviewModalContent.style.width  = saved.w + 'px';
+                    reviewModalContent.style.height = saved.h + 'px';
+                } else {
+                    reviewModalContent.style.width  = '';
+                    reviewModalContent.style.height = '';
+                }
+            }
+            reviewModal.classList.add('show');
+        }
     });
 
     yesReviewBtn.addEventListener('click', () => {

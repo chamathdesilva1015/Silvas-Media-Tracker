@@ -330,11 +330,12 @@
 
     <!-- Confirm Review Prompt Modal -->
     <div id="confirmReviewModal" class="modal">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <div class="modal-content" style="max-width: 450px; text-align: center;">
             <h2 class="serif" style="margin-bottom: 1rem;">Review this entry?</h2>
-            <div class="form-actions" style="display: flex; gap: 10px;">
-                <button id="noReviewBtn" class="btn-secondary" style="flex: 1;">No</button>
-                <button id="yesReviewBtn" class="btn-primary" style="flex: 1;">Yes</button>
+            <div class="form-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="noReviewBtn" class="btn-secondary" style="flex: 1; min-width: 100px;">No</button>
+                <button id="textReviewBtn" class="btn-secondary" style="flex: 1; min-width: 100px; background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border-color);">Just Text</button>
+                <button id="yesReviewBtn" class="btn-primary" style="flex: 1; min-width: 100px;">Yes</button>
             </div>
         </div>
     </div>
