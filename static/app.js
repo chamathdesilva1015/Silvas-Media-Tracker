@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-body" id="directorsBody">
                     ${data.favorite_directors.map((d, i) => `
                         <div class="hof-entry" style="align-items: flex-start;">
-                            <span class="hof-entry-rank" style="color: #14a08c;">${i + 1}</span>
+                            <span class="hof-entry-rank" style="color: var(--theme-accent);">${i + 1}</span>
                             <div style="display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0;">
                                 <span class="hof-entry-title" style="font-weight: 700;">${d.name}</span>
                                 <span style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; line-height: 1.4;">

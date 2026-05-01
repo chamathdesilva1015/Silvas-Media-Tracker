@@ -1351,14 +1351,8 @@ delete-btn {
 
 .hof-accordion.active {
     border-color: var(--theme-accent);
-    box-shadow: 0 0 20px rgba(var(--theme-accent-rgb, 100, 180, 255), 0.2);
-    transform: translateY(-2px);
-}
-
-/* Specific theme for Directors if desired, but using generic accent for consistency */
-#directorsAccordion.active {
-    border-color: #14a08c;
-    box-shadow: 0 0 20px rgba(20, 160, 140, 0.25);
+    box-shadow: 0 0 25px rgba(var(--theme-accent-rgb, 100, 180, 255), 0.35);
+    transform: translateY(-3px);
 }
 
 /* Custom scrollbar for HOF */
