@@ -227,14 +227,22 @@ def update_rating(item_id: int, request: RatingUpdateRequest, session: Session =
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    new_rating = request.rating.strip()
-    if not new_rating.endswith("/10"):
-        # Auto-append /10 if they just typed a number
-        try:
-            float(new_rating)
+    try:
+        score_val = float(request.rating.strip())
+        # Snap to nearest 0.5
+        rounded_val = round(score_val * 2) / 2
+        new_rating = f"{rounded_val}/10" if rounded_val == int(rounded_val) else f"{rounded_val}/10"
+        
+        # Clean display: if it's 8.0/10, make it 8/10
+        if rounded_val == int(rounded_val):
+            new_rating = f"{int(rounded_val)}/10"
+        else:
+            new_rating = f"{rounded_val}/10"
+    except ValueError:
+        # Fallback if parsing fails
+        new_rating = request.rating.strip()
+        if not new_rating.endswith("/10"):
             new_rating = f"{new_rating}/10"
-        except:
-            pass
 
     target_norm = normalize_title(item.title)
     all_related = session.exec(

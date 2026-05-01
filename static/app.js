@@ -996,8 +996,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ratingEditSection.style.display = 'block';
             ratingInput.value = rawScore || '';
             saveRatingBtn.onclick = async () => {
-                const newVal = ratingInput.value.trim();
-                if (!newVal) return;
+                let newVal = parseFloat(ratingInput.value);
+                if (isNaN(newVal)) return;
+                
+                // Snap to nearest 0.5
+                newVal = Math.round(newVal * 2) / 2;
                 
                 saveRatingBtn.disabled = true;
                 saveRatingBtn.textContent = 'Saving...';
