@@ -400,26 +400,29 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Favorite Genre (Movies ONLY) - "Volume-Weighted Passion" Model (v120)
     favorite_genre = None
     if category.lower() == "movies" and scored_items:
-        genre_data = {} # {name: [scores]}
+        genre_data = {} # {name: [(score, item)]}
         for s, i in scored_items:
             if not i.genres: continue
             parts = [g.strip() for g in i.genres.split(",")]
             for p in parts:
                 if p not in genre_data: genre_data[p] = []
-                genre_data[p].append(s)
+                genre_data[p].append((s, i))
         
         genre_scores = []
-        for g_name, scores in genre_data.items():
-            v = len(scores)
+        for g_name, items in genre_data.items():
+            v = len(items)
             if v < 1: continue
             
             # 1. Total Cubic Passion: Sum of (Rating - 4.5)^3
-            total_passion = sum(max(0, (s - 4.5)) ** 3 for s in scores)
+            # A 25% "Passion Bonus" is applied if the movie is Liked
+            total_passion = 0
+            for s, i in items:
+                weight = max(0, (s - 4.5)) ** 3
+                if i.is_liked:
+                    weight *= 1.25 # 25% Bonus for personal favorites
+                total_passion += weight
             
             # 2. Confidence Filter: (1 - 1/v)
-            # v=1 -> 0 points (filter out single-item genres)
-            # v=2 -> 50% points
-            # v=10 -> 90% points
             confidence = (1.0 - (1.0 / v))
             
             final_score = total_passion * confidence

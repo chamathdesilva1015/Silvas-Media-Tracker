@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <br><br>
                         1. <b>The Floor (4.5):</b> Ratings below 4.5 contribute 0 points. This mathematically filters out genres that are only watched occasionally or disliked.
                         <br><br>
-                        2. <b>Cubic Growth (³):</b> High ratings carry exponential weight. A 10/10 movie is worth 216x more than a 5/0 movie, ensuring masterpieces define the top list.
+                        2. <b>Cubic Growth (³):</b> High ratings carry exponential weight. A 10/10 movie is worth 216x more than a 5/0 movie. Additionally, <b>any movie marked with a Heart receives a 25% "Passion Bonus,"</b> ensuring masterpieces and personal favorites define the top list.
                         <br><br>
                         3. <b>The Confidence Filter:</b> A genre needs a track record. A single 10/10 movie results in 0 points, while 10 movies retain 90% of their score. This eliminates "one-hit wonder" categories.</span>
                     </div>
