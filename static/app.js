@@ -1269,36 +1269,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Toggle like on a media item (optimistic UI + cascade via API)
     // Toggle like on a media item (optimistic UI)
+    // Toggle like on a media item (optimistic UI)
     const toggleLike = async (itemId) => {
-        // Find all elements representing this item in the DOM
-        const targetElements = document.querySelectorAll(`[data-item-id="${itemId}"]`);
-        
         // Update local cache immediately
-        const itemIdx = allMedia.findIndex(m => m.id === itemId);
+        // Use == to handle potential string vs number ID comparison
+        const itemIdx = allMedia.findIndex(m => m.id == itemId);
         if (itemIdx === -1) return;
         
-        const newState = !allMedia[itemIdx].is_liked;
-        allMedia[itemIdx].is_liked = newState;
+        const item = allMedia[itemIdx];
+        const newState = !item.is_liked;
+        const targetTitle = item.title;
+        const targetType = item.type;
 
-        // Update UI immediately (Optimistic UI)
-        targetElements.forEach(el => {
-            const likeBtn = el.querySelector('.like-btn');
-            if (likeBtn) {
-                if (newState) {
-                    likeBtn.classList.add('liked');
-                    likeBtn.innerHTML = '♥';
-                    likeBtn.title = 'Unlike';
-                } else {
-                    likeBtn.classList.remove('liked');
-                    likeBtn.innerHTML = '♡';
-                    likeBtn.title = 'Mark as personally liked';
-                    
-                    // If we are currently on the "Liked" sub-tab, fade out and remove the item
-                    if (currentSubTab === 'Liked') {
-                        el.style.opacity = '0';
-                        el.style.transform = 'scale(0.9)';
-                        el.style.transition = 'all 0.3s ease';
-                        setTimeout(() => el.remove(), 300);
+        // Backend cascades by title + type, so we must update ALL matching items in cache
+        allMedia.forEach(m => {
+            if (m.title === targetTitle && m.type === targetType) {
+                m.is_liked = newState;
+            }
+        });
+
+        // Update ALL elements representing this item in the DOM
+        // (This handles cases where the item appears in both Movies and Rankings)
+        const allMatchingTiles = document.querySelectorAll(`[data-item-id]`);
+        allMatchingTiles.forEach(el => {
+            const elId = el.getAttribute('data-item-id');
+            const cachedItem = allMedia.find(m => m.id == elId);
+            
+            if (cachedItem && cachedItem.title === targetTitle && cachedItem.type === targetType) {
+                const likeBtn = el.querySelector('.like-btn');
+                if (likeBtn) {
+                    if (newState) {
+                        likeBtn.classList.add('liked');
+                        likeBtn.innerHTML = '♥';
+                        likeBtn.title = 'Unlike';
+                    } else {
+                        likeBtn.classList.remove('liked');
+                        likeBtn.innerHTML = '♡';
+                        likeBtn.title = 'Mark as personally liked';
+                        
+                        if (currentSubTab === 'Liked') {
+                            el.style.opacity = '0';
+                            el.style.transform = 'scale(0.9)';
+                            el.style.transition = 'all 0.3s ease';
+                            setTimeout(() => el.remove(), 300);
+                        }
                     }
                 }
             }
@@ -1311,11 +1325,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: getAuthHeaders(false)
             });
             if (!res.ok) {
-                // Revert UI on error (simple alert or silent fail)
                 console.error('Failed to toggle like');
+                fetchMedia(); // Force refresh on failure
             }
         } catch (err) {
             console.error('Error toggling like:', err);
+            fetchMedia(); // Force refresh on failure
         }
     };
 
