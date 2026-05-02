@@ -173,14 +173,13 @@ async def refresh_item_metadata(item_id: int, session: Session = Depends(get_ses
     session.refresh(item)
     return {"ok": True, "item": item}
 
-class LinkPayload(BaseModel):
-    item_id: int
+class ManualLinkPayload(BaseModel):
     ext_id: int # TMDB or MAL ID
 
-@app.post("/api/media/link")
-async def link_metadata_manually(payload: LinkPayload, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+@app.post("/api/media/manual-link/{item_id}")
+async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     """Force-link an item to a specific ID and fetch its details."""
-    item = session.get(MediaItem, payload.item_id)
+    item = session.get(MediaItem, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -204,11 +203,18 @@ async def link_metadata_manually(payload: LinkPayload, session: Session = Depend
     if details.get("director"): item.director = details["director"]
     if details.get("runtime"): item.runtime = details["runtime"]
     if details.get("content_rating"): item.content_rating = details["content_rating"]
-    item.tmdb_id = payload.ext_id
+    
+    # Store the IDs for future syncs
+    if item.type == "Manga":
+        item.mal_id = payload.ext_id
+    else:
+        item.tmdb_id = payload.ext_id
+        
+    item.enrichment_attempts = 1 # Mark as enriched
     
     session.add(item)
     session.commit()
-    return {"ok": True, "item": item}
+    return {"ok": True, "title": item.title}
 
 def normalize_title(title: str) -> str:
     """Universal normalizer for semantic identity matching."""
