@@ -1265,11 +1265,14 @@ document.addEventListener('DOMContentLoaded', () => {
             rtEl.style.display = 'none';
         }
 
-        // --- Director — exclusive labeled section ---
+        // --- Director / Creator — exclusive labeled section ---
         const dirSection = document.getElementById('quickInfoDirectorSection');
+        const dirLabel = dirSection.querySelector('.director-label');
         const dirEl = document.getElementById('quickInfoDirector');
-        if (isMovie && item.director) {
+        
+        if (item.director) {
             dirEl.textContent = item.director;
+            dirLabel.textContent = isMovie ? 'Directed by' : 'Created by';
             dirSection.style.display = 'flex';
         } else {
             dirSection.style.display = 'none';
