@@ -269,9 +269,13 @@
                         </div>
                         
                         <div id="quickInfoLinkSubSection" style="display: none; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px dashed var(--border-color);">
-                            <p style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.8rem; line-height: 1.4;">
+                            <p style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.8rem; line-height: 1.5;">
                                 Paste the numeric ID from the official URL.<br>
-                                <span style="opacity: 0.5;">Example: For myanimelist.net/manga/<b>81117</b>, use <b>81117</b></span>
+                                <span style="opacity: 0.5;">
+                                    Manga: myanimelist.net/manga/<b>81117</b> → use <b>81117</b><br>
+                                    Anime: myanimelist.net/anime/<b>45807</b> → use <b>45807</b><br>
+                                    Movies/TV: themoviedb.org/movie/<b>157336</b> → use <b>157336</b>
+                                </span>
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
                                 <input type="number" id="quickInfoLinkInput" placeholder="Enter ID Number" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-size: 0.85rem;">
@@ -504,6 +508,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=225"></script>
+    <script src="app.js?v=226"></script>
 </body>
 </html>

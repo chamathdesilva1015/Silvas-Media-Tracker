@@ -94,3 +94,48 @@ def get_manga_details(mal_id: int) -> Dict:
     except Exception as e:
         print(f"Jikan Details Error for ID {mal_id}: {e}")
     return {}
+
+def get_anime_details(mal_id: int) -> dict:
+    """
+    Fetches genres, poster, director, and year for an anime using Jikan (MAL).
+    """
+    url = f"{BASE_URL}/anime/{mal_id}/full"
+    
+    try:
+        response = requests.get(url)
+        if response.status_code == 429:
+            time.sleep(1)
+            response = requests.get(url)
+            
+        response.raise_for_status()
+        data = response.json().get("data", {})
+        
+        # --- Genres ---
+        genres_list = data.get("genres", []) + data.get("explicit_genres", []) + data.get("themes", []) + data.get("demographics", [])
+        genres = ", ".join([g["name"] for g in genres_list]) if genres_list else None
+        
+        # --- Poster ---
+        poster_url = data.get("images", {}).get("webp", {}).get("large_image_url")
+        
+        # --- Studio / Director (use studio name as director field) ---
+        studios = data.get("studios", [])
+        studio = studios[0]["name"] if studios else None
+        
+        # --- Year ---
+        release_year = None
+        aired = data.get("aired", {}).get("prop", {}).get("from", {})
+        if aired.get("year"):
+            release_year = str(aired["year"])
+        
+        return {
+            "title": data.get("title_english") or data.get("title"),
+            "release_year": release_year,
+            "genres": genres,
+            "poster_url": poster_url,
+            "director": studio,
+            "tmdb_id": mal_id,
+            "content_rating": data.get("rating"),
+        }
+    except Exception as e:
+        print(f"Jikan Anime Details Error for ID {mal_id}: {e}")
+    return {}

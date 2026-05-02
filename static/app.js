@@ -1127,13 +1127,13 @@ document.addEventListener('DOMContentLoaded', () => {
             'discord sync',
             'imported from discord',
             'automatically imported',
-            'no review provided'
+            'no review provided',
+            'ranking'  // Ranking entries sometimes have 'Ranking' as a legacy review value
         ];
         
-        if (placeholders.some(p => lower.includes(p))) return false;
+        if (placeholders.some(p => lower === p || lower.startsWith(p + ' ') || lower.endsWith(' ' + p))) return false;
         
         // Basic length check - a review should probably be at least a few characters
-        // if it's supposed to be "real" content. 
         return trimmed.length > 5;
     };
 
@@ -1151,9 +1151,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Quick Info Modal ──────────────────────────────────────────────────────
     const quickInfoModal = document.getElementById('quickInfoModal');
-    document.getElementById('closeQuickInfoBtn').onclick = () => quickInfoModal.classList.remove('show');
+    const closeQuickInfo = () => {
+        quickInfoModal.classList.remove('show');
+        quickInfoModal.style.zIndex = ''; // Reset z-index after close
+    };
+    document.getElementById('closeQuickInfoBtn').onclick = closeQuickInfo;
     window.addEventListener('dblclick', (e) => {
-        if (e.target === quickInfoModal) quickInfoModal.classList.remove('show');
+        if (e.target === quickInfoModal) closeQuickInfo();
     });
 
     window.openQuickInfo = (item) => {
@@ -1179,23 +1183,34 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // Rating — for ranked items, both rating and numeric_rating hold "#N"
-        // We need to find the actual score. The update endpoint stores it separately.
-        // Priority: use item.score (if set by a future field), then try to parse /10 from either field,
-        // then fall back gracefully to show nothing rather than a rank string.
+        // Rating — for ranked items, both rating and numeric_rating may hold "#N"
+        // Strategy: try both fields, then fall back to the sibling Completed entry in allMedia.
         const ratingStr = String(item.rating || '');
         const numRatingStr = String(item.numeric_rating || '');
         
-        // Try to extract a true numeric score from either field
         const extractScore = (s) => {
-            if (!s || s.startsWith('#')) return null;
+            if (!s || s.trim().startsWith('#')) return null;
             const cleaned = s.replace('/10', '').trim();
             const val = parseFloat(cleaned);
             return isNaN(val) ? null : cleaned;
         };
         
         let rawScore = extractScore(numRatingStr) || extractScore(ratingStr);
-        // If both are rank strings (#N), display nothing for the score — cleaner than showing '#1 / 10'
+        
+        // If ranked item has no usable score in its own fields, look for the
+        // sibling Completed entry in allMedia (same title + type, is_ranking = false)
+        if (!rawScore && item.is_ranking) {
+            const sibling = allMedia.find(m =>
+                m.type === item.type &&
+                m.title.toLowerCase().trim() === item.title.toLowerCase().trim() &&
+                !m.is_ranking
+            );
+            if (sibling) {
+                rawScore = extractScore(String(sibling.numeric_rating || '')) ||
+                           extractScore(String(sibling.rating || ''));
+            }
+        }
+        
         document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
 
         // Edit Button (Admin Only)
@@ -1423,6 +1438,9 @@ document.addEventListener('DOMContentLoaded', () => {
             posterImg.src = '';
         }
 
+        // Raise z-index so quickInfoModal always appears on top of everything
+        // (including the Ranking Manager modal which shares the same base z-index)
+        quickInfoModal.style.zIndex = '10001';
         quickInfoModal.classList.add('show');
     };
 

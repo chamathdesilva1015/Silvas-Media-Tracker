@@ -185,10 +185,13 @@ async def link_metadata_manually(payload: LinkPayload, session: Session = Depend
         raise HTTPException(status_code=404, detail="Item not found")
 
     from tmdb_helper import get_tmdb_details
-    from jikan_helper import get_manga_details
+    from jikan_helper import get_manga_details, get_anime_details
 
     if item.type == "Manga":
         details = get_manga_details(payload.ext_id)
+    elif item.type == "Anime":
+        # Anime IDs come from MyAnimeList — use Jikan, not TMDB
+        details = get_anime_details(payload.ext_id)
     else:
         media_type = "movie" if item.type == "Movies" else "tv"
         details = get_tmdb_details(payload.ext_id, media_type)
