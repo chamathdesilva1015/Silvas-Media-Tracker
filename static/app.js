@@ -2208,7 +2208,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const subtitle = document.getElementById('rankingManagerSubtitle');
         if (subtitle) {
             const count = currentRankedItems.length;
-            subtitle.innerHTML = `Leaderboard Status: <strong style="color: ${count === 20 ? '#51cf66' : 'var(--theme-accent)'}">${count}/20 slots filled</strong>`;
+            const categoryDisplay = currentCategory.replace(/s$/, ''); // "Movie" instead of "Movies"
+            subtitle.innerHTML = `Leaderboard Status for ${categoryDisplay}: <strong style="color: ${count === 20 ? '#51cf66' : 'var(--theme-accent)'}">${count}/20 slots filled</strong>`;
             
             if (saveRankingsBtn) {
                 if (count === 20) {
@@ -2263,20 +2264,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const openRankingManager = () => {
         if (!rankingManagerModal) return;
         
-        const seen = new Set();
         currentRankedItems = allMedia
             .filter(item => {
-                const isMatch = item.type.toLowerCase() === currentCategory.toLowerCase() && (item.rating || '').startsWith('#');
-                if (!isMatch) return false;
-                const norm = item.title.toLowerCase().trim();
-                if (seen.has(norm)) return false;
-                seen.add(norm);
-                return true;
+                if (item.type.toLowerCase() !== currentCategory.toLowerCase()) return false;
+                const r = String(item.rating || '');
+                const nr = String(item.numeric_rating || '');
+                return r.startsWith('#') || nr.startsWith('#');
             })
             .sort((a, b) => {
-                const rA = parseInt(a.rating.replace('#', '')) || 999;
-                const rB = parseInt(b.rating.replace('#', '')) || 999;
-                return rA - rB;
+                const getRankNum = (it) => {
+                    const r = String(it.rating || '');
+                    const nr = String(it.numeric_rating || '');
+                    const str = r.startsWith('#') ? r : (nr.startsWith('#') ? nr : '#999');
+                    return parseInt(str.replace('#', '')) || 999;
+                };
+                return getRankNum(a) - getRankNum(b);
             });
         
         renderRankingList();
