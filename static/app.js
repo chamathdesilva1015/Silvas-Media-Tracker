@@ -1789,7 +1789,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     ` : ''}
                     ${(item.type === 'Movies' && item.director) ? `
-                        <div style="margin-top: 0.6rem; margin-bottom: 0.6rem;">
+                        <div class="director-container">
                             <span class="director-badge">${item.director}</span>
                         </div>
                     ` : ''}
