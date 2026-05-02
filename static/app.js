@@ -832,6 +832,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rating: ratingVal + '/10',
             review: '', // No review on creation per user request
             release_year: releaseYear,
+            ext_id: parseInt(document.getElementById('newEntryExtIdInput').value) || null,
             source: 'manual'
         };
 

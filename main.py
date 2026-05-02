@@ -88,28 +88,65 @@ def delete_media_item(item_id: int, session: Session = Depends(get_session), _: 
     session.commit()
     return {"status": "success", "message": "Item deleted"}
 
+class CreateMediaPayload(BaseModel):
+    title: str
+    type: str
+    rating: str
+    release_year: Optional[int] = None
+    ext_id: Optional[int] = None
+    source: str = "manual"
+
 @app.post("/api/media", response_model=MediaItem)
-def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
-    # Error-Proof Duplicate Check
+def create_media(payload: CreateMediaPayload, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    # 1. Check for duplicates by Official ID first (if provided)
+    if payload.ext_id:
+        if payload.type == "Manga":
+            dup = session.exec(select(MediaItem).where(MediaItem.mal_id == payload.ext_id)).first()
+        else:
+            dup = session.exec(select(MediaItem).where(MediaItem.tmdb_id == payload.ext_id)).first()
+        
+        if dup:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"This item (ID: {payload.ext_id}) already exists in your tracker as '{dup.title}'."
+            )
+
+    # 2. Check for duplicates by Title/Year
     stmt = select(MediaItem).where(
-        MediaItem.title == item.title,
-        MediaItem.type == item.type,
-        MediaItem.release_year == item.release_year
+        MediaItem.title == payload.title,
+        MediaItem.type == payload.type,
+        MediaItem.release_year == payload.release_year
     )
     existing = session.exec(stmt).first()
     if existing:
         raise HTTPException(
             status_code=400, 
-            detail=f"This piece of media ('{item.title}' {item.release_year or ''}) already exists in your tracker."
+            detail=f"This piece of media ('{payload.title}' {payload.release_year or ''}) already exists in your tracker."
         )
         
+    # 3. Create the item
+    item = MediaItem(
+        title=payload.title,
+        type=payload.type,
+        rating=payload.rating,
+        release_year=payload.release_year,
+        source=payload.source,
+        numeric_rating=payload.rating
+    )
+    
+    if payload.ext_id:
+        if payload.type == "Manga":
+            item.mal_id = payload.ext_id
+        else:
+            item.tmdb_id = payload.ext_id
+        item.enrichment_attempts = 0 # Trigger enrichment to pull details for this ID
+
     session.add(item)
     session.commit()
     session.refresh(item)
 
-    # Auto-enrich if it's a Movie or TV Series
-    if item.type in ["Movies", "TV Series"]:
-        background_tasks.add_task(run_enrichment, category=item.type)
+    # Auto-enrich (Manga now included)
+    background_tasks.add_task(run_enrichment, category=item.type)
 
     return item
 
