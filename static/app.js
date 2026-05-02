@@ -1233,6 +1233,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
+            // Metadata Repair v219
+            const refreshBtn = document.getElementById('quickInfoRefreshBtn');
+            const showLinkBtn = document.getElementById('quickInfoShowLinkBtn');
+            const linkSection = document.getElementById('quickInfoLinkSubSection');
+            const linkInput = document.getElementById('quickInfoExtIdInput');
+            const linkSubmitBtn = document.getElementById('quickInfoLinkSubmitBtn');
+
+            linkSection.style.display = 'none'; // Reset state
+
+            refreshBtn.onclick = async () => {
+                if (!confirm("This will force-refresh all metadata (Poster, Title, Author) from the official sources. Continue?")) return;
+                
+                refreshBtn.disabled = true;
+                refreshBtn.textContent = 'Syncing...';
+                
+                try {
+                    const res = await fetch(`/api/media/refresh/${item.id}`, {
+                        method: 'POST',
+                        headers: getAuthHeaders()
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                        alert(`Metadata Synced! Entry is now officially linked and titled.`);
+                        quickInfoModal.classList.remove('show');
+                        fetchMedia(); // Refresh UI
+                    } else {
+                        alert("Sync Failed: " + (data.detail || "Check console"));
+                    }
+                } catch (e) {
+                    alert("Error syncing: " + e.message);
+                } finally {
+                    refreshBtn.disabled = false;
+                    refreshBtn.textContent = '↺ Sync with Official';
+                }
+            };
+
+            showLinkBtn.onclick = () => {
+                linkSection.style.display = linkSection.style.display === 'none' ? 'block' : 'none';
+            };
+
+            linkSubmitBtn.onclick = async () => {
+                const extId = parseInt(linkInput.value);
+                if (isNaN(extId)) return alert("Please enter a valid numeric ID.");
+
+                linkSubmitBtn.disabled = true;
+                linkSubmitBtn.textContent = 'Linking...';
+
+                try {
+                    const res = await fetch(`/api/media/link`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ item_id: item.id, ext_id: extId })
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                        alert(`Successfully linked to ID ${extId}. Title and metadata have been synchronized.`);
+                        quickInfoModal.classList.remove('show');
+                        fetchMedia();
+                    } else {
+                        alert("Link Failed: " + (data.detail || "Check console"));
+                    }
+                } catch (e) {
+                    alert("Error linking: " + e.message);
+                } finally {
+                    linkSubmitBtn.disabled = false;
+                    linkSubmitBtn.textContent = 'Apply Link';
+                }
+            };
+
         } else {
             editBtn.style.display = 'none';
             ratingEditSection.style.display = 'none';

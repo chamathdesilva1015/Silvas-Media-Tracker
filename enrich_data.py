@@ -75,7 +75,16 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     session.commit()
                     continue
                 
-                # 3. Write data to DB
+                # 3. Write data to DB (Sync title & year to "Real World" official versions)
+                if details.get("title"):
+                    old_title = item.title
+                    item.title = details["title"]
+                    if old_title != item.title:
+                        log(f"  [~] Title Synced: '{old_title}' -> '{item.title}'")
+
+                if details.get("release_year"):
+                    item.release_year = details["release_year"]
+
                 if details.get("genres"):
                     item.genres = details["genres"]
                     item.tmdb_id = tmdb_id
@@ -90,12 +99,22 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                 if details.get("content_rating"):
                     item.content_rating = details["content_rating"]
                     
-                session.add(item)
-                session.commit()
-                enriched_count += 1
-                
-                label = "Author" if item.type == "Manga" else ("Director" if item.type == "Movies" else "Creator")
-                log(f"  [+] Enriched: {details.get('genres')} | {label}: {details.get('director')} | {details.get('runtime', 'N/A')}min | {details.get('content_rating')}")
+                try:
+                    session.add(item)
+                    session.commit()
+                    enriched_count += 1
+                    
+                    label = "Author" if item.type == "Manga" else ("Director" if item.type == "Movies" else "Creator")
+                    log(f"  [+] Enriched: {details.get('genres')} | {label}: {details.get('director')} | {details.get('runtime', 'N/A')}min | {details.get('content_rating')}")
+                except Exception as e:
+                    session.rollback()
+                    if "unique_media_item" in str(e):
+                        log(f"  [!] Skip Sync: Official title '{item.title}' already exists in your library.")
+                    else:
+                        log(f"  [Error] {str(e)}")
+                    item.enrichment_attempts += 1
+                    session.add(item)
+                    session.commit()
                 
                 await asyncio.sleep(0.5 if item.type == "Manga" else 0.2) # Be kinder to Jikan
 

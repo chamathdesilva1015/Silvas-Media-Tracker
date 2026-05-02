@@ -244,9 +244,20 @@
                     
                     <div id="quickInfoRatingEditSection" style="display: none; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
                         <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; display: block; margin-bottom: 0.8rem;">Admin Override: Update Rating</label>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem;">
                             <input type="number" id="quickInfoRatingInput" step="0.5" min="0" max="10" placeholder="--" style="width: 70px; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--theme-accent); font-weight: 600; text-align: center;">
                             <button id="quickInfoSaveRatingBtn" class="btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.85rem;">Save Rating</button>
+                        </div>
+
+                        <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; display: block; margin-bottom: 0.8rem;">Metadata Repair (v219)</label>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                            <button id="quickInfoRefreshBtn" class="btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 0.8rem;">↺ Sync with Official</button>
+                            <button id="quickInfoShowLinkBtn" class="btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 0.8rem;">🔗 Manual Link ID</button>
+                        </div>
+                        
+                        <div id="quickInfoLinkSubSection" style="display: none; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px dashed var(--border-color);">
+                            <input type="text" id="quickInfoExtIdInput" placeholder="Enter TMDB or MAL ID..." style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-base); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); font-size: 0.8rem;">
+                            <button id="quickInfoLinkSubmitBtn" class="btn-primary" style="width: 100%; padding: 0.4rem; font-size: 0.75rem;">Apply Link</button>
                         </div>
                     </div>
                 </div>
@@ -474,6 +485,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=218"></script>
+    <script src="app.js?v=219"></script>
 </body>
 </html>

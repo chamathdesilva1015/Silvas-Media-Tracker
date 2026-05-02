@@ -24,13 +24,30 @@ def search_manga(title: str) -> Optional[int]:
         if not results:
             return None
             
-        # Match by title similarity
-        for r in results:
-            if r.get("title", "").lower() == title.lower():
-                return r["mal_id"]
+        from thefuzz import fuzz
         
-        # Fallback to first result
-        return results[0]["mal_id"]
+        # Match by title similarity
+        best_match = None
+        highest_score = 0
+        
+        for r in results:
+            api_title = r.get("title", "")
+            # Check primary title and English title
+            titles_to_check = [api_title]
+            if r.get("title_english"):
+                titles_to_check.append(r["title_english"])
+            
+            for t in titles_to_check:
+                score = fuzz.token_sort_ratio(t.lower(), title.lower())
+                if score > highest_score:
+                    highest_score = score
+                    best_match = r
+        
+        # Threshold: 70% similarity to avoid "Tonegawa" vs "Tonikawa"
+        if best_match and highest_score > 70:
+            return best_match["mal_id"]
+        
+        return None
     except Exception as e:
         print(f"Jikan Search Error for '{title}': {e}")
     return None
@@ -66,6 +83,8 @@ def get_manga_details(mal_id: int) -> Dict:
             author = f"{parts[1].strip()} {parts[0].strip()}"
             
         return {
+            "title": data.get("title"),
+            "release_year": str(data.get("published", {}).get("prop", {}).get("from", {}).get("year", "")) or None,
             "genres": genres,
             "poster_url": poster_url,
             "director": author, # Store in director field for consistency

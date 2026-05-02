@@ -145,7 +145,70 @@ def update_review(payload: ReviewPayload, session: Session = Depends(get_session
         session.add(item)
         
     session.commit()
-    return {"ok": True, "updated_count": len(target_items)}
+    return {"ok": True, "title": item.title, "rating": item.rating}
+
+# --- Metadata Sync & Fix Endpoints (v219) ---
+
+@app.post("/api/media/refresh/{item_id}")
+async def refresh_item_metadata(item_id: int, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    """Force re-run enrichment for a single specific item."""
+    item = session.get(MediaItem, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # Deep Reset
+    item.enrichment_attempts = 0
+    item.tmdb_id = None
+    item.genres = None
+    item.director = None
+    item.cover_url = None
+    session.add(item)
+    session.commit()
+    
+    # Trigger enrichment runner (this is async)
+    # Note: run_enrichment normally loops over everything, but we can call it.
+    # For efficiency, we just let the background task handle it or we could make a targeted version.
+    await run_enrichment(category=item.type)
+    
+    session.refresh(item)
+    return {"ok": True, "item": item}
+
+class LinkPayload(BaseModel):
+    item_id: int
+    ext_id: int # TMDB or MAL ID
+
+@app.post("/api/media/link")
+async def link_metadata_manually(payload: LinkPayload, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    """Force-link an item to a specific ID and fetch its details."""
+    item = session.get(MediaItem, payload.item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    from tmdb_helper import get_tmdb_details
+    from jikan_helper import get_manga_details
+
+    if item.type == "Manga":
+        details = get_manga_details(payload.ext_id)
+    else:
+        media_type = "movie" if item.type == "Movies" else "tv"
+        details = get_tmdb_details(payload.ext_id, media_type)
+
+    if not details:
+        raise HTTPException(status_code=400, detail="Could not retrieve details for that ID.")
+
+    # Apply details
+    if details.get("title"): item.title = details["title"]
+    if details.get("release_year"): item.release_year = details["release_year"]
+    if details.get("genres"): item.genres = details["genres"]
+    if details.get("poster_url"): item.cover_url = details["poster_url"]
+    if details.get("director"): item.director = details["director"]
+    if details.get("runtime"): item.runtime = details["runtime"]
+    if details.get("content_rating"): item.content_rating = details["content_rating"]
+    item.tmdb_id = payload.ext_id
+    
+    session.add(item)
+    session.commit()
+    return {"ok": True, "item": item}
 
 def normalize_title(title: str) -> str:
     """Universal normalizer for semantic identity matching."""

@@ -121,7 +121,8 @@ Focus: Codebase maintenance and universal logic.
 Focus: Automated data lookup and high-fidelity media presentation.
 - **TMDB Integration**: Built a background enrichment pipeline to fetch official posters and metadata via API.
 - **Quick-Info Modal**: Implemented a comprehensive media popup with posters and metadata cards.
-- **Genre Badging**: Added dynamic, color-coded genre badges to all media entries.
+- **Genre Badging- **v219**: Metadata Repair & Title Sync. Added "Sync with Official" and "Manual Link ID" tools to fix mismatches and standardize titles to their "Real World" official names.
+- **v218**: Dynamic Color Themes. Movies (Blue/Purple), TV (Red/Orange), Manga (Green/Yellow), Anime (Yellow/Green).
 - **Letterboxd Bridge**: Built a CSV migration engine to import and standardize legacy 5-star movie data.
 - **Unified Ratings**: Normalized disparate rating sources into a single, high-precision 10-point scale.
 - **Sanitized Metadata**: Implemented year-parsing and title normalization to resolve ambiguous Discord logs.
@@ -163,17 +164,8 @@ Responsive Navigation: Engineered a unified search/filter row for mobile headers
 Premium Footer Design: Replaced bulky highlights with sleek underline indicators and enhanced blur.
 Mobile-Exclusive Logic: Implemented text-swap mechanisms to replace verbose text with concise formulas.
 
-
-Update 11: TV Series Enrichment Support
-Focus: Expanding automated metadata lookups to television content.
-
-TV Pipeline Integration: Engineered a multi-type enrichment engine supporting both Movies and TV Series.
-Intelligent TMDB Routing: Implemented type-aware API logic to prevent data collisions between movies and shows.
-Creator Mapping: Automatically identifies and maps TV Show Creators to the existing metadata schema.
-Average Runtime Logic: Developed statistical averaging for TV episode runtimes for consistent data density.
-TV Certification Support: Added logic to fetch and standardize TV-specific content ratings (e.g., TV-MA).
-
 ---
 
 ## License
 This project is licensed under the MIT License.
+
