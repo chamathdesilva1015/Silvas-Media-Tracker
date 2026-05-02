@@ -826,13 +826,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        const title = document.getElementById('titleInput').value.trim();
+        const extId = parseInt(document.getElementById('newEntryExtIdInput').value) || null;
+
+        if (!title && !extId) {
+            alert('Please provide either a Title or an Official ID.');
+            return;
+        }
+
         const payload = {
-            title: document.getElementById('titleInput').value,
+            title: title || `ID:${extId}`, // Placeholder if title is missing
             type: type,
             rating: ratingVal + '/10',
-            review: '', // No review on creation per user request
+            review: '', 
             release_year: releaseYear,
-            ext_id: parseInt(document.getElementById('newEntryExtIdInput').value) || null,
+            ext_id: extId,
             source: 'manual'
         };
 

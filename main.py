@@ -125,18 +125,19 @@ def create_media(payload: CreateMediaPayload, background_tasks: BackgroundTasks,
                 detail=f"This item (ID: {payload.ext_id}) already exists in your tracker as '{dup.title}'."
             )
 
-    # 2. Check for duplicates by Title/Year
-    stmt = select(MediaItem).where(
-        MediaItem.title == payload.title,
-        MediaItem.type == payload.type,
-        MediaItem.release_year == payload.release_year
-    )
-    existing = session.exec(stmt).first()
-    if existing:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"This piece of media ('{payload.title}' {payload.release_year or ''}) already exists in your tracker."
+    # 2. Check for duplicates by Title/Year (only if title is provided)
+    if not payload.title.startswith("ID:"):
+        stmt = select(MediaItem).where(
+            MediaItem.title == payload.title,
+            MediaItem.type == payload.type,
+            MediaItem.release_year == payload.release_year
         )
+        existing = session.exec(stmt).first()
+        if existing:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"This piece of media ('{payload.title}' {payload.release_year or ''}) already exists in your tracker."
+            )
         
     # 3. Create the item
     item = MediaItem(
@@ -153,13 +154,32 @@ def create_media(payload: CreateMediaPayload, background_tasks: BackgroundTasks,
             item.mal_id = payload.ext_id
         else:
             item.tmdb_id = payload.ext_id
-        item.enrichment_attempts = 0 # Trigger enrichment to pull details for this ID
+        
+        # v230: Instant fetch if title is missing
+        if payload.title.startswith("ID:"):
+            from tmdb_helper import get_tmdb_details
+            from jikan_helper import get_manga_details
+            
+            if item.type == "Manga":
+                details = get_manga_details(payload.ext_id)
+            else:
+                m_type = "movie" if item.type == "Movies" else "tv"
+                details = get_tmdb_details(payload.ext_id, m_type)
+            
+            if details:
+                if details.get("title"): item.title = details["title"]
+                if details.get("release_year"): item.release_year = details["release_year"]
+                if details.get("genres"): item.genres = details["genres"]
+                if details.get("poster_url"): item.cover_url = details["poster_url"]
+                if details.get("director"): item.director = details["director"]
+        
+        item.enrichment_attempts = 1 # Mark as enriched (we just did it)
 
     session.add(item)
     session.commit()
     session.refresh(item)
 
-    # Auto-enrich (Manga now included)
+    # Trigger background enrichment anyway for safety/other categories
     background_tasks.add_task(run_enrichment, category=item.type)
 
     return item
