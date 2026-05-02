@@ -78,6 +78,9 @@ async def on_startup():
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE mediaitem ADD COLUMN mal_id INTEGER"))
             print("[Migration] Column 'mal_id' added successfully.")
+    except Exception as e:
+        print(f"[Migration] Auto-migration failed: {e}")
+
     # v231: Rating Recovery for corrupted numeric_ratings
     try:
         with Session(engine) as session:
