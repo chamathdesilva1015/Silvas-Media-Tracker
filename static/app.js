@@ -177,7 +177,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 3. Clear and Re-populate Genre Filters
+        if (searchInput) searchInput.value = '';
+        currentSearch = '';
         filterState.genres.clear();
+        filterState.likedOnly = false;
+        filterState.reviewed = false;
+        filterState.unreviewed = false;
+        
+        // Reset filter radio buttons in the UI
+        document.querySelectorAll('input[name="sort"]').forEach(r => r.checked = (r.value === 'rating-desc'));
+        const likedCheck = document.getElementById('filterLiked'); if (likedCheck) likedCheck.checked = false;
+        const revCheck = document.getElementById('filterReviewed'); if (revCheck) revCheck.checked = false;
+        const unrevCheck = document.getElementById('filterUnreviewed'); if (unrevCheck) unrevCheck.checked = false;
+
         updateActiveFilterCount();
         populateGenreFilters();
 
@@ -748,6 +760,18 @@ document.addEventListener('DOMContentLoaded', () => {
         typeInput.value = currentCategory;
         typeInput.dispatchEvent(new Event('change'));
         
+        // Update Search Helper Link
+        const searchHelper = document.getElementById('newEntrySearchHelper');
+        if (searchHelper) {
+            if (currentCategory === 'Manga') {
+                searchHelper.href = "https://myanimelist.net/manga.php";
+                searchHelper.innerText = "Search MyAnimeList →";
+            } else {
+                searchHelper.href = "https://www.themoviedb.org/";
+                searchHelper.innerText = "Search TMDB →";
+            }
+        }
+
         modal.classList.add('show');
     };
 
@@ -1292,8 +1316,8 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             showLinkBtn.onclick = () => {
-                const isHidden = linkSubSection.style.display === 'none';
-                linkSubSection.style.display = isHidden ? 'block' : 'none';
+                const isHidden = linkSection.style.display === 'none';
+                linkSection.style.display = isHidden ? 'block' : 'none';
                 if (isHidden) {
                     // Auto-open search page for the user
                     let searchUrl = "";
@@ -1306,12 +1330,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            applyLinkBtn.onclick = async () => {
+            linkSubmitBtn.onclick = async () => {
                 const extId = parseInt(linkInput.value);
                 if (isNaN(extId)) return alert("Please enter a valid numeric ID.");
                 
-                applyLinkBtn.disabled = true;
-                applyLinkBtn.textContent = 'Linking...';
+                linkSubmitBtn.disabled = true;
+                linkSubmitBtn.textContent = 'Linking...';
                 
                 try {
                     const res = await fetch(`/api/media/manual-link/${item.id}`, {
@@ -1330,8 +1354,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (e) {
                     alert("Error linking: " + e.message);
                 } finally {
-                    applyLinkBtn.disabled = false;
-                    applyLinkBtn.textContent = 'Apply Link';
+                    linkSubmitBtn.disabled = false;
+                    linkSubmitBtn.textContent = 'Apply Link';
                 }
             };
 
