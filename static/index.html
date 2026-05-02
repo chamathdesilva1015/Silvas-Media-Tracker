@@ -113,6 +113,10 @@
                             <strong>Logout</strong>
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Revoke Admin Access</span>
                         </button>
+                        <button id="manageRankingsBtn" class="btn-secondary" style="grid-column: span 2; padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
+                            <strong>🏆 Manage Rankings</strong>
+                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;" id="rankingBtnDesc">Edit Top 20 Leaderboards</span>
+                        </button>
                     </div>
 
                 </div>
@@ -433,7 +437,41 @@
         </div>
     </div>
 
+    <!-- Ranking Manager Modal -->
+    <div id="rankingManagerModal" class="modal">
+        <div class="modal-content ranking-manager-content">
+            <span class="close-btn" id="closeRankingManagerBtn">&times;</span>
+            <div class="ranking-manager-header">
+                <h2 class="serif">Rankings Manager</h2>
+                <p id="rankingManagerSubtitle">Manage your Top 20 list</p>
+            </div>
+            
+            <div class="ranking-manager-layout">
+                <div class="ranking-manager-list-section">
+                    <label>Current Ranking (Drag to reorder)</label>
+                    <div id="rankingList" class="sortable-list">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+                
+                <div class="ranking-manager-add-section">
+                    <label>Add to Ranking</label>
+                    <input type="text" id="rankingSearchInput" class="search-bar" placeholder="Search your collection...">
+                    <div id="rankingSearchResults" class="ranking-search-results">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ranking-manager-footer">
+                <p class="ranking-tip">Changes will be saved and all items will be re-ranked sequentially.</p>
+                <button id="saveRankingsBtn" class="btn-primary">Save New Order</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Core App Logic -->
-    <script src="app.js?v=130"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="app.js?v=131"></script>
 </body>
 </html>

@@ -2188,4 +2188,170 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         lastScrollTop = st <= 0 ? 0 : st;
     }, false);
+
+    /* ==========================================================================
+       RANKING MANAGER LOGIC (v206)
+       ========================================================================== */
+
+    const manageRankingsBtn = document.getElementById('manageRankingsBtn');
+    const rankingManagerModal = document.getElementById('rankingManagerModal');
+    const closeRankingManagerBtn = document.getElementById('closeRankingManagerBtn');
+    const rankingList = document.getElementById('rankingList');
+    const rankingSearchInput = document.getElementById('rankingSearchInput');
+    const rankingSearchResults = document.getElementById('rankingSearchResults');
+    const saveRankingsBtn = document.getElementById('saveRankingsBtn');
+
+    let currentRankedItems = [];
+    let sortableInstance = null;
+
+    const renderRankingList = () => {
+        if (!rankingList) return;
+        
+        rankingList.innerHTML = currentRankedItems.map((item, index) => `
+            <div class="ranking-item" data-id="${item.id}">
+                <span class="ranking-number">#${index + 1}</span>
+                <span class="ranking-item-title">${item.title} ${item.release_year ? `(${item.release_year})` : ''}</span>
+                <div class="ranking-item-remove" title="Remove from Rankings" onclick="window.removeFromRankings(${item.id})">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </div>
+            </div>
+        `).join('');
+        
+        // Re-init sortable
+        if (sortableInstance) sortableInstance.destroy();
+        sortableInstance = new Sortable(rankingList, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onEnd: () => {
+                const newOrderIds = Array.from(rankingList.children).map(el => parseInt(el.getAttribute('data-id')));
+                const reordered = [];
+                newOrderIds.forEach(id => {
+                    const found = currentRankedItems.find(it => it.id === id);
+                    if (found) reordered.push(found);
+                });
+                currentRankedItems = reordered;
+                renderRankingList(); // Refresh numbers
+            }
+        });
+    };
+
+    const openRankingManager = () => {
+        if (!rankingManagerModal) return;
+        
+        document.getElementById('rankingManagerSubtitle').innerText = `Manage your Top 20 list for ${currentCategory}`;
+        
+        const seen = new Set();
+        currentRankedItems = allMedia
+            .filter(item => {
+                const isMatch = item.type.toLowerCase() === currentCategory.toLowerCase() && (item.rating || '').startsWith('#');
+                if (!isMatch) return false;
+                const norm = item.title.toLowerCase().trim();
+                if (seen.has(norm)) return false;
+                seen.add(norm);
+                return true;
+            })
+            .sort((a, b) => {
+                const rA = parseInt(a.rating.replace('#', '')) || 999;
+                const rB = parseInt(b.rating.replace('#', '')) || 999;
+                return rA - rB;
+            });
+        
+        renderRankingList();
+        rankingManagerModal.classList.add('show');
+        rankingSearchInput.value = '';
+        rankingSearchResults.innerHTML = '';
+    };
+
+    const closeRankingManager = () => {
+        rankingManagerModal.classList.remove('show');
+    };
+
+    window.removeFromRankings = (id) => {
+        currentRankedItems = currentRankedItems.filter(it => it.id !== id);
+        renderRankingList();
+    };
+
+    window.addToRankings = (item) => {
+        if (currentRankedItems.find(it => it.id === item.id)) {
+            alert('Item is already in your rankings.');
+            return;
+        }
+        currentRankedItems.push(item);
+        renderRankingList();
+        rankingSearchInput.value = '';
+        rankingSearchResults.innerHTML = '';
+    };
+
+    if (manageRankingsBtn) {
+        manageRankingsBtn.onclick = openRankingManager;
+    }
+
+    if (closeRankingManagerBtn) {
+        closeRankingManagerBtn.onclick = closeRankingManager;
+    }
+
+    if (rankingSearchInput) {
+        rankingSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length < 2) {
+                rankingSearchResults.innerHTML = '';
+                return;
+            }
+            
+            const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
+            const matches = allMedia
+                .filter(it => 
+                    it.type.toLowerCase() === currentCategory.toLowerCase() &&
+                    it.title.toLowerCase().includes(query) &&
+                    !rankedTitles.has(it.title.toLowerCase().trim())
+                )
+                .slice(0, 10);
+                
+            rankingSearchResults.innerHTML = matches.map(it => {
+                const safeTitle = it.title.replace(/'/g, "\\'");
+                const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
+                return `
+                    <div class="ranking-search-item" onclick='window.addToRankings(${itemJson})'>
+                        <span class="ranking-search-item-title">${it.title} ${it.release_year ? `(${it.release_year})` : ''}</span>
+                        <span class="ranking-search-item-plus">+ Add</span>
+                    </div>
+                `;
+            }).join('');
+        });
+    }
+
+    if (saveRankingsBtn) {
+        saveRankingsBtn.onclick = async () => {
+            const payload = {
+                category: currentCategory,
+                item_ids: currentRankedItems.map(it => it.id)
+            };
+            
+            saveRankingsBtn.disabled = true;
+            saveRankingsBtn.innerText = 'Saving...';
+            
+            try {
+                const res = await fetch('/api/rankings/reorder', {
+                    method: 'POST',
+                    headers: getAuthHeaders(true),
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    closeRankingManager();
+                    fetchMedia(); 
+                } else {
+                    const err = await res.json();
+                    alert('Failed to save rankings: ' + (err.detail || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Error saving rankings:', e);
+                alert('Error saving rankings.');
+            } finally {
+                saveRankingsBtn.disabled = false;
+                saveRankingsBtn.innerText = 'Save New Order';
+            }
+        };
+    }
 });
