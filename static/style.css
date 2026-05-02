@@ -2145,13 +2145,25 @@ delete-btn {
 }
 
 @media (max-width: 600px) {
+    .quick-info-content {
+        padding: 1.2rem;
+    }
     .quick-info-layout {
         flex-direction: column;
         align-items: center;
+        gap: 1.2rem;
     }
     .quick-info-poster-wrap {
-        width: 120px;
-        height: 180px;
+        width: 100px;
+        height: 150px;
+    }
+    .quick-info-details h2 {
+        font-size: 1.3rem;
+        margin-bottom: 0.3rem;
+    }
+    .quick-info-review {
+        font-size: 0.85rem;
+        line-height: 1.5;
     }
 }
 
