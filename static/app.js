@@ -581,12 +581,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (statsPage) statsPage.style.display = 'block';
             if (controls) controls.style.display = 'none';
             if (addBtn) addBtn.style.display = 'none';
-            
-            // Force header visibility when entering stats
-            const header = document.querySelector('header');
-            if (header) header.classList.remove('header-hidden');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
             renderStats(currentCategory);
             return;
         } else {
