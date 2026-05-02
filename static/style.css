@@ -3010,24 +3010,24 @@ body.read-only-mode #clearReviewBtn {
         padding: 0.5rem 0.8rem 0.5rem 2rem;
     }
 
-    /* --- Phase B: Adaptive 2-Column Grid & Touch Interactions --- */
+    /* --- Phase B: Adaptive 3-Column Grid & Touch Interactions --- */
     .media-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.6rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.3rem; /* Very tight grid */
     }
 
     .media-card {
         min-height: auto;
-        padding: 0.6rem;
+        padding: 0.35rem; /* Minimal inner padding */
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: 0.15rem;
         position: relative;
     }
 
     .director-container {
-        margin-top: 0.2rem;
-        margin-bottom: 0.2rem;
+        margin-top: 0.1rem;
+        margin-bottom: 0.1rem;
     }
 
     .card-header {
@@ -3035,7 +3035,7 @@ body.read-only-mode #clearReviewBtn {
     }
 
     h3.media-title {
-        font-size: 0.65rem;
+        font-size: 0.55rem;
         line-height: 1.1;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -3044,15 +3044,26 @@ body.read-only-mode #clearReviewBtn {
         text-overflow: ellipsis;
     }
 
+    /* Target the year badge inside the title */
+    h3.media-title span {
+        font-size: 0.45rem !important;
+    }
+
+    .genre-container {
+        gap: 0.15rem !important;
+    }
+
     .genre-badge {
-        font-size: 0.52rem !important;
-        padding: 0.1rem 0.3rem !important;
+        font-size: 0.42rem !important;
+        padding: 0.1rem 0.2rem !important;
+        border-radius: 4px !important;
     }
 
     .director-badge {
-        font-size: 0.52rem !important;
-        padding: 0.1rem 0.35rem !important;
-        margin-bottom: 0.2rem !important;
+        font-size: 0.42rem !important;
+        padding: 0.1rem 0.2rem !important;
+        margin-bottom: 0.1rem !important;
+        border-radius: 4px !important;
     }
 
     .card-badges {
@@ -3060,8 +3071,14 @@ body.read-only-mode #clearReviewBtn {
         min-height: auto;
         flex-wrap: wrap;
         gap: 0.15rem;
-        margin-top: 0.2rem !important;
+        margin-top: auto !important; /* Pushes bottom badges down cleanly */
     }
+    
+    .card-rank-badge {
+        font-size: 0.45rem !important;
+        padding: 0.1rem 0.3rem !important;
+    }
+
 
     .card-badges .card-rank-badge {
         font-size: 0.48rem;
