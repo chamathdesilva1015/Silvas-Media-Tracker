@@ -67,6 +67,20 @@ async def on_startup():
     # Launch enrichment in the background — site is immediately usable
     asyncio.create_task(run_enrichment())
 
+    # v227: Auto-Migration for mal_id
+    try:
+        with engine.connect() as conn:
+            from sqlalchemy import text
+            # Check if column exists
+            result = conn.execute(text("PRAGMA table_info(mediaitem)"))
+            columns = [row[1] for row in result.fetchall()]
+            if 'mal_id' not in columns:
+                print("[Migration] Adding 'mal_id' column to 'mediaitem' table...")
+                conn.execute(text("ALTER TABLE mediaitem ADD COLUMN mal_id INTEGER"))
+                conn.commit()
+    except Exception as e:
+        print(f"[Migration] Auto-migration failed (might already exist or not SQLite): {e}")
+
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
 @app.get("/.well-known/appspecific/com.chrome.devtools.json")
@@ -234,7 +248,14 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
 
     # Apply details
     if details.get("title"): item.title = details["title"]
-    if details.get("release_year"): item.release_year = details["release_year"]
+    
+    # Ensure release_year is an int if possible
+    if "release_year" in details:
+        try:
+            item.release_year = int(details["release_year"]) if details["release_year"] else item.release_year
+        except (ValueError, TypeError):
+            pass
+
     if details.get("genres"): item.genres = details["genres"]
     if details.get("poster_url"): item.cover_url = details["poster_url"]
     if details.get("director"): item.director = details["director"]

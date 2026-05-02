@@ -82,13 +82,20 @@ def get_manga_details(mal_id: int) -> Dict:
             parts = author.split(",")
             author = f"{parts[1].strip()} {parts[0].strip()}"
             
+        # --- Release Year ---
+        try:
+            year_val = data.get("published", {}).get("prop", {}).get("from", {}).get("year")
+            release_year = int(year_val) if year_val else None
+        except:
+            release_year = None
+
         return {
             "title": data.get("title"),
-            "release_year": str(data.get("published", {}).get("prop", {}).get("from", {}).get("year", "")) or None,
+            "release_year": release_year,
             "genres": genres,
             "poster_url": poster_url,
             "director": author, # Store in director field for consistency
-            "tmdb_id": mal_id,   # Use mal_id as tmdb_id for internal tracking
+            "mal_id": mal_id,
             "content_rating": data.get("status"), # Use status as a pseudo-rating (e.g. "Finished")
         }
     except Exception as e:
