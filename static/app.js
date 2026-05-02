@@ -1213,10 +1213,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Rating — prefer numeric score over rank string
-        let ratingStr = item.numeric_rating || item.rating || '';
-        // Remove existing /10 if present to avoid double display
-        let rawScore = (!ratingStr.startsWith('#')) ? ratingStr.toString().replace('/10', '').trim() : (item.numeric_rating || '');
-        document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
+        let rawScore = (item.numeric_rating || item.rating || '').toString().replace('/10', '').trim();
+        if (rawScore.startsWith('#')) rawScore = ''; // Strictly ignore rank strings here
+        
+        const ratingDisplay = document.getElementById('quickInfoRating');
+        if (rawScore) {
+            ratingDisplay.textContent = `${rawScore} / 10`;
+            ratingDisplay.style.display = 'block';
+        } else {
+            ratingDisplay.textContent = '';
+            ratingDisplay.style.display = 'none';
+        }
 
         // Edit Button (Admin Only)
         const editBtn = document.getElementById('quickInfoEditBtn');
@@ -2464,7 +2471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRankingList();
         rankingManagerModal.classList.add('show');
         rankingSearchInput.value = '';
-        rankingSearchResults.innerHTML = '';
+        renderScoutingSuggestions();
     };
 
     const closeRankingManager = () => {
@@ -2474,6 +2481,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.removeFromRankings = (id) => {
         currentRankedItems = currentRankedItems.filter(it => it.id !== id);
         renderRankingList();
+        if (rankingSearchInput.value.length < 2) renderScoutingSuggestions();
     };
 
     window.addToRankings = (item) => {
@@ -2488,7 +2496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentRankedItems.push(item);
         renderRankingList();
         rankingSearchInput.value = '';
-        rankingSearchResults.innerHTML = '';
+        renderScoutingSuggestions();
     };
 
     if (manageRankingsBtn) {
@@ -2506,11 +2514,43 @@ document.addEventListener('DOMContentLoaded', () => {
         closeRankingManagerBtn.onclick = closeRankingManager;
     }
 
+    const renderScoutingSuggestions = () => {
+        const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
+        const pool = allMedia.filter(it => 
+            it.type.toLowerCase() === currentCategory.toLowerCase() &&
+            !rankedTitles.has(it.title.toLowerCase().trim())
+        );
+
+        // Pick 10 random or top unranked items
+        const suggestions = pool.sort(() => 0.5 - Math.random()).slice(0, 10);
+        
+        if (suggestions.length === 0) {
+            rankingSearchResults.innerHTML = '<p style="text-align:center; opacity:0.5; font-size:0.8rem; margin-top:2rem;">All items are already ranked!</p>';
+            return;
+        }
+
+        rankingSearchResults.innerHTML = `
+            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.4; margin-bottom: 0.8rem; padding-left: 0.5rem;">Discovery Suggestions</div>
+        ` + suggestions.map(it => {
+            const safeTitle = it.title.replace(/'/g, "\\'");
+            const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
+            return `
+                <div class="ranking-search-item" onclick='window.addToRankings(${itemJson})'>
+                    <div class="ranking-search-item-info">
+                        <span class="ranking-search-item-title">${it.title}</span>
+                        <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}</span>
+                    </div>
+                    <div class="ranking-search-item-plus">+</div>
+                </div>
+            `;
+        }).join('');
+    };
+
     if (rankingSearchInput) {
         rankingSearchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
             if (query.length < 2) {
-                rankingSearchResults.innerHTML = '';
+                renderScoutingSuggestions();
                 return;
             }
             

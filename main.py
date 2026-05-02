@@ -448,8 +448,8 @@ def reorder_rankings(request: ReorderRequest, session: Session = Depends(get_ses
             rank_str = f"#{i + 1}"
             item.is_ranking = True
             item.rating = rank_str
-            # Also keep numeric_rating in sync for legacy display logic
-            item.numeric_rating = rank_str
+            # DO NOT overwrite numeric_rating with rank_str! 
+            # We want to preserve the actual score (e.g. 8.5/10) there.
             session.add(item)
 
     session.commit()
