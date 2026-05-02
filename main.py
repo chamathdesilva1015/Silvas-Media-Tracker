@@ -52,19 +52,44 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.on_event("startup")
 async def on_startup():
     create_db_and_tables()
-    # Run Score Cross-Linker synchronously (fast, DB-only)
+    
+    # --- Database Health Check & Self-Healing (v228) ---
     try:
-        from health_check import run_score_crosslink
         with Session(engine) as session:
-            items = session.exec(select(MediaItem)).all()
-            fixed, _ = run_score_crosslink(session, items, auto_fix=True)
-            if fixed:
+            all_items = session.exec(select(MediaItem)).all()
+            repaired_count = 0
+            for item in all_items:
+                nr = str(item.numeric_rating or "")
+                r = str(item.rating or "")
+                
+                # 1. Clean up "rank leakage" in numeric_rating
+                if nr.startswith("#"):
+                    print(f"[Health] Repairing rank leakage for '{item.title}': NR was '{nr}'")
+                    item.numeric_rating = None
+                    repaired_count += 1
+                
+                # 2. Try to recover missing numeric_rating from rating if it's a score
+                if not item.numeric_rating and r and not r.startswith("#"):
+                    item.numeric_rating = r
+                    repaired_count += 1
+                    
+                # 3. Last Resort: Recover from history if still missing
+                if not item.numeric_rating:
+                    hist = session.exec(select(RatingHistory).where(RatingHistory.media_item_id == item.id).order_by(RatingHistory.changed_at.desc())).first()
+                    if hist and hist.new_rating and not hist.new_rating.startswith("#"):
+                        item.numeric_rating = hist.new_rating
+                        repaired_count += 1
+                
+                session.add(item)
+            
+            if repaired_count:
                 session.commit()
-                print(f"[Startup] Score Cross-Linker: linked {fixed} missing scores.")
+                print(f"[Health] Maintenance complete. Repaired {repaired_count} rating inconsistencies.")
+                
     except Exception as e:
-        print(f"[Startup] Score Cross-Linker skipped: {e}")
+        print(f"[Health] Maintenance skipped/failed: {e}")
 
-    # Launch enrichment in the background — site is immediately usable
+    # Launch enrichment in the background
     asyncio.create_task(run_enrichment())
 
 
@@ -189,14 +214,16 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     if item.type == "Manga":
         details = get_manga_details(payload.ext_id)
     else:
-        # Try primary type first
-        media_type = "movie" if item.type == "Movies" else "tv"
-        details = get_tmdb_details(payload.ext_id, media_type)
+        # Determine likely TMDB type
+        primary = "tv" if item.type in ["TV Series", "Anime"] else "movie"
+        secondary = "movie" if primary == "tv" else "tv"
         
-        # If primary fails, and it's Anime or TV Series, try the other one (Movies/TV swap)
-        if not details and item.type in ["Anime", "TV Series", "Movies"]:
-            other_type = "tv" if media_type == "movie" else "movie"
-            details = get_tmdb_details(payload.ext_id, other_type)
+        print(f"[Link] Trying primary: {primary} for ID {payload.ext_id}")
+        details = get_tmdb_details(payload.ext_id, primary)
+        
+        if not details:
+            print(f"[Link] Primary failed. Trying secondary: {secondary} for ID {payload.ext_id}")
+            details = get_tmdb_details(payload.ext_id, secondary)
 
     if not details:
         raise HTTPException(status_code=400, detail="Could not retrieve details for that ID.")
@@ -323,6 +350,7 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
         # Reset metadata to force fresh match
         item.enrichment_attempts = 0
         item.tmdb_id = None
+        item.mal_id = None
         item.genres = None
         item.director = None
         item.cover_url = None

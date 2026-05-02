@@ -1204,13 +1204,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Rating — strictly prefer numeric_rating for the "10 / 10" display
-        let rawScore = item.numeric_rating || '';
-        if (!rawScore && item.rating && !item.rating.startsWith('#')) {
-            rawScore = item.rating;
+        let rawScore = '';
+        const nr = (item.numeric_rating || '').toString();
+        const r = (item.rating || '').toString();
+
+        // 1. Check numeric_rating first, but reject if it's a rank
+        if (nr && !nr.startsWith('#')) {
+            rawScore = nr;
+        } 
+        // 2. Fallback to rating if it's not a rank
+        else if (r && !r.startsWith('#')) {
+            rawScore = r;
         }
-        // Clean up any stray /10
-        rawScore = rawScore.toString().replace('/10', '').trim();
         
+        // Clean up any stray /10 and format
+        rawScore = rawScore.replace('/10', '').trim();
         document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
 
         // Edit Button (Admin Only)

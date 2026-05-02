@@ -23,6 +23,7 @@ class MediaItem(SQLModel, table=True):
     cover_url: Optional[str] = None
     genres: Optional[str] = None
     tmdb_id: Optional[int] = None
+    mal_id: Optional[int] = None           # For Manga/Anime MAL links
     director: Optional[str] = None
     runtime: Optional[int] = None          # minutes
     content_rating: Optional[str] = None   # e.g. "PG-13", "R"
