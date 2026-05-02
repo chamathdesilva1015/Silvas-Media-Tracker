@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=207">
 </head>
 <body class="read-only-mode">
     <div class="mesh-bg">
@@ -448,15 +448,17 @@
             
             <div class="ranking-manager-layout">
                 <div class="ranking-manager-list-section">
-                    <label>Current Ranking (Drag to reorder)</label>
+                    <label style="margin-bottom: 1.5rem; display: block;">Leaderboard</label>
                     <div id="rankingList" class="sortable-list">
                         <!-- Populated via JS -->
                     </div>
                 </div>
                 
                 <div class="ranking-manager-add-section">
-                    <label>Add to Ranking</label>
-                    <input type="text" id="rankingSearchInput" class="search-bar" placeholder="Search your collection...">
+                    <label style="margin-bottom: 1.5rem; display: block;">Scouting</label>
+                    <div class="search-container" style="margin-bottom: 1.5rem;">
+                        <input type="text" id="rankingSearchInput" class="search-bar" placeholder="Find in collection..." style="width: 100%;">
+                    </div>
                     <div id="rankingSearchResults" class="ranking-search-results">
                         <!-- Populated via JS -->
                     </div>
@@ -472,6 +474,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=131"></script>
+    <script src="app.js?v=207"></script>
 </body>
 </html>
