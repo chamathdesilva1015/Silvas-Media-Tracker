@@ -78,67 +78,53 @@ async def on_startup():
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE mediaitem ADD COLUMN mal_id INTEGER"))
             print("[Migration] Column 'mal_id' added successfully.")
-    except Exception as e:
-        print(f"[Migration] Auto-migration failed: {e}")
-
-    # v239: Emergency Rating Recovery (Deep-Mining from History and Twins)
+    # v231: Rating Recovery for corrupted numeric_ratings
     try:
         with Session(engine) as session:
-            # Find all items that might be corrupted (rank strings or nulls)
-            all_items = session.exec(select(MediaItem)).all()
-            repaired_count = 0
+            # Find items where numeric_rating is a rank or is missing while rating is a rank
+            corrupted = session.exec(select(MediaItem).where(
+                (MediaItem.numeric_rating.like('#%')) | 
+                ((MediaItem.numeric_rating == None) & (MediaItem.rating.like('#%')))
+            )).all()
             
-            for item in all_items:
-                is_corrupted = not item.numeric_rating or str(item.numeric_rating).startswith('#')
-                if is_corrupted:
-                    valid_rating = None
-                    
-                    # 1. Try History by ID
+            if corrupted:
+                print(f"[Recovery] Found {len(corrupted)} items with corrupted ratings. Attempting recovery...")
+                for item in corrupted:
+                    # Check RatingHistory for the most recent valid rating
                     history = session.exec(
                         select(RatingHistory)
                         .where(RatingHistory.media_item_id == item.id)
                         .order_by(RatingHistory.changed_at.desc())
                     ).all()
-                    for h in history:
-                        for val in [h.new_rating, h.old_rating]:
-                            if val and not str(val).startswith('#'):
-                                valid_rating = val; break
-                        if valid_rating: break
                     
-                    # 2. Try History by Title (if ID search failed or record is fresh)
+                    valid_rating = None
+                    for h in history:
+                        if h.new_rating and not str(h.new_rating).startswith('#'):
+                            valid_rating = h.new_rating
+                            break
+                        if h.old_rating and not str(h.old_rating).startswith('#'):
+                            valid_rating = h.old_rating
+                            break
+                    
                     if not valid_rating:
-                        history_title = session.exec(
-                            select(RatingHistory)
-                            .where(RatingHistory.title == item.title, RatingHistory.media_type == item.type)
-                            .order_by(RatingHistory.changed_at.desc())
-                        ).all()
-                        for h in history_title:
-                            for val in [h.new_rating, h.old_rating]:
-                                if val and not str(val).startswith('#'):
-                                    valid_rating = val; break
-                            if valid_rating: break
-
-                    # 3. Try Twins in Database
-                    if not valid_rating:
-                        twin = session.exec(select(MediaItem).where(
-                            MediaItem.title == item.title,
+                        # NEW v233: Look for a "Twin" (other entry with same title/type)
+                        stmt = select(MediaItem).where(
+                            MediaItem.id != item.id,
                             MediaItem.type == item.type,
+                            MediaItem.title == item.title,
                             MediaItem.numeric_rating != None
-                        )).all()
-                        for t in twin:
-                            if not str(t.numeric_rating).startswith('#'):
-                                valid_rating = t.numeric_rating; break
-
+                        )
+                        twin = session.exec(stmt).first()
+                        if twin and not str(twin.numeric_rating).startswith('#'):
+                            valid_rating = twin.numeric_rating
+                    
                     if valid_rating:
                         item.numeric_rating = valid_rating
                         session.add(item)
-                        repaired_count += 1
-            
-            if repaired_count > 0:
                 session.commit()
-                print(f"[Recovery] Emergency Repair: Restored {repaired_count} ratings from history/twins.")
+                print(f"[Recovery] Successfully restored numeric_ratings for affected items.")
     except Exception as e:
-        print(f"[Recovery] Emergency repair failed: {e}")
+        print(f"[Recovery] Failed to run rating recovery: {e}")
 
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
@@ -490,6 +476,32 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
     return {"ok": True, "item": item, "needs_reenrich": needs_reenrich}
 
 # --- Metadata Sync & Fix Endpoints (v219) ---
+
+@app.post("/api/admin/repair-all-ratings")
+def repair_all_ratings(session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    all_items = session.exec(select(MediaItem)).all()
+    count = 0
+    for item in all_items:
+        # If rating is corrupted or missing
+        if not item.numeric_rating or str(item.numeric_rating).startswith('#'):
+            # 1. Try history
+            hist = session.exec(select(RatingHistory).where(RatingHistory.media_item_id == item.id).order_by(RatingHistory.changed_at.desc())).all()
+            valid = next((h.new_rating for h in hist if h.new_rating and not str(h.new_rating).startswith('#')), None)
+            if not valid:
+                valid = next((h.old_rating for h in hist if h.old_rating and not str(h.old_rating).startswith('#')), None)
+            
+            # 2. Try twins
+            if not valid:
+                twin = session.exec(select(MediaItem).where(MediaItem.title == item.title, MediaItem.type == item.type, MediaItem.id != item.id)).first()
+                if twin and twin.numeric_rating and not str(twin.numeric_rating).startswith('#'):
+                    valid = twin.numeric_rating
+            
+            if valid:
+                item.numeric_rating = str(valid)
+                session.add(item)
+                count += 1
+    session.commit()
+    return {"ok": True, "restored_count": count}
 
 class ReorderRequest(BaseModel):
     category: str

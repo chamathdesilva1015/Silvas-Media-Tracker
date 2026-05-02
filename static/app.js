@@ -655,16 +655,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Bulletproof Identity deduplication
-        // Prioritize items with more metadata (director, rating) before deduplicating
-        filtered.sort((a, b) => {
-            const aScore = (a.director ? 2 : 0) + (a.numeric_rating ? 1 : 0);
-            const bScore = (b.director ? 2 : 0) + (b.numeric_rating ? 1 : 0);
-            return bScore - aScore || (b.is_ranking ? 1 : 0) - (a.is_ranking ? 1 : 0);
-        });
+        filtered.sort((a, b) => (b.is_ranking ? 1 : 0) - (a.is_ranking ? 1 : 0));
 
+        const activeIds = new Set();
         const activeMediaKeys = new Set();
+        
         filtered = filtered.filter(item => {
-            const identityKey = `${item.title.toLowerCase().trim()}|${item.type.toLowerCase()}`;
+            const identityKey = `${item.title.toLowerCase().trim()}|${item.type.toLowerCase()}|${item.release_year || 'any'}`;
             if (activeMediaKeys.has(identityKey)) return false;
             activeMediaKeys.add(identityKey);
             return true;
@@ -1216,34 +1213,27 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // v238: Total Recall Rating Recovery
+        // v236: Surefire Global Rating Lookup
         const normalizedTarget = item.title.toLowerCase().trim();
-        console.log(`[Rating-Search] Looking for master rating for: "${normalizedTarget}"`);
-        
-        // Look for ANY entry with this title that has a valid numeric score
-        const masterEntry = allMedia.find(m => 
+        const bestEntry = allMedia.find(m => 
             m.title.toLowerCase().trim() === normalizedTarget && 
-            (m.numeric_rating || m.rating) && 
-            !(m.numeric_rating || m.rating).toString().startsWith('#')
+            m.numeric_rating && 
+            !m.numeric_rating.toString().startsWith('#')
         );
+        let rawScore = bestEntry ? bestEntry.numeric_rating.toString().replace('/10','').trim() : '';
         
-        let rawScore = '';
-        if (masterEntry) {
-            rawScore = (masterEntry.numeric_rating || masterEntry.rating).toString().replace('/10','').trim();
-            console.log(`[Rating-Search] Success! Found score "${rawScore}" from entry ID ${masterEntry.id}`);
-        } else {
-            console.warn(`[Rating-Search] Failed. No valid score found for "${normalizedTarget}" in library.`);
+        if (!rawScore && item.numeric_rating && !item.numeric_rating.toString().startsWith('#')) {
+            rawScore = item.numeric_rating.toString().replace('/10','').trim();
         }
 
         const ratingDisplay = document.getElementById('quickInfoRating');
         if (rawScore) {
             ratingDisplay.textContent = `${rawScore} / 10`;
             ratingDisplay.style.display = 'block';
-            ratingDisplay.style.opacity = '1';
         } else {
             ratingDisplay.textContent = '-- / 10';
             ratingDisplay.style.display = 'block';
-            ratingDisplay.style.opacity = '0.3';
+            ratingDisplay.style.opacity = '0.4';
         }
 
         // Edit Button (Admin Only)
@@ -1396,6 +1386,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
+            const repairBtn = document.getElementById('repairAllRatingsBtn');
+            if (repairBtn) {
+                repairBtn.onclick = async () => {
+                    if (!confirm("This will scan all historical logs and attempt to restore missing ratings for EVERY item. Continue?")) return;
+                    
+                    repairBtn.disabled = true;
+                    repairBtn.textContent = 'Restoring...';
+                    
+                    try {
+                        const res = await fetch('/api/admin/repair-all-ratings', {
+                            method: 'POST',
+                            headers: getAuthHeaders()
+                        });
+                        const data = await res.json();
+                        if (data.ok) {
+                            alert(`Successfully restored ${data.restored_count} ratings from history!`);
+                            await fetchMedia(); // Refresh global map and UI
+                            window.openQuickInfo(allMedia.find(m => m.id === item.id)); // Re-open with new data
+                        }
+                    } catch (e) {
+                        alert("Error: " + e.message);
+                    } finally {
+                        repairBtn.disabled = false;
+                        repairBtn.innerHTML = '<i class="fas fa-tools"></i> FORCE REPAIR ALL RATINGS (History Sync)';
+                    }
+                };
+            }
         } else {
             editBtn.style.display = 'none';
             ratingEditSection.style.display = 'none';
