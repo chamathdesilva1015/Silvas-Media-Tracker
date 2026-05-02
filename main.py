@@ -250,6 +250,53 @@ def update_rating(item_id: int, request: RatingUpdateRequest, session: Session =
     print(f"[DEBUG] UPDATED RATING for '{item.title}' -> {new_rating} ({len(related)} rows, MANUALLY PROTECTED)")
     return {"ok": True, "rating": new_rating, "updated_count": len(related)}
 
+class ReorderRequest(BaseModel):
+    category: str
+    item_ids: list[int] # Ordered list of primary IDs
+
+@app.post("/api/rankings/reorder")
+def reorder_rankings(request: ReorderRequest, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    """
+    Atomic update for rankings in a category.
+    Takes a list of IDs in order (#1, #2, #3...).
+    """
+    category = request.category
+    new_order_ids = request.item_ids
+
+    # 1. Track which unique shows (by normalized title) are being KEPT/ADDED
+    new_order_items = []
+    for mid in new_order_ids:
+        it = session.get(MediaItem, mid)
+        if it: new_order_items.append(it)
+
+    target_norms = [normalize_title(it.title) for it in new_order_items]
+    
+    # 2. Update ALL items in this category
+    all_cat_items = session.exec(select(MediaItem).where(MediaItem.type == category)).all()
+    
+    for item in all_cat_items:
+        norm = normalize_title(item.title)
+        if norm in target_norms:
+            # This show is in the new Top N list
+            idx = target_norms.index(norm)
+            rank_str = f"#{idx + 1}"
+            
+            # Update fields
+            item.is_ranking = True
+            item.rating = rank_str
+        else:
+            # This show is NOT in the new list. If it was ranking, demote it.
+            if item.is_ranking:
+                item.is_ranking = False
+                # Restore numeric rating to display rating
+                item.rating = item.numeric_rating or "—/10"
+        
+        session.add(item)
+
+    session.commit()
+    print(f"[DEBUG] REORDERED RANKINGS for {category}. New count: {len(target_norms)}")
+    return {"ok": True, "count": len(target_norms)}
+
 @app.post("/api/media/delete/{item_id}")
 @app.post("/api/media/delete/{item_id}/") # Trailing slash support
 def delete_media(item_id: str, session: Session = Depends(get_session), _: None = Depends(check_readonly)):

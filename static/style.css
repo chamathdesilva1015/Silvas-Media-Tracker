@@ -3914,13 +3914,36 @@ body.read-only-mode #clearReviewBtn {
 }
 
 .ranking-number {
-    font-family: 'Playfair Display', serif;
-    font-weight: 900;
-    font-size: 1.5rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
     color: var(--theme-accent);
     min-width: 45px;
     text-shadow: 0 0 15px var(--theme-accent-glow);
     font-style: italic;
+    letter-spacing: -0.02em;
+}
+
+/* Mobile Disable State for Ranking Button */
+@media (max-width: 1024px) {
+    #manageRankingsBtn {
+        opacity: 0.6;
+        cursor: not-allowed;
+        position: relative;
+    }
+    
+    #manageRankingsBtn::after {
+        content: 'Desktop Only';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
 }
 
 .ranking-item-info {

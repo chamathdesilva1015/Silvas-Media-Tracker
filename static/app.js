@@ -2204,25 +2204,47 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentRankedItems = [];
     let sortableInstance = null;
 
+    const updateRankingCounter = () => {
+        const subtitle = document.getElementById('rankingManagerSubtitle');
+        if (subtitle) {
+            const count = currentRankedItems.length;
+            subtitle.innerHTML = `Leaderboard Status: <strong style="color: ${count === 20 ? '#51cf66' : 'var(--theme-accent)'}">${count}/20 slots filled</strong>`;
+            
+            if (saveRankingsBtn) {
+                if (count === 20) {
+                    saveRankingsBtn.style.opacity = '1';
+                    saveRankingsBtn.style.cursor = 'pointer';
+                } else {
+                    saveRankingsBtn.style.opacity = '0.5';
+                    saveRankingsBtn.style.cursor = 'not-allowed';
+                }
+            }
+        }
+    };
+
     const renderRankingList = () => {
         if (!rankingList) return;
         
         rankingList.innerHTML = currentRankedItems.map((item, index) => `
             <div class="ranking-item" data-id="${item.id}">
+                <div class="ranking-item-handle">⠿</div>
                 <span class="ranking-number">#${index + 1}</span>
-                <span class="ranking-item-title">${item.title} ${item.release_year ? `(${item.release_year})` : ''}</span>
+                <div class="ranking-item-info">
+                    <span class="ranking-item-title">${item.title}</span>
+                    <span class="ranking-item-meta">${item.release_year || 'Unknown Year'} • ${currentCategory.replace(/s$/, '')}</span>
+                </div>
                 <div class="ranking-item-remove" title="Remove from Rankings" onclick="window.removeFromRankings(${item.id})">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
                 </div>
             </div>
         `).join('');
         
-        // Re-init sortable
         if (sortableInstance) sortableInstance.destroy();
         sortableInstance = new Sortable(rankingList, {
-            animation: 150,
+            animation: 250,
+            handle: '.ranking-item-handle',
             ghostClass: 'sortable-ghost',
-            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
             onEnd: () => {
                 const newOrderIds = Array.from(rankingList.children).map(el => parseInt(el.getAttribute('data-id')));
                 const reordered = [];
@@ -2231,15 +2253,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (found) reordered.push(found);
                 });
                 currentRankedItems = reordered;
-                renderRankingList(); // Refresh numbers
+                renderRankingList();
             }
         });
+
+        updateRankingCounter();
     };
 
     const openRankingManager = () => {
         if (!rankingManagerModal) return;
-        
-        document.getElementById('rankingManagerSubtitle').innerText = `Manage your Top 20 list for ${currentCategory}`;
         
         const seen = new Set();
         currentRankedItems = allMedia
@@ -2273,6 +2295,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.addToRankings = (item) => {
+        if (currentRankedItems.length >= 20) {
+            alert('Your Top 20 list is full. Please remove an item before adding a new one.');
+            return;
+        }
         if (currentRankedItems.find(it => it.id === item.id)) {
             alert('Item is already in your rankings.');
             return;
@@ -2284,7 +2310,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (manageRankingsBtn) {
-        manageRankingsBtn.onclick = openRankingManager;
+        manageRankingsBtn.onclick = () => {
+            // Block mobile/tablet access
+            if (window.innerWidth < 1024) {
+                alert("Elite Ranking Management is optimized for Desktop. Please use a laptop or PC to reorder your Top 20.");
+                return;
+            }
+            openRankingManager();
+        };
     }
 
     if (closeRankingManagerBtn) {
@@ -2313,8 +2346,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
                 return `
                     <div class="ranking-search-item" onclick='window.addToRankings(${itemJson})'>
-                        <span class="ranking-search-item-title">${it.title} ${it.release_year ? `(${it.release_year})` : ''}</span>
-                        <span class="ranking-search-item-plus">+ Add</span>
+                        <div class="ranking-search-item-info">
+                            <span class="ranking-search-item-title">${it.title}</span>
+                            <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}</span>
+                        </div>
+                        <div class="ranking-search-item-plus">+</div>
                     </div>
                 `;
             }).join('');
@@ -2323,6 +2359,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (saveRankingsBtn) {
         saveRankingsBtn.onclick = async () => {
+            if (currentRankedItems.length !== 20) {
+                alert(`You currently have ${currentRankedItems.length}/20 items. You must have exactly 20 items to save your leaderboard.`);
+                return;
+            }
+
             const payload = {
                 category: currentCategory,
                 item_ids: currentRankedItems.map(it => it.id)
