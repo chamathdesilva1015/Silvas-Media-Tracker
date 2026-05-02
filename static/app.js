@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let rankMap = {}; // title|type -> rank number; populated in renderMedia, read by openQuickInfo
     let currentCategory = 'Movies'; // Default page
     let currentSubTab = 'Completed'; // Default subtab ('Completed' or 'Rankings')
+    let globalScoreMap = {}; // v235: Master-Slave Rating System
 
     const searchInput = document.getElementById('searchInput');
     const navLinks = document.querySelectorAll('.nav-link');
@@ -667,10 +668,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // 3. Filter by Search Query (Upgraded to include Director)
-        const query = searchInput.value.toLowerCase().trim();
+        const query = (searchInput.value || '').toLowerCase().trim();
         if (query) {
             filtered = filtered.filter(item => 
-                item.title.toLowerCase().includes(query) || 
+                (item.title && item.title.toLowerCase().includes(query)) || 
                 (item.director && item.director.toLowerCase().includes(query))
             );
         }
@@ -1212,26 +1213,19 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // Rating — prefer numeric score over rank string
-        let rawScore = (item.numeric_rating || item.rating || '').toString().replace('/10', '').trim();
-        if (rawScore.startsWith('#')) rawScore = ''; 
+        // v236: Surefire Global Rating Lookup
+        const normalizedTarget = item.title.toLowerCase().trim();
+        const bestEntry = allMedia.find(m => 
+            m.title.toLowerCase().trim() === normalizedTarget && 
+            m.numeric_rating && 
+            !m.numeric_rating.toString().startsWith('#')
+        );
+        let rawScore = bestEntry ? bestEntry.numeric_rating.toString().replace('/10','').trim() : '';
         
-        // v234: Aggressive Twin-Sync Fallback
-        // If this item is ranked and missing a score, look for its "Twin" in the collection
-        if (!rawScore) {
-            const normalizedTarget = item.title.toLowerCase().trim();
-            const twin = allMedia.find(m => 
-                m.id !== item.id && 
-                m.title.toLowerCase().trim() === normalizedTarget &&
-                m.numeric_rating && 
-                !m.numeric_rating.toString().startsWith('#')
-            );
-            if (twin) {
-                rawScore = twin.numeric_rating.toString().replace('/10', '').trim();
-                console.log(`[Twin-Sync] Recovered rating "${rawScore}" for ${item.title} from sibling ID ${twin.id}`);
-            }
+        if (!rawScore && item.numeric_rating && !item.numeric_rating.toString().startsWith('#')) {
+            rawScore = item.numeric_rating.toString().replace('/10','').trim();
         }
-        
+
         const ratingDisplay = document.getElementById('quickInfoRating');
         if (rawScore) {
             ratingDisplay.textContent = `${rawScore} / 10`;
@@ -1239,7 +1233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             ratingDisplay.textContent = '-- / 10';
             ratingDisplay.style.display = 'block';
-            ratingDisplay.style.opacity = '0.3';
+            ratingDisplay.style.opacity = '0.4';
         }
 
         // Edit Button (Admin Only)
@@ -1649,6 +1643,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             allMedia = await res.json();
+
+            // v235: Build Global Score Map (One Truth)
+            globalScoreMap = {};
+            allMedia.forEach(m => {
+                const key = `${m.title.toLowerCase().trim()}|${m.type.toLowerCase()}`;
+                const rawVal = (m.numeric_rating || m.rating || '').toString().replace('/10', '').trim();
+                // If it's a valid score and not a rank string
+                if (rawVal && !rawVal.startsWith('#')) {
+                    globalScoreMap[key] = rawVal;
+                }
+            });
+
             populateGenreFilters();
             loader.style.display = 'none';
             filterAndRenderMedia();
