@@ -1292,35 +1292,46 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             showLinkBtn.onclick = () => {
-                linkSection.style.display = linkSection.style.display === 'none' ? 'block' : 'none';
+                const isHidden = linkSubSection.style.display === 'none';
+                linkSubSection.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) {
+                    // Auto-open search page for the user
+                    let searchUrl = "";
+                    if (item.type === "Manga") {
+                        searchUrl = `https://myanimelist.net/manga.php?q=${encodeURIComponent(item.title)}`;
+                    } else {
+                        searchUrl = `https://www.themoviedb.org/search?query=${encodeURIComponent(item.title)}`;
+                    }
+                    window.open(searchUrl, '_blank');
+                }
             };
 
-            linkSubmitBtn.onclick = async () => {
+            applyLinkBtn.onclick = async () => {
                 const extId = parseInt(linkInput.value);
                 if (isNaN(extId)) return alert("Please enter a valid numeric ID.");
-
-                linkSubmitBtn.disabled = true;
-                linkSubmitBtn.textContent = 'Linking...';
-
+                
+                applyLinkBtn.disabled = true;
+                applyLinkBtn.textContent = 'Linking...';
+                
                 try {
-                    const res = await fetch(`/api/media/link`, {
+                    const res = await fetch(`/api/media/manual-link/${item.id}`, {
                         method: 'POST',
                         headers: getAuthHeaders(),
-                        body: JSON.stringify({ item_id: item.id, ext_id: extId })
+                        body: JSON.stringify({ ext_id: extId })
                     });
                     const data = await res.json();
                     if (data.ok) {
-                        alert(`Successfully linked to ID ${extId}. Title and metadata have been synchronized.`);
+                        alert("Item linked! Metadata will be updated shortly.");
                         quickInfoModal.classList.remove('show');
                         fetchMedia();
                     } else {
-                        alert("Link Failed: " + (data.detail || "Check console"));
+                        alert("Failed to link: " + (data.detail || "Unknown error"));
                     }
                 } catch (e) {
                     alert("Error linking: " + e.message);
                 } finally {
-                    linkSubmitBtn.disabled = false;
-                    linkSubmitBtn.textContent = 'Apply Link';
+                    applyLinkBtn.disabled = false;
+                    applyLinkBtn.textContent = 'Apply Link';
                 }
             };
 
@@ -2178,6 +2189,25 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             </div>
         `
+    };
+
+    window.switchTab = (tab) => {
+        currentTab = tab;
+        const searchInput = document.getElementById('mediaSearchInput');
+        if (searchInput) searchInput.value = '';
+        currentSearch = '';
+        currentFilter = 'All';
+        
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            if (btn.dataset.filter === 'All') btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+        fetchMedia();
     };
 
     if (iIntro && iDetail) {

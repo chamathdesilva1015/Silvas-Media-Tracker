@@ -298,9 +298,14 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
         item.title = payload["title"]
         needs_reenrich = True
         
-    if "release_year" in payload and str(payload["release_year"]) != str(item.release_year):
-        item.release_year = str(payload["release_year"])
-        needs_reenrich = True
+    if "release_year" in payload:
+        try:
+            new_year = int(payload["release_year"])
+            if new_year != item.release_year:
+                item.release_year = new_year
+                needs_reenrich = True
+        except (ValueError, TypeError):
+            pass # Invalid year format, skip
 
     if needs_reenrich:
         # Reset metadata to force fresh match

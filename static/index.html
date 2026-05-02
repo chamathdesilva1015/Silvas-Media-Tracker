@@ -269,8 +269,14 @@
                         </div>
                         
                         <div id="quickInfoLinkSubSection" style="display: none; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px dashed var(--border-color);">
-                            <input type="text" id="quickInfoExtIdInput" placeholder="Enter TMDB or MAL ID..." style="width: 100%; margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-base); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); font-size: 0.8rem;">
-                            <button id="quickInfoLinkSubmitBtn" class="btn-primary" style="width: 100%; padding: 0.4rem; font-size: 0.75rem;">Apply Link</button>
+                            <p style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.8rem; line-height: 1.4;">
+                                Paste the numeric ID from the official URL.<br>
+                                <span style="opacity: 0.5;">Example: For myanimelist.net/manga/<b>81117</b>, use <b>81117</b></span>
+                            </p>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="number" id="quickInfoLinkInput" placeholder="Enter ID Number" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-size: 0.85rem;">
+                                <button id="quickInfoApplyLinkBtn" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Apply Link</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -498,6 +504,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=223"></script>
+    <script src="app.js?v=224"></script>
 </body>
 </html>
