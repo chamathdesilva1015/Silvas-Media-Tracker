@@ -78,53 +78,8 @@ async def on_startup():
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE mediaitem ADD COLUMN mal_id INTEGER"))
             print("[Migration] Column 'mal_id' added successfully.")
-    # v231: Rating Recovery for corrupted numeric_ratings
-    try:
-        with Session(engine) as session:
-            # Find items where numeric_rating is a rank or is missing while rating is a rank
-            corrupted = session.exec(select(MediaItem).where(
-                (MediaItem.numeric_rating.like('#%')) | 
-                ((MediaItem.numeric_rating == None) & (MediaItem.rating.like('#%')))
-            )).all()
-            
-            if corrupted:
-                print(f"[Recovery] Found {len(corrupted)} items with corrupted ratings. Attempting recovery...")
-                for item in corrupted:
-                    # Check RatingHistory for the most recent valid rating
-                    history = session.exec(
-                        select(RatingHistory)
-                        .where(RatingHistory.media_item_id == item.id)
-                        .order_by(RatingHistory.changed_at.desc())
-                    ).all()
-                    
-                    valid_rating = None
-                    for h in history:
-                        if h.new_rating and not str(h.new_rating).startswith('#'):
-                            valid_rating = h.new_rating
-                            break
-                        if h.old_rating and not str(h.old_rating).startswith('#'):
-                            valid_rating = h.old_rating
-                            break
-                    
-                    if not valid_rating:
-                        # NEW v233: Look for a "Twin" (other entry with same title/type)
-                        stmt = select(MediaItem).where(
-                            MediaItem.id != item.id,
-                            MediaItem.type == item.type,
-                            MediaItem.title == item.title,
-                            MediaItem.numeric_rating != None
-                        )
-                        twin = session.exec(stmt).first()
-                        if twin and not str(twin.numeric_rating).startswith('#'):
-                            valid_rating = twin.numeric_rating
-                    
-                    if valid_rating:
-                        item.numeric_rating = valid_rating
-                        session.add(item)
-                session.commit()
-                print(f"[Recovery] Successfully restored numeric_ratings for affected items.")
     except Exception as e:
-        print(f"[Recovery] Failed to run rating recovery: {e}")
+        print(f"[Migration] Auto-migration failed: {e}")
 
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
@@ -170,21 +125,36 @@ def create_media(payload: CreateMediaPayload, background_tasks: BackgroundTasks,
                 detail=f"This item (ID: {payload.ext_id}) already exists in your tracker as '{dup.title}'."
             )
 
-    # 2. Check for duplicates by Title/Year (only if title is provided)
-    if not payload.title.startswith("ID:"):
-        stmt = select(MediaItem).where(
-            MediaItem.title == payload.title,
-            MediaItem.type == payload.type,
-            MediaItem.release_year == payload.release_year
+    # 2. Check for duplicates by Title/Year
+    stmt = select(MediaItem).where(
+        MediaItem.title == payload.title,
+        MediaItem.type == payload.type,
+        MediaItem.release_year == payload.release_year
+    )
+    existing = session.exec(stmt).first()
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"This piece of media ('{payload.title}' {payload.release_year or ''}) already exists in your tracker."
         )
-        existing = session.exec(stmt).first()
-        if existing:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"This piece of media ('{payload.title}' {payload.release_year or ''}) already exists in your tracker."
-            )
         
-    # 3. Create the item
+    # 3. Handle ID-only submissions (fetch title immediately)
+    if payload.title.startswith("ID:") and payload.ext_id:
+        from tmdb_helper import get_tmdb_details
+        from jikan_helper import get_manga_details
+        
+        if payload.type == "Manga":
+            details = get_manga_details(payload.ext_id)
+        else:
+            m_type = "movie" if payload.type == "Movies" else "tv"
+            details = get_tmdb_details(payload.ext_id, m_type)
+            
+        if details and details.get("title"):
+            payload.title = details["title"]
+            if details.get("release_year"):
+                payload.release_year = details["release_year"]
+
+    # 4. Create the item
     item = MediaItem(
         title=payload.title,
         type=payload.type,
@@ -199,52 +169,13 @@ def create_media(payload: CreateMediaPayload, background_tasks: BackgroundTasks,
             item.mal_id = payload.ext_id
         else:
             item.tmdb_id = payload.ext_id
-        
-        # v230: Instant fetch if title is missing
-        if payload.title.startswith("ID:"):
-            from tmdb_helper import get_tmdb_details
-            from jikan_helper import get_manga_details
-            
-            # v234: Smart-Link Fallback (Check both movie/tv for TMDB)
-            if item.type == "Manga":
-                details = get_manga_details(payload.ext_id)
-            else:
-                # Try primary guess first
-                m_type = "movie" if item.type == "Movies" else "tv"
-                details = get_tmdb_details(payload.ext_id, m_type)
-                
-                # If primary fails and it's not a Manga, try the other TMDB type
-                if not details:
-                    other_type = "tv" if m_type == "movie" else "movie"
-                    details = get_tmdb_details(payload.ext_id, other_type)
-            
-            if details:
-                if details.get("title"): item.title = details["title"]
-                if details.get("release_year"): item.release_year = details["release_year"]
-                if details.get("genres"): item.genres = details["genres"]
-                if details.get("poster_url"): item.cover_url = details["poster_url"]
-                if details.get("director"): item.director = details["director"]
-                if details.get("runtime"): item.runtime = details["runtime"]
-                if details.get("content_rating"): item.content_rating = details["content_rating"]
-                
-                # Update IDs
-                if item.type == "Manga": item.mal_id = payload.ext_id
-                else: item.tmdb_id = payload.ext_id
-                
-                item.enrichment_attempts = 1
-                session.add(item)
-                session.commit()
-                return item
-            else:
-                raise HTTPException(status_code=404, detail="Could not retrieve details for that ID from official sources.")
-        
-        item.enrichment_attempts = 1 # Mark as enriched (we just did it)
+        item.enrichment_attempts = 1 # Already fetched or will be by bg task
 
     session.add(item)
     session.commit()
     session.refresh(item)
 
-    # Trigger background enrichment anyway for safety/other categories
+    # Auto-enrich (Manga now included)
     background_tasks.add_task(run_enrichment, category=item.type)
 
     return item
@@ -322,21 +253,14 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     from tmdb_helper import get_tmdb_details
     from jikan_helper import get_manga_details
 
-    # v234: Smart-Link Fallback (Check both movie/tv for TMDB)
     if item.type == "Manga":
         details = get_manga_details(payload.ext_id)
     else:
-        # Try primary guess first
-        m_type = "movie" if item.type == "Movies" else "tv"
-        details = get_tmdb_details(payload.ext_id, m_type)
-        
-        # If primary fails and it's not a Manga, try the other TMDB type
-        if not details:
-            other_type = "tv" if m_type == "movie" else "movie"
-            details = get_tmdb_details(payload.ext_id, other_type)
+        media_type = "movie" if item.type == "Movies" else "tv"
+        details = get_tmdb_details(payload.ext_id, media_type)
 
     if not details:
-        raise HTTPException(status_code=400, detail="Could not retrieve details for that ID from official sources.")
+        raise HTTPException(status_code=400, detail="Could not retrieve details for that ID.")
 
     # Apply details
     if details.get("title"): item.title = details["title"]
@@ -344,7 +268,6 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     # Ensure release_year is an int if possible
     if "release_year" in details:
         try:
-            item.numeric_year = int(details["release_year"]) # Helper for sorting
             item.release_year = int(details["release_year"]) if details["release_year"] else item.release_year
         except (ValueError, TypeError):
             pass
@@ -355,11 +278,14 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     if details.get("runtime"): item.runtime = details["runtime"]
     if details.get("content_rating"): item.content_rating = details["content_rating"]
     
-    # Update IDs
-    if item.type == "Manga": item.mal_id = payload.ext_id
-    else: item.tmdb_id = payload.ext_id
+    # Store the IDs for future syncs
+    if item.type == "Manga":
+        item.mal_id = payload.ext_id
+    else:
+        item.tmdb_id = payload.ext_id
+        
+    item.enrichment_attempts = 1 # Mark as enriched
     
-    item.enrichment_attempts = 1
     session.add(item)
     session.commit()
     return {"ok": True, "title": item.title}
@@ -477,32 +403,6 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
 
 # --- Metadata Sync & Fix Endpoints (v219) ---
 
-@app.post("/api/admin/repair-all-ratings")
-def repair_all_ratings(session: Session = Depends(get_session), _: None = Depends(check_readonly)):
-    all_items = session.exec(select(MediaItem)).all()
-    count = 0
-    for item in all_items:
-        # If rating is corrupted or missing
-        if not item.numeric_rating or str(item.numeric_rating).startswith('#'):
-            # 1. Try history
-            hist = session.exec(select(RatingHistory).where(RatingHistory.media_item_id == item.id).order_by(RatingHistory.changed_at.desc())).all()
-            valid = next((h.new_rating for h in hist if h.new_rating and not str(h.new_rating).startswith('#')), None)
-            if not valid:
-                valid = next((h.old_rating for h in hist if h.old_rating and not str(h.old_rating).startswith('#')), None)
-            
-            # 2. Try twins
-            if not valid:
-                twin = session.exec(select(MediaItem).where(MediaItem.title == item.title, MediaItem.type == item.type, MediaItem.id != item.id)).first()
-                if twin and twin.numeric_rating and not str(twin.numeric_rating).startswith('#'):
-                    valid = twin.numeric_rating
-            
-            if valid:
-                item.numeric_rating = str(valid)
-                session.add(item)
-                count += 1
-    session.commit()
-    return {"ok": True, "restored_count": count}
-
 class ReorderRequest(BaseModel):
     category: str
     item_ids: list[int] # Ordered list of primary IDs
@@ -544,8 +444,8 @@ def reorder_rankings(request: ReorderRequest, session: Session = Depends(get_ses
             rank_str = f"#{i + 1}"
             item.is_ranking = True
             item.rating = rank_str
-            # DO NOT overwrite numeric_rating with rank_str! 
-            # We want to preserve the actual score (e.g. 8.5/10) there.
+            # Also keep numeric_rating in sync for legacy display logic
+            item.numeric_rating = rank_str
             session.add(item)
 
     session.commit()

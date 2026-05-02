@@ -126,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let rankMap = {}; // title|type -> rank number; populated in renderMedia, read by openQuickInfo
     let currentCategory = 'Movies'; // Default page
     let currentSubTab = 'Completed'; // Default subtab ('Completed' or 'Rankings')
-    let globalScoreMap = {}; // v235: Master-Slave Rating System
 
     const searchInput = document.getElementById('searchInput');
     const navLinks = document.querySelectorAll('.nav-link');
@@ -668,10 +667,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // 3. Filter by Search Query (Upgraded to include Director)
-        const query = (searchInput.value || '').toLowerCase().trim();
+        const query = searchInput.value.toLowerCase().trim();
         if (query) {
             filtered = filtered.filter(item => 
-                (item.title && item.title.toLowerCase().includes(query)) || 
+                item.title.toLowerCase().includes(query) || 
                 (item.director && item.director.toLowerCase().includes(query))
             );
         }
@@ -827,19 +826,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        const title = document.getElementById('titleInput').value.trim();
-        const extId = parseInt(document.getElementById('newEntryExtIdInput').value) || null;
+        const titleInput = document.getElementById('titleInput');
+        const extIdInput = document.getElementById('newEntryExtIdInput');
+        const extId = parseInt(extIdInput.value) || null;
+        let title = titleInput.value.trim();
 
         if (!title && !extId) {
             alert('Please provide either a Title or an Official ID.');
             return;
         }
 
+        // If title is missing but ID is there, we send a placeholder that the backend will fill
+        if (!title && extId) {
+            title = `ID:${extId}`; 
+        }
+
         const payload = {
-            title: title || `ID:${extId}`, // Placeholder if title is missing
+            title: title,
             type: type,
             rating: ratingVal + '/10',
-            review: '', 
+            review: '', // No review on creation per user request
             release_year: releaseYear,
             ext_id: extId,
             source: 'manual'
@@ -1213,28 +1219,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // v236: Surefire Global Rating Lookup
-        const normalizedTarget = item.title.toLowerCase().trim();
-        const bestEntry = allMedia.find(m => 
-            m.title.toLowerCase().trim() === normalizedTarget && 
-            m.numeric_rating && 
-            !m.numeric_rating.toString().startsWith('#')
-        );
-        let rawScore = bestEntry ? bestEntry.numeric_rating.toString().replace('/10','').trim() : '';
-        
-        if (!rawScore && item.numeric_rating && !item.numeric_rating.toString().startsWith('#')) {
-            rawScore = item.numeric_rating.toString().replace('/10','').trim();
-        }
-
-        const ratingDisplay = document.getElementById('quickInfoRating');
-        if (rawScore) {
-            ratingDisplay.textContent = `${rawScore} / 10`;
-            ratingDisplay.style.display = 'block';
-        } else {
-            ratingDisplay.textContent = '-- / 10';
-            ratingDisplay.style.display = 'block';
-            ratingDisplay.style.opacity = '0.4';
-        }
+        // Rating — prefer numeric score over rank string
+        let ratingStr = item.numeric_rating || item.rating || '';
+        // Remove existing /10 if present to avoid double display
+        let rawScore = (!ratingStr.startsWith('#')) ? ratingStr.toString().replace('/10', '').trim() : (item.numeric_rating || '');
+        document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
 
         // Edit Button (Admin Only)
         const editBtn = document.getElementById('quickInfoEditBtn');
@@ -1386,33 +1375,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            const repairBtn = document.getElementById('repairAllRatingsBtn');
-            if (repairBtn) {
-                repairBtn.onclick = async () => {
-                    if (!confirm("This will scan all historical logs and attempt to restore missing ratings for EVERY item. Continue?")) return;
-                    
-                    repairBtn.disabled = true;
-                    repairBtn.textContent = 'Restoring...';
-                    
-                    try {
-                        const res = await fetch('/api/admin/repair-all-ratings', {
-                            method: 'POST',
-                            headers: getAuthHeaders()
-                        });
-                        const data = await res.json();
-                        if (data.ok) {
-                            alert(`Successfully restored ${data.restored_count} ratings from history!`);
-                            await fetchMedia(); // Refresh global map and UI
-                            window.openQuickInfo(allMedia.find(m => m.id === item.id)); // Re-open with new data
-                        }
-                    } catch (e) {
-                        alert("Error: " + e.message);
-                    } finally {
-                        repairBtn.disabled = false;
-                        repairBtn.innerHTML = '<i class="fas fa-tools"></i> FORCE REPAIR ALL RATINGS (History Sync)';
-                    }
-                };
-            }
         } else {
             editBtn.style.display = 'none';
             ratingEditSection.style.display = 'none';
@@ -1670,18 +1632,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             allMedia = await res.json();
-
-            // v235: Build Global Score Map (One Truth)
-            globalScoreMap = {};
-            allMedia.forEach(m => {
-                const key = `${m.title.toLowerCase().trim()}|${m.type.toLowerCase()}`;
-                const rawVal = (m.numeric_rating || m.rating || '').toString().replace('/10', '').trim();
-                // If it's a valid score and not a rank string
-                if (rawVal && !rawVal.startsWith('#')) {
-                    globalScoreMap[key] = rawVal;
-                }
-            });
-
             populateGenreFilters();
             loader.style.display = 'none';
             filterAndRenderMedia();
@@ -2521,7 +2471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRankingList();
         rankingManagerModal.classList.add('show');
         rankingSearchInput.value = '';
-        renderScoutingSuggestions();
+        rankingSearchResults.innerHTML = '';
     };
 
     const closeRankingManager = () => {
@@ -2531,7 +2481,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.removeFromRankings = (id) => {
         currentRankedItems = currentRankedItems.filter(it => it.id !== id);
         renderRankingList();
-        if (rankingSearchInput.value.length < 2) renderScoutingSuggestions();
     };
 
     window.addToRankings = (item) => {
@@ -2546,7 +2495,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentRankedItems.push(item);
         renderRankingList();
         rankingSearchInput.value = '';
-        renderScoutingSuggestions();
+        rankingSearchResults.innerHTML = '';
     };
 
     if (manageRankingsBtn) {
@@ -2564,43 +2513,11 @@ document.addEventListener('DOMContentLoaded', () => {
         closeRankingManagerBtn.onclick = closeRankingManager;
     }
 
-    const renderScoutingSuggestions = () => {
-        const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
-        const pool = allMedia.filter(it => 
-            it.type.toLowerCase() === currentCategory.toLowerCase() &&
-            !rankedTitles.has(it.title.toLowerCase().trim())
-        );
-
-        // Pick 10 random or top unranked items
-        const suggestions = pool.sort(() => 0.5 - Math.random()).slice(0, 10);
-        
-        if (suggestions.length === 0) {
-            rankingSearchResults.innerHTML = '<p style="text-align:center; opacity:0.5; font-size:0.8rem; margin-top:2rem;">All items are already ranked!</p>';
-            return;
-        }
-
-        rankingSearchResults.innerHTML = `
-            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.4; margin-bottom: 0.8rem; padding-left: 0.5rem;">Discovery Suggestions</div>
-        ` + suggestions.map(it => {
-            const safeTitle = it.title.replace(/'/g, "\\'");
-            const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
-            return `
-                <div class="ranking-search-item" onclick='window.addToRankings(${itemJson})'>
-                    <div class="ranking-search-item-info">
-                        <span class="ranking-search-item-title">${it.title}</span>
-                        <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}</span>
-                    </div>
-                    <div class="ranking-search-item-plus">+</div>
-                </div>
-            `;
-        }).join('');
-    };
-
     if (rankingSearchInput) {
         rankingSearchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
             if (query.length < 2) {
-                renderScoutingSuggestions();
+                rankingSearchResults.innerHTML = '';
                 return;
             }
             
