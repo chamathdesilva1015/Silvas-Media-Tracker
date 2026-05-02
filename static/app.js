@@ -1798,7 +1798,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     ` : ''}
                     ${(item.type === 'Movies' && item.director) ? `
                         <div class="director-container">
-                            <span class="director-badge">${item.director}</span>
+                            <span class="director-badge">Dir. ${item.director}</span>
+                        </div>
+                    ` : ''}
+                    ${(item.type === 'TV Series' && item.director) ? `
+                        <div class="director-container">
+                            <span class="director-badge">Creator: ${item.director}</span>
                         </div>
                     ` : ''}
                     <div class="card-badges">
