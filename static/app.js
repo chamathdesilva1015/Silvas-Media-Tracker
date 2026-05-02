@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentCategory = category;
         currentSubTab = 'Completed';
 
-        // Reset Search & Filters (v225)
+        // 0. Reset Search and Filters (v225)
         if (searchInput) searchInput.value = '';
         filterState = {
             sort: 'shuffle',
@@ -161,12 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
             unreviewed: false,
             genres: new Set()
         };
-        // Clear UI Checkboxes
+        // Uncheck all genre checkboxes in UI
         document.querySelectorAll('.genre-filter-check').forEach(cb => cb.checked = false);
-        ['filterLiked', 'filterReviewed', 'filterUnreviewed'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.checked = false;
-        });
+        // Reset filter count badge
         updateActiveFilterCount();
 
         // Apply theme for colors (v218)
@@ -1281,76 +1278,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (linkSubSection) linkSubSection.style.display = 'none'; // Reset state
 
-            refreshBtn.onclick = async () => {
-                if (!confirm("This will force-refresh all metadata (Poster, Title, Author) from the official sources. Continue?")) return;
-                
-                refreshBtn.disabled = true;
-                refreshBtn.textContent = 'Syncing...';
-                
-                try {
-                    const res = await fetch(`/api/media/refresh/${item.id}`, {
-                        method: 'POST',
-                        headers: getAuthHeaders()
-                    });
-                    const data = await res.json();
-                    if (data.ok) {
-                        alert(`Metadata Synced! Entry is now officially linked and titled.`);
-                        quickInfoModal.classList.remove('show');
-                        fetchMedia(); // Refresh UI
-                    } else {
-                        alert("Sync Failed: " + (data.detail || "Check console"));
+            if (refreshBtn) {
+                refreshBtn.onclick = async () => {
+                    if (!confirm("This will force-refresh all metadata (Poster, Title, Author) from the official sources. Continue?")) return;
+                    
+                    refreshBtn.disabled = true;
+                    refreshBtn.textContent = 'Syncing...';
+                    
+                    try {
+                        const res = await fetch(`/api/media/refresh/${item.id}`, {
+                            method: 'POST',
+                            headers: getAuthHeaders()
+                        });
+                        const data = await res.json();
+                        if (data.ok) {
+                            alert(`Metadata Synced! Entry is now officially linked and titled.`);
+                            quickInfoModal.classList.remove('show');
+                            fetchMedia(); // Refresh UI
+                        } else {
+                            alert("Sync Failed: " + (data.detail || "Check console"));
+                        }
+                    } catch (e) {
+                        alert("Error syncing: " + e.message);
+                    } finally {
+                        refreshBtn.disabled = false;
+                        refreshBtn.textContent = 'Sync with Official';
                     }
-                } catch (e) {
-                    alert("Error syncing: " + e.message);
-                } finally {
-                    refreshBtn.disabled = false;
-                    refreshBtn.textContent = 'Sync with Official';
-                }
-            };
+                };
+            }
 
-            showLinkBtn.onclick = () => {
-                const isHidden = linkSubSection.style.display === 'none';
-                linkSubSection.style.display = isHidden ? 'block' : 'none';
-                if (isHidden) {
-                    // Auto-open search page for the user
-                    let searchUrl = "";
-                    if (item.type === "Manga") {
-                        searchUrl = `https://myanimelist.net/manga.php?q=${encodeURIComponent(item.title)}`;
-                    } else {
-                        searchUrl = `https://www.themoviedb.org/search?query=${encodeURIComponent(item.title)}`;
+            if (showLinkBtn) {
+                showLinkBtn.onclick = () => {
+                    const isHidden = linkSubSection.style.display === 'none';
+                    linkSubSection.style.display = isHidden ? 'block' : 'none';
+                    if (isHidden) {
+                        // Auto-open search page for the user
+                        let searchUrl = "";
+                        if (item.type === "Manga") {
+                            searchUrl = `https://myanimelist.net/manga.php?q=${encodeURIComponent(item.title)}`;
+                        } else {
+                            searchUrl = `https://www.themoviedb.org/search?query=${encodeURIComponent(item.title)}`;
+                        }
+                        window.open(searchUrl, '_blank');
                     }
-                    window.open(searchUrl, '_blank');
-                }
-            };
+                };
+            }
 
-            applyLinkBtn.onclick = async () => {
-                const extId = parseInt(linkInput.value);
-                if (isNaN(extId)) return alert("Please enter a valid numeric ID.");
-                
-                applyLinkBtn.disabled = true;
-                applyLinkBtn.textContent = 'Linking...';
-                
-                try {
-                    const res = await fetch(`/api/media/manual-link/${item.id}`, {
-                        method: 'POST',
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify({ ext_id: extId })
-                    });
-                    const data = await res.json();
-                    if (data.ok) {
-                        alert("Item linked! Metadata will be updated shortly.");
-                        quickInfoModal.classList.remove('show');
-                        fetchMedia();
-                    } else {
-                        alert("Failed to link: " + (data.detail || "Unknown error"));
+            if (applyLinkBtn) {
+                applyLinkBtn.onclick = async () => {
+                    const extId = parseInt(linkInput.value);
+                    if (isNaN(extId)) return alert("Please enter a valid numeric ID.");
+                    
+                    applyLinkBtn.disabled = true;
+                    applyLinkBtn.textContent = 'Linking...';
+                    
+                    try {
+                        const res = await fetch(`/api/media/manual-link/${item.id}`, {
+                            method: 'POST',
+                            headers: getAuthHeaders(),
+                            body: JSON.stringify({ ext_id: extId })
+                        });
+                        const data = await res.json();
+                        if (data.ok) {
+                            alert("Item linked! Metadata will be updated shortly.");
+                            quickInfoModal.classList.remove('show');
+                            fetchMedia();
+                        } else {
+                            alert("Failed to link: " + (data.detail || "Unknown error"));
+                        }
+                    } catch (e) {
+                        alert("Error linking: " + e.message);
+                    } finally {
+                        applyLinkBtn.disabled = false;
+                        applyLinkBtn.textContent = 'Apply Link';
                     }
-                } catch (e) {
-                    alert("Error linking: " + e.message);
-                } finally {
-                    applyLinkBtn.disabled = false;
-                    applyLinkBtn.textContent = 'Apply Link';
-                }
-            };
+                };
+            }
 
         } else {
             editBtn.style.display = 'none';
@@ -1986,10 +1989,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     deleteMedia(item.id, item.title);
                 };
                 card.appendChild(delBtn);
-                // Card click → Quick Info popup
+                // Card click → Quick Info popup (Movies only have poster/genres, but works for all)
                 card.addEventListener('click', (e) => {
-                    // Don't intercept clicks on specific action buttons
-                    if (e.target.closest('button') || e.target.classList.contains('like-btn-inline')) return;
+                    // Don't intercept clicks on action buttons or title
+                    if (e.target.closest('button') || e.target.closest('.clickable-review-trigger')) return;
                     window.openQuickInfo(item);
                 });
                 
@@ -2208,4 +2211,339 @@ document.addEventListener('DOMContentLoaded', () => {
         `
     };
 
+
+    if (iIntro && iDetail) {
+        // Delegate rating item clicks
+        iBody.addEventListener('click', (e) => {
+            const header = e.target.closest('.rating-header-click');
+            if (header) {
+                const item = header.closest('.rating-item');
+                // Close other items for clean accordion behavior
+                document.querySelectorAll('.rating-item').forEach(other => {
+                    if (other !== item) other.classList.remove('open');
+                });
+                item.classList.toggle('open');
+            }
+        });
+
+        document.querySelectorAll('.info-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const section = btn.getAttribute('data-section');
+                iTitle.innerText = section;
+                iSubtitle.innerText = infoSubtitles[section] || 'Detailed methodology and project documentation.';
+                iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
+                iIntro.style.display = 'none';
+                iDetail.style.display = 'block';
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        function setupDevConsole() {
+
+
+            const enrichBtn = document.getElementById('triggerEnrichBtn');
+            const wrapper = document.getElementById('consoleWrapper');
+            const log = document.getElementById('consoleLog');
+            const spinner = document.getElementById('consoleSpinner');
+
+            if (enrichBtn) enrichBtn.onclick = async () => {
+                wrapper.style.display = 'block';
+                spinner.style.display = 'block';
+                log.innerHTML = '<div style="color: #64b4ff;">[System] Initializing Metadata Enrichment...</div>';
+                try {
+                    const res = await fetch('/api/automation/enrich', { method: 'POST', headers: getAuthHeaders() });
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n');
+                        lines.forEach(msg => {
+                            if (!msg.trim()) return;
+                            const line = document.createElement('div');
+                            line.style.marginBottom = '2px';
+                            line.innerText = msg;
+                            if (msg.includes('Error')) line.style.color = '#ff6b6b';
+                            if (msg.includes('Complete')) line.style.color = '#51cf66';
+                            log.appendChild(line);
+                            log.scrollTop = log.scrollHeight;
+                        });
+                    }
+                    spinner.style.display = 'none';
+                    const final = document.createElement('div');
+                    final.style.marginTop = '10px';
+                    final.style.paddingTop = '5px';
+                    final.style.borderTop = '1px dashed #444';
+                    final.style.color = '#fff';
+                    final.innerText = `[System] Task "enrichment" completed.`;
+                    log.appendChild(final);
+                    log.scrollTop = log.scrollHeight;
+                    fetchMedia();
+                } catch (err) {
+                    log.innerHTML += `<div style="color: #ff6b6b;">Request Error: ${err.message}</div>`;
+                    spinner.style.display = 'none';
+                }
+            };
+        }
+
+        if (iBack) {
+            iBack.addEventListener('click', () => {
+                iDetail.style.display = 'none';
+                iIntro.style.display = 'block';
+            });
+        }
+        
+        // Initialize Dev Console immediately
+        setupDevConsole();
+    }
+
+    // Initialization
+    updateCategoryTitleCount();
+    updateTheme();
+    window.updateAuthUI(); // Ensure auth UI is set before media loads
+    fetchMedia().then(() => {
+        updateCategoryTitleCount();
+    });
+
+    // --- Smart Scroll Navigation (v177) ---
+    let lastScrollTop = 0;
+    const header = document.querySelector('header');
+    const bNav = document.querySelector('.bottom-nav');
+
+    window.addEventListener('scroll', () => {
+        let st = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Threshold to prevent flickering on tiny scrolls
+        if (Math.abs(st - lastScrollTop) < 5) return;
+
+        if (st > lastScrollTop && st > 80) {
+            // Scrolling Down -> Hide Header, Show Footer
+            header.classList.add('header-hidden');
+            if (bNav) bNav.classList.remove('footer-hidden');
+        } else if (st < lastScrollTop) {
+            // Scrolling Up -> Show Header, Hide Footer
+            header.classList.remove('header-hidden');
+            if (bNav) bNav.classList.add('footer-hidden');
+        }
+        lastScrollTop = st <= 0 ? 0 : st;
+    }, false);
+
+    /* ==========================================================================
+       RANKING MANAGER LOGIC (v206)
+       ========================================================================== */
+
+    const manageRankingsBtn = document.getElementById('manageRankingsBtn');
+    const rankingManagerModal = document.getElementById('rankingManagerModal');
+    const closeRankingManagerBtn = document.getElementById('closeRankingManagerBtn');
+    const rankingList = document.getElementById('rankingList');
+    const rankingSearchInput = document.getElementById('rankingSearchInput');
+    const rankingSearchResults = document.getElementById('rankingSearchResults');
+    const saveRankingsBtn = document.getElementById('saveRankingsBtn');
+
+    let currentRankedItems = [];
+    let sortableInstance = null;
+
+    const updateRankingCounter = () => {
+        const subtitle = document.getElementById('rankingManagerSubtitle');
+        if (subtitle) {
+            const count = currentRankedItems.length;
+            const categoryDisplay = currentCategory.replace(/s$/, ''); // "Movie" instead of "Movies"
+            subtitle.innerHTML = `Leaderboard Status for ${categoryDisplay}: <strong style="color: ${count === 20 ? '#51cf66' : 'var(--theme-accent)'}">${count}/20 slots filled</strong>`;
+            
+            if (saveRankingsBtn) {
+                if (count === 20) {
+                    saveRankingsBtn.style.opacity = '1';
+                    saveRankingsBtn.style.cursor = 'pointer';
+                } else {
+                    saveRankingsBtn.style.opacity = '0.5';
+                    saveRankingsBtn.style.cursor = 'not-allowed';
+                }
+            }
+        }
+    };
+
+    const renderRankingList = () => {
+        if (!rankingList) return;
+        
+        rankingList.innerHTML = currentRankedItems.map((item, index) => `
+            <div class="ranking-item" data-id="${item.id}">
+                <div class="ranking-item-handle">⠿</div>
+                <span class="ranking-number">#${index + 1}</span>
+                <div class="ranking-item-info">
+                    <span class="ranking-item-title">${item.title}</span>
+                    <span class="ranking-item-meta">${item.release_year || 'Unknown Year'} • ${currentCategory.replace(/s$/, '')}</span>
+                </div>
+                <div class="ranking-item-remove" title="Remove from Rankings" onclick="window.removeFromRankings(${item.id})">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+                </div>
+            </div>
+        `).join('');
+        
+        if (sortableInstance) sortableInstance.destroy();
+        sortableInstance = new Sortable(rankingList, {
+            animation: 250,
+            handle: '.ranking-item-handle',
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            onEnd: () => {
+                const newOrderIds = Array.from(rankingList.children).map(el => parseInt(el.getAttribute('data-id')));
+                const reordered = [];
+                newOrderIds.forEach(id => {
+                    const found = currentRankedItems.find(it => it.id === id);
+                    if (found) reordered.push(found);
+                });
+                currentRankedItems = reordered;
+                renderRankingList();
+            }
+        });
+
+        updateRankingCounter();
+    };
+
+    const openRankingManager = () => {
+        if (!rankingManagerModal) return;
+        
+        currentRankedItems = allMedia
+            .filter(item => {
+                if (item.type.toLowerCase() !== currentCategory.toLowerCase()) return false;
+                // Trim everything to catch " #9" or "9 "
+                const r = String(item.rating || '').trim();
+                const nr = String(item.numeric_rating || '').trim();
+                return r.startsWith('#') || nr.startsWith('#');
+            })
+            .sort((a, b) => {
+                const getRankNum = (it) => {
+                    const r = String(it.rating || '').trim();
+                    const nr = String(it.numeric_rating || '').trim();
+                    const str = r.startsWith('#') ? r : (nr.startsWith('#') ? nr : '#999');
+                    return parseInt(str.replace('#', '')) || 999;
+                };
+                
+                const rankA = getRankNum(a);
+                const rankB = getRankNum(b);
+                
+                if (rankA !== rankB) return rankA - rankB;
+                // Tie-breaker: Alphabetical
+                return a.title.localeCompare(b.title);
+            });
+        
+        renderRankingList();
+        rankingManagerModal.classList.add('show');
+        rankingSearchInput.value = '';
+        rankingSearchResults.innerHTML = '';
+    };
+
+    const closeRankingManager = () => {
+        rankingManagerModal.classList.remove('show');
+    };
+
+    window.removeFromRankings = (id) => {
+        currentRankedItems = currentRankedItems.filter(it => it.id !== id);
+        renderRankingList();
+    };
+
+    window.addToRankings = (item) => {
+        if (currentRankedItems.length >= 20) {
+            alert('Your Top 20 list is full. Please remove an item before adding a new one.');
+            return;
+        }
+        if (currentRankedItems.find(it => it.id === item.id)) {
+            alert('Item is already in your rankings.');
+            return;
+        }
+        currentRankedItems.push(item);
+        renderRankingList();
+        rankingSearchInput.value = '';
+        rankingSearchResults.innerHTML = '';
+    };
+
+    if (manageRankingsBtn) {
+        manageRankingsBtn.onclick = () => {
+            // Block mobile/tablet access
+            if (window.innerWidth < 1024) {
+                alert("Elite Ranking Management is optimized for Desktop. Please use a laptop or PC to reorder your Top 20.");
+                return;
+            }
+            openRankingManager();
+        };
+    }
+
+    if (closeRankingManagerBtn) {
+        closeRankingManagerBtn.onclick = closeRankingManager;
+    }
+
+    if (rankingSearchInput) {
+        rankingSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length < 2) {
+                rankingSearchResults.innerHTML = '';
+                return;
+            }
+            
+            const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
+            const matches = allMedia
+                .filter(it => 
+                    it.type.toLowerCase() === currentCategory.toLowerCase() &&
+                    it.title.toLowerCase().includes(query) &&
+                    !rankedTitles.has(it.title.toLowerCase().trim())
+                )
+                .slice(0, 10);
+                
+            rankingSearchResults.innerHTML = matches.map(it => {
+                const safeTitle = it.title.replace(/'/g, "\\'");
+                const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
+                return `
+                    <div class="ranking-search-item" onclick='window.addToRankings(${itemJson})'>
+                        <div class="ranking-search-item-info">
+                            <span class="ranking-search-item-title">${it.title}</span>
+                            <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}</span>
+                        </div>
+                        <div class="ranking-search-item-plus">+</div>
+                    </div>
+                `;
+            }).join('');
+        });
+    }
+
+    if (saveRankingsBtn) {
+        saveRankingsBtn.onclick = async () => {
+            if (currentRankedItems.length !== 20) {
+                alert(`You currently have ${currentRankedItems.length}/20 items. You must have exactly 20 items to save your leaderboard.`);
+                return;
+            }
+
+            const payload = {
+                category: currentCategory,
+                item_ids: currentRankedItems.map(it => it.id)
+            };
+            
+            saveRankingsBtn.disabled = true;
+            saveRankingsBtn.innerText = 'Saving...';
+            
+            try {
+                const res = await fetch('/api/rankings/reorder', {
+                    method: 'POST',
+                    headers: getAuthHeaders(true),
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    closeRankingManager();
+                    fetchMedia(); 
+                } else {
+                    const err = await res.json();
+                    alert('Failed to save rankings: ' + (err.detail || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Error saving rankings:', e);
+                alert('Error saving rankings.');
+            } finally {
+                saveRankingsBtn.disabled = false;
+                saveRankingsBtn.innerText = 'Save New Order';
+            }
+        };
+    }
 });
