@@ -486,8 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="hof-entry-rank" style="color: var(--theme-accent);">${i + 1}</span>
                             <div style="display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0;">
                                 <span class="hof-entry-title" style="text-transform: capitalize; font-weight: 600;">${g.name}</span>
-                                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem;">
-                                    ${g.examples.map(ex => `<span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem; color: var(--text-secondary); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">${ex}</span>`).join('')}
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.2rem;">
+                                    ${g.examples.map(ex => `<span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.65rem; color: var(--text-secondary); box-shadow: 0 1px 2px rgba(0,0,0,0.1); line-height: 1.2;">${ex}</span>`).join('')}
                                 </div>
                             </div>
                             <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.7; color: var(--theme-accent); align-self: center;">${g.score} pts</span>
@@ -518,8 +518,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="hof-entry-rank" style="color: var(--theme-accent);">${i + 1}</span>
                             <div style="display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0;">
                                 <span class="hof-entry-title" style="font-weight: 700;">${d.name}</span>
-                                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem;">
-                                    ${d.examples.map(ex => `<span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem; color: var(--text-secondary); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">${ex}</span>`).join('')}
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.2rem;">
+                                    ${d.examples.map(ex => `<span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.65rem; color: var(--text-secondary); box-shadow: 0 1px 2px rgba(0,0,0,0.1); line-height: 1.2;">${ex}</span>`).join('')}
                                 </div>
                             </div>
                             <span class="hof-entry-score" style="font-size: 0.7rem; opacity: 0.7; color: var(--theme-accent); align-self: center;">${d.score} pts</span>
