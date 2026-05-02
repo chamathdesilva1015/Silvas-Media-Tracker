@@ -2,64 +2,62 @@ import asyncio
 from typing import Optional, Callable
 from sqlmodel import Session, select
 from database import engine, MediaItem
-from tmdb_helper import search_movie, get_movie_details
+from tmdb_helper import search_tmdb, get_tmdb_details
 
 async def run_enrichment(log_func: Optional[Callable] = None, category: Optional[str] = None):
     """
     Main enrichment loop.
-    Iterates through movies with missing genres OR missing director metadata
+    Iterates through movies/tv with missing genres OR missing metadata
     and attempts to fill them from TMDB.
-    Only processes 'Movies' category as per user requirement.
     """
     def log(msg):
         if log_func:
             log_func(msg)
         print(msg)
 
-    # User explicitly requested Movies ONLY
-    target_category = category if category == "Movies" else "Movies"
-    if category and category != "Movies":
-        log(f"Enrichment skipped for {category}. (Movies only enrichment enabled)")
-        return {"status": "skipped", "message": "Movies only"}
+    # Process either a specific category or both Movies/TV Series
+    valid_categories = ["Movies", "TV Series"]
+    if category and category not in valid_categories:
+        log(f"Enrichment skipped for {category}. (TMDB only supports Movies/TV)")
+        return {"status": "skipped", "message": "Unsupported category"}
 
-    log(f"Starting Movie Enrichment...")
+    target_categories = [category] if category else valid_categories
+    log(f"Starting Media Enrichment for: {', '.join(target_categories)}...")
     
     with Session(engine) as session:
-        # Select items that need enrichment:
-        # - Missing genres (new entries), OR
-        # - Have genres but missing director (existing entries pre-dating this feature)
-        # In both cases, cap at 5 attempts to avoid infinite loops.
+        # Select items that need enrichment
         statement = select(MediaItem).where(
-            MediaItem.type == "Movies",
+            MediaItem.type.in_(target_categories),
             MediaItem.enrichment_attempts < 5
         ).where(
             (MediaItem.genres == None) | 
             (MediaItem.genres == "") | 
             (MediaItem.genres == "documentary") | 
             (MediaItem.genres.contains("Imported")) |
-            (MediaItem.director == None)   # Re-enrich movies missing new metadata
+            (MediaItem.director == None)
         )
         
         items = session.exec(statement).all()
         
         if not items:
-            log("No movies found requiring enrichment.")
+            log("No items found requiring enrichment.")
             return {"status": "complete", "enriched_count": 0}
 
-        log(f"Found {len(items)} movies to enrich.")
+        log(f"Found {len(items)} items to enrich.")
         enriched_count = 0
         
         for item in items:
-            log(f"Processing: {item.title} ({item.release_year or '????'})")
+            media_type_flag = "movie" if item.type == "Movies" else "tv"
+            log(f"Processing {item.type}: {item.title} ({item.release_year or '????'})")
             
             try:
-                # 1. Search for TMDB ID (Primary search with year)
-                tmdb_id = item.tmdb_id or search_movie(item.title, item.release_year)
+                # 1. Search for TMDB ID
+                tmdb_id = item.tmdb_id or search_tmdb(item.title, item.release_year, media_type_flag)
                 
-                # Fallback: If not found with year, try without year
+                # Fallback: title-only search
                 if not tmdb_id and item.release_year:
                     log(f"  [.] Not found with year. Trying title-only search...")
-                    tmdb_id = search_movie(item.title)
+                    tmdb_id = search_tmdb(item.title, media_type=media_type_flag)
 
                 if not tmdb_id:
                     log(f"  [!] Not found on TMDB after fallback. Skipping.")
@@ -68,8 +66,8 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     session.commit()
                     continue
                 
-                # 2. Get full details (genres, poster, director, runtime, content_rating)
-                details = get_movie_details(tmdb_id)
+                # 2. Get full details
+                details = get_tmdb_details(tmdb_id, media_type_flag)
                 
                 if not details:
                     log(f"  [!] No data returned from TMDB. Skipping.")
@@ -83,11 +81,9 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     item.genres = details["genres"]
                     item.tmdb_id = tmdb_id
                 
-                # Update cover only if not already set from a non-Discord source
                 if details.get("poster_url") and (not item.cover_url or "discordapp" in item.cover_url):
                     item.cover_url = details["poster_url"]
                 
-                # Always update new metadata fields if we get them
                 if details.get("director"):
                     item.director = details["director"]
                 if details.get("runtime"):
@@ -98,9 +94,10 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                 session.add(item)
                 session.commit()
                 enriched_count += 1
-                log(f"  [+] Enriched: {details.get('genres')} | Dir: {details.get('director')} | {details.get('runtime')}min | {details.get('content_rating')}")
                 
-                # Polite rate limiting
+                label = "Director" if media_type_flag == "movie" else "Creator"
+                log(f"  [+] Enriched: {details.get('genres')} | {label}: {details.get('director')} | {details.get('runtime')}min | {details.get('content_rating')}")
+                
                 await asyncio.sleep(0.2)
 
             except Exception as e:

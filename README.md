@@ -163,6 +163,16 @@ Responsive Navigation: Engineered a unified search/filter row for mobile headers
 Premium Footer Design: Replaced bulky highlights with sleek underline indicators and enhanced blur.
 Mobile-Exclusive Logic: Implemented text-swap mechanisms to replace verbose text with concise formulas.
 
+
+Update 11: TV Series Enrichment Support
+Focus: Expanding automated metadata lookups to television content.
+
+TV Pipeline Integration: Engineered a multi-type enrichment engine supporting both Movies and TV Series.
+Intelligent TMDB Routing: Implemented type-aware API logic to prevent data collisions between movies and shows.
+Creator Mapping: Automatically identifies and maps TV Show Creators to the existing metadata schema.
+Average Runtime Logic: Developed statistical averaging for TV episode runtimes for consistent data density.
+TV Certification Support: Added logic to fetch and standardize TV-specific content ratings (e.g., TV-MA).
+
 ---
 
 ## License

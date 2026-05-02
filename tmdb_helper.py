@@ -5,18 +5,28 @@ from typing import List, Optional, Tuple
 TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
 BASE_URL = "https://api.themoviedb.org/3"
 
-def search_movie(title: str, year: Optional[int] = None) -> Optional[int]:
-    """Searches for a movie and returns its TMDB ID."""
+def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie") -> Optional[int]:
+    """
+    Searches for a media item and returns its TMDB ID.
+    media_type: "movie" or "tv"
+    """
     if not TMDB_API_KEY:
         return None
     
-    url = f"{BASE_URL}/search/movie"
+    endpoint = "movie" if media_type == "movie" else "tv"
+    url = f"{BASE_URL}/search/{endpoint}"
+    
     params = {
         "api_key": TMDB_API_KEY,
         "query": title,
     }
+    
+    # TMDB uses 'year' for movies and 'first_air_date_year' for TV
     if year:
-        params["year"] = year
+        if media_type == "movie":
+            params["year"] = year
+        else:
+            params["first_air_date_year"] = year
     
     try:
         response = requests.get(url, params=params)
@@ -27,29 +37,28 @@ def search_movie(title: str, year: Optional[int] = None) -> Optional[int]:
         if not results:
             return None
             
-        # Weighted Scoring Logic:
-        # We look at the top 5 results and pick the best match
         best_id = None
         best_score = -1
         
         for r in results[:5]:
             score = 0
-            r_title = r.get("title", "").lower()
-            r_release = r.get("release_date", "")
+            # TV uses 'name', Movie uses 'title'
+            r_title = r.get("name" if media_type == "tv" else "title", "").lower()
+            # TV uses 'first_air_date', Movie uses 'release_date'
+            r_release = r.get("first_air_date" if media_type == "tv" else "release_date", "")
             r_pop = r.get("popularity", 0)
             
-            # 1. Title Match (Case Insensitive)
+            # 1. Title Match
             if r_title == title.lower():
                 score += 100
             elif title.lower() in r_title:
                 score += 20
                 
-            # 2. Year Match (If year was provided)
+            # 2. Year Match
             if year and r_release.startswith(str(year)):
                 score += 50
                 
-            # 3. Popularity (Tie-breaker)
-            # Normalize popularity (capped at 100)
+            # 3. Popularity
             score += min(r_pop, 50)
             
             if score > best_score:
@@ -58,23 +67,27 @@ def search_movie(title: str, year: Optional[int] = None) -> Optional[int]:
                 
         return best_id
     except Exception as e:
-        print(f"TMDB Search Error for '{title}': {e}")
+        print(f"TMDB Search Error for '{title}' ({media_type}): {e}")
     
     return None
 
-def get_movie_details(tmdb_id: int) -> dict:
+def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
     """
-    Fetches genres, poster, director, runtime, and content_rating for a given TMDB ID.
-    Uses append_to_response to get everything in a single API call.
-    Returns a dict with keys: genres, poster_url, director, runtime, content_rating.
+    Fetches genres, poster, director/creator, runtime, and content_rating.
+    media_type: "movie" or "tv"
     """
     if not TMDB_API_KEY:
         return {}
     
-    url = f"{BASE_URL}/movie/{tmdb_id}"
+    endpoint = "movie" if media_type == "movie" else "tv"
+    url = f"{BASE_URL}/{endpoint}/{tmdb_id}"
+    
+    # TV uses content_ratings, Movie uses releases
+    append_val = "credits,releases" if media_type == "movie" else "credits,content_ratings"
+    
     params = {
         "api_key": TMDB_API_KEY,
-        "append_to_response": "credits,releases",
+        "append_to_response": append_val,
     }
     
     try:
@@ -90,30 +103,44 @@ def get_movie_details(tmdb_id: int) -> dict:
         poster_path = data.get("poster_path")
         poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
         
-        # --- Runtime (minutes) ---
-        runtime = data.get("runtime") or None
+        # --- Runtime ---
+        runtime = None
+        if media_type == "movie":
+            runtime = data.get("runtime")
+        else:
+            # TV often has a list of episode runtimes, take the average
+            runtimes = data.get("episode_run_time", [])
+            if runtimes:
+                runtime = sum(runtimes) // len(runtimes)
         
-        # --- Director (from credits.crew, pick first Director credit) ---
+        # --- Director / Creator ---
         director = None
-        crew = data.get("credits", {}).get("crew", [])
-        for person in crew:
-            if person.get("job") == "Director":
-                director = person.get("name")
-                break
+        if media_type == "movie":
+            crew = data.get("credits", {}).get("crew", [])
+            for person in crew:
+                if person.get("job") == "Director":
+                    director = person.get("name")
+                    break
+        else:
+            # For TV, we use "Created By"
+            creators = data.get("created_by", [])
+            if creators:
+                director = creators[0].get("name")
         
-        # --- Content Rating (US certification preferred, fallback to first available) ---
+        # --- Content Rating ---
         content_rating = None
-        countries = data.get("releases", {}).get("countries", [])
-        # Prefer US rating
-        for c in countries:
-            if c.get("iso_3166_1") == "US" and c.get("certification"):
-                content_rating = c["certification"]
-                break
-        # Fallback: first non-empty certification
-        if not content_rating:
+        if media_type == "movie":
+            countries = data.get("releases", {}).get("countries", [])
             for c in countries:
-                if c.get("certification"):
+                if c.get("iso_3166_1") == "US" and c.get("certification"):
                     content_rating = c["certification"]
+                    break
+        else:
+            # TV content ratings
+            ratings = data.get("content_ratings", {}).get("results", [])
+            for r in ratings:
+                if r.get("iso_3166_1") == "US" and r.get("rating"):
+                    content_rating = r["rating"]
                     break
         
         return {
@@ -124,6 +151,13 @@ def get_movie_details(tmdb_id: int) -> dict:
             "content_rating": content_rating,
         }
     except Exception as e:
-        print(f"TMDB Details Error for ID {tmdb_id}: {e}")
+        print(f"TMDB Details Error for {media_type} ID {tmdb_id}: {e}")
     
     return {}
+
+# Legacy Aliases for safety (though only enrich_data.py uses them currently)
+def search_movie(title: str, year: Optional[int] = None) -> Optional[int]:
+    return search_tmdb(title, year, "movie")
+
+def get_movie_details(tmdb_id: int) -> dict:
+    return get_tmdb_details(tmdb_id, "movie")
