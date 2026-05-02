@@ -69,17 +69,17 @@ async def on_startup():
 
     # v227: Auto-Migration for mal_id
     try:
-        with engine.connect() as conn:
-            from sqlalchemy import text
-            # Check if column exists
-            result = conn.execute(text("PRAGMA table_info(mediaitem)"))
-            columns = [row[1] for row in result.fetchall()]
-            if 'mal_id' not in columns:
-                print("[Migration] Adding 'mal_id' column to 'mediaitem' table...")
+        from sqlalchemy import inspect, text
+        inspector = inspect(engine)
+        # SQLModel table names are typically lowercase of the class name
+        columns = [c['name'] for c in inspector.get_columns('mediaitem')]
+        if 'mal_id' not in columns:
+            print("[Migration] Adding 'mal_id' column to 'mediaitem' table...")
+            with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE mediaitem ADD COLUMN mal_id INTEGER"))
-                conn.commit()
+            print("[Migration] Column 'mal_id' added successfully.")
     except Exception as e:
-        print(f"[Migration] Auto-migration failed (might already exist or not SQLite): {e}")
+        print(f"[Migration] Auto-migration failed: {e}")
 
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
