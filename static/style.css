@@ -3816,3 +3816,247 @@ body.read-only-mode #clearReviewBtn {
         box-shadow: none !important; /* Remove shadow to reduce visual noise on mobile */
     }
 }
+/* ==========================================================================
+   RANKING MANAGER - ELITE REDESIGN (v207)
+   ========================================================================== */
+
+#rankingManagerModal .ranking-manager-content {
+    max-width: 1200px;
+    width: 96%;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 88vh;
+    background: rgba(15, 14, 12, 0.96);
+    backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+    position: relative;
+}
+
+#rankingManagerModal .ranking-manager-content::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.ranking-manager-header {
+    padding: 2.5rem 3rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
+}
+
+.ranking-manager-header h2 {
+    font-size: 2.4rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+}
+
+.ranking-manager-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    height: 60vh;
+}
+
+.ranking-manager-list-section {
+    padding: 2rem 3rem;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.2);
+}
+
+.ranking-manager-add-section {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ranking-manager-add-section .search-container {
+    margin-bottom: 1.5rem;
+}
+
+.sortable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    cursor: grab;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.ranking-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--theme-accent-glow);
+    transform: translateX(4px);
+}
+
+.ranking-item-handle {
+    color: var(--text-secondary);
+    opacity: 0.3;
+    font-size: 1.2rem;
+    cursor: grab;
+}
+
+.ranking-number {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: var(--theme-accent);
+    min-width: 45px;
+    text-shadow: 0 0 15px var(--theme-accent-glow);
+    font-style: italic;
+}
+
+.ranking-item-info {
+    flex: 1;
+}
+
+.ranking-item-title {
+    display: block;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 2px;
+}
+
+.ranking-item-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ranking-item-remove {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    opacity: 0.4;
+    transition: all 0.2s;
+}
+
+.ranking-item:hover .ranking-item-remove {
+    opacity: 1;
+}
+
+.ranking-item-remove:hover {
+    background: rgba(231, 76, 60, 0.15);
+    color: #ff6b6b;
+}
+
+/* Search Sidebar Results */
+.ranking-search-results {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 5px;
+}
+
+.ranking-search-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ranking-search-item:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: var(--theme-accent-muted);
+}
+
+.ranking-search-item-info {
+    flex: 1;
+}
+
+.ranking-search-item-title {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.ranking-search-item-meta {
+    font-size: 0.7rem;
+    opacity: 0.5;
+}
+
+.ranking-search-item-plus {
+    width: 28px;
+    height: 28px;
+    background: var(--theme-accent-muted);
+    color: var(--theme-accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.ranking-manager-footer {
+    padding: 1.5rem 3rem;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ranking-item.sortable-ghost {
+    opacity: 0;
+}
+
+.ranking-item.sortable-drag {
+    background: var(--bg-surface);
+    opacity: 1;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    border-color: var(--theme-accent);
+    transform: scale(1.02);
+}
+
+@media (max-width: 900px) {
+    .ranking-manager-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 280px;
+        height: 75vh;
+    }
+    
+    .ranking-manager-add-section {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .ranking-manager-header {
+        padding: 1.5rem 2rem;
+    }
+    
+    .ranking-manager-header h2 {
+        font-size: 1.8rem;
+    }
+}
