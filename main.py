@@ -52,44 +52,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.on_event("startup")
 async def on_startup():
     create_db_and_tables()
-    
-    # --- Database Health Check & Self-Healing (v228) ---
+    # Run Score Cross-Linker synchronously (fast, DB-only)
     try:
+        from health_check import run_score_crosslink
         with Session(engine) as session:
-            all_items = session.exec(select(MediaItem)).all()
-            repaired_count = 0
-            for item in all_items:
-                nr = str(item.numeric_rating or "")
-                r = str(item.rating or "")
-                
-                # 1. Clean up "rank leakage" in numeric_rating
-                if nr.startswith("#"):
-                    print(f"[Health] Repairing rank leakage for '{item.title}': NR was '{nr}'")
-                    item.numeric_rating = None
-                    repaired_count += 1
-                
-                # 2. Try to recover missing numeric_rating from rating if it's a score
-                if not item.numeric_rating and r and not r.startswith("#"):
-                    item.numeric_rating = r
-                    repaired_count += 1
-                    
-                # 3. Last Resort: Recover from history if still missing
-                if not item.numeric_rating:
-                    hist = session.exec(select(RatingHistory).where(RatingHistory.media_item_id == item.id).order_by(RatingHistory.changed_at.desc())).first()
-                    if hist and hist.new_rating and not hist.new_rating.startswith("#"):
-                        item.numeric_rating = hist.new_rating
-                        repaired_count += 1
-                
-                session.add(item)
-            
-            if repaired_count:
+            items = session.exec(select(MediaItem)).all()
+            fixed, _ = run_score_crosslink(session, items, auto_fix=True)
+            if fixed:
                 session.commit()
-                print(f"[Health] Maintenance complete. Repaired {repaired_count} rating inconsistencies.")
-                
+                print(f"[Startup] Score Cross-Linker: linked {fixed} missing scores.")
     except Exception as e:
-        print(f"[Health] Maintenance skipped/failed: {e}")
+        print(f"[Startup] Score Cross-Linker skipped: {e}")
 
-    # Launch enrichment in the background
+    # Launch enrichment in the background — site is immediately usable
     asyncio.create_task(run_enrichment())
 
 
@@ -198,13 +173,14 @@ async def refresh_item_metadata(item_id: int, session: Session = Depends(get_ses
     session.refresh(item)
     return {"ok": True, "item": item}
 
-class ManualLinkPayload(BaseModel):
+class LinkPayload(BaseModel):
+    item_id: int
     ext_id: int # TMDB or MAL ID
 
-@app.post("/api/media/manual-link/{item_id}")
-async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+@app.post("/api/media/link")
+async def link_metadata_manually(payload: LinkPayload, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     """Force-link an item to a specific ID and fetch its details."""
-    item = session.get(MediaItem, item_id)
+    item = session.get(MediaItem, payload.item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -214,16 +190,8 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     if item.type == "Manga":
         details = get_manga_details(payload.ext_id)
     else:
-        # Determine likely TMDB type
-        primary = "tv" if item.type in ["TV Series", "Anime"] else "movie"
-        secondary = "movie" if primary == "tv" else "tv"
-        
-        print(f"[Link] Trying primary: {primary} for ID {payload.ext_id}")
-        details = get_tmdb_details(payload.ext_id, primary)
-        
-        if not details:
-            print(f"[Link] Primary failed. Trying secondary: {secondary} for ID {payload.ext_id}")
-            details = get_tmdb_details(payload.ext_id, secondary)
+        media_type = "movie" if item.type == "Movies" else "tv"
+        details = get_tmdb_details(payload.ext_id, media_type)
 
     if not details:
         raise HTTPException(status_code=400, detail="Could not retrieve details for that ID.")
@@ -236,18 +204,11 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     if details.get("director"): item.director = details["director"]
     if details.get("runtime"): item.runtime = details["runtime"]
     if details.get("content_rating"): item.content_rating = details["content_rating"]
-    
-    # Store the IDs for future syncs
-    if item.type == "Manga":
-        item.mal_id = payload.ext_id
-    else:
-        item.tmdb_id = payload.ext_id
-        
-    item.enrichment_attempts = 1 # Mark as enriched
+    item.tmdb_id = payload.ext_id
     
     session.add(item)
     session.commit()
-    return {"ok": True, "title": item.title}
+    return {"ok": True, "item": item}
 
 def normalize_title(title: str) -> str:
     """Universal normalizer for semantic identity matching."""
@@ -350,7 +311,6 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
         # Reset metadata to force fresh match
         item.enrichment_attempts = 0
         item.tmdb_id = None
-        item.mal_id = None
         item.genres = None
         item.director = None
         item.cover_url = None
@@ -403,9 +363,28 @@ def reorder_rankings(request: ReorderRequest, session: Session = Depends(get_ses
         if item:
             rank_str = f"#{i + 1}"
             item.is_ranking = True
+            # Store rank in 'rating' field (the primary display field)
             item.rating = rank_str
-            # Also keep numeric_rating in sync for legacy display logic
-            item.numeric_rating = rank_str
+            # IMPORTANT: Preserve the numeric score in numeric_rating.
+            # Only overwrite numeric_rating if it currently holds another rank string (#N),
+            # or if it's empty. If it already has a real score (e.g., "8/10"), keep it.
+            current_nr = str(item.numeric_rating or "").strip()
+            if not current_nr or current_nr.startswith('#'):
+                # Try to find the score from the Completed version of this entry
+                # (same title + type, but not a ranking row)
+                sibling = session.exec(
+                    select(MediaItem).where(
+                        MediaItem.type == item.type,
+                        MediaItem.title == item.title,
+                        MediaItem.is_ranking == False
+                    )
+                ).first()
+                if sibling:
+                    nr = str(sibling.numeric_rating or sibling.rating or "").strip()
+                    item.numeric_rating = nr if nr and not nr.startswith('#') else None
+                else:
+                    item.numeric_rating = None
+            # If numeric_rating already has a real score, leave it untouched
             session.add(item)
 
     session.commit()

@@ -152,20 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
         currentCategory = category;
         currentSubTab = 'Completed';
 
-        // 0. Reset Search and Filters (v225)
-        if (searchInput) searchInput.value = '';
-        filterState = {
-            sort: 'shuffle',
-            likedOnly: false,
-            reviewed: false,
-            unreviewed: false,
-            genres: new Set()
-        };
-        // Uncheck all genre checkboxes in UI
-        document.querySelectorAll('.genre-filter-check').forEach(cb => cb.checked = false);
-        // Reset filter count badge
-        updateActiveFilterCount();
-
         // Apply theme for colors (v218)
         document.body.setAttribute('data-theme', category.toLowerCase().replace(' ', '-'));
 
@@ -1193,10 +1179,23 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // Rating — prefer numeric score over rank string
-        let ratingStr = item.numeric_rating || item.rating || '';
-        // Remove existing /10 if present to avoid double display
-        let rawScore = (!ratingStr.startsWith('#')) ? ratingStr.toString().replace('/10', '').trim() : (item.numeric_rating || '');
+        // Rating — for ranked items, both rating and numeric_rating hold "#N"
+        // We need to find the actual score. The update endpoint stores it separately.
+        // Priority: use item.score (if set by a future field), then try to parse /10 from either field,
+        // then fall back gracefully to show nothing rather than a rank string.
+        const ratingStr = String(item.rating || '');
+        const numRatingStr = String(item.numeric_rating || '');
+        
+        // Try to extract a true numeric score from either field
+        const extractScore = (s) => {
+            if (!s || s.startsWith('#')) return null;
+            const cleaned = s.replace('/10', '').trim();
+            const val = parseFloat(cleaned);
+            return isNaN(val) ? null : cleaned;
+        };
+        
+        let rawScore = extractScore(numRatingStr) || extractScore(ratingStr);
+        // If both are rank strings (#N), display nothing for the score — cleaner than showing '#1 / 10'
         document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
 
         // Edit Button (Admin Only)
@@ -1269,91 +1268,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            // Metadata Repair v219
+            // Metadata Repair — correctly references the HTML IDs in index.html
             const refreshBtn = document.getElementById('quickInfoRefreshBtn');
             const showLinkBtn = document.getElementById('quickInfoShowLinkBtn');
-            const linkSubSection = document.getElementById('quickInfoLinkSubSection');
-            const linkInput = document.getElementById('quickInfoLinkInput');
-            const applyLinkBtn = document.getElementById('quickInfoApplyLinkBtn');
+            const linkSubSection = document.getElementById('quickInfoLinkSubSection'); // Correct ID
+            const linkInput = document.getElementById('quickInfoLinkInput');           // Correct ID
+            const applyLinkBtn = document.getElementById('quickInfoApplyLinkBtn');    // Correct ID
 
-            if (linkSubSection) linkSubSection.style.display = 'none'; // Reset state
+            linkSubSection.style.display = 'none'; // Reset state on each open
 
-            if (refreshBtn) {
-                refreshBtn.onclick = async () => {
-                    if (!confirm("This will force-refresh all metadata (Poster, Title, Author) from the official sources. Continue?")) return;
-                    
-                    refreshBtn.disabled = true;
-                    refreshBtn.textContent = 'Syncing...';
-                    
-                    try {
-                        const res = await fetch(`/api/media/refresh/${item.id}`, {
-                            method: 'POST',
-                            headers: getAuthHeaders()
-                        });
-                        const data = await res.json();
-                        if (data.ok) {
-                            alert(`Metadata Synced! Entry is now officially linked and titled.`);
-                            quickInfoModal.classList.remove('show');
-                            fetchMedia(); // Refresh UI
-                        } else {
-                            alert("Sync Failed: " + (data.detail || "Check console"));
-                        }
-                    } catch (e) {
-                        alert("Error syncing: " + e.message);
-                    } finally {
-                        refreshBtn.disabled = false;
-                        refreshBtn.textContent = 'Sync with Official';
+            refreshBtn.onclick = async () => {
+                if (!confirm("This will force-refresh all metadata (Poster, Title, Author) from the official sources. Continue?")) return;
+                
+                refreshBtn.disabled = true;
+                refreshBtn.textContent = 'Syncing...';
+                
+                try {
+                    const res = await fetch(`/api/media/refresh/${item.id}`, {
+                        method: 'POST',
+                        headers: getAuthHeaders()
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                        alert(`Metadata Synced! Entry is now officially linked and titled.`);
+                        quickInfoModal.classList.remove('show');
+                        fetchMedia();
+                    } else {
+                        alert("Sync Failed: " + (data.detail || "Check console"));
                     }
-                };
-            }
+                } catch (e) {
+                    alert("Error syncing: " + e.message);
+                } finally {
+                    refreshBtn.disabled = false;
+                    refreshBtn.textContent = 'Sync with Official';
+                }
+            };
 
-            if (showLinkBtn) {
-                showLinkBtn.onclick = () => {
-                    const isHidden = linkSubSection.style.display === 'none';
-                    linkSubSection.style.display = isHidden ? 'block' : 'none';
-                    if (isHidden) {
-                        // Auto-open search page for the user
-                        let searchUrl = "";
-                        if (item.type === "Manga") {
-                            searchUrl = `https://myanimelist.net/manga.php?q=${encodeURIComponent(item.title)}`;
-                        } else {
-                            searchUrl = `https://www.themoviedb.org/search?query=${encodeURIComponent(item.title)}`;
-                        }
-                        window.open(searchUrl, '_blank');
-                    }
-                };
-            }
+            showLinkBtn.onclick = () => {
+                const isHidden = linkSubSection.style.display === 'none';
+                linkSubSection.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) {
+                    // Auto-open the correct search page for the user in a new tab
+                    const searchUrl = (item.type === 'Manga')
+                        ? `https://myanimelist.net/manga.php?q=${encodeURIComponent(item.title)}`
+                        : `https://www.themoviedb.org/search?query=${encodeURIComponent(item.title)}`;
+                    window.open(searchUrl, '_blank');
+                }
+            };
 
-            if (applyLinkBtn) {
-                applyLinkBtn.onclick = async () => {
-                    const extId = parseInt(linkInput.value);
-                    if (isNaN(extId)) return alert("Please enter a valid numeric ID.");
-                    
-                    applyLinkBtn.disabled = true;
-                    applyLinkBtn.textContent = 'Linking...';
-                    
-                    try {
-                        const res = await fetch(`/api/media/manual-link/${item.id}`, {
-                            method: 'POST',
-                            headers: getAuthHeaders(),
-                            body: JSON.stringify({ ext_id: extId })
-                        });
-                        const data = await res.json();
-                        if (data.ok) {
-                            alert("Item linked! Metadata will be updated shortly.");
-                            quickInfoModal.classList.remove('show');
-                            fetchMedia();
-                        } else {
-                            alert("Failed to link: " + (data.detail || "Unknown error"));
-                        }
-                    } catch (e) {
-                        alert("Error linking: " + e.message);
-                    } finally {
-                        applyLinkBtn.disabled = false;
-                        applyLinkBtn.textContent = 'Apply Link';
+            applyLinkBtn.onclick = async () => {
+                const extId = parseInt(linkInput.value);
+                if (isNaN(extId) || extId <= 0) return alert("Please enter a valid numeric ID from the official URL.");
+                
+                applyLinkBtn.disabled = true;
+                applyLinkBtn.textContent = 'Linking...';
+                
+                try {
+                    // Correct endpoint: /api/media/link with item_id + ext_id in the body
+                    const res = await fetch('/api/media/link', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ item_id: item.id, ext_id: extId })
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                        alert("Item linked! Poster, genres, and metadata have been updated.");
+                        quickInfoModal.classList.remove('show');
+                        fetchMedia();
+                    } else {
+                        alert("Failed to link: " + (data.detail || "Unknown error"));
                     }
-                };
-            }
+                } catch (e) {
+                    alert("Error linking: " + e.message);
+                } finally {
+                    applyLinkBtn.disabled = false;
+                    applyLinkBtn.textContent = 'Apply Link';
+                }
+            };
 
         } else {
             editBtn.style.display = 'none';
@@ -2211,6 +2202,24 @@ document.addEventListener('DOMContentLoaded', () => {
         `
     };
 
+    window.switchTab = (tab) => {
+        currentTab = tab;
+        const searchInput = document.getElementById('mediaSearchInput');
+        if (searchInput) searchInput.value = '';
+        currentSearch = '';
+        currentFilter = 'All';
+        
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            if (btn.dataset.filter === 'All') btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+        fetchMedia();
+    };
 
     if (iIntro && iDetail) {
         // Delegate rating item clicks
@@ -2433,7 +2442,41 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRankingList();
         rankingManagerModal.classList.add('show');
         rankingSearchInput.value = '';
-        rankingSearchResults.innerHTML = '';
+        
+        // Pre-populate scouting panel with random entries from the current category
+        const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
+        const pool = allMedia.filter(it =>
+            it.type.toLowerCase() === currentCategory.toLowerCase() &&
+            !rankedTitles.has(it.title.toLowerCase().trim())
+        );
+        // Fisher-Yates shuffle for random sample
+        const shuffled = [...pool];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        const sample = shuffled.slice(0, 12);
+        
+        rankingSearchResults.innerHTML = sample.length > 0
+            ? sample.map(it => {
+                const safeTitle = it.title.replace(/'/g, "\\'");
+                const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
+                const scoreStr = (() => {
+                    const s = String(it.numeric_rating || it.rating || '');
+                    if (s && !s.startsWith('#')) return s.replace('/10','').trim();
+                    return null;
+                })();
+                return `
+                    <div class="ranking-search-item">
+                        <div class="ranking-search-item-info" onclick='window.openQuickInfo(${JSON.stringify(it)})' title="View profile" style="cursor:pointer;flex:1;">
+                            <span class="ranking-search-item-title">${it.title}</span>
+                            <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}${scoreStr ? ' • ' + scoreStr + '/10' : ''}</span>
+                        </div>
+                        <div class="ranking-search-item-plus" onclick='window.addToRankings(${itemJson})' title="Add to rankings">+</div>
+                    </div>
+                `;
+            }).join('')
+            : '<p style="opacity:0.4;font-size:0.85rem;padding:0.5rem;">All entries are already in your rankings.</p>';
     };
 
     const closeRankingManager = () => {
@@ -2478,12 +2521,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rankingSearchInput) {
         rankingSearchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
+            
+            const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
+            
+            // If search is cleared, go back to showing the random filler
             if (query.length < 2) {
-                rankingSearchResults.innerHTML = '';
+                const pool = allMedia.filter(it =>
+                    it.type.toLowerCase() === currentCategory.toLowerCase() &&
+                    !rankedTitles.has(it.title.toLowerCase().trim())
+                );
+                const shuffled = [...pool];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                const sample = shuffled.slice(0, 12);
+                rankingSearchResults.innerHTML = sample.map(it => {
+                    const safeTitle = it.title.replace(/'/g, "\\'");
+                    const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
+                    const scoreStr = (() => {
+                        const s = String(it.numeric_rating || it.rating || '');
+                        if (s && !s.startsWith('#')) return s.replace('/10','').trim();
+                        return null;
+                    })();
+                    return `
+                        <div class="ranking-search-item">
+                            <div class="ranking-search-item-info" onclick='window.openQuickInfo(${JSON.stringify(it)})' title="View profile" style="cursor:pointer;flex:1;">
+                                <span class="ranking-search-item-title">${it.title}</span>
+                                <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}${scoreStr ? ' • ' + scoreStr + '/10' : ''}</span>
+                            </div>
+                            <div class="ranking-search-item-plus" onclick='window.addToRankings(${itemJson})' title="Add to rankings">+</div>
+                        </div>
+                    `;
+                }).join('');
                 return;
             }
             
-            const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
             const matches = allMedia
                 .filter(it => 
                     it.type.toLowerCase() === currentCategory.toLowerCase() &&
@@ -2492,19 +2565,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 )
                 .slice(0, 10);
                 
-            rankingSearchResults.innerHTML = matches.map(it => {
-                const safeTitle = it.title.replace(/'/g, "\\'");
-                const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
-                return `
-                    <div class="ranking-search-item" onclick='window.addToRankings(${itemJson})'>
-                        <div class="ranking-search-item-info">
-                            <span class="ranking-search-item-title">${it.title}</span>
-                            <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}</span>
+            rankingSearchResults.innerHTML = matches.length > 0
+                ? matches.map(it => {
+                    const safeTitle = it.title.replace(/'/g, "\\'");
+                    const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
+                    const scoreStr = (() => {
+                        const s = String(it.numeric_rating || it.rating || '');
+                        if (s && !s.startsWith('#')) return s.replace('/10','').trim();
+                        return null;
+                    })();
+                    return `
+                        <div class="ranking-search-item">
+                            <div class="ranking-search-item-info" onclick='window.openQuickInfo(${JSON.stringify(it)})' title="View profile" style="cursor:pointer;flex:1;">
+                                <span class="ranking-search-item-title">${it.title}</span>
+                                <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}${scoreStr ? ' • ' + scoreStr + '/10' : ''}</span>
+                            </div>
+                            <div class="ranking-search-item-plus" onclick='window.addToRankings(${itemJson})' title="Add to rankings">+</div>
                         </div>
-                        <div class="ranking-search-item-plus">+</div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('')
+                : '<p style="opacity:0.4;font-size:0.85rem;padding:0.5rem;">No results found.</p>';
         });
     }
 
