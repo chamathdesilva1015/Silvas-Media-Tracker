@@ -46,37 +46,39 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
         log(f"Found {len(items)} items to enrich.")
         enriched_count = 0
         
+        from jikan_helper import search_manga, get_manga_details
+
         for item in items:
-            # Handle Movies vs Series/Anime for TMDB search
-            media_type_flag = "movie" if item.type == "Movies" else "tv"
             log(f"Processing {item.type}: {item.title} ({item.release_year or '????'})")
             
             try:
-                # 1. Search for TMDB ID
-                tmdb_id = item.tmdb_id or search_tmdb(item.title, item.release_year, media_type_flag)
+                details = None
+                tmdb_id = item.tmdb_id
                 
-                # Fallback: title-only search
-                if not tmdb_id and item.release_year:
-                    log(f"  [.] Not found with year. Trying title-only search...")
-                    tmdb_id = search_tmdb(item.title, media_type=media_type_flag)
+                # BRANCH: Manga (Jikan/MAL) vs Others (TMDB)
+                if item.type == "Manga":
+                    if not tmdb_id:
+                        tmdb_id = search_manga(item.title)
+                    if tmdb_id:
+                        details = get_manga_details(tmdb_id)
+                else:
+                    media_type_flag = "movie" if item.type == "Movies" else "tv"
+                    if not tmdb_id:
+                        tmdb_id = search_tmdb(item.title, item.release_year, media_type_flag)
+                        if not tmdb_id and item.release_year:
+                            log(f"  [.] Not found with year. Trying title-only search...")
+                            tmdb_id = search_tmdb(item.title, media_type=media_type_flag)
+                    
+                    if tmdb_id:
+                        details = get_tmdb_details(tmdb_id, media_type_flag)
 
-                if not tmdb_id:
-                    log(f"  [!] Not found on TMDB after fallback. Skipping.")
+                if not tmdb_id or not details:
+                    log(f"  [!] Not found on any source. Skipping.")
                     item.enrichment_attempts += 1
                     session.add(item)
                     session.commit()
                     continue
                 
-                # 2. Get full details
-                details = get_tmdb_details(tmdb_id, media_type_flag)
-                
-                if not details:
-                    log(f"  [!] No data returned from TMDB. Skipping.")
-                    item.enrichment_attempts += 1
-                    session.add(item)
-                    session.commit()
-                    continue
-
                 # 3. Write data to DB
                 if details.get("genres"):
                     item.genres = details["genres"]
@@ -96,10 +98,10 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                 session.commit()
                 enriched_count += 1
                 
-                label = "Director" if media_type_flag == "movie" else "Creator"
-                log(f"  [+] Enriched: {details.get('genres')} | {label}: {details.get('director')} | {details.get('runtime')}min | {details.get('content_rating')}")
+                label = "Author" if item.type == "Manga" else ("Director" if item.type == "Movies" else "Creator")
+                log(f"  [+] Enriched: {details.get('genres')} | {label}: {details.get('director')} | {details.get('runtime', 'N/A')}min | {details.get('content_rating')}")
                 
-                await asyncio.sleep(0.2)
+                await asyncio.sleep(0.5 if item.type == "Manga" else 0.2) # Be kinder to Jikan
 
             except Exception as e:
                 log(f"  [Error] {str(e)}")
