@@ -189,8 +189,14 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     if item.type == "Manga":
         details = get_manga_details(payload.ext_id)
     else:
+        # Try primary type first
         media_type = "movie" if item.type == "Movies" else "tv"
         details = get_tmdb_details(payload.ext_id, media_type)
+        
+        # If primary fails, and it's Anime or TV Series, try the other one (Movies/TV swap)
+        if not details and item.type in ["Anime", "TV Series", "Movies"]:
+            other_type = "tv" if media_type == "movie" else "movie"
+            details = get_tmdb_details(payload.ext_id, other_type)
 
     if not details:
         raise HTTPException(status_code=400, detail="Could not retrieve details for that ID.")

@@ -1203,10 +1203,14 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // Rating — prefer numeric score over rank string
-        let ratingStr = item.numeric_rating || item.rating || '';
-        // Remove existing /10 if present to avoid double display
-        let rawScore = (!ratingStr.startsWith('#')) ? ratingStr.toString().replace('/10', '').trim() : (item.numeric_rating || '');
+        // Rating — strictly prefer numeric_rating for the "10 / 10" display
+        let rawScore = item.numeric_rating || '';
+        if (!rawScore && item.rating && !item.rating.startsWith('#')) {
+            rawScore = item.rating;
+        }
+        // Clean up any stray /10
+        rawScore = rawScore.toString().replace('/10', '').trim();
+        
         document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
 
         // Edit Button (Admin Only)
