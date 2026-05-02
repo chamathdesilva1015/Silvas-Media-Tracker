@@ -826,28 +826,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        const titleInput = document.getElementById('titleInput');
-        const extIdInput = document.getElementById('newEntryExtIdInput');
-        const extId = parseInt(extIdInput.value) || null;
-        let title = titleInput.value.trim();
-
-        if (!title && !extId) {
-            alert('Please provide either a Title or an Official ID.');
-            return;
-        }
-
-        // If title is missing but ID is there, we send a placeholder that the backend will fill
-        if (!title && extId) {
-            title = `ID:${extId}`; 
-        }
-
         const payload = {
-            title: title,
+            title: document.getElementById('titleInput').value,
             type: type,
             rating: ratingVal + '/10',
             review: '', // No review on creation per user request
             release_year: releaseYear,
-            ext_id: extId,
             source: 'manual'
         };
 

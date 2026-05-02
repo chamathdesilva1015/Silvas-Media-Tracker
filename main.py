@@ -67,20 +67,6 @@ async def on_startup():
     # Launch enrichment in the background — site is immediately usable
     asyncio.create_task(run_enrichment())
 
-    # v227: Auto-Migration for mal_id
-    try:
-        from sqlalchemy import inspect, text
-        inspector = inspect(engine)
-        # SQLModel table names are typically lowercase of the class name
-        columns = [c['name'] for c in inspector.get_columns('mediaitem')]
-        if 'mal_id' not in columns:
-            print("[Migration] Adding 'mal_id' column to 'mediaitem' table...")
-            with engine.begin() as conn:
-                conn.execute(text("ALTER TABLE mediaitem ADD COLUMN mal_id INTEGER"))
-            print("[Migration] Column 'mal_id' added successfully.")
-    except Exception as e:
-        print(f"[Migration] Auto-migration failed: {e}")
-
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
 @app.get("/.well-known/appspecific/com.chrome.devtools.json")
@@ -102,81 +88,28 @@ def delete_media_item(item_id: int, session: Session = Depends(get_session), _: 
     session.commit()
     return {"status": "success", "message": "Item deleted"}
 
-class CreateMediaPayload(BaseModel):
-    title: str
-    type: str
-    rating: str
-    release_year: Optional[int] = None
-    ext_id: Optional[int] = None
-    source: str = "manual"
-
 @app.post("/api/media", response_model=MediaItem)
-def create_media(payload: CreateMediaPayload, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
-    # 1. Check for duplicates by Official ID first (if provided)
-    if payload.ext_id:
-        if payload.type == "Manga":
-            dup = session.exec(select(MediaItem).where(MediaItem.mal_id == payload.ext_id)).first()
-        else:
-            dup = session.exec(select(MediaItem).where(MediaItem.tmdb_id == payload.ext_id)).first()
-        
-        if dup:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"This item (ID: {payload.ext_id}) already exists in your tracker as '{dup.title}'."
-            )
-
-    # 2. Check for duplicates by Title/Year
+def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    # Error-Proof Duplicate Check
     stmt = select(MediaItem).where(
-        MediaItem.title == payload.title,
-        MediaItem.type == payload.type,
-        MediaItem.release_year == payload.release_year
+        MediaItem.title == item.title,
+        MediaItem.type == item.type,
+        MediaItem.release_year == item.release_year
     )
     existing = session.exec(stmt).first()
     if existing:
         raise HTTPException(
             status_code=400, 
-            detail=f"This piece of media ('{payload.title}' {payload.release_year or ''}) already exists in your tracker."
+            detail=f"This piece of media ('{item.title}' {item.release_year or ''}) already exists in your tracker."
         )
         
-    # 3. Handle ID-only submissions (fetch title immediately)
-    if payload.title.startswith("ID:") and payload.ext_id:
-        from tmdb_helper import get_tmdb_details
-        from jikan_helper import get_manga_details
-        
-        if payload.type == "Manga":
-            details = get_manga_details(payload.ext_id)
-        else:
-            m_type = "movie" if payload.type == "Movies" else "tv"
-            details = get_tmdb_details(payload.ext_id, m_type)
-            
-        if details and details.get("title"):
-            payload.title = details["title"]
-            if details.get("release_year"):
-                payload.release_year = details["release_year"]
-
-    # 4. Create the item
-    item = MediaItem(
-        title=payload.title,
-        type=payload.type,
-        rating=payload.rating,
-        release_year=payload.release_year,
-        source=payload.source,
-        numeric_rating=payload.rating
-    )
-    
-    if payload.ext_id:
-        if payload.type == "Manga":
-            item.mal_id = payload.ext_id
-        else:
-            item.tmdb_id = payload.ext_id
-        item.enrichment_attempts = 1 # Already fetched or will be by bg task
-
     session.add(item)
     session.commit()
     session.refresh(item)
 
-    # Auto-enrich (Manga now included)
-    background_tasks.add_task(run_enrichment, category=item.type)
+    # Auto-enrich if it's a Movie or TV Series
+    if item.type in ["Movies", "TV Series"]:
+        background_tasks.add_task(run_enrichment, category=item.type)
 
     return item
 
@@ -264,14 +197,7 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
 
     # Apply details
     if details.get("title"): item.title = details["title"]
-    
-    # Ensure release_year is an int if possible
-    if "release_year" in details:
-        try:
-            item.release_year = int(details["release_year"]) if details["release_year"] else item.release_year
-        except (ValueError, TypeError):
-            pass
-
+    if details.get("release_year"): item.release_year = details["release_year"]
     if details.get("genres"): item.genres = details["genres"]
     if details.get("poster_url"): item.cover_url = details["poster_url"]
     if details.get("director"): item.director = details["director"]

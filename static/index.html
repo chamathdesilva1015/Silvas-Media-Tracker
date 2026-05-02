@@ -186,19 +186,15 @@
                             Search Official Site →
                         </a>
                     </div>
-                    <input type="text" id="titleInput" placeholder="e.g. The Batman">
+                    <input type="text" id="titleInput" required placeholder="e.g. The Batman">
                 </div>
 
+                <!-- Dynamic Movie Fields (hidden by default via JS) -->
                 <div id="movieFields" style="display: none;">
                     <div class="form-group">
                         <label for="releaseYearInput">Release Year</label>
                         <input type="number" id="releaseYearInput" min="1800" max="2100" placeholder="e.g. 2022">
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="newEntryExtIdInput">Official ID <span style="opacity: 0.5; font-size: 0.7rem; font-weight: 400;">(Optional)</span></label>
-                    <input type="number" id="newEntryExtIdInput" placeholder="e.g. 78523 (from MAL/TMDB URL)">
                 </div>
 
                 <div class="form-group">
@@ -513,6 +509,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=230"></script>
+    <script src="app.js?v=226"></script>
 </body>
 </html>

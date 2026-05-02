@@ -65,8 +65,30 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                             log(f"  [.] Not found with year. Trying title-only search...")
                             tmdb_id = search_tmdb(item.title, media_type=media_type_flag)
                     
-                    if tmdb_id:
-                        details = get_tmdb_details(tmdb_id, media_type_flag)
+                # 2. Check for Semantic Duplicates (Does another item have this TMDB/MAL ID already?)
+                if tmdb_id:
+                    stmt = select(MediaItem).where(
+                        MediaItem.tmdb_id == tmdb_id,
+                        MediaItem.type == item.type,
+                        MediaItem.id != item.id
+                    )
+                    existing_match = session.exec(stmt).first()
+                    if existing_match:
+                        log(f"  [~] Merging Duplicate: '{item.title}' -> already exists as '{existing_match.title}'")
+                        # Transfer hearts/reviews to existing entry if missing
+                        if item.is_liked: existing_match.is_liked = True
+                        if item.review and not existing_match.review: existing_match.review = item.review
+                        
+                        # Delete the redundant item
+                        session.delete(item)
+                        session.commit()
+                        continue
+
+                # 3. Fetch details
+                if item.type == "Manga":
+                    details = get_manga_details(tmdb_id)
+                else:
+                    details = get_tmdb_details(tmdb_id, media_type_flag)
 
                 if not tmdb_id or not details:
                     log(f"  [!] Not found on any source. Skipping.")
