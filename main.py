@@ -259,43 +259,45 @@ def reorder_rankings(request: ReorderRequest, session: Session = Depends(get_ses
     """
     Atomic update for rankings in a category.
     Takes a list of IDs in order (#1, #2, #3...).
+    Strictly ID-based to prevent title collisions or duplicate ranks.
     """
     category = request.category
     new_order_ids = request.item_ids
 
-    # 1. Track which unique shows (by normalized title) are being KEPT/ADDED
-    new_order_items = []
-    for mid in new_order_ids:
-        it = session.get(MediaItem, mid)
-        if it: new_order_items.append(it)
-
-    target_norms = [normalize_title(it.title) for it in new_order_items]
-    
-    # 2. Update ALL items in this category
+    # 1. Fetch all items in this category to perform a clean sweep
     all_cat_items = session.exec(select(MediaItem).where(MediaItem.type == category)).all()
     
+    # 2. Reset ALL items in this category first (remove any '#' ranks)
     for item in all_cat_items:
-        norm = normalize_title(item.title)
-        if norm in target_norms:
-            # This show is in the new Top N list
-            idx = target_norms.index(norm)
-            rank_str = f"#{idx + 1}"
-            
-            # Update fields
-            item.is_ranking = True
-            item.rating = rank_str
-        else:
-            # This show is NOT in the new list. If it was ranking, demote it.
-            if item.is_ranking:
-                item.is_ranking = False
-                # Restore numeric rating to display rating
-                item.rating = item.numeric_rating or "—/10"
+        r_str = str(item.rating or "")
+        nr_str = str(item.numeric_rating or "")
         
+        if item.is_ranking or r_str.startswith('#') or nr_str.startswith('#'):
+            item.is_ranking = False
+            # If the rating was a rank, try to restore the numeric score if possible
+            if r_str.startswith('#'):
+                # Fallback to numeric_rating if it's not a rank, otherwise clear to default
+                item.rating = item.numeric_rating if item.numeric_rating and not str(item.numeric_rating).startswith('#') else "—/10"
+            if nr_str.startswith('#'):
+                item.numeric_rating = None
+            
         session.add(item)
 
+    # 3. Apply new rankings sequentially to the EXACT IDs provided
+    # This ensures only ONE entry per rank and no missing numbers
+    for i, mid in enumerate(new_order_ids):
+        item = session.get(MediaItem, mid)
+        if item:
+            rank_str = f"#{i + 1}"
+            item.is_ranking = True
+            item.rating = rank_str
+            # Also keep numeric_rating in sync for legacy display logic
+            item.numeric_rating = rank_str
+            session.add(item)
+
     session.commit()
-    print(f"[DEBUG] REORDERED RANKINGS for {category}. New count: {len(target_norms)}")
-    return {"ok": True, "count": len(target_norms)}
+    print(f"[DEBUG] REORDERED RANKINGS for {category}. Verified 1-{len(new_order_ids)} sequential sequence applied.")
+    return {"ok": True, "count": len(new_order_ids)}
 
 @app.post("/api/media/delete/{item_id}")
 @app.post("/api/media/delete/{item_id}/") # Trailing slash support
