@@ -1214,7 +1214,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Rating — prefer numeric score over rank string
         let rawScore = (item.numeric_rating || item.rating || '').toString().replace('/10', '').trim();
-        if (rawScore.startsWith('#')) rawScore = ''; // Strictly ignore rank strings here
+        if (rawScore.startsWith('#')) rawScore = ''; 
+        
+        // v233: Twin-Sync Fallback
+        // If this item is ranked and missing a score, look for its "Twin" in the main collection
+        if (!rawScore) {
+            const twin = allMedia.find(m => 
+                m.id !== item.id && 
+                m.type === item.type && 
+                m.title.toLowerCase().trim() === item.title.toLowerCase().trim() &&
+                m.numeric_rating && 
+                !m.numeric_rating.toString().startsWith('#')
+            );
+            if (twin) {
+                rawScore = twin.numeric_rating.toString().replace('/10', '').trim();
+            }
+        }
         
         const ratingDisplay = document.getElementById('quickInfoRating');
         if (rawScore) {

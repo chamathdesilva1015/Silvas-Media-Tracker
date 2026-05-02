@@ -106,6 +106,18 @@ async def on_startup():
                             valid_rating = h.old_rating
                             break
                     
+                    if not valid_rating:
+                        # NEW v233: Look for a "Twin" (other entry with same title/type)
+                        stmt = select(MediaItem).where(
+                            MediaItem.id != item.id,
+                            MediaItem.type == item.type,
+                            MediaItem.title == item.title,
+                            MediaItem.numeric_rating != None
+                        )
+                        twin = session.exec(stmt).first()
+                        if twin and not str(twin.numeric_rating).startswith('#'):
+                            valid_rating = twin.numeric_rating
+                    
                     if valid_rating:
                         item.numeric_rating = valid_rating
                         session.add(item)
