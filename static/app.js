@@ -1283,10 +1283,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const refreshBtn = document.getElementById('quickInfoRefreshBtn');
             const showLinkBtn = document.getElementById('quickInfoShowLinkBtn');
             const linkSection = document.getElementById('quickInfoLinkSubSection');
-            const linkInput = document.getElementById('quickInfoExtIdInput');
-            const linkSubmitBtn = document.getElementById('quickInfoLinkSubmitBtn');
+            const linkInput = document.getElementById('quickInfoLinkInput');
+            const applyLinkBtn = document.getElementById('quickInfoApplyLinkBtn');
 
-            linkSection.style.display = 'none'; // Reset state
+            if (linkSection) linkSection.style.display = 'none'; // Reset state
 
             refreshBtn.onclick = async () => {
                 if (!confirm("This will force-refresh all metadata (Poster, Title, Author) from the official sources. Continue?")) return;
@@ -1330,12 +1330,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            linkSubmitBtn.onclick = async () => {
+            applyLinkBtn.onclick = async () => {
                 const extId = parseInt(linkInput.value);
                 if (isNaN(extId)) return alert("Please enter a valid numeric ID.");
                 
-                linkSubmitBtn.disabled = true;
-                linkSubmitBtn.textContent = 'Linking...';
+                applyLinkBtn.disabled = true;
+                applyLinkBtn.textContent = 'Linking...';
                 
                 try {
                     const res = await fetch(`/api/media/manual-link/${item.id}`, {
@@ -1354,8 +1354,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (e) {
                     alert("Error linking: " + e.message);
                 } finally {
-                    linkSubmitBtn.disabled = false;
-                    linkSubmitBtn.textContent = 'Apply Link';
+                    applyLinkBtn.disabled = false;
+                    applyLinkBtn.textContent = 'Apply Link';
                 }
             };
 
