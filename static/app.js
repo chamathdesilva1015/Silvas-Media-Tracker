@@ -581,6 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (statsPage) statsPage.style.display = 'block';
             if (controls) controls.style.display = 'none';
             if (addBtn) addBtn.style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             renderStats(currentCategory);
             return;
         } else {
