@@ -3617,4 +3617,77 @@ body.read-only-mode #clearReviewBtn {
         font-size: 0.8rem;
         padding: 0 1rem;
     }
+
+    /* Stats Page Mobile Enhancements */
+    .stats-header {
+        padding: 2rem 1rem !important;
+    }
+    .stats-header h2 {
+        font-size: 2.2rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .stats-header p {
+        font-size: 0.9rem !important;
+    }
+    
+    /* Top "Total Entries" Card */
+    .stats-featured-pair {
+        grid-template-columns: 1fr !important;
+        gap: 0.8rem !important;
+        margin-bottom: 1rem !important;
+    }
+    .stats-featured-card {
+        padding: 1.5rem !important;
+    }
+    .stats-featured-value {
+        font-size: 3rem !important;
+    }
+    .stats-featured-label {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Distribution & Decade Breakdown - Stack instead of side-by-side */
+    .stats-full-row {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    .stats-dist-card {
+        padding: 1.2rem !important;
+    }
+    .stats-dist-title {
+        font-size: 0.7rem !important;
+        margin-bottom: 1.2rem !important;
+    }
+    
+    /* Top Genres / Top Directors */
+    .hof-accordion {
+        margin-bottom: 0.8rem !important;
+    }
+    .hof-accordion-header {
+        padding: 1rem !important;
+    }
+    .hof-accordion-title {
+        font-size: 0.9rem !important;
+    }
+    .hof-subtitle {
+        font-size: 0.7rem !important;
+        margin-top: 0.5rem !important;
+        line-height: 1.4 !important;
+    }
+    .hof-entry {
+        padding: 0.8rem 0.5rem !important;
+    }
+    .hof-entry-rank {
+        font-size: 0.85rem !important;
+        margin-right: 0.5rem !important;
+        min-width: 15px !important;
+    }
+    .hof-entry-title {
+        font-size: 0.85rem !important;
+    }
+    .hof-entry-score {
+        font-size: 0.65rem !important;
+        padding: 0.15rem 0.4rem !important;
+    }
 }
