@@ -152,6 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentCategory = category;
         currentSubTab = 'Completed';
 
+        // Apply theme for colors (v218)
+        document.body.setAttribute('data-theme', category.toLowerCase().replace(' ', '-'));
+
         // 1. Update Search Placeholder
         if (searchInput) {
             if (currentCategory === 'TV Series') {

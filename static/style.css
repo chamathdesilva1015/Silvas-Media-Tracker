@@ -1,54 +1,56 @@
 :root {
     --bg-base: #0f0e0c;
     --bg-surface: rgba(30, 28, 25, 0.7);
-    /* Glass default */
     --text-primary: #f2f0ed;
     --text-secondary: #a39b90;
 
-    /* Dynamic Theme Defaults (Movies Blue) */
+    /* Theme Defaults */
     --theme-accent: #3498db;
+    --theme-secondary: #9b59b6;
     --theme-accent-muted: rgba(52, 152, 219, 0.15);
     --theme-accent-glow: rgba(52, 152, 219, 0.4);
+    --theme-secondary-muted: rgba(155, 89, 182, 0.15);
     --theme-banner: linear-gradient(135deg, #0f1c2e 0%, #1b2838 100%);
 
-    --accent-primary: var(--theme-accent);
-    --accent-hover: #5dade2;
-
     --border-color: rgba(255, 255, 255, 0.08);
-    /* Transparent borders for glassmorphism */
     --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.5);
     --shadow-hover: 0 15px 45px rgba(0, 0, 0, 0.7);
-
-    --accent-cyan: #00f3ff;
-    --accent-yellow: #ffd700;
 }
 
 /* Theme Overrides */
 [data-theme="movies"] {
-    --theme-accent: #3498db;
+    --theme-accent: #3498db; /* Blue */
+    --theme-secondary: #9b59b6; /* Purple */
     --theme-accent-muted: rgba(52, 152, 219, 0.15);
     --theme-accent-glow: rgba(52, 152, 219, 0.4);
+    --theme-secondary-muted: rgba(155, 89, 182, 0.15);
     --theme-banner: linear-gradient(135deg, #0f1c2e 0%, #1b2838 100%);
 }
 
 [data-theme="tv-series"] {
-    --theme-accent: #e74c3c;
+    --theme-accent: #e74c3c; /* Red */
+    --theme-secondary: #e67e22; /* Orange */
     --theme-accent-muted: rgba(231, 76, 60, 0.15);
     --theme-accent-glow: rgba(231, 76, 60, 0.4);
+    --theme-secondary-muted: rgba(230, 126, 34, 0.15);
     --theme-banner: linear-gradient(135deg, #2d0a0a 0%, #30171a 100%);
 }
 
 [data-theme="manga"] {
-    --theme-accent: #2ecc71;
+    --theme-accent: #2ecc71; /* Green */
+    --theme-secondary: #f1c40f; /* Yellow */
     --theme-accent-muted: rgba(46, 204, 113, 0.15);
     --theme-accent-glow: rgba(46, 204, 113, 0.4);
+    --theme-secondary-muted: rgba(241, 196, 15, 0.15);
     --theme-banner: linear-gradient(135deg, #0a1a10 0%, #142e1f 100%);
 }
 
 [data-theme="anime"] {
-    --theme-accent: #f1c40f;
-    --theme-accent-muted: rgba(241, 196, 15, 0.1);
-    --theme-accent-glow: rgba(241, 196, 15, 0.2);
+    --theme-accent: #f1c40f; /* Yellow */
+    --theme-secondary: #2ecc71; /* Green */
+    --theme-accent-muted: rgba(241, 196, 15, 0.15);
+    --theme-accent-glow: rgba(241, 196, 15, 0.3);
+    --theme-secondary-muted: rgba(46, 204, 113, 0.15);
     --theme-banner: linear-gradient(135deg, #241b0a 0%, #302416 100%);
 }
 
@@ -965,9 +967,9 @@ delete-btn {
     text-transform: lowercase;
     letter-spacing: 0.02em;
     padding: 0.15rem 0.45rem;
-    background: var(--theme-accent-muted);
-    border: 1px solid var(--theme-accent);
-    color: var(--theme-accent);
+    background: var(--theme-secondary-muted);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--theme-secondary);
     border-radius: 4px;
     opacity: 0.7;
     transition: opacity 0.2s ease;
@@ -2083,9 +2085,9 @@ delete-btn {
     font-size: 0.62rem;
     font-weight: 700;
     font-style: italic;
-    background: rgba(255, 171, 0, 0.08); /* Premium Gold */
-    color: #ffab00;
-    border: 1px solid rgba(255, 171, 0, 0.25);
+    background: var(--theme-accent-muted);
+    color: var(--theme-accent);
+    border: 1px solid var(--theme-accent-glow);
     letter-spacing: 0.02em;
     white-space: nowrap;
     margin-bottom: 0.5rem;

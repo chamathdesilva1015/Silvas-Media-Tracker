@@ -15,12 +15,8 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
             log_func(msg)
         print(msg)
 
-    # Process either a specific category or both Movies/TV Series
-    valid_categories = ["Movies", "TV Series"]
-    if category and category not in valid_categories:
-        log(f"Enrichment skipped for {category}. (TMDB only supports Movies/TV)")
-        return {"status": "skipped", "message": "Unsupported category"}
-
+    # Process all categories (Movies, TV Series, Anime, Manga)
+    valid_categories = ["Movies", "TV Series", "Anime", "Manga"]
     target_categories = [category] if category else valid_categories
     log(f"Starting Media Enrichment for: {', '.join(target_categories)}...")
     
@@ -111,3 +107,6 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
 
         log(f"Enrichment complete. {enriched_count} items updated.")
         return {"status": "complete", "enriched_count": enriched_count}
+
+if __name__ == "__main__":
+    asyncio.run(run_enrichment())
