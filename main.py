@@ -430,9 +430,9 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
 
-    # Favorite Genre (Movies & TV Series) - "Volume-Weighted Passion" Model (v120/v204)
+    # Favorite Genre (Movies, TV Series, Anime) - "Volume-Weighted Passion" Model (v120/v204/v215)
     favorite_genre = None
-    if category.lower() in ["movies", "tv series"] and scored_items:
+    if category.lower() in ["movies", "tv series", "anime"] and scored_items:
         genre_data = {} # {name: [(score, item)]}
         for s, i in scored_items:
             if not i.genres: continue
@@ -472,9 +472,9 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
                 for g, s, ex in genre_scores[:10]
             ]
 
-    # Favorite Directors (Movies ONLY as requested) - Same Passion-Volume Model
+    # Favorite Directors/Creators (Movies, TV Series, Anime)
     favorite_directors = []
-    if category.lower() == "movies" and scored_items:
+    if category.lower() in ["movies", "tv series", "anime"] and scored_items:
         dir_data = {} # {name: [(score, item)]}
         for s, i in scored_items:
             if not i.director: continue

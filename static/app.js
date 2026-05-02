@@ -510,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="hof-accordion" id="directorsAccordion" style="margin-bottom: 1.5rem;">
                 <div class="hof-accordion-header" id="directorsHeader">
                     <div class="hof-accordion-title">
-                        Top Directors
+                        ${category === 'Movies' ? 'Top Directors' : 'Top Creators'}
                         <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
                         <br><br>
                         1. <b>Quality Threshold:</b> Only movies rated above 4.5 contribute points. This mathematically filters out directors whose work you found mediocre or disliked.
@@ -1804,7 +1804,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="director-badge">Dir. ${item.director}</span>
                         </div>
                     ` : ''}
-                    ${(item.type === 'TV Series' && item.director) ? `
+                    ${((item.type === 'TV Series' || item.type === 'Anime') && item.director) ? `
                         <div class="director-container">
                             <span class="director-badge">Creator: ${item.director}</span>
                         </div>

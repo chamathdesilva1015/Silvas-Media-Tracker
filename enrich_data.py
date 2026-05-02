@@ -47,6 +47,7 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
         enriched_count = 0
         
         for item in items:
+            # Handle Movies vs Series/Anime for TMDB search
             media_type_flag = "movie" if item.type == "Movies" else "tv"
             log(f"Processing {item.type}: {item.title} ({item.release_year or '????'})")
             
