@@ -1190,6 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ratingEditSection = document.getElementById('quickInfoRatingEditSection');
         const ratingInput = document.getElementById('quickInfoRatingInput');
         const yearInput = document.getElementById('quickInfoYearInput');
+        const titleInput = document.getElementById('quickInfoTitleInput');
         const saveAllBtn = document.getElementById('quickInfoSaveAllBtn');
 
         if (computeCanEdit()) {
@@ -1203,10 +1204,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ratingEditSection.style.display = 'block';
             ratingInput.value = rawScore || '';
             yearInput.value = item.release_year || '';
+            titleInput.value = item.title || '';
 
             saveAllBtn.onclick = async () => {
                 let newRating = parseFloat(ratingInput.value);
                 const newYear = yearInput.value.trim();
+                const newTitle = titleInput.value.trim();
                 
                 const payload = {};
                 if (!isNaN(newRating)) {
@@ -1216,6 +1219,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (newYear) {
                     payload.release_year = newYear;
+                }
+                if (newTitle) {
+                    payload.title = newTitle;
                 }
                 
                 if (Object.keys(payload).length === 0) return;
