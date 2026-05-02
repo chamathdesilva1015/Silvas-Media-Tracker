@@ -1213,27 +1213,34 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // v236: Surefire Global Rating Lookup
+        // v238: Total Recall Rating Recovery
         const normalizedTarget = item.title.toLowerCase().trim();
-        const bestEntry = allMedia.find(m => 
-            m.title.toLowerCase().trim() === normalizedTarget && 
-            m.numeric_rating && 
-            !m.numeric_rating.toString().startsWith('#')
-        );
-        let rawScore = bestEntry ? bestEntry.numeric_rating.toString().replace('/10','').trim() : '';
+        console.log(`[Rating-Search] Looking for master rating for: "${normalizedTarget}"`);
         
-        if (!rawScore && item.numeric_rating && !item.numeric_rating.toString().startsWith('#')) {
-            rawScore = item.numeric_rating.toString().replace('/10','').trim();
+        // Look for ANY entry with this title that has a valid numeric score
+        const masterEntry = allMedia.find(m => 
+            m.title.toLowerCase().trim() === normalizedTarget && 
+            (m.numeric_rating || m.rating) && 
+            !(m.numeric_rating || m.rating).toString().startsWith('#')
+        );
+        
+        let rawScore = '';
+        if (masterEntry) {
+            rawScore = (masterEntry.numeric_rating || masterEntry.rating).toString().replace('/10','').trim();
+            console.log(`[Rating-Search] Success! Found score "${rawScore}" from entry ID ${masterEntry.id}`);
+        } else {
+            console.warn(`[Rating-Search] Failed. No valid score found for "${normalizedTarget}" in library.`);
         }
 
         const ratingDisplay = document.getElementById('quickInfoRating');
         if (rawScore) {
             ratingDisplay.textContent = `${rawScore} / 10`;
             ratingDisplay.style.display = 'block';
+            ratingDisplay.style.opacity = '1';
         } else {
             ratingDisplay.textContent = '-- / 10';
             ratingDisplay.style.display = 'block';
-            ratingDisplay.style.opacity = '0.4';
+            ratingDisplay.style.opacity = '0.3';
         }
 
         // Edit Button (Admin Only)
