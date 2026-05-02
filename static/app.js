@@ -1216,18 +1216,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let rawScore = (item.numeric_rating || item.rating || '').toString().replace('/10', '').trim();
         if (rawScore.startsWith('#')) rawScore = ''; 
         
-        // v233: Twin-Sync Fallback
-        // If this item is ranked and missing a score, look for its "Twin" in the main collection
+        // v234: Aggressive Twin-Sync Fallback
+        // If this item is ranked and missing a score, look for its "Twin" in the collection
         if (!rawScore) {
+            const normalizedTarget = item.title.toLowerCase().trim();
             const twin = allMedia.find(m => 
                 m.id !== item.id && 
-                m.type === item.type && 
-                m.title.toLowerCase().trim() === item.title.toLowerCase().trim() &&
+                m.title.toLowerCase().trim() === normalizedTarget &&
                 m.numeric_rating && 
                 !m.numeric_rating.toString().startsWith('#')
             );
             if (twin) {
                 rawScore = twin.numeric_rating.toString().replace('/10', '').trim();
+                console.log(`[Twin-Sync] Recovered rating "${rawScore}" for ${item.title} from sibling ID ${twin.id}`);
             }
         }
         
@@ -1236,8 +1237,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ratingDisplay.textContent = `${rawScore} / 10`;
             ratingDisplay.style.display = 'block';
         } else {
-            ratingDisplay.textContent = '';
-            ratingDisplay.style.display = 'none';
+            ratingDisplay.textContent = '-- / 10';
+            ratingDisplay.style.display = 'block';
+            ratingDisplay.style.opacity = '0.3';
         }
 
         // Edit Button (Admin Only)

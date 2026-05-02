@@ -205,11 +205,18 @@ def create_media(payload: CreateMediaPayload, background_tasks: BackgroundTasks,
             from tmdb_helper import get_tmdb_details
             from jikan_helper import get_manga_details
             
+            # v234: Smart-Link Fallback (Check both movie/tv for TMDB)
             if item.type == "Manga":
                 details = get_manga_details(payload.ext_id)
             else:
+                # Try primary guess first
                 m_type = "movie" if item.type == "Movies" else "tv"
                 details = get_tmdb_details(payload.ext_id, m_type)
+                
+                # If primary fails and it's not a Manga, try the other TMDB type
+                if not details:
+                    other_type = "tv" if m_type == "movie" else "movie"
+                    details = get_tmdb_details(payload.ext_id, other_type)
             
             if details:
                 if details.get("title"): item.title = details["title"]
@@ -217,6 +224,19 @@ def create_media(payload: CreateMediaPayload, background_tasks: BackgroundTasks,
                 if details.get("genres"): item.genres = details["genres"]
                 if details.get("poster_url"): item.cover_url = details["poster_url"]
                 if details.get("director"): item.director = details["director"]
+                if details.get("runtime"): item.runtime = details["runtime"]
+                if details.get("content_rating"): item.content_rating = details["content_rating"]
+                
+                # Update IDs
+                if item.type == "Manga": item.mal_id = payload.ext_id
+                else: item.tmdb_id = payload.ext_id
+                
+                item.enrichment_attempts = 1
+                session.add(item)
+                session.commit()
+                return item
+            else:
+                raise HTTPException(status_code=404, detail="Could not retrieve details for that ID from official sources.")
         
         item.enrichment_attempts = 1 # Mark as enriched (we just did it)
 
@@ -302,14 +322,21 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     from tmdb_helper import get_tmdb_details
     from jikan_helper import get_manga_details
 
+    # v234: Smart-Link Fallback (Check both movie/tv for TMDB)
     if item.type == "Manga":
         details = get_manga_details(payload.ext_id)
     else:
-        media_type = "movie" if item.type == "Movies" else "tv"
-        details = get_tmdb_details(payload.ext_id, media_type)
+        # Try primary guess first
+        m_type = "movie" if item.type == "Movies" else "tv"
+        details = get_tmdb_details(payload.ext_id, m_type)
+        
+        # If primary fails and it's not a Manga, try the other TMDB type
+        if not details:
+            other_type = "tv" if m_type == "movie" else "movie"
+            details = get_tmdb_details(payload.ext_id, other_type)
 
     if not details:
-        raise HTTPException(status_code=400, detail="Could not retrieve details for that ID.")
+        raise HTTPException(status_code=400, detail="Could not retrieve details for that ID from official sources.")
 
     # Apply details
     if details.get("title"): item.title = details["title"]
@@ -317,6 +344,7 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     # Ensure release_year is an int if possible
     if "release_year" in details:
         try:
+            item.numeric_year = int(details["release_year"]) # Helper for sorting
             item.release_year = int(details["release_year"]) if details["release_year"] else item.release_year
         except (ValueError, TypeError):
             pass
@@ -327,14 +355,11 @@ async def link_metadata_manually(item_id: int, payload: ManualLinkPayload, sessi
     if details.get("runtime"): item.runtime = details["runtime"]
     if details.get("content_rating"): item.content_rating = details["content_rating"]
     
-    # Store the IDs for future syncs
-    if item.type == "Manga":
-        item.mal_id = payload.ext_id
-    else:
-        item.tmdb_id = payload.ext_id
-        
-    item.enrichment_attempts = 1 # Mark as enriched
+    # Update IDs
+    if item.type == "Manga": item.mal_id = payload.ext_id
+    else: item.tmdb_id = payload.ext_id
     
+    item.enrichment_attempts = 1
     session.add(item)
     session.commit()
     return {"ok": True, "title": item.title}
