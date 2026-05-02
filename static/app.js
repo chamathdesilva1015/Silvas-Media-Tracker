@@ -2267,18 +2267,25 @@ document.addEventListener('DOMContentLoaded', () => {
         currentRankedItems = allMedia
             .filter(item => {
                 if (item.type.toLowerCase() !== currentCategory.toLowerCase()) return false;
-                const r = String(item.rating || '');
-                const nr = String(item.numeric_rating || '');
+                // Trim everything to catch " #9" or "9 "
+                const r = String(item.rating || '').trim();
+                const nr = String(item.numeric_rating || '').trim();
                 return r.startsWith('#') || nr.startsWith('#');
             })
             .sort((a, b) => {
                 const getRankNum = (it) => {
-                    const r = String(it.rating || '');
-                    const nr = String(it.numeric_rating || '');
+                    const r = String(it.rating || '').trim();
+                    const nr = String(it.numeric_rating || '').trim();
                     const str = r.startsWith('#') ? r : (nr.startsWith('#') ? nr : '#999');
                     return parseInt(str.replace('#', '')) || 999;
                 };
-                return getRankNum(a) - getRankNum(b);
+                
+                const rankA = getRankNum(a);
+                const rankB = getRankNum(b);
+                
+                if (rankA !== rankB) return rankA - rankB;
+                // Tie-breaker: Alphabetical
+                return a.title.localeCompare(b.title);
             });
         
         renderRankingList();
