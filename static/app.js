@@ -655,13 +655,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Bulletproof Identity deduplication
-        filtered.sort((a, b) => (b.is_ranking ? 1 : 0) - (a.is_ranking ? 1 : 0));
+        // Prioritize items with more metadata (director, rating) before deduplicating
+        filtered.sort((a, b) => {
+            const aScore = (a.director ? 2 : 0) + (a.numeric_rating ? 1 : 0);
+            const bScore = (b.director ? 2 : 0) + (b.numeric_rating ? 1 : 0);
+            return bScore - aScore || (b.is_ranking ? 1 : 0) - (a.is_ranking ? 1 : 0);
+        });
 
-        const activeIds = new Set();
         const activeMediaKeys = new Set();
-        
         filtered = filtered.filter(item => {
-            const identityKey = `${item.title.toLowerCase().trim()}|${item.type.toLowerCase()}|${item.release_year || 'any'}`;
+            const identityKey = `${item.title.toLowerCase().trim()}|${item.type.toLowerCase()}`;
             if (activeMediaKeys.has(identityKey)) return false;
             activeMediaKeys.add(identityKey);
             return true;

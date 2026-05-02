@@ -81,53 +81,64 @@ async def on_startup():
     except Exception as e:
         print(f"[Migration] Auto-migration failed: {e}")
 
-    # v231: Rating Recovery for corrupted numeric_ratings
+    # v239: Emergency Rating Recovery (Deep-Mining from History and Twins)
     try:
         with Session(engine) as session:
-            # Find items where numeric_rating is a rank or is missing while rating is a rank
-            corrupted = session.exec(select(MediaItem).where(
-                (MediaItem.numeric_rating.like('#%')) | 
-                ((MediaItem.numeric_rating == None) & (MediaItem.rating.like('#%')))
-            )).all()
+            # Find all items that might be corrupted (rank strings or nulls)
+            all_items = session.exec(select(MediaItem)).all()
+            repaired_count = 0
             
-            if corrupted:
-                print(f"[Recovery] Found {len(corrupted)} items with corrupted ratings. Attempting recovery...")
-                for item in corrupted:
-                    # Check RatingHistory for the most recent valid rating
+            for item in all_items:
+                is_corrupted = not item.numeric_rating or str(item.numeric_rating).startswith('#')
+                if is_corrupted:
+                    valid_rating = None
+                    
+                    # 1. Try History by ID
                     history = session.exec(
                         select(RatingHistory)
                         .where(RatingHistory.media_item_id == item.id)
                         .order_by(RatingHistory.changed_at.desc())
                     ).all()
-                    
-                    valid_rating = None
                     for h in history:
-                        if h.new_rating and not str(h.new_rating).startswith('#'):
-                            valid_rating = h.new_rating
-                            break
-                        if h.old_rating and not str(h.old_rating).startswith('#'):
-                            valid_rating = h.old_rating
-                            break
+                        for val in [h.new_rating, h.old_rating]:
+                            if val and not str(val).startswith('#'):
+                                valid_rating = val; break
+                        if valid_rating: break
                     
+                    # 2. Try History by Title (if ID search failed or record is fresh)
                     if not valid_rating:
-                        # NEW v233: Look for a "Twin" (other entry with same title/type)
-                        stmt = select(MediaItem).where(
-                            MediaItem.id != item.id,
-                            MediaItem.type == item.type,
+                        history_title = session.exec(
+                            select(RatingHistory)
+                            .where(RatingHistory.title == item.title, RatingHistory.media_type == item.type)
+                            .order_by(RatingHistory.changed_at.desc())
+                        ).all()
+                        for h in history_title:
+                            for val in [h.new_rating, h.old_rating]:
+                                if val and not str(val).startswith('#'):
+                                    valid_rating = val; break
+                            if valid_rating: break
+
+                    # 3. Try Twins in Database
+                    if not valid_rating:
+                        twin = session.exec(select(MediaItem).where(
                             MediaItem.title == item.title,
+                            MediaItem.type == item.type,
                             MediaItem.numeric_rating != None
-                        )
-                        twin = session.exec(stmt).first()
-                        if twin and not str(twin.numeric_rating).startswith('#'):
-                            valid_rating = twin.numeric_rating
-                    
+                        )).all()
+                        for t in twin:
+                            if not str(t.numeric_rating).startswith('#'):
+                                valid_rating = t.numeric_rating; break
+
                     if valid_rating:
                         item.numeric_rating = valid_rating
                         session.add(item)
+                        repaired_count += 1
+            
+            if repaired_count > 0:
                 session.commit()
-                print(f"[Recovery] Successfully restored numeric_ratings for affected items.")
+                print(f"[Recovery] Emergency Repair: Restored {repaired_count} ratings from history/twins.")
     except Exception as e:
-        print(f"[Recovery] Failed to run rating recovery: {e}")
+        print(f"[Recovery] Emergency repair failed: {e}")
 
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
