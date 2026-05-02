@@ -65,7 +65,7 @@ async def on_startup():
         print(f"[Startup] Score Cross-Linker skipped: {e}")
 
     # Launch enrichment in the background — site is immediately usable
-    asyncio.create_task(run_enrichment(category="Movies"))
+    asyncio.create_task(run_enrichment())
 
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
@@ -107,9 +107,9 @@ def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Se
     session.commit()
     session.refresh(item)
 
-    # Auto-enrich if it's a Movie
-    if item.type == "Movies":
-        background_tasks.add_task(run_enrichment, category="Movies")
+    # Auto-enrich if it's a Movie or TV Series
+    if item.type in ["Movies", "TV Series"]:
+        background_tasks.add_task(run_enrichment, category=item.type)
 
     return item
 
@@ -381,9 +381,9 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
 
-    # Favorite Genre (Movies ONLY) - "Volume-Weighted Passion" Model (v120)
+    # Favorite Genre (Movies & TV Series) - "Volume-Weighted Passion" Model (v120/v204)
     favorite_genre = None
-    if category.lower() == "movies" and scored_items:
+    if category.lower() in ["movies", "tv series"] and scored_items:
         genre_data = {} # {name: [(score, item)]}
         for s, i in scored_items:
             if not i.genres: continue
@@ -393,27 +393,26 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
                 genre_data[p].append((s, i))
         
         genre_scores = []
-        for g_name, items in genre_data.items():
-            v = len(items)
+        for g_name, items_list in genre_data.items():
+            v = len(items_list)
             if v < 1: continue
             
             # 1. Total Cubic Passion: Sum of (Rating - 4.5)^3
-            # A 25% "Passion Bonus" is applied if the movie is Liked
             total_passion = 0
-            for s, i in items:
+            for s, i in items_list:
                 weight = max(0, (s - 4.5)) ** 3
                 if i.is_liked:
                     weight *= 1.25 # 25% Bonus for personal favorites
                 if has_real_review(i.review):
-                    weight *= 1.10 # 10% Review Bonus (User requested slight bonus)
+                    weight *= 1.10 # 10% Review Bonus
                 total_passion += weight
             
             # 2. Confidence Filter: (1 - 1/v)
             confidence = (1.0 - (1.0 / v))
             
             final_score = total_passion * confidence
-            # Get top 10 movies for this genre as examples
-            sorted_m = sorted(items, key=lambda x: x[0], reverse=True)
+            # Get top 10 items for this genre as examples
+            sorted_m = sorted(items_list, key=lambda x: x[0], reverse=True)
             examples = [i.title for s, i in sorted_m[:10]]
             genre_scores.append((g_name, final_score, examples))
             
@@ -424,7 +423,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
                 for g, s, ex in genre_scores[:10]
             ]
 
-    # Favorite Directors (Movies ONLY) - Same Passion-Volume Model
+    # Favorite Directors (Movies ONLY as requested) - Same Passion-Volume Model
     favorite_directors = []
     if category.lower() == "movies" and scored_items:
         dir_data = {} # {name: [(score, item)]}
@@ -445,7 +444,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
                 if i.is_liked:
                     weight *= 1.25
                 if has_real_review(i.review):
-                    weight *= 1.10 # 10% Review Bonus
+                    weight *= 1.10
                 total_passion += weight
             
             confidence = (1.0 - (1.0 / v))
