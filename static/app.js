@@ -147,6 +147,59 @@ document.addEventListener('DOMContentLoaded', () => {
             blob.style.transform = `translate(${x}px, ${y}px) scale(${1 + Math.random() * 0.2})`;
         });
     };
+    // v205: Centralized category switch logic
+    const handleCategorySwitch = (category) => {
+        currentCategory = category;
+        currentSubTab = 'Completed';
+
+        // 1. Update Search Placeholder
+        if (searchInput) {
+            if (currentCategory === 'TV Series') {
+                searchInput.placeholder = "Search titles or creators...";
+            } else if (currentCategory === 'Movies') {
+                searchInput.placeholder = "Search titles or directors...";
+            } else {
+                searchInput.placeholder = `Search ${currentCategory.toLowerCase()}...`;
+            }
+        }
+
+        // 2. Update Add Button Text
+        const addBtn = document.getElementById('addMediaBtn');
+        if (addBtn) {
+            const desktopLabel = addBtn.querySelector('.desktop-text');
+            if (desktopLabel) {
+                const displayLabel = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.replace(/s$/, '');
+                desktopLabel.innerText = `+ Add ${displayLabel}`;
+            }
+        }
+
+        // 3. Clear and Re-populate Genre Filters
+        filterState.genres.clear();
+        updateActiveFilterCount();
+        populateGenreFilters();
+
+        // 4. Sync ALL category buttons (Desktop + Mobile)
+        navLinks.forEach(l => {
+            l.classList.remove('active');
+            if (l.getAttribute('data-filter') === currentCategory) l.classList.add('active');
+        });
+        
+        document.querySelectorAll('.pill-tab[data-filter]').forEach(t => {
+            t.classList.remove('active');
+            if (t.getAttribute('data-filter') === currentCategory) t.classList.add('active');
+        });
+
+        // Sync the sub-tabs to "Completed"
+        document.querySelectorAll('.pill-tab[data-sub]').forEach(t => {
+            t.classList.remove('active');
+            if (t.getAttribute('data-sub') === 'Completed') t.classList.add('active');
+        });
+
+        // 5. Update UI
+        updateCategoryTitleCount();
+        updateTheme();
+        filterAndRenderMedia();
+    };
 
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -162,39 +215,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (t.getAttribute('data-sub') === 'Info') t.classList.add('active');
                 });
                 
-                // Sync bottom nav active state (remove from others, add to this one)
+                // Sync bottom nav active state
                 navLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
-            } else if (filter) {
-                currentCategory = filter;
-                currentSubTab = 'Completed'; // Reset to Completed when switching category
                 
-                // Sync the top pill-tabs
-                document.querySelectorAll('.pill-tab').forEach(t => {
-                    t.classList.remove('active');
-                    if (t.getAttribute('data-sub') === 'Completed') t.classList.add('active');
-                });
-
-                // Sync active state across BOTH sidebar and bottom nav
-                navLinks.forEach(l => {
-                    l.classList.remove('active');
-                    if (l.getAttribute('data-filter') === currentCategory) {
-                        l.classList.add('active');
-                    }
-                });
+                updateCategoryTitleCount();
+                updateTheme();
+                filterAndRenderMedia();
+            } else if (filter) {
+                handleCategorySwitch(filter);
             }
-            
-            updateCategoryTitleCount();
-            
-            // Update Add Button Text (Desktop only - mobile uses +)
-            const addBtn = document.getElementById('addMediaBtn');
-            if (addBtn) {
-                const desktopLabel = addBtn.querySelector('.desktop-text');
-                if (desktopLabel) desktopLabel.innerText = `+ Add ${currentCategory}`;
-            }
-
-            updateTheme();
-            filterAndRenderMedia();
         });
     });
 
@@ -211,29 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sub = tab.getAttribute('data-sub');
 
             if (filter) {
-                // This is a category tab (Desktop Category Nav)
-                currentCategory = filter;
-                currentSubTab = 'Completed'; // Reset to Completed on category switch
-                
-                // Sync ALL category buttons (Desktop + Mobile)
-                navLinks.forEach(l => {
-                    l.classList.remove('active');
-                    if (l.getAttribute('data-filter') === currentCategory) l.classList.add('active');
-                });
-                
-                document.querySelectorAll('.pill-tab[data-filter]').forEach(t => {
-                    t.classList.remove('active');
-                    if (t.getAttribute('data-filter') === currentCategory) t.classList.add('active');
-                });
-
-                // Sync the sub-tabs to "Completed"
-                document.querySelectorAll('.pill-tab[data-sub]').forEach(t => {
-                    t.classList.remove('active');
-                    if (t.getAttribute('data-sub') === 'Completed') t.classList.add('active');
-                });
-
-                updateCategoryTitleCount();
-                updateTheme();
+                handleCategorySwitch(filter);
             } else if (sub) {
                 // This is a sub-tab (Header Sub Nav)
                 pillTabs.forEach(t => {
@@ -248,9 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const mobileInfo = Array.from(navLinks).find(l => l.getAttribute('data-sub') === 'Info');
                     if (mobileInfo) mobileInfo.classList.add('active');
                 }
+                
+                filterAndRenderMedia();
             }
-            
-            filterAndRenderMedia();
         });
     });
     searchInput.addEventListener('input', () => {
