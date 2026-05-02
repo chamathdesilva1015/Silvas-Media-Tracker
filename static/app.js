@@ -436,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const count = data.decade_breakdown[k];
             const pct = Math.round((count / decMax) * 100);
             return `<div class="dist-bar-row">
-                <span class="dist-bar-label" style="min-width:85px">${k}</span>
+                <span class="dist-bar-label dist-bar-label-decade">${k}</span>
                 <div class="dist-bar-track"><div class="dist-bar-fill" style="width:${pct}%"></div></div>
                 <span class="dist-bar-count">${count}</span>
             </div>`;

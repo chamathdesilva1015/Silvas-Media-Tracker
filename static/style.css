@@ -1604,6 +1604,10 @@ delete-btn {
     font-weight: 600;
 }
 
+.dist-bar-label-decade {
+    min-width: 85px;
+}
+
 .dist-bar-track {
     flex: 1;
     height: 8px;
@@ -3642,15 +3646,33 @@ body.read-only-mode #clearReviewBtn {
     /* Distribution & Decade Breakdown - Stacked & Tighter */
     .stats-full-row {
         grid-template-columns: 1fr !important;
-        gap: 0.8rem !important;
-        margin-bottom: 0.8rem !important;
+        gap: 0.6rem !important;
+        margin-bottom: 0.6rem !important;
     }
     .stats-dist-card {
-        padding: 0.8rem !important;
+        padding: 0.6rem !important;
     }
     .stats-dist-title {
-        font-size: 0.65rem !important;
-        margin-bottom: 0.8rem !important;
+        font-size: 0.6rem !important;
+        margin-bottom: 0.6rem !important;
+    }
+    .dist-bar-row {
+        gap: 6px !important;
+        margin-bottom: 0.2rem !important;
+    }
+    .dist-bar-label {
+        font-size: 0.55rem !important;
+        min-width: 30px !important;
+    }
+    .dist-bar-label-decade {
+        min-width: 45px !important;
+    }
+    .dist-bar-track {
+        height: 4px !important;
+    }
+    .dist-bar-count {
+        font-size: 0.55rem !important;
+        min-width: 15px !important;
     }
     
     /* Top Genres / Top Directors */
