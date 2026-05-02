@@ -1681,6 +1681,10 @@ delete-btn {
     max-width: 90%;
 }
 
+.hof-subtitle-mobile {
+    display: none;
+}
+
 .hof-chevron {
     font-size: 0.7rem;
     opacity: 0.5;
@@ -3617,20 +3621,21 @@ body.read-only-mode #clearReviewBtn {
         font-size: 0.75rem !important;
     }
     
-    /* Top "Total Entries" Card */
-    .stats-featured-pair {
-        grid-template-columns: 1fr !important;
-        gap: 0.5rem !important;
+    /* Top "Total Entries" Card Row - Forced to ONE row */
+    .stats-hero-row {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.4rem !important;
         margin-bottom: 0.8rem !important;
     }
-    .stats-featured-card {
-        padding: 1rem 0.8rem !important;
+    .stat-card {
+        padding: 0.6rem 0.3rem !important;
     }
-    .stats-featured-value {
-        font-size: 2.2rem !important;
+    .stat-card-value {
+        font-size: 1.4rem !important;
+        margin-bottom: 0.2rem !important;
     }
-    .stats-featured-label {
-        font-size: 0.6rem !important;
+    .stat-card-label {
+        font-size: 0.5rem !important;
         letter-spacing: 0.05em !important;
     }
     
@@ -3658,8 +3663,15 @@ body.read-only-mode #clearReviewBtn {
     .hof-accordion-title {
         font-size: 0.85rem !important;
     }
-    .hof-subtitle {
+    .hof-subtitle-desktop {
         display: none !important; /* HIDE the massive text wall entirely on mobile! */
+    }
+    .hof-subtitle-mobile {
+        display: block !important;
+        font-size: 0.6rem !important;
+        margin-top: 0.4rem !important;
+        line-height: 1.3 !important;
+        opacity: 0.8 !important;
     }
     .hof-entry {
         padding: 0.6rem 0.3rem !important;

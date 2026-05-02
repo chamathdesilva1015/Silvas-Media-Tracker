@@ -470,13 +470,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
+                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
                         <br><br>
                         1. <b>The Floor (4.5):</b> Ratings below 4.5 contribute 0 points. This mathematically filters out genres that are only watched occasionally or disliked.
                         <br><br>
                         2. <b>Cubic Growth (³):</b> High ratings carry exponential weight. A 10/10 movie is worth 216x more than a 5/0 movie. <b>Masterpieces marked with a Heart receive a 25% "Passion Bonus,"</b> and <b>movies with a Review receive a 10% "Review Bonus,"</b> ensuring personal involvement defines the top list.
                         <br><br>
                         3. <b>The Confidence Filter:</b> A genre needs a track record. A single 10/10 movie results in 0 points, while 10 movies retain 90% of their score. This eliminates "one-hit wonder" categories.</span>
+                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1 - 1/Count)</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
@@ -502,13 +503,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="directorsHeader">
                     <div class="hof-accordion-title">
                         Top Directors
-                        <span class="hof-subtitle"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
+                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
                         <br><br>
                         1. <b>Quality Threshold:</b> Only movies rated above 4.5 contribute points. This mathematically filters out directors whose work you found mediocre or disliked.
                         <br><br>
                         2. <b>Cubic Weighting (³):</b> Near-perfect scores carry exponential weight. Masterpieces marked with a <b>Heart (25% bonus)</b> or a <b>Review (10% bonus)</b> significantly increase a director's standing.
                         <br><br>
                         3. <b>The Confidence Multiplier:</b> A director's score is scaled by their filmography's depth. A single high-rated movie results in 0 points; a director needs a consistent track record to reach the top.</span>
+                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1 - 1/Count)</span>
                     </div>
                     <span class="hof-chevron" id="directorsChevron">▼</span>
                 </div>
