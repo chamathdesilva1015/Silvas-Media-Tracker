@@ -1281,7 +1281,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("Error syncing: " + e.message);
                 } finally {
                     refreshBtn.disabled = false;
-                    refreshBtn.textContent = '↺ Sync with Official';
+                    refreshBtn.textContent = 'Sync with Official';
                 }
             };
 
