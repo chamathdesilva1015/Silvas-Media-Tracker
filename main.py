@@ -78,8 +78,41 @@ async def on_startup():
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE mediaitem ADD COLUMN mal_id INTEGER"))
             print("[Migration] Column 'mal_id' added successfully.")
+    # v231: Rating Recovery for corrupted numeric_ratings
+    try:
+        with Session(engine) as session:
+            # Find items where numeric_rating is a rank or is missing while rating is a rank
+            corrupted = session.exec(select(MediaItem).where(
+                (MediaItem.numeric_rating.like('#%')) | 
+                ((MediaItem.numeric_rating == None) & (MediaItem.rating.like('#%')))
+            )).all()
+            
+            if corrupted:
+                print(f"[Recovery] Found {len(corrupted)} items with corrupted ratings. Attempting recovery...")
+                for item in corrupted:
+                    # Check RatingHistory for the most recent valid rating
+                    history = session.exec(
+                        select(RatingHistory)
+                        .where(RatingHistory.media_item_id == item.id)
+                        .order_by(RatingHistory.changed_at.desc())
+                    ).all()
+                    
+                    valid_rating = None
+                    for h in history:
+                        if h.new_rating and not str(h.new_rating).startswith('#'):
+                            valid_rating = h.new_rating
+                            break
+                        if h.old_rating and not str(h.old_rating).startswith('#'):
+                            valid_rating = h.old_rating
+                            break
+                    
+                    if valid_rating:
+                        item.numeric_rating = valid_rating
+                        session.add(item)
+                session.commit()
+                print(f"[Recovery] Successfully restored numeric_ratings for affected items.")
     except Exception as e:
-        print(f"[Migration] Auto-migration failed: {e}")
+        print(f"[Recovery] Failed to run rating recovery: {e}")
 
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
