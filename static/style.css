@@ -795,6 +795,17 @@ header p {
     /* Expanded width to fit cards comfortably */
 }
 
+/* Stats page must be full-width block so margin:0 auto centering works inside flex parent */
+#statsPage {
+    display: none;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    color: var(--text-primary);
+    box-sizing: border-box;
+}
+
 .media-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
