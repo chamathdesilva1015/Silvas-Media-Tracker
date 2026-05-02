@@ -1786,19 +1786,6 @@ delete-btn {
     line-height: 1.2;
 }
 
-@media (max-width: 800px) {
-    .example-pill-container {
-        gap: 0.25rem;
-        margin-top: 0.2rem;
-    }
-    
-    .example-pill {
-        padding: 0.15rem 0.4rem;
-        border-radius: 4px;
-        font-size: 0.65rem;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-}
 
 
 /* Featured entry cards (highest/lowest) */
@@ -3618,76 +3605,87 @@ body.read-only-mode #clearReviewBtn {
         padding: 0 1rem;
     }
 
-    /* Stats Page Mobile Enhancements */
+    /* Stats Page Mobile Enhancements - EXTREME COMPACTION */
     .stats-header {
-        padding: 2rem 1rem !important;
+        padding: 1.5rem 0.5rem !important;
     }
     .stats-header h2 {
-        font-size: 2.2rem !important;
-        margin-bottom: 0.5rem !important;
+        font-size: 1.6rem !important;
+        margin-bottom: 0.2rem !important;
     }
     .stats-header p {
-        font-size: 0.9rem !important;
+        font-size: 0.75rem !important;
     }
     
     /* Top "Total Entries" Card */
     .stats-featured-pair {
         grid-template-columns: 1fr !important;
-        gap: 0.8rem !important;
-        margin-bottom: 1rem !important;
+        gap: 0.5rem !important;
+        margin-bottom: 0.8rem !important;
     }
     .stats-featured-card {
-        padding: 1.5rem !important;
+        padding: 1rem 0.8rem !important;
     }
     .stats-featured-value {
-        font-size: 3rem !important;
+        font-size: 2.2rem !important;
     }
     .stats-featured-label {
-        font-size: 0.7rem !important;
+        font-size: 0.6rem !important;
+        letter-spacing: 0.05em !important;
     }
     
-    /* Distribution & Decade Breakdown - Stack instead of side-by-side */
+    /* Distribution & Decade Breakdown - Stacked & Tighter */
     .stats-full-row {
         grid-template-columns: 1fr !important;
-        gap: 1rem !important;
-        margin-bottom: 1rem !important;
+        gap: 0.8rem !important;
+        margin-bottom: 0.8rem !important;
     }
     .stats-dist-card {
-        padding: 1.2rem !important;
+        padding: 0.8rem !important;
     }
     .stats-dist-title {
-        font-size: 0.7rem !important;
-        margin-bottom: 1.2rem !important;
+        font-size: 0.65rem !important;
+        margin-bottom: 0.8rem !important;
     }
     
     /* Top Genres / Top Directors */
     .hof-accordion {
-        margin-bottom: 0.8rem !important;
+        margin-bottom: 0.6rem !important;
     }
     .hof-accordion-header {
-        padding: 1rem !important;
+        padding: 0.8rem 0.6rem !important;
     }
     .hof-accordion-title {
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
     }
     .hof-subtitle {
-        font-size: 0.7rem !important;
-        margin-top: 0.5rem !important;
-        line-height: 1.4 !important;
+        display: none !important; /* HIDE the massive text wall entirely on mobile! */
     }
     .hof-entry {
-        padding: 0.8rem 0.5rem !important;
+        padding: 0.6rem 0.3rem !important;
     }
     .hof-entry-rank {
-        font-size: 0.85rem !important;
-        margin-right: 0.5rem !important;
-        min-width: 15px !important;
+        font-size: 0.75rem !important;
+        margin-right: 0.4rem !important;
+        min-width: 12px !important;
     }
     .hof-entry-title {
-        font-size: 0.85rem !important;
+        font-size: 0.8rem !important;
     }
     .hof-entry-score {
-        font-size: 0.65rem !important;
-        padding: 0.15rem 0.4rem !important;
+        font-size: 0.6rem !important;
+        padding: 0.1rem 0.3rem !important;
+    }
+
+    /* Ultra-compact Example Pills */
+    .example-pill-container {
+        gap: 0.2rem !important;
+        margin-top: 0.2rem !important;
+    }
+    .example-pill {
+        padding: 0.1rem 0.3rem !important;
+        border-radius: 4px !important;
+        font-size: 0.55rem !important;
+        box-shadow: none !important; /* Remove shadow to reduce visual noise on mobile */
     }
 }
