@@ -254,64 +254,69 @@ def toggle_like(item_id: str, session: Session = Depends(get_session), _: None =
     print(f"[DEBUG] TOGGLED LIKE for '{item.title}' (Norm: '{target_norm}') -> {new_liked} ({len(related)} rows)")
     return {"ok": True, "is_liked": new_liked, "updated_count": len(related)}
 
-class RatingUpdateRequest(BaseModel):
-    rating: str
-
-@app.post("/api/media/update-rating/{item_id}")
-@app.post("/api/media/update-rating/{item_id}/")
-def update_rating(item_id: int, request: RatingUpdateRequest, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+@app.post("/api/media/update/{item_id}")
+async def update_media_item(item_id: int, payload: dict, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    """Unified update for Rating, Title, or Year. Triggers re-enrichment if Title/Year changes."""
     item = session.get(MediaItem, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    try:
-        score_val = float(request.rating.strip())
-        # Snap to nearest 0.5
-        rounded_val = round(score_val * 2) / 2
-        new_rating = f"{rounded_val}/10" if rounded_val == int(rounded_val) else f"{rounded_val}/10"
+    needs_reenrich = False
+    if "rating" in payload:
+        new_score = str(payload["rating"]).strip()
+        # Ensure /10 suffix
+        new_rating = new_score if new_score.endswith("/10") else f"{new_score}/10"
         
-        # Clean display: if it's 8.0/10, make it 8/10
-        if rounded_val == int(rounded_val):
-            new_rating = f"{int(rounded_val)}/10"
-        else:
-            new_rating = f"{rounded_val}/10"
-    except ValueError:
-        # Fallback if parsing fails
-        new_rating = request.rating.strip()
-        if not new_rating.endswith("/10"):
-            new_rating = f"{new_rating}/10"
-
-    target_norm = normalize_title(item.title)
-    all_related = session.exec(
-        select(MediaItem).where(MediaItem.type == item.type)
-    ).all()
-    related = [r for r in all_related if normalize_title(r.title) == target_norm]
-
-    for r in related:
-        # Log to history
-        old_r = r.rating or ""
-        if old_r != new_rating:
-            session.add(RatingHistory(
-                media_item_id=r.id,
-                title=r.title,
-                media_type=r.type,
-                old_rating=old_r,
-                new_rating=new_rating,
-            ))
+        # Cascade to all rows with same normalized title/type (Completed + Rankings)
+        target_norm = normalize_title(item.title)
+        all_related = session.exec(select(MediaItem).where(MediaItem.type == item.type)).all()
+        related = [r for r in all_related if normalize_title(r.title) == target_norm]
         
-        # If it's a ranking, we preserve the #N prefix in 'rating' but update 'numeric_rating'
-        if (r.rating or "").startswith("#"):
-            r.numeric_rating = new_rating
-        else:
-            r.rating = new_rating
-            r.numeric_rating = new_rating
+        for r in related:
+            # Log to history
+            old_r = r.rating or ""
+            if old_r != new_rating:
+                session.add(RatingHistory(
+                    media_item_id=r.id,
+                    title=r.title,
+                    media_type=r.type,
+                    old_rating=old_r,
+                    new_rating=new_rating,
+                ))
             
-        r.is_manual_rating = True
-        session.add(r)
+            # If it's a ranking, we preserve the #N prefix in 'rating' but update 'numeric_rating'
+            if (r.rating or "").startswith("#"):
+                r.numeric_rating = new_rating
+            else:
+                r.rating = new_rating
+                r.numeric_rating = new_rating
+                
+            r.is_manual_rating = True
+            session.add(r)
+    
+    if "title" in payload and payload["title"] != item.title:
+        item.title = payload["title"]
+        needs_reenrich = True
+        
+    if "release_year" in payload and str(payload["release_year"]) != str(item.release_year):
+        item.release_year = str(payload["release_year"])
+        needs_reenrich = True
 
+    if needs_reenrich:
+        # Reset metadata to force fresh match
+        item.enrichment_attempts = 0
+        item.tmdb_id = None
+        item.genres = None
+        item.director = None
+        item.cover_url = None
+        background_tasks.add_task(run_enrichment, category=item.type)
+
+    session.add(item)
     session.commit()
-    print(f"[DEBUG] UPDATED RATING for '{item.title}' -> {new_rating} ({len(related)} rows, MANUALLY PROTECTED)")
-    return {"ok": True, "rating": new_rating, "updated_count": len(related)}
+    session.refresh(item)
+    return {"ok": True, "item": item, "needs_reenrich": needs_reenrich}
+
+# --- Metadata Sync & Fix Endpoints (v219) ---
 
 class ReorderRequest(BaseModel):
     category: str

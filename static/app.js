@@ -1189,7 +1189,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const editBtn = document.getElementById('quickInfoEditBtn');
         const ratingEditSection = document.getElementById('quickInfoRatingEditSection');
         const ratingInput = document.getElementById('quickInfoRatingInput');
-        const saveRatingBtn = document.getElementById('quickInfoSaveRatingBtn');
+        const yearInput = document.getElementById('quickInfoYearInput');
+        const saveAllBtn = document.getElementById('quickInfoSaveAllBtn');
 
         if (computeCanEdit()) {
             editBtn.style.display = 'block';
@@ -1198,38 +1199,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.openReviewModal(item.title, item.type, item.review, item.id);
             };
 
-            // Rating Override UI
+            // Rating & Metadata Override UI
             ratingEditSection.style.display = 'block';
             ratingInput.value = rawScore || '';
-            saveRatingBtn.onclick = async () => {
-                let newVal = parseFloat(ratingInput.value);
-                if (isNaN(newVal)) return;
+            yearInput.value = item.release_year || '';
+
+            saveAllBtn.onclick = async () => {
+                let newRating = parseFloat(ratingInput.value);
+                const newYear = yearInput.value.trim();
                 
-                // Snap to nearest 0.5
-                newVal = Math.round(newVal * 2) / 2;
+                const payload = {};
+                if (!isNaN(newRating)) {
+                    // Snap to nearest 0.5
+                    newRating = Math.round(newRating * 2) / 2;
+                    payload.rating = newRating.toString();
+                }
+                if (newYear) {
+                    payload.release_year = newYear;
+                }
                 
-                saveRatingBtn.disabled = true;
-                saveRatingBtn.textContent = 'Saving...';
+                if (Object.keys(payload).length === 0) return;
+                
+                saveAllBtn.disabled = true;
+                saveAllBtn.textContent = 'Saving...';
                 
                 try {
-                    const res = await fetch(`/api/media/update-rating/${item.id}`, {
+                    const res = await fetch(`/api/media/update/${item.id}`, {
                         method: 'POST',
                         headers: getAuthHeaders(),
-                        body: JSON.stringify({ rating: newVal.toString() })
+                        body: JSON.stringify(payload)
                     });
                     const data = await res.json();
                     if (data.ok) {
-                        alert(`Rating updated to ${data.rating} across ${data.updated_count} entries!\n\nIMPORTANT: Please remember to also update this rating on Letterboxd and Discord to maintain data consistency across platforms.`);
+                        let msg = "Changes saved!";
+                        if (data.needs_reenrich) {
+                            msg += "\n\nTitle/Year changed. Re-enrichment has been triggered in the background to find the correct official match.";
+                        }
+                        alert(msg);
                         quickInfoModal.classList.remove('show');
                         fetchMedia(); // Refresh data
                     } else {
-                        alert("Failed to update rating: " + (data.detail || "Unknown error"));
+                        alert("Failed to update: " + (data.detail || "Unknown error"));
                     }
                 } catch (e) {
-                    alert("Error updating rating: " + e.message);
+                    alert("Error updating: " + e.message);
                 } finally {
-                    saveRatingBtn.disabled = false;
-                    saveRatingBtn.textContent = 'Save Rating';
+                    saveAllBtn.disabled = false;
+                    saveAllBtn.textContent = 'Save Changes';
                 }
             };
 
