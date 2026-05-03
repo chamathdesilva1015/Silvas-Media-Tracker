@@ -1,5 +1,7 @@
 import asyncio
 import os
+from dotenv import load_dotenv
+load_dotenv() # Load env vars as early as possible
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.exceptions import RequestValidationError
@@ -34,6 +36,10 @@ def get_session():
 
 def check_readonly(request: Request):
     # Detect Vercel environment automatically
+    from dotenv import load_dotenv
+    load_dotenv()
+    TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
+    BASE_URL = "https://api.themoviedb.org/3"
     if os.environ.get("VERCEL") == "1":
         if request.headers.get("x-admin-key") == "9745":
             return # Unlock for valid admin

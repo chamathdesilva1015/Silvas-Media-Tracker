@@ -944,15 +944,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     previewLoading.style.display = 'none';
                     formInputsContainer.style.display = 'block';
                     previewSubmitBtn.innerText = 'Preview Match';
+                    previewSubmitBtn.disabled = false;
                 }
             } catch (err) {
-                console.error(err);
+                console.error("Preview Network Error:", err);
                 alert("Network error while fetching preview.");
                 previewLoading.style.display = 'none';
                 formInputsContainer.style.display = 'block';
                 previewSubmitBtn.innerText = 'Preview Match';
-            } finally {
                 previewSubmitBtn.disabled = false;
+            } finally {
+                // Guaranteed safety to re-enable if we didn't switch phases
+                if (isPreviewPhase) {
+                    previewSubmitBtn.disabled = false;
+                    previewSubmitBtn.innerText = 'Preview Match';
+                    previewLoading.style.display = 'none';
+                    formInputsContainer.style.display = 'block';
+                }
             }
 
         } else {
@@ -1381,7 +1389,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const ratingInput = document.getElementById('quickInfoRatingInput');
         const yearInput = document.getElementById('quickInfoYearInput');
         const titleInput = document.getElementById('quickInfoTitleInput');
-        const typeInput = document.getElementById('quickInfoTypeInput');
         const saveAllBtn = document.getElementById('quickInfoSaveAllBtn');
 
         if (computeCanEdit()) {
@@ -1396,13 +1403,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ratingInput.value = rawScore || '';
             yearInput.value = item.release_year || '';
             titleInput.value = item.title || '';
-            typeInput.value = item.type || 'Movies';
 
             saveAllBtn.onclick = async () => {
                 let newRating = parseFloat(ratingInput.value);
                 const newYear = yearInput.value.trim();
                 const newTitle = titleInput.value.trim();
-                const newType = typeInput.value;
                 
                 const payload = {};
                 if (!isNaN(newRating)) {
@@ -1415,9 +1420,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (newTitle) {
                     payload.title = newTitle;
-                }
-                if (newType) {
-                    payload.type = newType;
                 }
                 
                 if (Object.keys(payload).length === 0) return;
