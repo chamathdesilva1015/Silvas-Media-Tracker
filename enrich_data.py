@@ -42,7 +42,7 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
         log(f"Found {len(items)} items to enrich.")
         enriched_count = 0
         
-        from jikan_helper import search_manga, get_manga_details
+        from jikan_helper import search_manga, get_manga_details, search_anime, get_anime_details
 
         for item in items:
             log(f"Processing {item.type}: {item.title} ({item.release_year or '????'})")
@@ -51,12 +51,17 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                 details = None
                 tmdb_id = item.tmdb_id
                 
-                # BRANCH: Manga (Jikan/MAL) vs Others (TMDB)
+                # BRANCH: Manga/Anime (Jikan/MAL) vs Others (TMDB)
                 if item.type == "Manga":
                     if not tmdb_id:
                         tmdb_id = search_manga(item.title)
                     if tmdb_id:
                         details = get_manga_details(tmdb_id)
+                elif item.type == "Anime":
+                    if not tmdb_id:
+                        tmdb_id = search_anime(item.title)
+                    if tmdb_id:
+                        details = get_anime_details(tmdb_id)
                 else:
                     media_type_flag = "movie" if item.type == "Movies" else "tv"
                     if not tmdb_id:
@@ -87,6 +92,8 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                 # 3. Fetch details
                 if item.type == "Manga":
                     details = get_manga_details(tmdb_id)
+                elif item.type == "Anime":
+                    details = get_anime_details(tmdb_id)
                 else:
                     details = get_tmdb_details(tmdb_id, media_type_flag)
 

@@ -224,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 updateCategoryTitleCount();
                 updateTheme();
+                populateGenreFilters();
                 filterAndRenderMedia();
             } else if (filter) {
                 handleCategorySwitch(filter);
@@ -246,20 +247,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (filter) {
                 handleCategorySwitch(filter);
             } else if (sub) {
-                // This is a sub-tab (Header Sub Nav)
-                pillTabs.forEach(t => {
-                    if (t.getAttribute('data-sub')) t.classList.remove('active');
-                });
-                tab.classList.add('active');
+                // This is a sub-tab click (e.g. Info, Completed, Rankings)
+                navLinks.forEach(l => l.classList.remove('active'));
+                
                 currentSubTab = sub;
 
-                // Sync Mobile Info Tab if needed
-                if (sub === 'Info') {
-                    navLinks.forEach(l => l.classList.remove('active'));
-                    const mobileInfo = Array.from(navLinks).find(l => l.getAttribute('data-sub') === 'Info');
-                    if (mobileInfo) mobileInfo.classList.add('active');
-                }
+                // Sync desktop pills
+                pillTabs.forEach(t => {
+                    if (t.getAttribute('data-sub')) t.classList.remove('active');
+                    if (t.getAttribute('data-sub') === currentSubTab) t.classList.add('active');
+                });
                 
+                populateGenreFilters();
                 filterAndRenderMedia();
             }
         });
@@ -331,19 +330,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const populateGenreFilters = () => {
         if (!genreFilterList) return;
         const genres = new Set();
+        
         allMedia.forEach(item => {
-            if (item.genres && item.type.toLowerCase() === currentCategory.toLowerCase()) {
-                item.genres.split(',').forEach(g => genres.add(g.trim()));
+            if (item.type.toLowerCase() !== currentCategory.toLowerCase()) return;
+            
+            // Only include genres that are present in the current sub-tab!
+            let matchesSubTab = false;
+            if (currentSubTab === 'Watchlist' && !item.is_completed) matchesSubTab = true;
+            else if (currentSubTab === 'Rankings' && item.is_ranking) matchesSubTab = true;
+            else if (currentSubTab === 'Completed' && item.is_completed && !item.is_ranking) matchesSubTab = true;
+            else if (currentSubTab === 'Info') matchesSubTab = true; // Show all for Info
+
+            if (matchesSubTab && item.genres) {
+                item.genres.split(',').forEach(g => {
+                    const clean = g.trim();
+                    if (clean) genres.add(clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase());
+                });
             }
         });
         
         const sortedGenres = Array.from(genres).sort();
-        genreFilterList.innerHTML = sortedGenres.map(g => `
-            <label class="filter-option checkbox">
-                <input type="checkbox" class="genre-filter-check" value="${g}" ${filterState.genres.has(g) ? 'checked' : ''}>
-                <span>${g}</span>
-            </label>
-        `).join('');
+        genreFilterList.innerHTML = sortedGenres.map(g => {
+            const isChecked = Array.from(filterState.genres).some(fg => fg.toLowerCase() === g.toLowerCase());
+            return `
+                <label class="filter-option checkbox">
+                    <input type="checkbox" class="genre-filter-check" value="${g}" ${isChecked ? 'checked' : ''}>
+                    <span>${g}</span>
+                </label>
+            `;
+        }).join('');
     };
 
     if (applyFiltersBtn) {
@@ -1183,32 +1198,17 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // Rating — for ranked items, both rating and numeric_rating may hold "#N"
-        // Strategy: try both fields, then fall back to the sibling Completed entry in allMedia.
-        const ratingStr = String(item.rating || '');
-        const numRatingStr = String(item.numeric_rating || '');
+        // v236: Surefire Global Rating Lookup
+        const normalizedTarget = item.title.toLowerCase().trim();
+        const bestEntry = allMedia.find(m => 
+            m.title.toLowerCase().trim() === normalizedTarget && 
+            m.numeric_rating && 
+            !m.numeric_rating.toString().startsWith('#')
+        );
+        let rawScore = bestEntry ? bestEntry.numeric_rating.toString().replace('/10','').trim() : '';
         
-        const extractScore = (s) => {
-            if (!s || s.trim().startsWith('#')) return null;
-            const cleaned = s.replace('/10', '').trim();
-            const val = parseFloat(cleaned);
-            return isNaN(val) ? null : cleaned;
-        };
-        
-        let rawScore = extractScore(numRatingStr) || extractScore(ratingStr);
-        
-        // If ranked item has no usable score in its own fields, look for the
-        // sibling Completed entry in allMedia (same title + type, is_ranking = false)
-        if (!rawScore && item.is_ranking) {
-            const sibling = allMedia.find(m =>
-                m.type === item.type &&
-                m.title.toLowerCase().trim() === item.title.toLowerCase().trim() &&
-                !m.is_ranking
-            );
-            if (sibling) {
-                rawScore = extractScore(String(sibling.numeric_rating || '')) ||
-                           extractScore(String(sibling.rating || ''));
-            }
+        if (!rawScore && item.numeric_rating && !item.numeric_rating.toString().startsWith('#')) {
+            rawScore = item.numeric_rating.toString().replace('/10','').trim();
         }
         
         document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
@@ -1326,6 +1326,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Auto-open the correct search page for the user in a new tab
                     const searchUrl = (item.type === 'Manga')
                         ? `https://myanimelist.net/manga.php?q=${encodeURIComponent(item.title)}`
+                        : (item.type === 'Anime')
+                        ? `https://myanimelist.net/anime.php?q=${encodeURIComponent(item.title)}`
                         : `https://www.themoviedb.org/search?query=${encodeURIComponent(item.title)}`;
                     window.open(searchUrl, '_blank');
                 }

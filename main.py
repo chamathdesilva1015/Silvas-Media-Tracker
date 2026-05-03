@@ -199,6 +199,16 @@ async def link_metadata_manually(payload: LinkPayload, session: Session = Depend
     if not details:
         raise HTTPException(status_code=400, detail="Could not retrieve details for that ID.")
 
+    # Ensure no ID overwrites an already entered entry
+    stmt = select(MediaItem).where(
+        MediaItem.tmdb_id == payload.ext_id,
+        MediaItem.type == item.type,
+        MediaItem.id != item.id
+    )
+    existing_match = session.exec(stmt).first()
+    if existing_match:
+        raise HTTPException(status_code=400, detail=f"This ID is already linked to another {item.type} entry: '{existing_match.title}'.")
+
     # Apply details
     if details.get("title"): item.title = details["title"]
     if details.get("release_year"): item.release_year = details["release_year"]

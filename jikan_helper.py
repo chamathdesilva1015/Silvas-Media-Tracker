@@ -52,6 +52,54 @@ def search_manga(title: str) -> Optional[int]:
         print(f"Jikan Search Error for '{title}': {e}")
     return None
 
+def search_anime(title: str) -> Optional[int]:
+    """
+    Searches for an anime and returns its MyAnimeList (MAL) ID.
+    """
+    url = f"{BASE_URL}/anime"
+    params = {"q": title, "limit": 5}
+    
+    try:
+        response = requests.get(url, params=params)
+        if response.status_code == 429:
+            time.sleep(1) # Rate limit hit
+            response = requests.get(url, params=params)
+            
+        response.raise_for_status()
+        data = response.json()
+        
+        results = data.get("data", [])
+        if not results:
+            return None
+            
+        from thefuzz import fuzz
+        
+        # Match by title similarity
+        best_match = None
+        highest_score = 0
+        
+        for r in results:
+            api_title = r.get("title", "")
+            # Check primary title and English title
+            titles_to_check = [api_title]
+            if r.get("title_english"):
+                titles_to_check.append(r["title_english"])
+            
+            for t in titles_to_check:
+                score = fuzz.token_sort_ratio(t.lower(), title.lower())
+                if score > highest_score:
+                    highest_score = score
+                    best_match = r
+        
+        # Threshold: 70% similarity
+        if best_match and highest_score > 70:
+            return best_match["mal_id"]
+        
+        return None
+    except Exception as e:
+        print(f"Jikan Anime Search Error for '{title}': {e}")
+    return None
+
 def get_manga_details(mal_id: int) -> Dict:
     """
     Fetches genres, poster, and author for a manga.
