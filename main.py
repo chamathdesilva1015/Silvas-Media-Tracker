@@ -366,10 +366,11 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
         # Ensure /10 suffix
         new_rating = new_score if new_score.endswith("/10") else f"{new_score}/10"
         
-        # Cascade to all rows with same normalized title/type (Completed + Rankings)
+        # Cascade to all rows with same normalized title/type AND YEAR (Completed + Rankings)
         target_norm = normalize_title(item.title)
+        target_year = item.release_year
         all_related = session.exec(select(MediaItem).where(MediaItem.type == item.type)).all()
-        related = [r for r in all_related if normalize_title(r.title) == target_norm]
+        related = [r for r in all_related if normalize_title(r.title) == target_norm and r.release_year == target_year]
         
         for r in related:
             # Log to history

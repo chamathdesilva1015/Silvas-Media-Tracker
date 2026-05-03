@@ -1380,10 +1380,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ribbon.className = 'rank-ribbon';
         }
 
-        // v236: Surefire Global Rating Lookup
+        // v236: Surefire Global Rating Lookup (with year disambiguation)
         const normalizedTarget = item.title.toLowerCase().trim();
+        const targetYear = item.release_year;
         const bestEntry = allMedia.find(m => 
             m.title.toLowerCase().trim() === normalizedTarget && 
+            m.release_year === targetYear &&
             m.numeric_rating && 
             !m.numeric_rating.toString().startsWith('#')
         );
