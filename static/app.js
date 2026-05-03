@@ -166,14 +166,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Update Add Button Text
+        // 2. Update Add Button Text & Modal Title
         const addBtn = document.getElementById('addMediaBtn');
+        const modalTitle = document.getElementById('modalTitle');
+        const displayLabel = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.replace(/s$/, '');
+        
         if (addBtn) {
             const desktopLabel = addBtn.querySelector('.desktop-text');
             if (desktopLabel) {
-                const displayLabel = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.replace(/s$/, '');
                 desktopLabel.innerText = `+ Add ${displayLabel}`;
             }
+        }
+        if (modalTitle) {
+            modalTitle.innerText = `Add ${displayLabel}`;
         }
 
         // 3. Clear and Re-populate Genre Filters
@@ -263,9 +268,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-    searchInput.addEventListener('input', () => {
+    // Utility for debouncing fast inputs like search
+    const debounce = (func, wait) => {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    };
+
+    searchInput.addEventListener('input', debounce(() => {
         filterAndRenderMedia();
-    });
+    }, 150));
 
     // --- Unified Filter System (v160) ---
     const filterTrigger = document.getElementById('filterTrigger');
@@ -336,10 +354,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Only include genres that are present in the current sub-tab!
             let matchesSubTab = false;
-            if (currentSubTab === 'Watchlist' && !item.is_completed) matchesSubTab = true;
-            else if (currentSubTab === 'Rankings' && item.is_ranking) matchesSubTab = true;
-            else if (currentSubTab === 'Completed' && item.is_completed && !item.is_ranking) matchesSubTab = true;
-            else if (currentSubTab === 'Info') matchesSubTab = true; // Show all for Info
+            if (currentSubTab === 'Rankings' && item.is_ranking) matchesSubTab = true;
+            else if (currentSubTab === 'Completed' && !item.is_ranking) matchesSubTab = true;
+            else if (currentSubTab === 'Info' || currentSubTab === 'Stats') matchesSubTab = true; // Show all for Info/Stats
 
             if (matchesSubTab && item.genres) {
                 item.genres.split(',').forEach(g => {
@@ -706,9 +723,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
             }
         } else if (sortVal === 'rating-desc') {
-            filtered.sort((a, b) => (parseRating(b.rating) || 0) - (parseRating(a.rating) || 0));
+            filtered.sort((a, b) => (parseRating(b.numeric_rating || b.rating) || 0) - (parseRating(a.numeric_rating || a.rating) || 0));
         } else if (sortVal === 'rating-asc') {
-            filtered.sort((a, b) => (parseRating(a.rating) || 0) - (parseRating(b.rating) || 0));
+            filtered.sort((a, b) => (parseRating(a.numeric_rating || a.rating) || 0) - (parseRating(b.numeric_rating || b.rating) || 0));
         } else if (sortVal === 'year-desc') {
             filtered.sort((a, b) => (b.release_year || 0) - (a.release_year || 0));
         } else if (sortVal === 'year-asc') {
@@ -776,18 +793,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Dynamic Form toggle
-    const typeInput = document.getElementById('typeInput');
-    const movieFields = document.getElementById('movieFields');
-    
-    typeInput.addEventListener('change', (e) => {
-        if (e.target.value === 'Movies') {
-            movieFields.style.display = 'block';
-            document.getElementById('releaseYearInput').required = true;
-        } else {
-            movieFields.style.display = 'none';
-            document.getElementById('releaseYearInput').required = false;
-        }
+    // State for preview
+    let pendingPreviewPayload = null;
+    let isPreviewPhase = true;
+
+    const formInputsContainer = document.getElementById('formInputsContainer');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewSubmitBtn = document.getElementById('previewSubmitBtn');
+    const previewBackBtn = document.getElementById('previewBackBtn');
+
+    // Reset modal state when it's closed or opened
+    document.getElementById('addMediaBtn').addEventListener('click', () => {
+        isPreviewPhase = true;
+        formInputsContainer.style.display = 'block';
+        previewContainer.style.display = 'none';
+        previewBackBtn.style.display = 'none';
+        previewSubmitBtn.innerText = 'Preview Match';
+        document.getElementById('previewDuplicateWarning').style.display = 'none';
+        pendingPreviewPayload = null;
+    });
+
+    previewBackBtn.addEventListener('click', () => {
+        isPreviewPhase = true;
+        formInputsContainer.style.display = 'block';
+        previewContainer.style.display = 'none';
+        previewBackBtn.style.display = 'none';
+        previewSubmitBtn.innerText = 'Preview Match';
     });
 
     // Form Submittion
@@ -807,44 +838,155 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let releaseYear = null;
-
-        if (type === 'Movies') {
-            releaseYear = parseInt(document.getElementById('releaseYearInput').value, 10);
-            if (isNaN(releaseYear)) {
-                alert('Please enter a valid release year for this movie.');
-                return;
-            }
+        const rawYear = document.getElementById('releaseYearInput').value;
+        const releaseYear = rawYear ? parseInt(rawYear, 10) : null;
+        
+        if (!releaseYear) {
+            alert('Please enter a valid Release Year.');
+            return;
         }
         
-        const payload = {
-            title: document.getElementById('titleInput').value,
-            type: type,
-            rating: ratingVal + '/10',
-            review: '', // No review on creation per user request
-            release_year: releaseYear,
-            source: 'manual'
-        };
+        const manualId = document.getElementById('manualIdInput').value.trim();
+        const titleInput = document.getElementById('titleInput').value.trim();
 
-        try {
-            const res = await fetch('/api/media', {
-                method: 'POST',
-                headers: getAuthHeaders(true),
-                body: JSON.stringify(payload)
-            });
+        const previewLoading = document.getElementById('previewLoading');
 
-            if(res.ok) {
-                form.reset();
-                modal.classList.remove('show');
-                fetchMedia(); // Refresh list
-            } else {
-                const errData = await res.json();
-                console.error("Failed to add entry", errData);
-                alert(`Failed to add entry: ${errData.detail || 'Unknown error'}`);
+        if (isPreviewPhase) {
+            // PHASE 1: Fetch Preview
+            if (!manualId && !titleInput) {
+                alert("Please provide either a Title or an ID Code.");
+                return;
             }
-        } catch(error) {
-            console.error("Error posting data:", error);
-            alert("Network error: Could not reach the server to add entry.");
+
+            // Expert transition to loading state
+            formInputsContainer.style.display = 'none';
+            previewLoading.style.display = 'block';
+            previewSubmitBtn.disabled = true;
+            previewSubmitBtn.innerText = 'Searching...';
+
+            try {
+                const query = new URLSearchParams({
+                    type: type,
+                    title: titleInput || '',
+                    year: releaseYear || '',
+                    ext_id: manualId || ''
+                });
+
+                const res = await fetch(`/api/media/preview?${query.toString()}`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    // Expert rendering of Preview Card
+                    const previewPoster = document.getElementById('previewPoster');
+                    previewPoster.src = data.cover_url || '';
+                    previewPoster.style.display = data.cover_url ? 'inline-block' : 'none';
+                    
+                    document.getElementById('previewTitle').innerText = data.title || 'Unknown Title';
+                    document.getElementById('previewYear').innerText = data.release_year || '';
+                    
+                    // Dynamic Director/Creator Label
+                    let label = 'Created by';
+                    if (type === 'Movies') label = 'Directed by';
+                    if (type === 'Manga') label = 'Written by';
+                    document.getElementById('previewDirector').innerText = data.director ? `${label}: ${data.director}` : '';
+                    
+                    // Render Genre Pills
+                    const genresContainer = document.getElementById('previewGenres');
+                    if (data.genres) {
+                        genresContainer.innerHTML = data.genres.split(',').map(g => 
+                            `<span class="genre-badge">${g.trim()}</span>`
+                        ).join('');
+                    } else {
+                        genresContainer.innerHTML = '';
+                    }
+                    
+                    if (data.duplicate_warning) {
+                        document.getElementById('previewDuplicateWarning').style.display = 'block';
+                    } else {
+                        document.getElementById('previewDuplicateWarning').style.display = 'none';
+                    }
+
+                    // Store pending payload (fully enriched)
+                    pendingPreviewPayload = {
+                        title: data.title,
+                        type: type,
+                        rating: ratingVal + '/10',
+                        review: '',
+                        release_year: data.release_year,
+                        source: 'manual',
+                        tmdb_id: data.tmdb_id,
+                        cover_url: data.cover_url,
+                        director: data.director,
+                        genres: data.genres,
+                        runtime: data.runtime,
+                        content_rating: data.content_rating
+                    };
+
+                    isPreviewPhase = false;
+                    previewLoading.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                    previewBackBtn.style.display = 'block';
+                    previewSubmitBtn.innerText = 'Confirm & Save';
+                } else {
+                    const err = await res.json();
+                    alert(`Preview failed: ${err.detail || 'Could not find match.'}`);
+                    
+                    // Revert to form on failure
+                    previewLoading.style.display = 'none';
+                    formInputsContainer.style.display = 'block';
+                    previewSubmitBtn.innerText = 'Preview Match';
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error while fetching preview.");
+                previewLoading.style.display = 'none';
+                formInputsContainer.style.display = 'block';
+                previewSubmitBtn.innerText = 'Preview Match';
+            } finally {
+                previewSubmitBtn.disabled = false;
+            }
+
+        } else {
+            // PHASE 2: Save Target
+            if (!pendingPreviewPayload) return;
+
+            previewSubmitBtn.innerText = 'Saving...';
+            previewSubmitBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/media', {
+                    method: 'POST',
+                    headers: getAuthHeaders(true),
+                    body: JSON.stringify(pendingPreviewPayload)
+                });
+
+                if (res.ok) {
+                    form.reset();
+                    modal.classList.remove('show');
+                    fetchMedia(); // Refresh list
+                    isPreviewPhase = true;
+                    formInputsContainer.style.display = 'block';
+                    previewContainer.style.display = 'none';
+                    previewBackBtn.style.display = 'none';
+                    previewSubmitBtn.innerText = 'Preview Match';
+                    pendingPreviewPayload = null;
+                } else {
+                    const errData = await res.json();
+                    console.error("Failed to add entry", errData);
+                    alert(`Failed to add entry: ${errData.detail || 'Unknown error'}`);
+                }
+            } catch(error) {
+                console.error("Error posting data:", error);
+                alert("Network error: Could not reach the server to add entry.");
+            } finally {
+                if (!isPreviewPhase) {
+                    previewSubmitBtn.disabled = false;
+                    previewSubmitBtn.innerText = 'Confirm & Save';
+                }
+            }
         }
     });
 
@@ -1212,6 +1354,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
+
+        // Open Source Button Logic
+        const sourceBtn = document.getElementById('quickInfoSourceBtn');
+        if (sourceBtn) {
+            sourceBtn.style.display = 'inline-block';
+            let searchUrl = '';
+            const encTitle = encodeURIComponent(item.title);
+            if (item.type === 'Anime') {
+                searchUrl = `https://myanimelist.net/anime.php?q=${encTitle}`;
+            } else if (item.type === 'Manga') {
+                searchUrl = `https://myanimelist.net/manga.php?q=${encTitle}`;
+            } else {
+                searchUrl = `https://www.themoviedb.org/search?query=${encTitle}`;
+            }
+            sourceBtn.href = searchUrl;
+        }
 
         // Edit Button (Admin Only)
         const editBtn = document.getElementById('quickInfoEditBtn');

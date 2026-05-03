@@ -52,18 +52,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.on_event("startup")
 async def on_startup():
     create_db_and_tables()
-    # Run Score Cross-Linker synchronously (fast, DB-only)
-    try:
-        from health_check import run_score_crosslink
-        with Session(engine) as session:
-            items = session.exec(select(MediaItem)).all()
-            fixed, _ = run_score_crosslink(session, items, auto_fix=True)
-            if fixed:
-                session.commit()
-                print(f"[Startup] Score Cross-Linker: linked {fixed} missing scores.")
-    except Exception as e:
-        print(f"[Startup] Score Cross-Linker skipped: {e}")
-
+    # Removed obsolete health_check import
     # Launch enrichment in the background — site is immediately usable
     asyncio.create_task(run_enrichment())
 
@@ -90,14 +79,13 @@ def delete_media_item(item_id: int, session: Session = Depends(get_session), _: 
 
 @app.post("/api/media", response_model=MediaItem)
 def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
-    # Error-Proof Duplicate Check
+    # Error-Proof Duplicate Check (Case-insensitive)
     stmt = select(MediaItem).where(
-        MediaItem.title == item.title,
         MediaItem.type == item.type,
         MediaItem.release_year == item.release_year
     )
-    existing = session.exec(stmt).first()
-    if existing:
+    existing = session.exec(stmt).all()
+    if any(e.title.lower() == item.title.lower() for e in existing):
         raise HTTPException(
             status_code=400, 
             detail=f"This piece of media ('{item.title}' {item.release_year or ''}) already exists in your tracker."
@@ -107,8 +95,8 @@ def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Se
     session.commit()
     session.refresh(item)
 
-    # Auto-enrich if it's a Movie or TV Series
-    if item.type in ["Movies", "TV Series"]:
+    # Auto-enrich if it's a valid type
+    if item.type in ["Movies", "TV Series", "Anime", "Manga"]:
         background_tasks.add_task(run_enrichment, category=item.type)
 
     return item
@@ -176,6 +164,99 @@ async def refresh_item_metadata(item_id: int, session: Session = Depends(get_ses
 class LinkPayload(BaseModel):
     item_id: int
     ext_id: int # TMDB or MAL ID
+
+
+@app.get("/api/media/preview")
+def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] = "", ext_id: Optional[str] = "", session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    """Pre-fetches metadata for an item before it is saved, validating against duplicates."""
+    try:
+        data = {}
+        target_ext_id = int(ext_id) if ext_id else None
+
+        if type == "Anime":
+            from jikan_helper import get_anime_details, search_anime
+            if not target_ext_id and title:
+                target_ext_id = search_anime(title)
+            if target_ext_id:
+                data = get_anime_details(target_ext_id)
+        elif type == "Manga":
+            from jikan_helper import get_manga_details, search_manga
+            if not target_ext_id and title:
+                target_ext_id = search_manga(title)
+            if target_ext_id:
+                data = get_manga_details(target_ext_id)
+        elif type == "Movies":
+            from tmdb_helper import get_movie_details, search_movie
+            y = int(year) if year else None
+            if not target_ext_id and title:
+                target_ext_id = search_movie(title, y)
+            if target_ext_id:
+                data = get_movie_details(target_ext_id)
+        elif type == "TV Series":
+            from tmdb_helper import get_tv_details, search_tmdb
+            y = int(year) if year else None
+            if not target_ext_id and title:
+                target_ext_id = search_tmdb(title, y, media_type="tv")
+            if target_ext_id:
+                data = get_tv_details(target_ext_id)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid media type")
+
+        if not data:
+            raise HTTPException(status_code=404, detail="Could not find a match for that title/ID.")
+
+        # Expert Duplicate detection
+        canonical_title = data.get("title", "")
+        target_id = data.get("tmdb_id")
+        
+        # Check by ID first (most reliable)
+        if target_id:
+            existing_by_id = session.exec(select(MediaItem).where(
+                MediaItem.type == type,
+                MediaItem.tmdb_id == target_id
+            )).first()
+            if existing_by_id:
+                data["duplicate_warning"] = True
+                return data
+
+        # Fallback to Title/Year check
+        existing = session.exec(select(MediaItem).where(
+            MediaItem.type == type,
+            MediaItem.release_year == data.get("release_year")
+        )).all()
+        
+        is_duplicate = any(item.title.lower() == canonical_title.lower() for item in existing)
+        
+        data["duplicate_warning"] = is_duplicate
+        return data
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+@app.get("/api/media/fetch-metadata")
+def fetch_metadata(type: str, ext_id: str, _: None = Depends(check_readonly)):
+    """Fetches metadata for autofill in the UI."""
+    try:
+        if type == "Anime":
+            from jikan_helper import get_anime_details
+            data = get_anime_details(int(ext_id))
+            return data
+        elif type == "Manga":
+            from jikan_helper import get_manga_details
+            data = get_manga_details(int(ext_id))
+            return data
+        elif type == "Movies":
+            from tmdb_helper import get_movie_details
+            data = get_movie_details(int(ext_id))
+            return data
+        elif type == "TV Series":
+            from tmdb_helper import get_tv_details
+            data = get_tv_details(int(ext_id))
+            return data
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    raise HTTPException(status_code=400, detail="Invalid media type")
 
 @app.post("/api/media/link")
 async def link_metadata_manually(payload: LinkPayload, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
@@ -376,28 +457,32 @@ def reorder_rankings(request: ReorderRequest, session: Session = Depends(get_ses
         if item:
             rank_str = f"#{i + 1}"
             item.is_ranking = True
+            
+            # IMPORTANT: Preserve the original score before overwriting 'rating'
+            original_rating = str(item.rating or "").strip()
+            current_nr = str(item.numeric_rating or "").strip()
+            
+            # If numeric_rating is missing/invalid, try to salvage from the current rating
+            if not current_nr or current_nr.startswith('#'):
+                if original_rating and not original_rating.startswith('#'):
+                    item.numeric_rating = original_rating
+                else:
+                    # Fallback to finding a sibling
+                    sibling = session.exec(
+                        select(MediaItem).where(
+                            MediaItem.type == item.type,
+                            MediaItem.title == item.title,
+                            MediaItem.is_ranking == False
+                        )
+                    ).first()
+                    if sibling:
+                        nr = str(sibling.numeric_rating or sibling.rating or "").strip()
+                        item.numeric_rating = nr if nr and not nr.startswith('#') else None
+                    else:
+                        item.numeric_rating = None
+
             # Store rank in 'rating' field (the primary display field)
             item.rating = rank_str
-            # IMPORTANT: Preserve the numeric score in numeric_rating.
-            # Only overwrite numeric_rating if it currently holds another rank string (#N),
-            # or if it's empty. If it already has a real score (e.g., "8/10"), keep it.
-            current_nr = str(item.numeric_rating or "").strip()
-            if not current_nr or current_nr.startswith('#'):
-                # Try to find the score from the Completed version of this entry
-                # (same title + type, but not a ranking row)
-                sibling = session.exec(
-                    select(MediaItem).where(
-                        MediaItem.type == item.type,
-                        MediaItem.title == item.title,
-                        MediaItem.is_ranking == False
-                    )
-                ).first()
-                if sibling:
-                    nr = str(sibling.numeric_rating or sibling.rating or "").strip()
-                    item.numeric_rating = nr if nr and not nr.startswith('#') else None
-                else:
-                    item.numeric_rating = None
-            # If numeric_rating already has a real score, leave it untouched
             session.add(item)
 
     session.commit()

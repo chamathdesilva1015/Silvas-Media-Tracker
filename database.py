@@ -6,11 +6,11 @@ class MediaItem(SQLModel, table=True):
     __table_args__ = (UniqueConstraint("title", "type", "release_year", name="unique_media_item"),)
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    title: str
+    title: str = Field(index=True)
     release_year: Optional[int] = Field(default=None, index=True)
 
-    type: str # Movies, TV Series, Manga, Book, Anime
-    is_ranking: bool = Field(default=False)
+    type: str = Field(index=True) # Movies, TV Series, Manga, Book, Anime
+    is_ranking: bool = Field(default=False, index=True)
     is_liked: bool = Field(default=False)
     is_manual_rating: bool = Field(default=False)
     rating: str 

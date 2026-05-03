@@ -131,7 +131,7 @@ def get_manga_details(mal_id: int) -> Dict:
             author = f"{parts[1].strip()} {parts[0].strip()}"
             
         return {
-            "title": data.get("title"),
+            "title": data.get("title_english") or data.get("title"),
             "release_year": str(data.get("published", {}).get("prop", {}).get("from", {}).get("year", "")) or None,
             "genres": genres,
             "poster_url": poster_url,
