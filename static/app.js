@@ -827,6 +827,10 @@ document.addEventListener('DOMContentLoaded', () => {
         previewSubmitBtn.innerText = 'Preview Match';
     });
 
+    previewSubmitBtn.addEventListener('click', () => {
+        console.log("[*] Button Clicked! Phase:", isPreviewPhase ? "1" : "2");
+    });
+
     // Form Submittion
     form.addEventListener('submit', async (e) => {
         e.preventDefault();

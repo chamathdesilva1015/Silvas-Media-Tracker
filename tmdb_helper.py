@@ -5,7 +5,13 @@ from typing import List, Optional, Tuple
 from dotenv import load_dotenv
 load_dotenv()
 TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
+TMDB_ACCESS_TOKEN = os.environ.get("TMDB_ACCESS_TOKEN")
 BASE_URL = "https://api.themoviedb.org/3"
+
+def get_tmdb_headers():
+    if TMDB_ACCESS_TOKEN:
+        return {"Authorization": f"Bearer {TMDB_ACCESS_TOKEN}", "accept": "application/json"}
+    return {"accept": "application/json"}
 
 def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie") -> Optional[int]:
     """
@@ -19,9 +25,10 @@ def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie
     url = f"{BASE_URL}/search/{endpoint}"
     
     params = {
-        "api_key": TMDB_API_KEY,
-        "query": title,
+        "query": title.strip(),
     }
+    if TMDB_API_KEY and not TMDB_ACCESS_TOKEN:
+        params["api_key"] = TMDB_API_KEY
     
     # TMDB uses 'primary_release_year' for movies and 'first_air_date_year' for TV
     if year:
@@ -33,7 +40,8 @@ def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie
     print(f"[*] TMDB Search URL: {url} with params: {params}")
     
     try:
-        response = requests.get(url, params=params)
+        headers = get_tmdb_headers()
+        response = requests.get(url, params=params, headers=headers)
         response.raise_for_status()
         data = response.json()
         
@@ -96,12 +104,14 @@ def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
     append_val = "credits,releases" if media_type == "movie" else "credits,content_ratings"
     
     params = {
-        "api_key": TMDB_API_KEY,
         "append_to_response": append_val,
     }
+    if TMDB_API_KEY and not TMDB_ACCESS_TOKEN:
+        params["api_key"] = TMDB_API_KEY
     
     try:
-        response = requests.get(url, params=params)
+        headers = get_tmdb_headers()
+        response = requests.get(url, params=params, headers=headers)
         response.raise_for_status()
         data = response.json()
         
