@@ -2149,7 +2149,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                // Wire up like button click
+                // Expert: Wire up the entire card to open the quick info profile
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', () => {
+                    window.openQuickInfo(item);
+                });
+
+                // Wire up like button click (with stopPropagation)
                 const cardLikeBtn = card.querySelector('.like-btn-inline');
                 if (cardLikeBtn && isAdminUnlocked) {
                     cardLikeBtn.addEventListener('click', (e) => {
@@ -2814,4 +2820,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+
+    // Expert Initialization: Sync the default category state on load
+    handleCategorySwitch('Movies');
 });

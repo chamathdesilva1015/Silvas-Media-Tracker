@@ -35,8 +35,10 @@ def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie
         
         results = data.get("results", [])
         if not results:
+            print(f"[!] TMDB: No results found for query: {title} ({media_type})")
             return None
             
+        print(f"[*] TMDB: Found {len(results)} results for '{title}'. Comparing...")
         best_id = None
         best_score = -1
         

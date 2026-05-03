@@ -170,6 +170,7 @@ class LinkPayload(BaseModel):
 def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] = "", ext_id: Optional[str] = "", session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     """Pre-fetches metadata for an item before it is saved, validating against duplicates."""
     try:
+        print(f"[*] PREVIEW: type={type}, title='{title}', year={year}, ext_id={ext_id}")
         data = {}
         target_ext_id = int(ext_id) if ext_id else None
 
