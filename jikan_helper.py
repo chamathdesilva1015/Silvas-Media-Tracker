@@ -134,7 +134,7 @@ def get_manga_details(mal_id: int) -> Dict:
             "title": data.get("title_english") or data.get("title"),
             "release_year": str(data.get("published", {}).get("prop", {}).get("from", {}).get("year", "")) or None,
             "genres": genres,
-            "poster_url": poster_url,
+            "cover_url": poster_url,
             "director": author, # Store in director field for consistency
             "tmdb_id": mal_id,   # Use mal_id as tmdb_id for internal tracking
             "content_rating": data.get("status"), # Use status as a pseudo-rating (e.g. "Finished")
@@ -179,7 +179,7 @@ def get_anime_details(mal_id: int) -> dict:
             "title": data.get("title_english") or data.get("title"),
             "release_year": release_year,
             "genres": genres,
-            "poster_url": poster_url,
+            "cover_url": poster_url,
             "director": studio,
             "tmdb_id": mal_id,
             "content_rating": data.get("rating"),

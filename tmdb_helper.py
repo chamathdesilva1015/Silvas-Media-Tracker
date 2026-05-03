@@ -144,10 +144,11 @@ def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
                     break
         
         return {
+            "tmdb_id": tmdb_id,
             "title": data.get("title") or data.get("name"),
             "release_year": (data.get("release_date") or data.get("first_air_date", ""))[:4],
             "genres": genres_str,
-            "poster_url": poster_url,
+            "cover_url": poster_url,
             "director": director,
             "runtime": runtime,
             "content_rating": content_rating,

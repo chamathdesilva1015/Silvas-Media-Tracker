@@ -181,6 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
             modalTitle.innerText = `Add ${displayLabel}`;
         }
 
+        // Sync the hidden typeInput for the preview system
+        const typeInput = document.getElementById('typeInput');
+        if (typeInput) {
+            typeInput.value = category;
+        }
+
         // 3. Clear and Re-populate Genre Filters
         filterState.genres.clear();
         updateActiveFilterCount();
@@ -1361,12 +1367,10 @@ document.addEventListener('DOMContentLoaded', () => {
             sourceBtn.style.display = 'inline-block';
             let searchUrl = '';
             const encTitle = encodeURIComponent(item.title);
-            if (item.type === 'Anime') {
-                searchUrl = `https://myanimelist.net/anime.php?q=${encTitle}`;
-            } else if (item.type === 'Manga') {
-                searchUrl = `https://myanimelist.net/manga.php?q=${encTitle}`;
+            if (item.type === 'Anime' || item.type === 'Manga') {
+                searchUrl = `https://myanimelist.net/${item.type.toLowerCase()}/${item.tmdb_id || ''}`;
             } else {
-                searchUrl = `https://www.themoviedb.org/search?query=${encTitle}`;
+                searchUrl = `https://www.themoviedb.org/${item.type === 'TV' ? 'tv' : 'movie'}/${item.tmdb_id || ''}`;
             }
             sourceBtn.href = searchUrl;
         }
@@ -1377,6 +1381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ratingInput = document.getElementById('quickInfoRatingInput');
         const yearInput = document.getElementById('quickInfoYearInput');
         const titleInput = document.getElementById('quickInfoTitleInput');
+        const typeInput = document.getElementById('quickInfoTypeInput');
         const saveAllBtn = document.getElementById('quickInfoSaveAllBtn');
 
         if (computeCanEdit()) {
@@ -1391,11 +1396,13 @@ document.addEventListener('DOMContentLoaded', () => {
             ratingInput.value = rawScore || '';
             yearInput.value = item.release_year || '';
             titleInput.value = item.title || '';
+            typeInput.value = item.type || 'Movies';
 
             saveAllBtn.onclick = async () => {
                 let newRating = parseFloat(ratingInput.value);
                 const newYear = yearInput.value.trim();
                 const newTitle = titleInput.value.trim();
+                const newType = typeInput.value;
                 
                 const payload = {};
                 if (!isNaN(newRating)) {
@@ -1408,6 +1415,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (newTitle) {
                     payload.title = newTitle;
+                }
+                if (newType) {
+                    payload.type = newType;
                 }
                 
                 if (Object.keys(payload).length === 0) return;
