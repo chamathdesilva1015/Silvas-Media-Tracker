@@ -802,25 +802,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // State for preview
     let pendingPreviewPayload = null;
     let isPreviewPhase = true;
-    let isPreviewLiked = false;
-
-    const previewLikeContainer = document.getElementById('previewLikeContainer');
-    const previewLikeIcon = document.getElementById('previewLikeIcon');
-
-    previewLikeContainer.addEventListener('click', () => {
-        isPreviewLiked = !isPreviewLiked;
-        if (isPreviewLiked) {
-            previewLikeIcon.className = 'fas fa-heart';
-            previewLikeIcon.style.transform = 'scale(1.2)';
-            setTimeout(() => previewLikeIcon.style.transform = 'scale(1)', 200);
-        } else {
-            previewLikeIcon.className = 'far fa-heart';
-        }
-    });
+    const previewLikeCheckbox = document.getElementById('previewLikeCheckbox');
 
     const resetPreviewLike = () => {
-        isPreviewLiked = false;
-        previewLikeIcon.className = 'far fa-heart';
+        previewLikeCheckbox.checked = false;
     };
 
     const formInputsContainer = document.getElementById('formInputsContainer');
@@ -1005,8 +990,8 @@ document.addEventListener('DOMContentLoaded', () => {
             previewSubmitBtn.disabled = true;
 
             try {
-                // Final sync of the Like state
-                pendingPreviewPayload.is_liked = isPreviewLiked;
+                // Final sync of the Like state from the checkbox
+                pendingPreviewPayload.is_liked = previewLikeCheckbox.checked;
 
                 const res = await fetch('/api/media', {
                     method: 'POST',
