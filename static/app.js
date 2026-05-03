@@ -825,6 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previewContainer.style.display = 'none';
         previewBackBtn.style.display = 'none';
         previewSubmitBtn.innerText = 'Preview Match';
+        previewSubmitBtn.disabled = false;
         document.getElementById('previewDuplicateWarning').style.display = 'none';
         pendingPreviewPayload = null;
     });
@@ -997,7 +998,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     previewContainer.style.display = 'none';
                     previewBackBtn.style.display = 'none';
                     previewSubmitBtn.innerText = 'Preview Match';
+                    previewSubmitBtn.disabled = false;
                     pendingPreviewPayload = null;
+                    alert('Successfully added!');
                 } else {
                     const errData = await res.json();
                     console.error("Failed to add entry", errData);
@@ -1007,9 +1010,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Error posting data:", error);
                 alert("Network error: Could not reach the server to add entry.");
             } finally {
+                previewSubmitBtn.disabled = false;
                 if (!isPreviewPhase) {
-                    previewSubmitBtn.disabled = false;
                     previewSubmitBtn.innerText = 'Confirm & Save';
+                } else {
+                    previewSubmitBtn.innerText = 'Preview Match';
                 }
             }
         }
