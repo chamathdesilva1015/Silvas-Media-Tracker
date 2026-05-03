@@ -208,10 +208,7 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
             raise HTTPException(status_code=400, detail="Invalid media type")
 
         if not data:
-            from tmdb_helper import TMDB_API_KEY, TMDB_ACCESS_TOKEN
-            k_disp = TMDB_API_KEY[:4] if TMDB_API_KEY else "None"
-            key_status = f"Key: {k_disp}... Access: {'Yes' if TMDB_ACCESS_TOKEN else 'No'}"
-            raise HTTPException(status_code=404, detail=f"No match found for '{title}' ({year}). [{key_status}]")
+            raise HTTPException(status_code=404, detail="Could not find a match for that title/ID.")
 
         # Expert Duplicate detection
         canonical_title = data.get("title", "")
