@@ -184,3 +184,6 @@ def search_movie(title: str, year: Optional[int] = None) -> Optional[int]:
 
 def get_movie_details(tmdb_id: int) -> dict:
     return get_tmdb_details(tmdb_id, "movie")
+
+def get_tv_details(tmdb_id: int) -> dict:
+    return get_tmdb_details(tmdb_id, "tv")

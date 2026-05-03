@@ -810,7 +810,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reset modal state when it's closed or opened
     document.getElementById('addMediaBtn').addEventListener('click', () => {
+        console.log("[*] Opening modal for category:", currentCategory);
         isPreviewPhase = true;
+        
+        // Sync modal type and title with current category
+        const typeInput = document.getElementById('typeInput');
+        typeInput.value = currentCategory;
+        
+        const modalTitle = document.getElementById('modalTitle');
+        const displayType = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.slice(0, -1);
+        modalTitle.innerText = 'Add ' + displayType;
+
         formInputsContainer.style.display = 'block';
         previewContainer.style.display = 'none';
         previewBackBtn.style.display = 'none';
@@ -1780,6 +1790,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteMedia = (id, title) => {
         openDeleteModal(id, title);
     };
+
+
 
     const renderSkeletons = () => {
         grid.innerHTML = '';
