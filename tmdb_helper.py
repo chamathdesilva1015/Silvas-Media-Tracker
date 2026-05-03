@@ -79,6 +79,11 @@ def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie
                 best_score = score
                 best_id = r["id"]
                 
+        if not best_id and results:
+            # Fallback: Just pick the first result if we found anything at all
+            best_id = results[0]["id"]
+            print(f"[*] TMDB: No perfect match for '{title}'. Falling back to first result: {best_id}")
+
         if not best_id and year:
             print(f"[*] TMDB: No good match with year {year}. Retrying without year...")
             return search_tmdb(title, year=None, media_type=media_type)

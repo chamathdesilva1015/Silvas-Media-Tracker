@@ -172,10 +172,9 @@ class LinkPayload(BaseModel):
 def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] = "", ext_id: Optional[str] = "", session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     """Pre-fetches metadata for an item before it is saved, validating against duplicates."""
     try:
-        print(f"\n[!] PREVIEW REQUEST: type={type}, title='{title}', year='{year}', ext_id='{ext_id}'")
-        from tmdb_helper import TMDB_API_KEY, TMDB_ACCESS_TOKEN
-        print(f"  > Auth Check: API_KEY={'Yes' if TMDB_API_KEY else 'No'}, ACCESS_TOKEN={'Yes' if TMDB_ACCESS_TOKEN else 'No'}")
-        
+        print(f"[*] PREVIEW: type={type}, title='{title}', year={year}, ext_id={ext_id}")
+        from tmdb_helper import TMDB_API_KEY
+        print(f"[*] TMDB_API_KEY loaded: {'Yes (Length: ' + str(len(TMDB_API_KEY)) + ')' if TMDB_API_KEY else 'No'}")
         data = {}
         target_ext_id = int(ext_id) if ext_id else None
 
@@ -209,7 +208,10 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
             raise HTTPException(status_code=400, detail="Invalid media type")
 
         if not data:
-            raise HTTPException(status_code=404, detail="Could not find a match for that title/ID.")
+            from tmdb_helper import TMDB_API_KEY, TMDB_ACCESS_TOKEN
+            k_disp = TMDB_API_KEY[:4] if TMDB_API_KEY else "None"
+            key_status = f"Key: {k_disp}... Access: {'Yes' if TMDB_ACCESS_TOKEN else 'No'}"
+            raise HTTPException(status_code=404, detail=f"No match found for '{title}' ({year}). [{key_status}]")
 
         # Expert Duplicate detection
         canonical_title = data.get("title", "")
