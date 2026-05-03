@@ -13,8 +13,6 @@ from typing import List, Optional
 
 from database import engine, create_db_and_tables, MediaItem, RatingHistory
 from enrich_data import run_enrichment
-from tmdb_helper import search_movie, get_movie_details, search_tmdb, get_tv_details
-from jikan_helper import search_anime, get_anime_details, search_manga, get_manga_details
 
 app = FastAPI(title="Silva's Media Tracker API")
 
@@ -181,22 +179,26 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
         target_ext_id = int(ext_id) if ext_id else None
 
         if type == "Anime":
+            from jikan_helper import search_anime, get_anime_details
             if not target_ext_id and title:
                 target_ext_id = search_anime(title)
             if target_ext_id:
                 data = get_anime_details(target_ext_id)
         elif type == "Manga":
+            from jikan_helper import search_manga, get_manga_details
             if not target_ext_id and title:
                 target_ext_id = search_manga(title)
             if target_ext_id:
                 data = get_manga_details(target_ext_id)
         elif type == "Movies":
+            from tmdb_helper import search_movie, get_movie_details
             y = int(year) if year else None
             if not target_ext_id and title:
                 target_ext_id = search_movie(title, y)
             if target_ext_id:
                 data = get_movie_details(target_ext_id)
         elif type == "TV Series":
+            from tmdb_helper import search_tmdb, get_tv_details
             y = int(year) if year else None
             if not target_ext_id and title:
                 target_ext_id = search_tmdb(title, y, media_type="tv")
