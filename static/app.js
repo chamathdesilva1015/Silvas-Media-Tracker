@@ -837,18 +837,12 @@ document.addEventListener('DOMContentLoaded', () => {
         previewSubmitBtn.innerText = 'Preview Match';
     });
 
-    previewSubmitBtn.addEventListener('click', () => {
-        console.log("[*] Button Clicked! Phase:", isPreviewPhase ? "1" : "2");
-    });
-
     // Form Submittion
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        console.log("[*] SUBMIT TRIGGERED - isPreviewPhase:", isPreviewPhase);
         
         const type = document.getElementById('typeInput').value;
         const ratingVal = parseFloat(document.getElementById('ratingInput').value);
-        console.log("[*] Current State - Type:", type, "Rating:", ratingVal);
         
         if (isNaN(ratingVal)) {
             alert('Please enter a valid numeric rating.');
@@ -948,7 +942,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
 
                     isPreviewPhase = false;
-                    console.log("[*] Phase 1 Success - Transitioning to Phase 2. isPreviewPhase is now:", isPreviewPhase);
                     previewLoading.style.display = 'none';
                     previewContainer.style.display = 'block';
                     previewBackBtn.style.display = 'block';
@@ -983,11 +976,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             // PHASE 2: Save Target
-            console.log("[*] Phase 2: Confirming save...", pendingPreviewPayload);
-            if (!pendingPreviewPayload) {
-                console.error("[-] No pending payload found!");
-                return;
-            }
+            if (!pendingPreviewPayload) return;
 
             previewSubmitBtn.innerText = 'Saving...';
             previewSubmitBtn.disabled = true;
