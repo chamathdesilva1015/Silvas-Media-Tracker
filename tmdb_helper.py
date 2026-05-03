@@ -23,12 +23,14 @@ def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie
         "query": title,
     }
     
-    # TMDB uses 'year' for movies and 'first_air_date_year' for TV
+    # TMDB uses 'primary_release_year' for movies and 'first_air_date_year' for TV
     if year:
         if media_type == "movie":
-            params["year"] = year
+            params["primary_release_year"] = year
         else:
             params["first_air_date_year"] = year
+            
+    print(f"[*] TMDB Search URL: {url} with params: {params}")
     
     try:
         response = requests.get(url, params=params)

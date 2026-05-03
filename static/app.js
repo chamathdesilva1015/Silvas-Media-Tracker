@@ -830,10 +830,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form Submittion
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        console.log("[*] Form submitted. Phase:", isPreviewPhase ? "1 (Preview)" : "2 (Save)");
+        console.log("[*] SUBMIT TRIGGERED - isPreviewPhase:", isPreviewPhase);
         
         const type = document.getElementById('typeInput').value;
         const ratingVal = parseFloat(document.getElementById('ratingInput').value);
+        console.log("[*] Current State - Type:", type, "Rating:", ratingVal);
         
         if (isNaN(ratingVal)) {
             alert('Please enter a valid numeric rating.');
@@ -933,10 +934,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
 
                     isPreviewPhase = false;
+                    console.log("[*] Phase 1 Success - Transitioning to Phase 2. isPreviewPhase is now:", isPreviewPhase);
                     previewLoading.style.display = 'none';
                     previewContainer.style.display = 'block';
                     previewBackBtn.style.display = 'block';
                     previewSubmitBtn.innerText = 'Confirm & Save';
+                    previewSubmitBtn.disabled = false;
                 } else {
                     const err = await res.json();
                     alert(`Preview failed: ${err.detail || 'Could not find match.'}`);
