@@ -177,6 +177,8 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
     """Pre-fetches metadata for an item before it is saved, validating against duplicates."""
     try:
         print(f"[*] PREVIEW: type={type}, title='{title}', year={year}, ext_id={ext_id}")
+        from tmdb_helper import TMDB_API_KEY
+        print(f"[*] TMDB_API_KEY loaded: {'Yes (Length: ' + str(len(TMDB_API_KEY)) + ')' if TMDB_API_KEY else 'No'}")
         data = {}
         target_ext_id = int(ext_id) if ext_id else None
 

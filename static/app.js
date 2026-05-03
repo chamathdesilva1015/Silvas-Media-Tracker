@@ -830,6 +830,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form Submittion
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log("[*] Form submitted. Phase:", isPreviewPhase ? "1 (Preview)" : "2 (Save)");
         
         const type = document.getElementById('typeInput').value;
         const ratingVal = parseFloat(document.getElementById('ratingInput').value);
@@ -965,7 +966,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             // PHASE 2: Save Target
-            if (!pendingPreviewPayload) return;
+            console.log("[*] Phase 2: Confirming save...", pendingPreviewPayload);
+            if (!pendingPreviewPayload) {
+                console.error("[-] No pending payload found!");
+                return;
+            }
 
             previewSubmitBtn.innerText = 'Saving...';
             previewSubmitBtn.disabled = true;
