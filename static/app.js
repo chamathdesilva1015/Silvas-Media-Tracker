@@ -802,6 +802,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // State for preview
     let pendingPreviewPayload = null;
     let isPreviewPhase = true;
+    let isPreviewLiked = false;
+
+    const previewLikeContainer = document.getElementById('previewLikeContainer');
+    const previewLikeIcon = document.getElementById('previewLikeIcon');
+
+    previewLikeContainer.addEventListener('click', () => {
+        isPreviewLiked = !isPreviewLiked;
+        if (isPreviewLiked) {
+            previewLikeIcon.className = 'fas fa-heart';
+            previewLikeIcon.style.transform = 'scale(1.2)';
+            setTimeout(() => previewLikeIcon.style.transform = 'scale(1)', 200);
+        } else {
+            previewLikeIcon.className = 'far fa-heart';
+        }
+    });
+
+    const resetPreviewLike = () => {
+        isPreviewLiked = false;
+        previewLikeIcon.className = 'far fa-heart';
+    };
 
     const formInputsContainer = document.getElementById('formInputsContainer');
     const previewContainer = document.getElementById('previewContainer');
@@ -828,6 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previewSubmitBtn.disabled = false;
         document.getElementById('previewDuplicateWarning').style.display = 'none';
         pendingPreviewPayload = null;
+        resetPreviewLike();
     });
 
     previewBackBtn.addEventListener('click', () => {
@@ -836,6 +857,7 @@ document.addEventListener('DOMContentLoaded', () => {
         previewContainer.style.display = 'none';
         previewBackBtn.style.display = 'none';
         previewSubmitBtn.innerText = 'Preview Match';
+        resetPreviewLike();
     });
 
     // Form Submittion
@@ -983,6 +1005,9 @@ document.addEventListener('DOMContentLoaded', () => {
             previewSubmitBtn.disabled = true;
 
             try {
+                // Final sync of the Like state
+                pendingPreviewPayload.is_liked = isPreviewLiked;
+
                 const res = await fetch('/api/media', {
                     method: 'POST',
                     headers: getAuthHeaders(true),
