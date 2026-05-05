@@ -44,6 +44,15 @@ class RatingHistory(SQLModel, table=True):
     new_rating: str
     changed_at: datetime = Field(default_factory=datetime.utcnow)
 
+class PassedSuggestion(SQLModel, table=True):
+    """Tracks media items the user has passed on, ensuring they are not suggested again."""
+    __table_args__ = (UniqueConstraint("type", "tmdb_id", name="unique_passed_suggestion"),)
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    type: str = Field(index=True) # e.g. "Movies", "Anime"
+    tmdb_id: int = Field(index=True)
+    passed_at: datetime = Field(default_factory=datetime.utcnow)
+
 import os
 from dotenv import load_dotenv
 

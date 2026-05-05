@@ -2864,56 +2864,96 @@ document.addEventListener('DOMContentLoaded', () => {
     const suggestionResults = document.getElementById('suggestionResults');
     const suggestionError = document.getElementById('suggestionError');
 
-    if (suggestMeBtn) {
-        suggestMeBtn.addEventListener('click', async () => {
-            suggestionModal.classList.add('show');
-            suggestionLoading.style.display = 'block';
-            suggestionResults.style.display = 'none';
-            suggestionError.style.display = 'none';
-            suggestionResults.innerHTML = '';
+    const suggestionControls = document.getElementById('suggestionControls');
+    const retrySuggestionBtn = document.getElementById('retrySuggestionBtn');
 
-            try {
-                const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}`, {
-                    headers: getAuthHeaders(false) // Guests can use this too
-                });
-                
-                if (!res.ok) throw new Error('Failed to fetch suggestions');
-                const data = await res.json();
-                
-                if (data.length === 0) {
-                    suggestionError.style.display = 'block';
-                    suggestionError.textContent = "We don't have enough highly-rated data in your tracker to make good suggestions yet!";
-                } else {
-                    data.forEach(item => {
-                        const card = document.createElement('div');
-                        card.className = 'suggestion-card';
-                        
-                        const coverUrl = item.cover_url || 'https://via.placeholder.com/180x270/2c3e50/ecf0f1?text=No+Poster';
-                        const year = item.release_year ? `(${item.release_year})` : '';
-                        const genres = item.genres ? `<div class="suggestion-genres">${item.genres}</div>` : '';
-                        const director = item.director ? `<div class="suggestion-director">${item.type === 'Movies' ? 'Dir.' : 'By'} ${item.director}</div>` : '';
-                        const overview = item.overview ? `<div class="suggestion-overview">${item.overview}</div>` : '';
-                        
-                        card.innerHTML = `
-                            <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
-                            <div class="suggestion-title">${item.title}</div>
-                            <div class="suggestion-meta">${item.type} ${year}</div>
-                            ${director}
-                            ${genres}
-                            ${overview}
-                            <div class="suggestion-reason">${item.reason}</div>
-                        `;
-                        suggestionResults.appendChild(card);
-                    });
-                    suggestionResults.style.display = 'grid';
-                }
-            } catch (err) {
-                console.error("Suggestion Engine Error:", err);
+    async function fetchSuggestions() {
+        suggestionLoading.style.display = 'block';
+        suggestionResults.style.display = 'none';
+        suggestionError.style.display = 'none';
+        if (suggestionControls) suggestionControls.style.display = 'none';
+        suggestionResults.innerHTML = '';
+
+        try {
+            const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}`, {
+                headers: getAuthHeaders(false) // Guests can use this too
+            });
+            
+            if (!res.ok) throw new Error('Failed to fetch suggestions');
+            const data = await res.json();
+            
+            if (data.length === 0) {
                 suggestionError.style.display = 'block';
-                suggestionError.textContent = "An error occurred while generating suggestions. Please try again.";
-            } finally {
-                suggestionLoading.style.display = 'none';
+                suggestionError.textContent = "We don't have enough highly-rated data in your tracker to make good suggestions yet!";
+            } else {
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    
+                    const coverUrl = item.cover_url || 'https://via.placeholder.com/180x270/2c3e50/ecf0f1?text=No+Poster';
+                    const year = item.release_year ? `(${item.release_year})` : '';
+                    const genres = item.genres ? `<div class="suggestion-genres">${item.genres}</div>` : '';
+                    const director = item.director ? `<div class="suggestion-director">${item.type === 'Movies' ? 'Dir.' : 'By'} ${item.director}</div>` : '';
+                    const overview = item.overview ? `<div class="suggestion-overview">${item.overview}</div>` : '';
+                    
+                    card.innerHTML = `
+                        <div class="suggestion-pass-btn" title="Pass (Never show again)"><i class="fas fa-times"></i></div>
+                        <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
+                        <div class="suggestion-title">${item.title}</div>
+                        <div class="suggestion-meta">${item.type} ${year}</div>
+                        ${director}
+                        ${genres}
+                        ${overview}
+                        <div class="suggestion-reason">${item.reason}</div>
+                    `;
+                    
+                    const passBtn = card.querySelector('.suggestion-pass-btn');
+                    passBtn.addEventListener('click', async () => {
+                        passBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        try {
+                            const pRes = await fetch('/api/suggestions/pass', {
+                                method: 'POST',
+                                headers: getAuthHeaders(false),
+                                body: JSON.stringify({ type: item.type, tmdb_id: item.tmdb_id })
+                            });
+                            if (pRes.ok) {
+                                card.style.opacity = '0.3';
+                                card.style.pointerEvents = 'none';
+                                passBtn.innerHTML = '<i class="fas fa-check" style="color:#2ed573;"></i>';
+                            } else {
+                                throw new Error('Failed to pass');
+                            }
+                        } catch (e) {
+                            console.error("Pass error:", e);
+                            passBtn.innerHTML = '<i class="fas fa-times"></i>';
+                        }
+                    });
+
+                    suggestionResults.appendChild(card);
+                });
+                suggestionResults.style.display = 'grid';
+                if (suggestionControls) suggestionControls.style.display = 'block';
             }
+        } catch (err) {
+            console.error("Suggestion Engine Error:", err);
+            suggestionError.style.display = 'block';
+            suggestionError.textContent = "An error occurred while generating suggestions. Please try again.";
+            if (suggestionControls) suggestionControls.style.display = 'block'; // Allow retry on error
+        } finally {
+            suggestionLoading.style.display = 'none';
+        }
+    }
+
+    if (suggestMeBtn) {
+        suggestMeBtn.addEventListener('click', () => {
+            suggestionModal.classList.add('show');
+            fetchSuggestions();
+        });
+    }
+    
+    if (retrySuggestionBtn) {
+        retrySuggestionBtn.addEventListener('click', () => {
+            fetchSuggestions();
         });
     }
 

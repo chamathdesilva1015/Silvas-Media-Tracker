@@ -11,7 +11,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 from typing import List, Optional
 
-from database import engine, create_db_and_tables, MediaItem, RatingHistory
+from database import engine, create_db_and_tables, MediaItem, RatingHistory, PassedSuggestion
 from enrich_data import run_enrichment
 
 app = FastAPI(title="Silva's Media Tracker API")
@@ -765,6 +765,11 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
     seeds = []
     tracked_titles = {normalize_title(i.title) for i in all_items}
     tracked_ids = {(i.type, i.tmdb_id) for i in all_items if i.tmdb_id}
+    
+    # Also fetch passed suggestions to avoid re-suggesting
+    passed_items = session.exec(select(PassedSuggestion)).all()
+    for p in passed_items:
+        tracked_ids.add((p.type, p.tmdb_id))
 
     for item in all_items:
         score = parse_score(item)
@@ -875,6 +880,29 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
         })
         
     return results
+
+class PassRequest(BaseModel):
+    type: str
+    tmdb_id: int
+
+@app.post("/api/suggestions/pass")
+def pass_suggestion(req: PassRequest, session: Session = Depends(get_session)):
+    """
+    Logs a suggestion as 'passed' so it won't be recommended again.
+    """
+    existing = session.exec(
+        select(PassedSuggestion).where(
+            PassedSuggestion.type == req.type,
+            PassedSuggestion.tmdb_id == req.tmdb_id
+        )
+    ).first()
+    
+    if not existing:
+        new_pass = PassedSuggestion(type=req.type, tmdb_id=req.tmdb_id)
+        session.add(new_pass)
+        session.commit()
+        
+    return {"status": "success", "message": "Suggestion passed."}
 
 @app.post("/api/automation/enrich")
 async def trigger_enrich(category: Optional[str] = None):
