@@ -99,6 +99,10 @@
                     <button class="info-btn" data-section="Bias & Effects">
                         <span class="info-btn-text">Bias & Effects</span>
                     </button>
+                    <button class="info-btn" id="suggestMeBtn" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(147, 112, 219, 0.2)); border-color: rgba(147, 112, 219, 0.4); margin-top: 1rem;">
+                        <i class="fas fa-magic" style="color: #9370db;"></i>
+                        <span class="info-btn-text" style="color: #fff;">Suggest Me Something</span>
+                    </button>
                 </div>
                 
                 <!-- Admin-Only Actions Container -->
@@ -231,6 +235,28 @@
         </div>
     </div>
 
+
+    <!-- Suggestion Modal -->
+    <div id="suggestionModal" class="modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 85vh; overflow-y: auto;">
+            <span class="close-btn" id="closeSuggestionBtn">&times;</span>
+            <h2 class="serif" style="text-align: center; margin-bottom: 0.5rem; color: #fff;">Suggest Me Something</h2>
+            <p style="text-align: center; opacity: 0.7; font-size: 0.9rem; margin-bottom: 2rem;">Based on your highest-rated favorites across all databases.</p>
+            
+            <div id="suggestionLoading" style="display: none; text-align: center; padding: 3rem 0;">
+                <div class="spinner" style="margin: 0 auto 1.5rem; width: 40px; height: 40px; border-width: 3px;"></div>
+                <p style="opacity:0.6; font-size: 0.9rem; animation: pulse 1.5s infinite;">Analyzing your favorites and querying databases...</p>
+            </div>
+            
+            <div id="suggestionResults" style="display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+                <!-- Filled dynamically by JS -->
+            </div>
+            
+            <div id="suggestionError" style="display: none; text-align: center; color: #ff6b6b; padding: 2rem;">
+                Could not load suggestions right now. Please try again later.
+            </div>
+        </div>
+    </div>
 
     <!-- Rating History Modal -->
     <div id="ratingHistoryModal" class="modal">

@@ -1,6 +1,6 @@
 import requests
 import time
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 BASE_URL = "https://api.jikan.moe/v4"
 
@@ -187,3 +187,39 @@ def get_anime_details(mal_id: int) -> dict:
     except Exception as e:
         print(f"Jikan Anime Details Error for ID {mal_id}: {e}")
     return {}
+
+def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int = 5) -> List[dict]:
+    """
+    Fetches recommendations for a specific anime or manga.
+    Jikan returns a list of recommendations from users, we just take the top ones.
+    """
+    endpoint = "anime" if media_type == "anime" else "manga"
+    url = f"{BASE_URL}/{endpoint}/{mal_id}/recommendations"
+    
+    try:
+        response = requests.get(url)
+        if response.status_code == 429:
+            time.sleep(1)
+            response = requests.get(url)
+            
+        response.raise_for_status()
+        data = response.json()
+        
+        results = []
+        for r in data.get("data", [])[:limit]:
+            entry = r.get("entry", {})
+            title = entry.get("title")
+            poster_url = entry.get("images", {}).get("webp", {}).get("large_image_url")
+            
+            if title and poster_url:
+                results.append({
+                    "title": title,
+                    "release_year": None, # Jikan recommendations don't usually include year
+                    "cover_url": poster_url,
+                    "tmdb_id": entry.get("mal_id"),
+                    "type": "Anime" if media_type == "anime" else "Manga"
+                })
+        return results
+    except Exception as e:
+        print(f"Jikan Recommendations Error for {media_type} ID {mal_id}: {e}")
+        return []

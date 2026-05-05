@@ -742,33 +742,14 @@ document.addEventListener('DOMContentLoaded', () => {
             filtered.sort((a, b) => b.title.localeCompare(a.title));
         }
 
-        // 6. Final Priority Pass: Pull Unrated to the front (v250)
-        // We use a stable sort to keep the user's chosen sort order for the unrated items themselves
-        filtered.sort((a, b) => (isUnrated(b) ? 1 : 0) - (isUnrated(a) ? 1 : 0));
-
         renderMedia(filtered, isRankingRequired);
     };
 
     const parseRating = (r) => {
         if (!r) return 0;
         if (typeof r === 'number') return r;
-        const s = r.toString().replace('/10', '').trim();
-        const val = parseFloat(s);
-        return isNaN(val) ? 0 : val;
-    };
-
-    const isUnrated = (item) => {
-        const r = (item.rating || "").toString().trim().toLowerCase();
-        const nr = (item.numeric_rating || "").toString().trim().toLowerCase();
-        
-        const isMissing = (v) => {
-            return !v || v === "" || v === "-" || v === "-/10" || v === "none" || v === "null" || v === "undefined";
-        };
-
-        // If it starts with # it's a rank, which might count as "rated" in some contexts, 
-        // but the user wants to add numerical ratings. 
-        // Let's stick to the user's specific examples: blank or "-/10"
-        return isMissing(r) && isMissing(nr);
+        if (r.includes('/')) return parseFloat(r.split('/')[0]);
+        return parseFloat(r) || 0;
     };
 
 
@@ -2148,11 +2129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const globalRank = rankMap[rankKey];
                 const finalRank = isValidVal(rankFromFields) ? rankFromFields : (globalRank ? `#${globalRank}` : '');
 
-                const unrated = isUnrated(item);
-                const sashHtml = unrated ? `<div class="no-rating-sash">Missing Rating</div>` : '';
-
                 card.innerHTML = `
-                    ${sashHtml}
                     <div class="card-header">
                         <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
@@ -2874,6 +2851,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveRankingsBtn.innerText = 'Save New Order';
             }
         };
+    }
+
+    // ==========================================
+    // Suggestion Engine Logic
+    // ==========================================
+    const suggestMeBtn = document.getElementById('suggestMeBtn');
+    const suggestionModal = document.getElementById('suggestionModal');
+    const closeSuggestionBtn = document.getElementById('closeSuggestionBtn');
+    const suggestionLoading = document.getElementById('suggestionLoading');
+    const suggestionResults = document.getElementById('suggestionResults');
+    const suggestionError = document.getElementById('suggestionError');
+
+    if (suggestMeBtn) {
+        suggestMeBtn.addEventListener('click', async () => {
+            suggestionModal.classList.add('show');
+            suggestionLoading.style.display = 'block';
+            suggestionResults.style.display = 'none';
+            suggestionError.style.display = 'none';
+            suggestionResults.innerHTML = '';
+
+            try {
+                const res = await fetch('/api/suggestions', {
+                    headers: getAuthHeaders(false) // Guests can use this too
+                });
+                
+                if (!res.ok) throw new Error('Failed to fetch suggestions');
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    suggestionError.style.display = 'block';
+                    suggestionError.textContent = "We don't have enough highly-rated data in your tracker to make good suggestions yet!";
+                } else {
+                    data.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'suggestion-card';
+                        
+                        const coverUrl = item.cover_url || 'https://via.placeholder.com/180x270/2c3e50/ecf0f1?text=No+Poster';
+                        const year = item.release_year ? `(${item.release_year})` : '';
+                        
+                        card.innerHTML = `
+                            <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
+                            <div class="suggestion-title">${item.title}</div>
+                            <div class="suggestion-meta">${item.type} ${year}</div>
+                            <div class="suggestion-reason">${item.reason}</div>
+                        `;
+                        suggestionResults.appendChild(card);
+                    });
+                    suggestionResults.style.display = 'grid';
+                }
+            } catch (err) {
+                console.error("Suggestion Engine Error:", err);
+                suggestionError.style.display = 'block';
+                suggestionError.textContent = "An error occurred while generating suggestions. Please try again.";
+            } finally {
+                suggestionLoading.style.display = 'none';
+            }
+        });
+    }
+
+    if (closeSuggestionBtn) {
+        closeSuggestionBtn.addEventListener('click', () => {
+            suggestionModal.classList.remove('show');
+        });
     }
 
     // Expert Initialization: Sync the default category state on load

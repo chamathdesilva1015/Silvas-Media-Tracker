@@ -183,6 +183,46 @@ def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
     
     return {}
 
+def get_tmdb_recommendations(tmdb_id: int, media_type: str = "movie", limit: int = 5) -> List[dict]:
+    """
+    Fetches recommendations for a specific movie or TV show.
+    """
+    if not TMDB_API_KEY and not TMDB_ACCESS_TOKEN:
+        return []
+        
+    endpoint = "movie" if media_type == "movie" else "tv"
+    url = f"{BASE_URL}/{endpoint}/{tmdb_id}/recommendations"
+    
+    params = {}
+    if TMDB_API_KEY and not TMDB_ACCESS_TOKEN:
+        params["api_key"] = TMDB_API_KEY
+        
+    try:
+        headers = get_tmdb_headers()
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        
+        results = []
+        for r in data.get("results", [])[:limit]:
+            title = r.get("title") or r.get("name")
+            release_year = (r.get("release_date") or r.get("first_air_date", ""))[:4]
+            poster_path = r.get("poster_path")
+            cover_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+            
+            if title and cover_url:
+                results.append({
+                    "title": title,
+                    "release_year": release_year,
+                    "cover_url": cover_url,
+                    "tmdb_id": r.get("id"),
+                    "type": "Movies" if media_type == "movie" else "TV Series"
+                })
+        return results
+    except Exception as e:
+        print(f"TMDB Recommendations Error for {media_type} ID {tmdb_id}: {e}")
+        return []
+
 # Legacy Aliases for safety (though only enrich_data.py uses them currently)
 def search_movie(title: str, year: Optional[int] = None) -> Optional[int]:
     return search_tmdb(title, year, "movie")

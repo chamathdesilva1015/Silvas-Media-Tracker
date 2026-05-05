@@ -735,6 +735,82 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
 
 
+import random
+from tmdb_helper import get_tmdb_recommendations
+from jikan_helper import get_jikan_recommendations
+
+@app.get("/api/suggestions")
+def get_suggestions(session: Session = Depends(get_session)):
+    """
+    Generates 3 new media suggestions based on the user's high-rated and liked items.
+    """
+    # 1. Fetch all items with a valid tmdb_id and a high score
+    all_items = session.exec(select(MediaItem).where(MediaItem.tmdb_id != None)).all()
+    
+    # Helper to parse score
+    def parse_score(item):
+        for field in [item.numeric_rating, item.rating]:
+            if not field: continue
+            try: return float(field)
+            except ValueError: pass
+            if "/10" in field:
+                try: return float(field.split("/")[0].strip())
+                except ValueError: pass
+        return 0
+
+    # 2. Identify potential "seeds" (Score >= 8.0 or is_liked)
+    seeds = []
+    tracked_titles = {normalize_title(i.title) for i in all_items}
+    tracked_ids = {(i.type, i.tmdb_id) for i in all_items if i.tmdb_id}
+
+    for item in all_items:
+        score = parse_score(item)
+        if score >= 8.0 or item.is_liked:
+            # Weight 'liked' items heavier by adding them multiple times to the pool
+            weight = 3 if item.is_liked else 1
+            seeds.extend([item] * weight)
+            
+    if not seeds:
+        return [] # Not enough data
+        
+    # 3. Pick 3 distinct seeds randomly
+    chosen_seeds = random.sample(list(set(seeds)), min(3, len(set(seeds))))
+    
+    suggestions = []
+    
+    # 4. Fetch recommendations for each seed
+    for seed in chosen_seeds:
+        recs = []
+        try:
+            if seed.type in ["Anime", "Manga"]:
+                recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=5)
+            elif seed.type in ["Movies", "TV Series"]:
+                recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=5)
+        except Exception as e:
+            print(f"Error fetching recs for seed {seed.title}: {e}")
+            continue
+            
+        # 5. Filter and pick one valid recommendation per seed
+        valid_recs = []
+        for r in recs:
+            norm_title = normalize_title(r["title"])
+            # Check if we already track this item
+            if norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
+                continue
+            # Check if we already suggested this item
+            if any(s["title"] == r["title"] for s in suggestions):
+                continue
+            valid_recs.append(r)
+            
+        if valid_recs:
+            # Pick a random valid recommendation from this seed
+            chosen_rec = random.choice(valid_recs)
+            chosen_rec["reason"] = f"Because you liked {seed.title}"
+            suggestions.append(chosen_rec)
+            
+    # If we didn't get 3 suggestions, we just return what we have
+    return suggestions
+
 @app.post("/api/automation/enrich")
 async def trigger_enrich(category: Optional[str] = None):
     async def log_generator():
