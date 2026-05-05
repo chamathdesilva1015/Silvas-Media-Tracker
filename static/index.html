@@ -14,7 +14,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=212">
+    <link rel="stylesheet" href="style.css?v=213">
 </head>
 <body class="read-only-mode">
     <div class="mesh-bg">
@@ -339,9 +339,11 @@
                     
                     <div class="quick-info-rating-section">
                         <div class="rating-display">
-                            <span class="rating-value" id="quickInfoRating"></span>
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <span class="rating-value" id="quickInfoRating"></span>
+                                <i class="fas fa-heart" id="quickInfoRatingLike" style="display:none; color: #ff6b6b; font-size: 1.4rem; filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.5));"></i>
+                            </div>
                             <span class="rating-label">Personal Rating</span>
-                            <i class="fas fa-heart" id="quickInfoRatingLike" style="display:none; color: #ff6b6b; font-size: 1.2rem; margin-left: 0.5rem; filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.4));"></i>
                         </div>
                         <div class="director-display" id="quickInfoDirectorSection" style="display:none;">
                             <span class="director-label">Directed by</span>
@@ -643,6 +645,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=231"></script>
+    <script src="app.js?v=232"></script>
 </body>
 </html>

@@ -4575,8 +4575,13 @@ body.read-only-mode #clearReviewBtn {
     width: 320px;
     flex-shrink: 0;
     position: relative;
-    padding: 2rem;
-    background: rgba(0,0,0,0.2);
+    padding: 0;
+    background: none;
+    display: flex;
+    align-items: flex-start;
+    overflow: hidden;
+    border-top-left-radius: 24px;
+    border-bottom-left-radius: 24px;
 }
 
 @media (max-width: 768px) {
@@ -4591,19 +4596,19 @@ body.read-only-mode #clearReviewBtn {
 .quick-info-poster {
     width: 100%;
     height: auto;
-    max-height: 75vh;
+    max-height: 85vh;
     object-fit: contain;
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     transition: transform 0.3s ease;
-    background: rgba(255,255,255,0.05);
+    background: none;
 }
 
 .quick-info-details {
-    padding: 3rem;
+    padding: 2.5rem 3rem;
     flex: 1;
     overflow-y: auto;
     max-height: 85vh;
+    display: flex;
+    flex-direction: column;
 }
 
 @media (max-width: 768px) {
