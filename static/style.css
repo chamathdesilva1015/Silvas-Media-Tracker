@@ -4590,8 +4590,9 @@ body.read-only-mode #clearReviewBtn {
 
 .quick-info-poster {
     width: 100%;
-    aspect-ratio: 2/3;
-    object-fit: cover;
+    height: auto;
+    max-height: 75vh;
+    object-fit: contain;
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     transition: transform 0.3s ease;

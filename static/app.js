@@ -682,6 +682,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const infoPage = document.getElementById('infoPage');
         const controls = document.querySelector('.top-controls');
 
+        // --- Search/Filter Visibility Sync (Global) ---
+        const searchContainer = document.querySelector('.search-container');
+        const filterActions = document.querySelector('.header-filter-actions');
+        if (searchContainer && filterActions) {
+            const shouldShow = (currentSubTab === 'Completed');
+            searchContainer.style.visibility = shouldShow ? 'visible' : 'hidden';
+            searchContainer.style.pointerEvents = shouldShow ? 'auto' : 'none';
+            filterActions.style.visibility = shouldShow ? 'visible' : 'hidden';
+            filterActions.style.pointerEvents = shouldShow ? 'auto' : 'none';
+        }
+
+
         if (currentSubTab === 'Stats') {
             grid.style.display = 'none';
             if (infoPage) infoPage.style.display = 'none';
@@ -722,16 +734,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isAdminUnlocked && addBtn) addBtn.style.display = 'flex';
         }
 
-        // --- Search/Filter Visibility Sync (Global) ---
-        const searchContainer = document.querySelector('.search-container');
-        const filterActions = document.querySelector('.header-filter-actions');
-        if (searchContainer && filterActions) {
-            const shouldShow = (currentSubTab === 'Completed');
-            searchContainer.style.visibility = shouldShow ? 'visible' : 'hidden';
-            searchContainer.style.pointerEvents = shouldShow ? 'auto' : 'none';
-            filterActions.style.visibility = shouldShow ? 'visible' : 'hidden';
-            filterActions.style.pointerEvents = shouldShow ? 'auto' : 'none';
-        }
+
 
         // Filter by current Category
         let filtered = allMedia.filter(item => item.type.toLowerCase() === currentCategory.toLowerCase());
@@ -1628,6 +1631,19 @@ document.addEventListener('DOMContentLoaded', () => {
             reviewSection.style.display = 'block';
         } else { reviewSection.style.display = 'none'; }
 
+        // --- Like Status ---
+        const likeBtn = document.getElementById('quickInfoLikeBtn');
+        const ratingLike = document.getElementById('quickInfoRatingLike');
+        if (item.is_liked) {
+            likeBtn.classList.add('liked');
+            likeBtn.setAttribute('data-liked', 'true');
+            ratingLike.style.display = 'inline-block';
+        } else {
+            likeBtn.classList.remove('liked');
+            likeBtn.setAttribute('data-liked', 'false');
+            ratingLike.style.display = 'none';
+        }
+
         // --- Poster ---
         const posterImg = document.getElementById('quickInfoPoster');
         const posterPlaceholder = document.getElementById('quickInfoPosterPlaceholder');
@@ -1928,6 +1944,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        // Sync modal indicators if open
+        const modalRatingLike = document.getElementById('quickInfoRatingLike');
+        if (modalRatingLike) {
+            modalRatingLike.style.display = newState ? 'inline-block' : 'none';
+        }
+        const modalLikeBtn = document.getElementById('quickInfoLikeBtn');
+        if (modalLikeBtn) {
+            modalLikeBtn.classList.toggle('liked', newState);
+            modalLikeBtn.setAttribute('data-liked', newState.toString());
+        }
 
         // Fire and forget (or handle error)
         try {
