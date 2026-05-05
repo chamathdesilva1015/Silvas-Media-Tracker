@@ -117,9 +117,16 @@
                             <strong>Logout</strong>
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Revoke Admin Access</span>
                         </button>
-                        <button id="manageRankingsBtn" class="btn-secondary" style="grid-column: span 2; padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
+                        <button id="manageRankingsBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
                             <strong>Manage Rankings</strong>
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;" id="rankingBtnDesc">Edit Top 20 Leaderboards</span>
+                        </button>
+                        <button id="managePassedBtn" class="btn-secondary" style="grid-column: span 2; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.75rem; height: auto; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); color: var(--text-primary); margin-top: 0.5rem;">
+                            <i class="fas fa-history" style="opacity: 0.6;"></i>
+                            <div style="text-align: left;">
+                                <strong style="display: block; font-size: 0.9rem;">Manage Passed Suggestions</strong>
+                                <span style="font-size: 0.7rem; opacity: 0.6; font-weight: 400;">Un-pass entries to suggest them again</span>
+                            </div>
                         </button>
                     </div>
 
@@ -570,6 +577,20 @@
             <div class="ranking-manager-footer">
                 <p class="ranking-tip">Changes will be saved and all items will be re-ranked sequentially.</p>
                 <button id="saveRankingsBtn" class="btn-primary">Save New Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Passed Entries Manager Modal -->
+    <div id="passedEntriesModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-btn" id="closePassedEntriesBtn">&times;</span>
+            <h2 class="serif">Passed Suggestions</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem;">Remove entries from this list if you want them to be eligible for suggestions again.</p>
+            
+            <div id="passedEntriesList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
+                <!-- Populated via JS -->
+                <p style="text-align: center; opacity: 0.5; padding: 2rem;">Loading passed list...</p>
             </div>
         </div>
     </div>

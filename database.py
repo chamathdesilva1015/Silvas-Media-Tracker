@@ -51,6 +51,7 @@ class PassedSuggestion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     type: str = Field(index=True) # e.g. "Movies", "Anime"
     tmdb_id: int = Field(index=True)
+    title: Optional[str] = Field(default=None)
     passed_at: datetime = Field(default_factory=datetime.utcnow)
 
 import os

@@ -906,9 +906,10 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
 class PassRequest(BaseModel):
     type: str
     tmdb_id: int
+    title: str
 
 @app.post("/api/suggestions/pass")
-def pass_suggestion(req: PassRequest, session: Session = Depends(get_session)):
+def pass_suggestion(req: PassRequest, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     """
     Logs a suggestion as 'passed' so it won't be recommended again.
     """
@@ -920,11 +921,31 @@ def pass_suggestion(req: PassRequest, session: Session = Depends(get_session)):
     ).first()
     
     if not existing:
-        new_pass = PassedSuggestion(type=req.type, tmdb_id=req.tmdb_id)
+        new_pass = PassedSuggestion(type=req.type, tmdb_id=req.tmdb_id, title=req.title)
         session.add(new_pass)
         session.commit()
         
     return {"status": "success", "message": "Suggestion passed."}
+
+@app.get("/api/suggestions/passed")
+def get_passed_suggestions(session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    """
+    Returns all passed suggestions for management.
+    """
+    passed = session.exec(select(PassedSuggestion).order_by(PassedSuggestion.passed_at.desc())).all()
+    return passed
+
+@app.delete("/api/suggestions/passed/{pass_id}")
+def delete_passed_suggestion(pass_id: int, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    """
+    Removes a suggestion from the passed list.
+    """
+    p = session.get(PassedSuggestion, pass_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="Passed suggestion not found")
+    session.delete(p)
+    session.commit()
+    return {"status": "success", "message": "Suggestion un-passed."}
 
 @app.post("/api/automation/enrich")
 async def trigger_enrich(category: Optional[str] = None):
