@@ -14,7 +14,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=202605051804">
+    <link rel="stylesheet" href="style.css?v=230">
 </head>
 <body class="read-only-mode">
     <div class="mesh-bg">
@@ -321,7 +321,6 @@
                         <div class="header-top-row">
                             <span class="type-badge" id="quickInfoType">Movie</span>
                             <div class="header-actions">
-                                <i class="fas fa-heart" id="quickInfoLikeBtn" title="Toggle Like" data-liked="false"></i>
                                 <a id="quickInfoSourceBtn" target="_blank" title="View Source"><i class="fas fa-external-link-alt"></i></a>
                             </div>
                         </div>
@@ -341,7 +340,7 @@
                         <div class="rating-display">
                             <div style="display: flex; align-items: center; gap: 0.6rem;">
                                 <span class="rating-value" id="quickInfoRating"></span>
-                                <i class="fas fa-heart" id="quickInfoRatingLike" style="display:none; color: #ff6b6b; font-size: 1.4rem; filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.5));"></i>
+                                <i class="fas fa-heart" id="quickInfoRatingLike" title="Toggle Like" style="display:none; color: #ff6b6b; font-size: 1.4rem; cursor: pointer; transition: transform 0.2s, color 0.2s; filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.5));"></i>
                             </div>
                             <span class="rating-label">Personal Rating</span>
                         </div>
@@ -645,6 +644,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=202605051804"></script>
+    <script src="app.js?v=250"></script>
 </body>
 </html>

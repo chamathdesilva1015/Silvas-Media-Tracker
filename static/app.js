@@ -1450,54 +1450,50 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
         document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
-        // Like Button Logic
-        const likeBtn = document.getElementById('quickInfoLikeBtn');
-        const ratingLike = document.getElementById('quickInfoRatingLike');
+        // Like Button Logic (Now strictly bound to the heart next to the rating)
         const updateLikeBtnUI = (isLiked) => {
-            const currentLikeBtn = document.getElementById('quickInfoLikeBtn');
             const currentRatingLike = document.getElementById('quickInfoRatingLike');
-            if (currentLikeBtn) {
-                const isLikedBool = (isLiked === true || isLiked === 1 || isLiked === "True" || isLiked === "1");
-                if (isLikedBool) {
-                    currentLikeBtn.style.color = '#ff6b6b';
-                    currentLikeBtn.classList.remove('far', 'liked');
-                    currentLikeBtn.classList.add('fas', 'liked');
-                    currentLikeBtn.setAttribute('data-liked', 'true');
-                    if (currentRatingLike) currentRatingLike.style.display = 'inline-block';
+            if (currentRatingLike) {
+                currentRatingLike.style.display = 'inline-block';
+                if (isLiked) {
+                    currentRatingLike.style.color = '#ff6b6b';
+                    currentRatingLike.classList.remove('far', 'liked');
+                    currentRatingLike.classList.add('fas', 'liked');
                 } else {
-                    currentLikeBtn.style.color = 'rgba(255, 255, 255, 0.4)';
-                    currentLikeBtn.classList.remove('fas', 'liked');
-                    currentLikeBtn.classList.add('far');
-                    currentLikeBtn.setAttribute('data-liked', 'false');
-                    if (currentRatingLike) currentRatingLike.style.display = 'none';
+                    currentRatingLike.style.color = 'rgba(255, 255, 255, 0.4)';
+                    currentRatingLike.classList.remove('fas', 'liked');
+                    currentRatingLike.classList.add('far');
                 }
             }
         };
         updateLikeBtnUI(item.is_liked);
         
-        // Refresh Listener
-        const newLikeBtn = likeBtn.cloneNode(true);
-        likeBtn.parentNode.replaceChild(newLikeBtn, likeBtn);
-        newLikeBtn.addEventListener('click', async () => {
-            if (!localStorage.getItem('admin_key')) {
-                alert("You don't have permission to modify data.");
-                return;
-            }
-            newLikeBtn.style.transform = 'scale(1.3)';
-            setTimeout(() => newLikeBtn.style.transform = 'scale(1)', 150);
-            try {
-                const res = await fetch(`/api/media/like/${item.id}`, {
-                    method: 'POST',
-                    headers: getAuthHeaders(true)
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    item.is_liked = data.is_liked;
-                    updateLikeBtnUI(item.is_liked);
-                    fetchMedia(); 
+        // Refresh Listener on the Rating Like Button
+        const ratingLikeBtn = document.getElementById('quickInfoRatingLike');
+        if (ratingLikeBtn) {
+            const newRatingLikeBtn = ratingLikeBtn.cloneNode(true);
+            ratingLikeBtn.parentNode.replaceChild(newRatingLikeBtn, ratingLikeBtn);
+            newRatingLikeBtn.addEventListener('click', async () => {
+                if (!localStorage.getItem('admin_key')) {
+                    alert("You don't have permission to modify data.");
+                    return;
                 }
-            } catch (err) { console.error(err); }
-        });
+                newRatingLikeBtn.style.transform = 'scale(1.3)';
+                setTimeout(() => newRatingLikeBtn.style.transform = 'scale(1)', 150);
+                try {
+                    const res = await fetch(`/api/media/like/${item.id}`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(true)
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        item.is_liked = data.is_liked;
+                        updateLikeBtnUI(item.is_liked);
+                        fetchMedia(); 
+                    }
+                } catch (err) { console.error(err); }
+            });
+        }
 
         // --- Ranking Ribbon ---
         const ribbon = document.getElementById('quickInfoRibbon');

@@ -4575,31 +4575,31 @@ body.read-only-mode #clearReviewBtn {
     width: 320px !important;
     flex-shrink: 0 !important;
     position: relative !important;
-    padding: 0 !important;
-    background: transparent !important;
+    padding: 2rem !important;
+    background: rgba(0,0,0,0.2) !important;
     display: flex !important;
-    align-items: flex-start !important;
-    overflow: hidden !important;
+    justify-content: center !important;
+    align-items: center !important;
     border-top-left-radius: 24px !important;
     border-bottom-left-radius: 24px !important;
 }
 
 @media (max-width: 768px) {
     .quick-info-poster-wrap {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        background: none;
+        width: 100% !important;
+        border-radius: 24px 24px 0 0 !important;
+        padding: 1.5rem !important;
     }
 }
 
 .quick-info-poster {
     width: 100% !important;
     height: auto !important;
-    max-height: none !important;
+    max-height: 85vh !important;
     object-fit: contain !important;
     transition: transform 0.3s ease !important;
-    background: transparent !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
 }
 
 .quick-info-details {
