@@ -770,9 +770,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Let's stick to the user's specific examples: blank or "-/10"
         return isMissing(r) && isMissing(nr);
     };
-        if (r.includes('/')) return parseFloat(r.split('/')[0]);
-        return parseFloat(r) || 0;
-    };
 
 
     const normalizeTitle = (title) => {
