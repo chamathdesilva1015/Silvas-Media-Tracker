@@ -26,6 +26,8 @@ class MediaItem(SQLModel, table=True):
     director: Optional[str] = None
     runtime: Optional[int] = None          # minutes
     content_rating: Optional[str] = None   # e.g. "PG-13", "R"
+    backdrop_url: Optional[str] = None     # High-res backdrop image
+
 
 class SyncState(SQLModel, table=True):
     """Tracks the last-synced Discord message ID per channel for incremental sync."""

@@ -128,6 +128,9 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                 
                 if details.get("poster_url") and (not item.cover_url or "discordapp" in item.cover_url):
                     item.cover_url = details["poster_url"]
+                if details.get("backdrop_url"):
+                    item.backdrop_url = details["backdrop_url"]
+
                 
                 if details.get("director"):
                     item.director = details["director"]

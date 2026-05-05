@@ -124,9 +124,13 @@ def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
         genres = [g["name"] for g in data.get("genres", [])]
         genres_str = ", ".join(genres) if genres else None
         
-        # --- Poster ---
+        # --- Posters & Backdrops ---
         poster_path = data.get("poster_path")
         poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+        
+        backdrop_path = data.get("backdrop_path")
+        backdrop_url = f"https://image.tmdb.org/t/p/original{backdrop_path}" if backdrop_path else None
+
         
         # --- Runtime ---
         runtime = None
@@ -177,6 +181,7 @@ def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
             "director": director,
             "runtime": runtime,
             "content_rating": content_rating,
+            "backdrop_url": backdrop_url,
             "overview": data.get("overview")
         }
     except Exception as e:

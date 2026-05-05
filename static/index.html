@@ -7,10 +7,11 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <meta name="description" content="A premium personal media tracking dashboard for movies, shows, games, and anime, by Silva.">
     
-    <!-- Google Fonts: Plus Jakarta Sans (UI) & Playfair Display (Serif) -->
+    <!-- Google Fonts: Outfit (Headings) & Inter (Body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css?v=209">
@@ -228,6 +229,8 @@
                     <p style="font-size: 0.9rem; opacity: 0.7;">Searching for match...</p>
                 </div>
 
+
+
                 <div id="previewContainer" style="display: none; text-align: center; margin-bottom: 1.5rem;">
                     <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8; font-weight: 500;">Is this the correct entry?</p>
                     <div id="previewDuplicateWarning" style="display: none; background: rgba(255,50,50,0.15); color: #ff6b6b; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; border: 1px solid rgba(255,50,50,0.3);">
@@ -261,10 +264,15 @@
             <h2 class="serif" style="text-align: center; margin-bottom: 0.5rem; color: #fff;">Suggest Me Something</h2>
             <p style="text-align: center; opacity: 0.7; font-size: 0.9rem; margin-bottom: 2rem;">Based on your highest-rated favorites across all databases.</p>
             
-            <div id="suggestionLoading" style="display: none; text-align: center; padding: 3rem 0;">
-                <div class="spinner" style="margin: 0 auto 1.5rem; width: 40px; height: 40px; border-width: 3px;"></div>
-                <p style="opacity:0.6; font-size: 0.9rem; animation: pulse 1.5s infinite;">Analyzing your favorites and querying databases...</p>
+            <div id="suggestionLoading" style="display: none; text-align: center; padding: 5rem 0;">
+                <div class="radar-container">
+                    <div class="radar-circle"></div>
+                    <div class="radar-circle"></div>
+                    <div class="radar-circle"></div>
+                </div>
+                <p style="margin-top: 2rem; color: var(--theme-accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8rem;">Analyzing your library...</p>
             </div>
+
             
             <div id="suggestionResults" style="display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
                 <!-- Filled dynamically by JS -->
@@ -293,6 +301,7 @@
 
     <!-- Quick Info Popup -->
     <div id="quickInfoModal" class="modal">
+        <div id="quickInfoBackdrop" class="modal-backdrop-image"></div>
         <div class="modal-content quick-info-content">
             <span class="close-btn" id="closeQuickInfoBtn">&times;</span>
             <div class="quick-info-layout">

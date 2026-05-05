@@ -1,4 +1,41 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- FEATURE: Organic Background Blobs & Theming ---
+    const blobs = document.querySelectorAll('.mesh-blob');
+    let mouseX = 0, mouseY = 0;
+    
+    // Update category themes on body
+    const updateGlobalTheme = (category) => {
+        const themeMap = {
+            'Movies': 'movies',
+            'TV Series': 'tv-series',
+            'Manga': 'manga',
+            'Anime': 'anime'
+        };
+        document.body.setAttribute('data-theme', themeMap[category] || 'movies');
+    };
+
+    // Smooth movement logic
+    const moveBlobs = () => {
+        blobs.forEach((blob, index) => {
+            const speed = 0.05 + (index * 0.02);
+            const x = (Math.sin(Date.now() * 0.0005 * (index + 1)) * 50);
+            const y = (Math.cos(Date.now() * 0.0005 * (index + 1)) * 50);
+            
+            // React to mouse
+            const reactX = (mouseX - window.innerWidth / 2) * speed;
+            const reactY = (mouseY - window.innerHeight / 2) * speed;
+            
+            blob.style.transform = `translate(${x + reactX}px, ${y + reactY}px)`;
+        });
+        requestAnimationFrame(moveBlobs);
+    };
+    moveBlobs();
+
+    window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
     // Determine Environment: Localhost vs Production (Read-Only)
     const hostname = window.location.hostname;
     const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
@@ -152,8 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentCategory = category;
         currentSubTab = 'Completed';
 
-        // Apply theme for colors (v218)
-        document.body.setAttribute('data-theme', category.toLowerCase().replace(' ', '-'));
+        // Apply theme for colors & blobs
+        updateGlobalTheme(category);
+
 
         // 1. Update Search Placeholder
         if (searchInput) {
@@ -1374,9 +1412,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === quickInfoModal) closeQuickInfo();
     });
 
-    window.openQuickInfo = (item) => {
+    window.openQuickInfo = (item, clickedElement = null) => {
+        // Backdrop Image Logic
+        const backdropImg = document.getElementById('quickInfoBackdrop');
+        if (backdropImg) {
+            backdropImg.style.opacity = '0';
+            if (item.backdrop_url) {
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                    backdropImg.style.backgroundImage = `url(${item.backdrop_url})`;
+                    backdropImg.style.opacity = '1';
+                };
+                tempImg.src = item.backdrop_url;
+            } else {
+                backdropImg.style.backgroundImage = 'none';
+            }
+        }
+
         // Title & Year
         document.getElementById('quickInfoTitle').textContent = item.title;
+
         document.getElementById('quickInfoYear').textContent = item.release_year ? `${item.release_year}` : '';
 
         // Like Button Logic
@@ -2198,46 +2253,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 const finalRank = isValidVal(rankFromFields) ? rankFromFields : (globalRank ? `#${globalRank}` : '');
 
                 card.innerHTML = `
-                    <div class="card-header">
-                        <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
-                    </div>
-                    ${item.genres ? `
-                        <div class="genre-container">
-                            ${item.genres.split(',').map(g => `<span class="genre-badge">${g.trim()}</span>`).join('')}
-                        </div>
-                    ` : ''}
-                    ${(item.type === 'Movies' && item.director) ? `
-                        <div class="director-container">
-                            <span class="director-badge">Dir. ${item.director}</span>
-                        </div>
-                    ` : ''}
-                    ${((item.type === 'TV Series' || item.type === 'Anime') && item.director) ? `
-                        <div class="director-container">
-                            <span class="director-badge">Creator: ${item.director}</span>
-                        </div>
-                    ` : ''}
-                    ${(item.type === 'Manga' && item.director) ? `
-                        <div class="director-container">
-                            <span class="director-badge">Author: ${item.director}</span>
-                        </div>
-                    ` : ''}
-                    <div class="card-badges">
-                        <div class="badge-slot-left">
-                            ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
-                        </div>
-                        <div class="badge-slot-right">
-                            ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
+                    <div class="card-poster-wrap">
+                        ${item.cover_url ? `<img src="${item.cover_url}" class="card-poster" alt="${item.title}" loading="lazy">` : `<div class="card-poster-placeholder">No Poster</div>`}
+                        <div class="card-overlay">
+                            <div class="card-rating-circle">${displayRating || 'NR'}</div>
                         </div>
                     </div>
-
-                    ${(isAdminUnlocked || item.is_liked) ? `
-                        <div class="card-actions-row">
-                            <button class="like-btn-inline ${likedClass}" 
-                                    title="${isAdminUnlocked ? (item.is_liked ? 'Unlike' : 'Like') : ''}"
-                                    style="${!isAdminUnlocked ? 'pointer-events: none; cursor: default;' : ''}">${likedIcon}</button>
+                    <div class="card-info">
+                        <div class="card-header">
+                            <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title}</h3>
+                            <span class="card-year">${item.release_year || ''}</span>
                         </div>
-                    ` : ''}
+                        ${item.genres ? `
+                            <div class="genre-container">
+                                ${item.genres.split(',').slice(0, 2).map(g => `<span class="genre-badge">${g.trim()}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="card-meta-bottom">
+                            ${finalRank ? `<span class="card-rank-badge"><i class="fas fa-star"></i> ${finalRank}</span>` : ''}
+                            ${hasReview ? `<span class="review-badge"><i class="fas fa-pen"></i></span>` : ''}
+                            ${(isAdminUnlocked || item.is_liked) ? `
+                                <button class="like-btn-inline ${likedClass}" style="${!isAdminUnlocked ? 'pointer-events: none;' : ''}">${likedIcon}</button>
+                            ` : ''}
+                        </div>
+                    </div>
                 `;
+
 
                 // Wire up review modal trigger -> Now opens Quick Info if item has review
                 if (canClickReview) {
@@ -2687,14 +2728,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Math.abs(st - lastScrollTop) < 5) return;
 
         if (st > lastScrollTop && st > 80) {
-            // Scrolling Down -> Hide Header, Show Footer
+            // Scrolling Down -> Hide Header & Bottom Nav
             header.classList.add('header-hidden');
-            if (bNav) bNav.classList.remove('footer-hidden');
+            if (bNav) bNav.classList.add('nav-hidden');
         } else if (st < lastScrollTop) {
-            // Scrolling Up -> Show Header, Hide Footer
+            // Scrolling Up -> Show Header & Bottom Nav
             header.classList.remove('header-hidden');
-            if (bNav) bNav.classList.add('footer-hidden');
+            if (bNav) bNav.classList.remove('nav-hidden');
         }
+
         lastScrollTop = st <= 0 ? 0 : st;
     }, false);
 
