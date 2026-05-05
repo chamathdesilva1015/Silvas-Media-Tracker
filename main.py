@@ -726,9 +726,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         "hall_of_fame_items": hall_of_fame_items,
         "in_rankings": in_rankings,
         "most_recent": {
-            "title": most_recent.title,
-            "date": most_recent.date_added.strftime("%b %d, %Y"),
-            "poster": most_recent.cover_url
+            "item": most_recent,
+            "display_date": most_recent.date_added.strftime("%b %d, %Y")
         },
         "favorite_genres": favorite_genre,
         "favorite_directors": favorite_directors

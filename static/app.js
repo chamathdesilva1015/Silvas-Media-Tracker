@@ -515,12 +515,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-value">1 in ${data.like_ratio || '—'}</div>
                     <div class="stat-card-label">Like Ratio <span style="font-size:0.6em;opacity:0.6">(Exclusivity)</span></div>
                 </div>
-                <div class="stat-card" style="padding: 1rem; flex: 1.5; text-align: left; display: flex; align-items: center; gap: 1.5rem; background: linear-gradient(135deg, var(--bg-card), rgba(147, 112, 219, 0.05));">
-                    <img src="${data.most_recent?.poster || ''}" style="width: 80px; height: 110px; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);" />
+                <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer; padding: 1rem; flex: 1.5; text-align: left; display: flex; align-items: center; gap: 1.5rem; background: linear-gradient(135deg, var(--bg-card), rgba(147, 112, 219, 0.05));">
+                    <img src="${data.most_recent?.item?.cover_url || ''}" style="width: 80px; height: 110px; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);" />
                     <div>
                         <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.5; margin-bottom: 0.25rem;">Recently Discovered</div>
-                        <div style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; line-height: 1.2;">${data.most_recent?.title || 'Unknown'}</div>
-                        <div style="font-size: 0.75rem; color: var(--theme-accent); opacity: 0.8; font-weight: 600;">Added on ${data.most_recent?.date || 'N/A'}</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; line-height: 1.2;">${data.most_recent?.item?.title || 'Unknown'}</div>
+                        <div style="font-size: 0.75rem; color: var(--theme-accent); opacity: 0.8; font-weight: 600;">Added on ${data.most_recent?.display_date || 'N/A'}</div>
                     </div>
                 </div>
             </div>
@@ -610,26 +610,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="dist-footer-value">${data.avg_year}</span>
                     </div>
                 </div>
-                <div class="stats-dist-card" style="display: flex; flex-direction: column; justify-content: center; background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2));">
-                    <div class="stats-dist-title">Polar Extremes</div>
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div style="background: rgba(46, 213, 115, 0.1); color: #2ed573; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800;">${data.highest_rated?.score || '—'}</div>
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">The Masterpiece</div>
-                                <div style="font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.highest_rated?.title || 'None'}</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div style="background: rgba(255, 107, 107, 0.1); color: #ff6b6b; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800;">${data.lowest_rated?.score || '—'}</div>
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">The Rock Bottom</div>
-                                <div style="font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.lowest_rated?.title || 'None'}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>`;
+
+        // Wire up interactions
+        const recentCard = statsPage.querySelector('#recentDiscoveryCard');
+        if (recentCard && data.most_recent?.item) {
+            recentCard.onclick = () => window.openQuickInfo(data.most_recent.item);
+        }
 
         // Wire up accordion toggle AFTER innerHTML is set
         const setupAccordion = (headerId, bodyId, chevronId) => {
