@@ -28,6 +28,7 @@ class MediaItem(SQLModel, table=True):
     runtime: Optional[int] = None          # minutes
     content_rating: Optional[str] = None   # e.g. "PG-13", "R"
     backdrop_url: Optional[str] = None     # High-res backdrop image
+    overview: Optional[str] = None         # Plot summary / synopsis
 
 
 class SyncState(SQLModel, table=True):

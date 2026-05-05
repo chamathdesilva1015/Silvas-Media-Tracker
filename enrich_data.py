@@ -138,6 +138,8 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     item.runtime = details["runtime"]
                 if details.get("content_rating"):
                     item.content_rating = details["content_rating"]
+                if details.get("overview"):
+                    item.overview = details["overview"]
                     
                 try:
                     session.add(item)

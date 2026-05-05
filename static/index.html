@@ -14,7 +14,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=209">
+    <link rel="stylesheet" href="style.css?v=211">
 </head>
 <body class="read-only-mode">
     <div class="mesh-bg">
@@ -29,12 +29,6 @@
                 <div class="header-main">
                     <div class="header-left">
                         <h1 id="pageTitle" class="serif">Movies</h1>
-                        <div class="category-nav-desktop" id="desktopCategoryNav">
-                            <button class="pill-tab active" data-filter="Movies">Movies</button>
-                            <button class="pill-tab" data-filter="TV Series">TV Shows</button>
-                            <button class="pill-tab" data-filter="Manga">Manga</button>
-                            <button class="pill-tab" data-filter="Anime">Anime</button>
-                        </div>
                     </div>
                     
                     <div class="header-right">
@@ -52,9 +46,9 @@
 
                 <div class="header-sub">
                     <div class="page-tabs" id="pageTabs">
-                        <button class="pill-tab active" data-sub="Completed">Completed</button>
+                        <button class="pill-tab" data-sub="Completed">Completed</button>
                         <button class="pill-tab" data-sub="Rankings">Rankings</button>
-                        <button class="pill-tab" data-sub="Info">The Hub</button>
+                        <button class="pill-tab active" data-sub="Info">The Hub</button>
                         <button class="pill-tab" data-sub="Stats">Run Stats</button>
                     </div>
 
@@ -90,6 +84,13 @@
             <div id="infoIntro">
                 <h2 class="serif info-main-title">Information Hub</h2>
                 <p class="info-subtitle">Everything you need to know about the methodology and context of this archive.</p>
+                
+                <div class="hub-category-switcher" id="desktopCategoryNav">
+                    <button class="pill-tab active" data-filter="Movies">Movies</button>
+                    <button class="pill-tab" data-filter="TV Series">TV Shows</button>
+                    <button class="pill-tab" data-filter="Manga">Manga</button>
+                    <button class="pill-tab" data-filter="Anime">Anime</button>
+                </div>
                 
                 <div class="info-button-grid">
                     <button class="info-btn" data-section="Rating Scale">
@@ -316,31 +317,55 @@
                     <div id="quickInfoRibbon" class="rank-ribbon" style="display:none;"></div>
                 </div>
                 <div class="quick-info-details">
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-                        <h2 class="serif" id="quickInfoTitle" style="margin: 0;"></h2>
-                        <i class="fas fa-heart" id="quickInfoLikeBtn" style="cursor: pointer; font-size: 1.2rem; transition: transform 0.2s, color 0.2s;" title="Toggle Like"></i>
+                    <div class="quick-info-header">
+                        <div class="header-top-row">
+                            <span class="type-badge" id="quickInfoType">Movie</span>
+                            <div class="header-actions">
+                                <i class="fas fa-heart" id="quickInfoLikeBtn" title="Toggle Like"></i>
+                                <a id="quickInfoSourceBtn" target="_blank" title="View Source"><i class="fas fa-external-link-alt"></i></a>
+                            </div>
+                        </div>
+                        <h2 class="serif" id="quickInfoTitle"></h2>
+                        <div class="quick-info-meta-row">
+                            <span id="quickInfoYear"></span>
+                            <span class="dot-separator">•</span>
+                            <span id="quickInfoRuntime"></span>
+                            <span class="dot-separator">•</span>
+                            <span id="quickInfoContentRating" class="rating-chip"></span>
+                        </div>
                     </div>
-                    <div id="quickInfoLikeBadge" style="display: none; margin-top: 0.5rem; margin-bottom: 0.5rem;">
-                        <span class="meta-chip" style="background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 0.2rem 0.6rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px;">
-                            <i class="fas fa-heart"></i> Liked
-                        </span>
-                    </div>
-                    <p class="quick-info-year" id="quickInfoYear"></p>
+
                     <div class="quick-info-genres" id="quickInfoGenres"></div>
-                    <!-- Content rating + runtime chips (movie-only) -->
-                    <div class="quick-info-meta" id="quickInfoMeta" style="display:none;">
-                        <span class="meta-chip" id="quickInfoContentRating"></span>
-                        <span class="meta-chip" id="quickInfoRuntime"></span>
+                    
+                    <div class="quick-info-rating-section">
+                        <div class="rating-display">
+                            <span class="rating-value" id="quickInfoRating"></span>
+                            <span class="rating-label">Personal Score</span>
+                        </div>
+                        <div class="director-display" id="quickInfoDirectorSection" style="display:none;">
+                            <span class="director-label">Directed by</span>
+                            <span class="director-name" id="quickInfoDirector"></span>
+                        </div>
                     </div>
-                    <div class="quick-info-rating" id="quickInfoRating"></div>
-                    <!-- Director — exclusive labeled section (movie-only) -->
-                    <div class="quick-info-director-section" id="quickInfoDirectorSection" style="display:none;">
-                        <span class="director-label">Directed by</span>
-                        <span class="director-name" id="quickInfoDirector"></span>
+
+                    <div class="quick-info-overview-section" id="quickInfoOverviewSection" style="display:none;">
+                        <h3 class="section-title">Overview</h3>
+                        <p class="quick-info-overview" id="quickInfoOverview"></p>
                     </div>
-                    <p class="quick-info-review" id="quickInfoReview"></p>
-                    <a id="quickInfoSourceBtn" class="btn-primary" style="margin-top: 1rem; display: inline-block; text-decoration: none; text-align: center; font-size: 0.8rem; padding: 0.5rem 1rem; display: none;" target="_blank">View Source Database</a>
-                    <button id="quickInfoEditBtn" class="btn-secondary" style="margin-top: 1rem; display: none;">Edit Review</button>
+
+                    <div class="quick-info-review-section" id="quickInfoReviewSection" style="display:none;">
+                        <h3 class="section-title">Personal Review</h3>
+                        <p class="quick-info-review" id="quickInfoReview"></p>
+                    </div>
+
+                    <div class="quick-info-recommendations-section" id="quickInfoRecsSection" style="display:none;">
+                        <h3 class="section-title">Similar To This</h3>
+                        <div class="recs-grid" id="quickInfoRecs"></div>
+                    </div>
+
+                    <div class="quick-info-footer-actions">
+                        <button id="quickInfoEditBtn" class="btn-primary-ghost">Edit Entry</button>
+                    </div>
                     <div id="quickInfoRatingEditSection" style="display: none; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
                         <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; display: block; margin-bottom: 0.8rem;">Admin Override: Update Metadata</label>
                         
@@ -516,21 +541,22 @@
 
     <!-- Custom JS -->
     <nav class="bottom-nav" id="bottomNav">
-        <a href="#" class="nav-link active" data-filter="Movies">
-            <span class="nav-text">Movies</span>
-        </a>
-        <a href="#" class="nav-link" data-filter="TV Series">
-            <span class="nav-text">TV Shows</span>
-        </a>
-        <a href="#" class="nav-link" data-filter="Manga">
-            <span class="nav-text">Manga</span>
-        </a>
-        <a href="#" class="nav-link" data-filter="Anime">
-            <span class="nav-text">Anime</span>
-        </a>
-        <a href="#" class="nav-link" data-sub="Info">
-            <span class="nav-text">Info</span>
-        </a>
+        <button class="nav-item active" data-sub="Completed">
+            <i class="fas fa-check-circle"></i>
+            <span>Library</span>
+        </button>
+        <button class="nav-item" data-sub="Rankings">
+            <i class="fas fa-trophy"></i>
+            <span>Rankings</span>
+        </button>
+        <button class="nav-item active" data-sub="Info">
+            <i class="fas fa-info-circle"></i>
+            <span>The Hub</span>
+        </button>
+        <button class="nav-item" data-sub="Stats">
+            <i class="fas fa-chart-pie"></i>
+            <span>Stats</span>
+        </button>
     </nav>
     </div> <!-- End app-layout -->
 
@@ -621,6 +647,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=227"></script>
+    <script src="app.js?v=229"></script>
 </body>
 </html>

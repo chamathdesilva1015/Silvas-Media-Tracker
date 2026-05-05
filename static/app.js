@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let allMedia = [];
     let rankMap = {}; // title|type -> rank number; populated in renderMedia, read by openQuickInfo
     let currentCategory = 'Movies'; // Default page
-    let currentSubTab = 'Completed'; // Default subtab ('Completed' or 'Rankings')
+    let currentSubTab = 'Info'; // Land on The Hub
 
     const searchInput = document.getElementById('searchInput');
     const navLinks = document.querySelectorAll('.nav-link');
@@ -187,7 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // v205: Centralized category switch logic
     const handleCategorySwitch = (category) => {
         currentCategory = category;
-        currentSubTab = 'Completed';
+        // Do NOT reset currentSubTab here, allow switching categories while staying in Hub/Stats
+
 
         // Apply theme for colors & blobs
         updateGlobalTheme(category);
@@ -241,10 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (t.getAttribute('data-filter') === currentCategory) t.classList.add('active');
         });
 
-        // Sync the sub-tabs to "Completed"
+        // Sync the sub-tabs to current selection
         document.querySelectorAll('.pill-tab[data-sub]').forEach(t => {
             t.classList.remove('active');
-            if (t.getAttribute('data-sub') === 'Completed') t.classList.add('active');
+            if (t.getAttribute('data-sub') === currentSubTab) t.classList.add('active');
         });
 
         // 5. Update UI
@@ -1429,42 +1430,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Title & Year
+        // --- Basic Info ---
         document.getElementById('quickInfoTitle').textContent = item.title;
-
-        document.getElementById('quickInfoYear').textContent = item.release_year ? `${item.release_year}` : '';
+        document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
+        document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
         // Like Button Logic
         const likeBtn = document.getElementById('quickInfoLikeBtn');
-        const likeBadge = document.getElementById('quickInfoLikeBadge');
         const updateLikeBtnUI = (isLiked) => {
             if (isLiked) {
                 likeBtn.style.color = '#ff6b6b';
                 likeBtn.classList.remove('far');
                 likeBtn.classList.add('fas');
-                if (likeBadge) likeBadge.style.display = 'block';
             } else {
                 likeBtn.style.color = 'rgba(255, 255, 255, 0.4)';
                 likeBtn.classList.remove('fas');
                 likeBtn.classList.add('far');
-                if (likeBadge) likeBadge.style.display = 'none';
             }
         };
-        
         updateLikeBtnUI(item.is_liked);
         
-        // Remove old listener if any to avoid stacking
+        // Refresh Listener
         const newLikeBtn = likeBtn.cloneNode(true);
         likeBtn.parentNode.replaceChild(newLikeBtn, likeBtn);
-        
         newLikeBtn.addEventListener('click', async () => {
             if (!localStorage.getItem('admin_key')) {
                 alert("You don't have permission to modify data.");
                 return;
             }
-            newLikeBtn.style.transform = 'scale(1.2)';
+            newLikeBtn.style.transform = 'scale(1.3)';
             setTimeout(() => newLikeBtn.style.transform = 'scale(1)', 150);
-            
             try {
                 const res = await fetch(`/api/media/like/${item.id}`, {
                     method: 'POST',
@@ -1472,14 +1467,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    item.is_liked = data.is_liked; // Update local item reference
+                    item.is_liked = data.is_liked;
                     updateLikeBtnUI(item.is_liked);
-                    // Refresh allMedia silently to update the main card hearts
                     fetchMedia(); 
                 }
-            } catch (err) {
-                console.error("Error toggling like:", err);
-            }
+            } catch (err) { console.error(err); }
         });
 
         // --- Ranking Ribbon ---
@@ -1489,7 +1481,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rank) {
             ribbon.style.display = 'flex';
             ribbon.textContent = `#${rank}`;
-            // Color: gold=1, silver=2, bronze=3, accent=4+
             ribbon.className = 'rank-ribbon';
             if (rank === 1)      ribbon.classList.add('ribbon-gold');
             else if (rank === 2) ribbon.classList.add('ribbon-silver');
@@ -1497,10 +1488,9 @@ document.addEventListener('DOMContentLoaded', () => {
             else                 ribbon.classList.add('ribbon-ranked');
         } else {
             ribbon.style.display = 'none';
-            ribbon.className = 'rank-ribbon';
         }
 
-        // v236: Surefire Global Rating Lookup (with year disambiguation)
+        // --- Rating & Scoring ---
         const normalizedTarget = item.title.toLowerCase().trim();
         const targetYear = item.release_year;
         const bestEntry = allMedia.find(m => 
@@ -1510,74 +1500,51 @@ document.addEventListener('DOMContentLoaded', () => {
             !m.numeric_rating.toString().startsWith('#')
         );
         let rawScore = bestEntry ? bestEntry.numeric_rating.toString().replace('/10','').trim() : '';
-        
         if (!rawScore && item.numeric_rating && !item.numeric_rating.toString().startsWith('#')) {
             rawScore = item.numeric_rating.toString().replace('/10','').trim();
         }
-        
-        document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore} / 10` : '';
+        document.getElementById('quickInfoRating').textContent = rawScore ? rawScore : '—';
 
-        // Open Source Button Logic
+        // --- Source Link ---
         const sourceBtn = document.getElementById('quickInfoSourceBtn');
-        if (sourceBtn) {
-            sourceBtn.style.display = 'inline-block';
-            let searchUrl = '';
-            const encTitle = encodeURIComponent(item.title);
-            if (item.type === 'Anime' || item.type === 'Manga') {
-                searchUrl = `https://myanimelist.net/${item.type.toLowerCase()}/${item.tmdb_id || ''}`;
-            } else {
-                searchUrl = `https://www.themoviedb.org/${item.type === 'TV' ? 'tv' : 'movie'}/${item.tmdb_id || ''}`;
-            }
-            sourceBtn.href = searchUrl;
+        let searchUrl = '';
+        if (item.type === 'Anime' || item.type === 'Manga') {
+            searchUrl = `https://myanimelist.net/${item.type.toLowerCase()}/${item.tmdb_id || ''}`;
+        } else {
+            searchUrl = `https://www.themoviedb.org/${item.type === 'TV Series' ? 'tv' : 'movie'}/${item.tmdb_id || ''}`;
         }
+        sourceBtn.href = searchUrl;
 
-        // Edit Button (Admin Only)
+        // --- Admin Controls ---
         const editBtn = document.getElementById('quickInfoEditBtn');
         const ratingEditSection = document.getElementById('quickInfoRatingEditSection');
-        const ratingInput = document.getElementById('quickInfoRatingInput');
-        const yearInput = document.getElementById('quickInfoYearInput');
-        const titleInput = document.getElementById('quickInfoTitleInput');
-        const saveAllBtn = document.getElementById('quickInfoSaveAllBtn');
-
         if (computeCanEdit()) {
             editBtn.style.display = 'block';
             editBtn.onclick = () => {
                 quickInfoModal.classList.remove('show');
                 window.openReviewModal(item.title, item.type, item.review, item.id);
             };
-
-            // Rating & Metadata Override UI
             ratingEditSection.style.display = 'block';
-            ratingInput.value = rawScore || '';
-            yearInput.value = item.release_year || '';
-            titleInput.value = item.title || '';
-
-            saveAllBtn.onclick = async () => {
-                let newRating = parseFloat(ratingInput.value);
-                const newYear = yearInput.value.trim();
-                const newTitle = titleInput.value.trim();
-                
+            document.getElementById('quickInfoRatingInput').value = rawScore || '';
+            document.getElementById('quickInfoYearInput').value = item.release_year || '';
+            document.getElementById('quickInfoTitleInput').value = item.title || '';
+            
+            // Save Button
+            document.getElementById('quickInfoSaveAllBtn').onclick = async () => {
+                const btn = document.getElementById('quickInfoSaveAllBtn');
+                let newRating = parseFloat(document.getElementById('quickInfoRatingInput').value);
+                const newYear = document.getElementById('quickInfoYearInput').value.trim();
+                const newTitle = document.getElementById('quickInfoTitleInput').value.trim();
                 const payload = {};
                 if (!isNaN(newRating)) {
-                    // Snap to nearest 0.5
                     newRating = Math.round(newRating * 2) / 2;
                     payload.rating = newRating.toString();
-                } else {
-                    alert("A numeric rating is required (e.g. 8.5).");
-                    return;
                 }
-                if (newYear) {
-                    payload.release_year = newYear;
-                }
-                if (newTitle) {
-                    payload.title = newTitle;
-                }
+                if (newYear) payload.release_year = newYear;
+                if (newTitle) payload.title = newTitle;
                 
-                if (Object.keys(payload).length === 0) return;
-                
-                saveAllBtn.disabled = true;
-                saveAllBtn.textContent = 'Saving...';
-                
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
                 try {
                     const res = await fetch(`/api/media/update/${item.id}`, {
                         method: 'POST',
@@ -1586,164 +1553,71 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     const data = await res.json();
                     if (data.ok) {
-                        let msg = "Changes saved!";
-                        if (data.needs_reenrich) {
-                            msg += "\n\nTitle/Year changed. Re-enrichment has been triggered in the background to find the correct official match.";
-                        }
-                        alert(msg);
-                        quickInfoModal.classList.remove('show');
-                        fetchMedia(); // Refresh data
-                    } else {
-                        alert("Failed to update: " + (data.detail || "Unknown error"));
-                    }
-                } catch (e) {
-                    alert("Error updating: " + e.message);
-                } finally {
-                    saveAllBtn.disabled = false;
-                    saveAllBtn.textContent = 'Save Changes';
-                }
-            };
-
-            // Metadata Repair — correctly references the HTML IDs in index.html
-            const refreshBtn = document.getElementById('quickInfoRefreshBtn');
-            const showLinkBtn = document.getElementById('quickInfoShowLinkBtn');
-            const linkSubSection = document.getElementById('quickInfoLinkSubSection'); // Correct ID
-            const linkInput = document.getElementById('quickInfoLinkInput');           // Correct ID
-            const applyLinkBtn = document.getElementById('quickInfoApplyLinkBtn');    // Correct ID
-
-            linkSubSection.style.display = 'none'; // Reset state on each open
-
-            refreshBtn.onclick = async () => {
-                if (!confirm("This will force-refresh all metadata (Poster, Title, Author) from the official sources. Continue?")) return;
-                
-                refreshBtn.disabled = true;
-                refreshBtn.textContent = 'Syncing...';
-                
-                try {
-                    const res = await fetch(`/api/media/refresh/${item.id}`, {
-                        method: 'POST',
-                        headers: getAuthHeaders()
-                    });
-                    const data = await res.json();
-                    if (data.ok) {
-                        alert(`Metadata Synced! Entry is now officially linked and titled.`);
                         quickInfoModal.classList.remove('show');
                         fetchMedia();
-                    } else {
-                        alert("Sync Failed: " + (data.detail || "Check console"));
                     }
-                } catch (e) {
-                    alert("Error syncing: " + e.message);
-                } finally {
-                    refreshBtn.disabled = false;
-                    refreshBtn.textContent = 'Sync with Official';
-                }
+                } catch (e) { alert(e.message); }
+                finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
             };
-
-            showLinkBtn.onclick = () => {
-                const isHidden = linkSubSection.style.display === 'none';
-                linkSubSection.style.display = isHidden ? 'block' : 'none';
-                if (isHidden) {
-                    // Auto-open the correct search page for the user in a new tab
-                    const searchUrl = (item.type === 'Manga')
-                        ? `https://myanimelist.net/manga.php?q=${encodeURIComponent(item.title)}`
-                        : (item.type === 'Anime')
-                        ? `https://myanimelist.net/anime.php?q=${encodeURIComponent(item.title)}`
-                        : `https://www.themoviedb.org/search?query=${encodeURIComponent(item.title)}`;
-                    window.open(searchUrl, '_blank');
-                }
-            };
-
-            applyLinkBtn.onclick = async () => {
-                const extId = parseInt(linkInput.value);
-                if (isNaN(extId) || extId <= 0) return alert("Please enter a valid numeric ID from the official URL.");
-                
-                applyLinkBtn.disabled = true;
-                applyLinkBtn.textContent = 'Linking...';
-                
-                try {
-                    // Correct endpoint: /api/media/link with item_id + ext_id in the body
-                    const res = await fetch('/api/media/link', {
-                        method: 'POST',
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify({ item_id: item.id, ext_id: extId })
-                    });
-                    const data = await res.json();
-                    if (data.ok) {
-                        alert("Item linked! Poster, genres, and metadata have been updated.");
-                        quickInfoModal.classList.remove('show');
-                        fetchMedia();
-                    } else {
-                        alert("Failed to link: " + (data.detail || "Unknown error"));
-                    }
-                } catch (e) {
-                    alert("Error linking: " + e.message);
-                } finally {
-                    applyLinkBtn.disabled = false;
-                    applyLinkBtn.textContent = 'Apply Link';
-                }
-            };
-
         } else {
             editBtn.style.display = 'none';
             ratingEditSection.style.display = 'none';
         }
 
-        // Genres
+        // --- Genres ---
         const genresEl = document.getElementById('quickInfoGenres');
         if (item.genres) {
             genresEl.innerHTML = item.genres.split(',').map(g =>
                 `<span class="genre-badge">${g.trim()}</span>`
             ).join('');
-        } else {
-            genresEl.innerHTML = '';
-        }
+        } else { genresEl.innerHTML = ''; }
 
-        // --- Movie-only metadata (content_rating, runtime) ---
-        const metaEl = document.getElementById('quickInfoMeta');
-        const isMovie = (item.type === 'Movies');
-        const hasChipMeta = isMovie && (item.content_rating || item.runtime);
-        metaEl.style.display = hasChipMeta ? 'flex' : 'none';
-
-        const crEl = document.getElementById('quickInfoContentRating');
-        crEl.textContent = item.content_rating || '';
-        crEl.style.display = item.content_rating ? 'inline-flex' : 'none';
-
+        // --- Metadata Row (Runtime, Rating) ---
         const rtEl = document.getElementById('quickInfoRuntime');
         if (item.runtime) {
             const h = Math.floor(item.runtime / 60);
             const m = item.runtime % 60;
             rtEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
-            rtEl.style.display = 'inline-flex';
-        } else {
-            rtEl.style.display = 'none';
-        }
+            rtEl.style.display = 'inline';
+        } else { rtEl.style.display = 'none'; }
 
-        // --- Director / Creator — exclusive labeled section ---
+        const crEl = document.getElementById('quickInfoContentRating');
+        crEl.textContent = item.content_rating || '';
+        crEl.style.display = item.content_rating ? 'inline-block' : 'none';
+
+        // --- Director / Creator ---
         const dirSection = document.getElementById('quickInfoDirectorSection');
         const dirLabel = dirSection.querySelector('.director-label');
         const dirEl = document.getElementById('quickInfoDirector');
-        
         if (item.director) {
             dirEl.textContent = item.director;
             let label = 'Created by';
-            if (isMovie) label = 'Directed by';
+            if (item.type === 'Movies') label = 'Directed by';
             if (item.type === 'Manga') label = 'Written by';
             dirLabel.textContent = label;
             dirSection.style.display = 'flex';
-        } else {
-            dirSection.style.display = 'none';
-        }
+        } else { dirSection.style.display = 'none'; }
 
-        // Review
+        // --- Overview ---
+        const overviewSection = document.getElementById('quickInfoOverviewSection');
+        const overviewEl = document.getElementById('quickInfoOverview');
+        if (item.overview) {
+            overviewEl.textContent = item.overview;
+            overviewSection.style.display = 'block';
+        } else { overviewSection.style.display = 'none'; }
+
+        // --- Review ---
+        const reviewSection = document.getElementById('quickInfoReviewSection');
         const reviewEl = document.getElementById('quickInfoReview');
         let reviewText = item.review || '';
-        // Strip legacy import markers
         reviewText = reviewText.replace(/Imported from Discord/gi, '').trim();
         const hasReview = isRealReview(reviewText);
-        reviewEl.textContent = hasReview ? reviewText : '';
+        if (hasReview) {
+            reviewEl.textContent = reviewText;
+            reviewSection.style.display = 'block';
+        } else { reviewSection.style.display = 'none'; }
 
-        // Poster
+        // --- Poster ---
         const posterImg = document.getElementById('quickInfoPoster');
         const posterPlaceholder = document.getElementById('quickInfoPosterPlaceholder');
         posterImg.classList.remove('loaded');
@@ -1753,18 +1627,76 @@ document.addEventListener('DOMContentLoaded', () => {
                 posterImg.classList.add('loaded');
                 posterPlaceholder.style.display = 'none';
             };
-            posterImg.onerror = () => {
-                posterPlaceholder.style.display = 'flex';
-            };
             posterImg.src = item.cover_url;
-        } else {
-            posterImg.src = '';
+        } else { posterImg.src = ''; }
+
+        // --- Recommendations ---
+        const recsSection = document.getElementById('quickInfoRecsSection');
+        const recsGrid = document.getElementById('quickInfoRecs');
+        recsSection.style.display = 'none';
+        recsGrid.innerHTML = '';
+
+        if (item.tmdb_id) {
+            fetch(`/api/recommendations/${item.id}`)
+                .then(r => r.json())
+                .then(recs => {
+                    if (recs && recs.length > 0) {
+                        recsSection.style.display = 'block';
+                        recsGrid.innerHTML = recs.map(r => `
+                            <div class="rec-card">
+                                <img src="${r.cover_url || ''}" class="rec-poster" alt="${r.title}">
+                                <div class="rec-title">${r.title}</div>
+                                <div class="rec-meta">${r.release_year || ''}</div>
+                            </div>
+                        `).join('');
+                    }
+                })
+                .catch(err => console.error("Error fetching recs:", err));
         }
 
-        // Raise z-index so quickInfoModal always appears on top of everything
-        // (including the Ranking Manager modal which shares the same base z-index)
         quickInfoModal.style.zIndex = '10001';
         quickInfoModal.classList.add('show');
+
+        // Restore Metadata Repair Logic
+        const refreshBtn = document.getElementById('quickInfoRefreshBtn');
+        const showLinkBtn = document.getElementById('quickInfoShowLinkBtn');
+        const linkSubSection = document.getElementById('quickInfoLinkSubSection');
+        const linkInput = document.getElementById('quickInfoLinkInput');
+        const applyLinkBtn = document.getElementById('quickInfoApplyLinkBtn');
+
+        linkSubSection.style.display = 'none';
+
+        refreshBtn.onclick = async () => {
+            if (!confirm("This will force-refresh all metadata from official sources. Continue?")) return;
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = 'Syncing...';
+            try {
+                const res = await fetch(`/api/media/refresh/${item.id}`, { method: 'POST', headers: getAuthHeaders() });
+                if ((await res.json()).ok) { fetchMedia(); quickInfoModal.classList.remove('show'); }
+            } catch (e) { alert(e.message); }
+            finally { refreshBtn.disabled = false; refreshBtn.textContent = 'Sync with Official'; }
+        };
+
+        showLinkBtn.onclick = () => {
+            const isHidden = linkSubSection.style.display === 'none';
+            linkSubSection.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) {
+                const searchUrl = (item.type === 'Manga') ? `https://myanimelist.net/manga.php?q=${encodeURIComponent(item.title)}` : (item.type === 'Anime' ? `https://myanimelist.net/anime.php?q=${encodeURIComponent(item.title)}` : `https://www.themoviedb.org/search?query=${encodeURIComponent(item.title)}`);
+                window.open(searchUrl, '_blank');
+            }
+        };
+
+        applyLinkBtn.onclick = async () => {
+            const extId = parseInt(linkInput.value);
+            if (isNaN(extId) || extId <= 0) return alert("Invalid ID.");
+            applyLinkBtn.disabled = true;
+            applyLinkBtn.textContent = 'Linking...';
+            try {
+                const res = await fetch('/api/media/link', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ item_id: item.id, ext_id: extId }) });
+                if ((await res.json()).ok) { fetchMedia(); quickInfoModal.classList.remove('show'); }
+            } catch (e) { alert(e.message); }
+            finally { applyLinkBtn.disabled = false; applyLinkBtn.textContent = 'Apply Link'; }
+        };
     };
 
 
@@ -2255,30 +2187,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 const finalRank = isValidVal(rankFromFields) ? rankFromFields : (globalRank ? `#${globalRank}` : '');
 
                 card.innerHTML = `
-                    <div class="card-poster-wrap">
-                        ${item.cover_url ? `<img src="${item.cover_url}" class="card-poster" alt="${item.title}" loading="lazy">` : `<div class="card-poster-placeholder">No Poster</div>`}
-                        <div class="card-overlay">
-                            <div class="card-rating-circle">${displayRating || 'NR'}</div>
+                    <div class="card-header">
+                        <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
+                    </div>
+                    ${item.genres ? `
+                        <div class="genre-container">
+                            ${item.genres.split(',').map(g => `<span class="genre-badge">${g.trim()}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    ${(item.type === 'Movies' && item.director) ? `
+                        <div class="director-container">
+                            <span class="director-badge">Dir. ${item.director}</span>
+                        </div>
+                    ` : ''}
+                    ${((item.type === 'TV Series' || item.type === 'Anime') && item.director) ? `
+                        <div class="director-container">
+                            <span class="director-badge">Creator: ${item.director}</span>
+                        </div>
+                    ` : ''}
+                    ${(item.type === 'Manga' && item.director) ? `
+                        <div class="director-container">
+                            <span class="director-badge">Author: ${item.director}</span>
+                        </div>
+                    ` : ''}
+                    <div class="card-badges">
+                        <div class="badge-slot-left">
+                            ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
+                        </div>
+                        <div class="badge-slot-right">
+                            ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
                         </div>
                     </div>
-                    <div class="card-info">
-                        <div class="card-header">
-                            <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title}</h3>
-                            <span class="card-year">${item.release_year || ''}</span>
+
+                    ${(isAdminUnlocked || item.is_liked) ? `
+                        <div class="card-actions-row">
+                            <button class="like-btn-inline ${likedClass}" 
+                                    title="${isAdminUnlocked ? (item.is_liked ? 'Unlike' : 'Like') : ''}"
+                                    style="${!isAdminUnlocked ? 'pointer-events: none; cursor: default;' : ''}">${likedIcon}</button>
                         </div>
-                        ${item.genres ? `
-                            <div class="genre-container">
-                                ${item.genres.split(',').slice(0, 2).map(g => `<span class="genre-badge">${g.trim()}</span>`).join('')}
-                            </div>
-                        ` : ''}
-                        <div class="card-meta-bottom">
-                            ${finalRank ? `<span class="card-rank-badge"><i class="fas fa-star"></i> ${finalRank}</span>` : ''}
-                            ${hasReview ? `<span class="review-badge"><i class="fas fa-pen"></i></span>` : ''}
-                            ${(isAdminUnlocked || item.is_liked) ? `
-                                <button class="like-btn-inline ${likedClass}" style="${!isAdminUnlocked ? 'pointer-events: none;' : ''}">${likedIcon}</button>
-                            ` : ''}
-                        </div>
-                    </div>
+                    ` : ''}
                 `;
 
 
@@ -3171,5 +3118,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Expert Initialization: Sync the default category state on load
+    // Land on the Hub as requested
+    currentSubTab = 'Info';
     handleCategorySwitch('Movies');
+
 });

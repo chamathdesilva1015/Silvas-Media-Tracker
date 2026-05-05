@@ -77,7 +77,8 @@ async def on_startup():
                 ("tmdb_id", "INTEGER"),
                 ("enrichment_attempts", "INTEGER DEFAULT 0"),
                 ("is_manual_rating", "BOOLEAN DEFAULT FALSE"),
-                ("numeric_rating", "VARCHAR")
+                ("numeric_rating", "VARCHAR"),
+                ("overview", "TEXT")
             ]
             
             for col_name, col_type in new_columns:
@@ -1039,6 +1040,22 @@ async def trigger_enrich(category: Optional[str] = None):
             yield msg + "\n"
             
     return StreamingResponse(log_generator(), media_type="text/plain")
+
+@app.get("/api/recommendations/{item_id}")
+def get_item_recommendations(item_id: int, session: Session = Depends(get_session)):
+    """Fetches similar media recommendations for a specific library item."""
+    item = session.get(MediaItem, item_id)
+    if not item or not item.tmdb_id:
+        return []
+    
+    try:
+        if item.type in ["Anime", "Manga"]:
+            return get_jikan_recommendations(item.tmdb_id, "anime" if item.type == "Anime" else "manga", limit=6)
+        else:
+            return get_tmdb_recommendations(item.tmdb_id, "movie" if item.type == "Movies" else "tv", limit=6)
+    except Exception as e:
+        print(f"Error fetching recommendations for {item.title}: {e}")
+        return []
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
