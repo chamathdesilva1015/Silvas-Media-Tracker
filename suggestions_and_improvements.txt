@@ -57,3 +57,6 @@ SILVA'S MEDIA TRACKER: 10 PREMIUM UI & DESIGN EVOLUTIONS
     - Concept: For the Suggestion Hub, use a "radar" animation while the engine "thinks," making the wait feel like an intentional part of the experience.
     - Design Goal: Reduce perceived wait times and make the site feel polished even when the network is slow.
 
+11. MANDATORY RATINGS & DATA INTEGRITY [DONE]
+    - Detail: Enforce numeric ratings at both the database and UI levels to prevent "vanishing ratings" and ensure a consistent library.
+    - Design Goal: Protect the user's data and ensure all metrics (averages, rankings) are always accurate.

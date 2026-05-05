@@ -870,7 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reset modal state when it's closed or opened
     document.getElementById('addMediaBtn').addEventListener('click', () => {
-        console.log("[*] Opening modal for category:", currentCategory);
+
         isPreviewPhase = true;
         
         // Sync modal type and title with current category

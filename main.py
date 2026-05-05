@@ -161,7 +161,7 @@ class ReviewPayload(BaseModel):
 
 @app.post("/api/media/review")
 def update_review(payload: ReviewPayload, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
-    print(f"\n[DEBUG] RECEIVED REVIEW UPDATE FOR: {payload.title} ({payload.type})")
+
     
     # We want to match all entries with the same exact title (case-insensitive) and exact type.
     # We update both Completed rows and Rankings rows seamlessly!
@@ -401,7 +401,7 @@ def toggle_like(item_id: str, session: Session = Depends(get_session), _: None =
         session.add(r)
 
     session.commit()
-    print(f"[DEBUG] TOGGLED LIKE for '{item.title}' (Norm: '{target_norm}') -> {new_liked} ({len(related)} rows)")
+
     return {"ok": True, "is_liked": new_liked, "updated_count": len(related)}
 
 @app.post("/api/media/update/{item_id}")
@@ -552,32 +552,32 @@ def reorder_rankings(request: ReorderRequest, session: Session = Depends(get_ses
             session.add(item)
 
     session.commit()
-    print(f"[DEBUG] REORDERED RANKINGS for {category}. Verified 1-{len(new_order_ids)} sequential sequence applied.")
+
     return {"ok": True, "count": len(new_order_ids)}
 
 @app.post("/api/media/delete/{item_id}")
 @app.post("/api/media/delete/{item_id}/") # Trailing slash support
 def delete_media(item_id: str, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
-    print(f"\n[DEBUG] RECEIVED DELETE REQUEST FOR ID: {item_id}")
+
     try:
         # Cast to int manually to handle potential stringified IDs
         actual_id = int(item_id)
     except ValueError:
-        print(f"[DEBUG] INVALID ID TYPE: {item_id}")
+
         raise HTTPException(status_code=400, detail="Invalid ID format")
 
     item = session.get(MediaItem, actual_id)
     if not item:
-        print(f"[DEBUG] ITEM NOT FOUND: {actual_id}")
+
         raise HTTPException(status_code=404, detail="Item not found")
     
     if item.source != "manual":
-        print(f"[DEBUG] REJECTED: ATTEMPTED TO DELETE NON-MANUAL ITEM: {actual_id}")
+
         raise HTTPException(status_code=403, detail="Only manually added entries can be deleted.")
     
     session.delete(item)
     session.commit()
-    print(f"[DEBUG] SUCCESS: DELETED ITEM {actual_id} ({item.title})")
+
     return {"ok": True}
 
 @app.get("/api/history/{item_id}")
