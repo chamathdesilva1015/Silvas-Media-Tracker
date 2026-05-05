@@ -2609,12 +2609,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const passedList = document.getElementById('passedEntriesList');
 
             if (managePassedBtn) managePassedBtn.onclick = () => {
-                passedModal.style.display = 'flex';
+                passedModal.classList.add('show');
                 fetchPassed();
             };
 
             if (closePassedBtn) closePassedBtn.onclick = () => {
-                passedModal.style.display = 'none';
+                passedModal.classList.remove('show');
             };
 
             async function fetchPassed() {
