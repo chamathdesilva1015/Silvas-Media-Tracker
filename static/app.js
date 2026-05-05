@@ -1507,6 +1507,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Snap to nearest 0.5
                     newRating = Math.round(newRating * 2) / 2;
                     payload.rating = newRating.toString();
+                } else {
+                    alert("A numeric rating is required (e.g. 8.5).");
+                    return;
                 }
                 if (newYear) {
                     payload.release_year = newYear;

@@ -93,6 +93,12 @@ def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Se
             detail=f"This piece of media ('{item.title}' {item.release_year or ''}) already exists in your tracker."
         )
         
+    # Ensure rating fields are synchronized
+    if item.rating and not item.numeric_rating:
+        item.numeric_rating = item.rating
+    if item.numeric_rating and not item.rating:
+        item.rating = f"{item.numeric_rating}/10" if "/10" not in str(item.numeric_rating) else str(item.numeric_rating)
+        
     session.add(item)
     session.commit()
     session.refresh(item)
@@ -362,7 +368,12 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
 
     needs_reenrich = False
     if "rating" in payload:
-        new_score = str(payload["rating"]).strip()
+        try:
+            new_score_val = float(payload["rating"])
+            new_score = str(new_score_val).strip()
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid numeric rating provided.")
+            
         # Ensure /10 suffix
         new_rating = new_score if new_score.endswith("/10") else f"{new_score}/10"
         
@@ -393,6 +404,10 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
                 
             r.is_manual_rating = True
             session.add(r)
+    else:
+        # If updating via API, rating is now mandatory
+        if not item.rating and not item.numeric_rating:
+             raise HTTPException(status_code=400, detail="A rating is required for this entry.")
     
     if "title" in payload and payload["title"] != item.title:
         item.title = payload["title"]

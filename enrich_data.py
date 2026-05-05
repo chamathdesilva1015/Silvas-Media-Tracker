@@ -80,9 +80,17 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     existing_match = session.exec(stmt).first()
                     if existing_match:
                         log(f"  [~] Merging Duplicate: '{item.title}' -> already exists as '{existing_match.title}'")
-                        # Transfer hearts/reviews to existing entry if missing
+                        # Transfer hearts/reviews/ratings to existing entry if missing
                         if item.is_liked: existing_match.is_liked = True
                         if item.review and not existing_match.review: existing_match.review = item.review
+                        
+                        # Preserve ratings if the existing one is missing but the duplicate has one
+                        if (not existing_match.rating or existing_match.rating == "") and item.rating:
+                            existing_match.rating = item.rating
+                        if not existing_match.numeric_rating and item.numeric_rating:
+                            existing_match.numeric_rating = item.numeric_rating
+                        
+                        existing_match.is_manual_rating = existing_match.is_manual_rating or item.is_manual_rating
                         
                         # Delete the redundant item
                         session.delete(item)
