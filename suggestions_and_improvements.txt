@@ -1,0 +1,55 @@
+SILVA'S MEDIA TRACKER: 10 IDEAS, IMPROVEMENTS, & FIXES
+=====================================================
+
+1. DYNAMIC SUGGESTION TUNING (ALGORITHM CONTROLS)
+   - Concept: Add a "Tuning" icon next to the "Suggest Me Something" button.
+   - Detail: Allow users to toggle between "Safe Bets" (strictly based on high ratings), "Adventure Mode" (randomly explores genres you haven't watched much), and "Hidden Gems" (prioritizes low-popularity items with high critical scores).
+   - Benefit: Gives the user agency over the randomness of the engine without changing the underlying code.
+
+2. INTEGRATED MEDIA PLAYERS (TRAILERS)
+   - Concept: Embed YouTube trailers directly into the entry profile modal.
+   - Detail: Use the TMDB/Jikan APIs to fetch the official trailer key and render an iframe within the modal.
+   - Benefit: Eliminates the need to leave the site to see if a suggestion looks interesting, significantly improving the "Suggestion Hub" flow.
+
+3. INTERACTIVE PERSONAL ANALYTICS (STATS DASHBOARD)
+   - Concept: A "Statistics" section in The Hub that visualizes your taste.
+   - Detail: Use a library like Chart.js to show:
+     * Genre Distribution (Pie chart of what you watch most).
+     * Rating Heatmap (Bar chart of how many 10s vs 5s you give).
+     * "Director/Author Spotlights" (Highlighting creators you've rated highest on average).
+   - Benefit: Turns a simple tracker into a data-driven retrospective of your media consumption.
+
+4. UNIVERSAL GLOBAL SEARCH
+   - Concept: A persistent search bar in the top navigation header.
+   - Detail: Currently, search is section-specific. A global search would query all tables (Movies, TV, Anime, Manga) and show a categorized dropdown of results instantly.
+   - Benefit: Faster navigation. If you're on the Movie page but suddenly want to check a Manga rating, you don't have to switch tabs first.
+
+5. "UP NEXT" QUEUE (WATCHLIST SYSTEM)
+   - Concept: A dedicated "Watchlist" status separate from the main library.
+   - Detail: Add a "Plan to Watch" button to suggestions. These items would live in a special "Queue" section of the Hub, allowing you to build a roadmap of future entertainment.
+   - Benefit: Closes the loop on the Suggestion Engine—instead of just viewing a suggestion, you can "Save" it for later.
+
+6. BULK IMPORT / EXTERNAL SYNC (LETTERBOXD & MAL)
+   - Concept: A developer tool to import CSVs or link external accounts.
+   - Detail: Allow the user to upload a Letterboxd export or provide a MyAnimeList username to populate the database in seconds.
+   - Benefit: Makes the tool viable for power users who already have years of data elsewhere and don't want to re-entry everything manually.
+
+7. AUTOMATIC FRANCHISE GROUPING (COLLECTIONS)
+   - Concept: Group sequels and series into single "Collection" cards.
+   - Detail: Use TMDB's "belongs_to_collection" data to group all Harry Potter or Star Wars movies under one expandable card in the UI.
+   - Benefit: Cleans up the "Movies" page, preventing it from being cluttered by long-running franchises and making the library feel more organized.
+
+8. "WHERE TO WATCH" INTEGRATION (JUSTWATCH API)
+   - Concept: Show available streaming platforms for every entry.
+   - Detail: Integrate the JustWatch API (via TMDB) to display icons (Netflix, Disney+, Max) showing where the item is currently streaming in the user's region.
+   - Benefit: Provides immediate utility. "I like this suggestion—oh look, it's on Netflix right now."
+
+9. SOCIAL "WRAPPED" CARD GENERATOR
+   - Concept: Generate a beautiful, shareable image of your "Top 10" or "Monthly Favorites."
+   - Detail: A button that takes your current Rankings and renders them onto a sleek, branded background (Canvas API) that the user can download.
+   - Benefit: Encourages social interaction and gives the user a "trophy" for their media tracking efforts.
+
+10. ENHANCED PWA & OFFLINE CACHING
+    - Concept: Improve the "Add to Home Screen" experience.
+    - Detail: Implement a Service Worker that caches the main database locally. This would allow the site to load instantly and let users browse their library even when they have no internet (e.g., on a plane).
+    - Benefit: Makes the tracker feel like a native "Pro" app rather than just a website.

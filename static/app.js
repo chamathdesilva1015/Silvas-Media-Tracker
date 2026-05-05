@@ -501,16 +501,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="stats-hero-row">
                 <div class="stat-card">
+                    <i class="fas fa-layer-group" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
                     <div class="stat-card-value">${data.total}</div>
                     <div class="stat-card-label">Total Entries</div>
                 </div>
                 <div class="stat-card">
+                    <i class="fas fa-pen-nib" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
                     <div class="stat-card-value">${data.with_reviews}</div>
                     <div class="stat-card-label">With Reviews <span style="font-size:0.6em;opacity:0.6">(${reviewPct}%)</span></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-value">~ 1 in ${data.like_ratio || '—'}</div>
+                    <i class="fas fa-heart" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
+                    <div class="stat-card-value">1 in ${data.like_ratio || '—'}</div>
                     <div class="stat-card-label">Like Ratio <span style="font-size:0.6em;opacity:0.6">(Exclusivity)</span></div>
+                </div>
+                <div class="stat-card" style="padding: 1rem; flex: 1.5; text-align: left; display: flex; align-items: center; gap: 1.5rem; background: linear-gradient(135deg, var(--bg-card), rgba(147, 112, 219, 0.05));">
+                    <img src="${data.most_recent?.poster || ''}" style="width: 80px; height: 110px; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);" />
+                    <div>
+                        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.5; margin-bottom: 0.25rem;">Recently Discovered</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; line-height: 1.2;">${data.most_recent?.title || 'Unknown'}</div>
+                        <div style="font-size: 0.75rem; color: var(--theme-accent); opacity: 0.8; font-weight: 600;">Added on ${data.most_recent?.date || 'N/A'}</div>
+                    </div>
                 </div>
             </div>
 
@@ -597,6 +608,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="dist-card-footer">
                         <span class="dist-footer-label">Average Release Year</span>
                         <span class="dist-footer-value">${data.avg_year}</span>
+                    </div>
+                </div>
+                <div class="stats-dist-card" style="display: flex; flex-direction: column; justify-content: center; background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2));">
+                    <div class="stats-dist-title">Polar Extremes</div>
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="background: rgba(46, 213, 115, 0.1); color: #2ed573; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800;">${data.highest_rated?.score || '—'}</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">The Masterpiece</div>
+                                <div style="font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.highest_rated?.title || 'None'}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="background: rgba(255, 107, 107, 0.1); color: #ff6b6b; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800;">${data.lowest_rated?.score || '—'}</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">The Rock Bottom</div>
+                                <div style="font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.lowest_rated?.title || 'None'}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -2978,6 +3008,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const suggestionControls = document.getElementById('suggestionControls');
     const retrySuggestionBtn = document.getElementById('retrySuggestionBtn');
 
+    let suggestionMode = localStorage.getItem('suggestion_mode') || 'balanced';
+
+    // Update active UI state for tuning buttons
+    const updateTuningUI = () => {
+        document.querySelectorAll('.tuning-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-mode') === suggestionMode);
+        });
+    };
+
+    // Add event listeners for tuning buttons
+    document.querySelectorAll('.tuning-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const newMode = btn.getAttribute('data-mode');
+            if (newMode !== suggestionMode) {
+                suggestionMode = newMode;
+                localStorage.setItem('suggestion_mode', suggestionMode);
+                updateTuningUI();
+                fetchSuggestions(); // Refresh suggestions with new mode
+            }
+        });
+    });
+
+    updateTuningUI();
+
     async function fetchSuggestions() {
         suggestionLoading.style.display = 'block';
         suggestionResults.style.display = 'none';
@@ -2986,7 +3040,7 @@ document.addEventListener('DOMContentLoaded', () => {
         suggestionResults.innerHTML = '';
 
         try {
-            const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}`, {
+            const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
                 headers: getAuthHeaders(false) // Guests can use this too
             });
             

@@ -217,7 +217,8 @@ def get_tmdb_recommendations(tmdb_id: int, media_type: str = "movie", limit: int
                     "release_year": release_year,
                     "cover_url": cover_url,
                     "tmdb_id": r.get("id"),
-                    "type": "Movies" if media_type == "movie" else "TV Series"
+                    "type": "Movies" if media_type == "movie" else "TV Series",
+                    "popularity": r.get("popularity", 0)
                 })
         return results
     except Exception as e:

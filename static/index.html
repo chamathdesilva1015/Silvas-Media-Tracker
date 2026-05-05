@@ -99,10 +99,24 @@
                     <button class="info-btn" data-section="Bias & Effects">
                         <span class="info-btn-text">Bias & Effects</span>
                     </button>
-                    <button class="info-btn" id="suggestMeBtn" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(147, 112, 219, 0.2)); border-color: rgba(147, 112, 219, 0.4); margin-top: 1rem;">
+                    <button class="info-btn" id="suggestMeBtn" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(147, 112, 219, 0.2)); border-color: rgba(147, 112, 219, 0.4); margin-top: 1rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
                         <i class="fas fa-magic" style="color: #9370db;"></i>
                         <span class="info-btn-text" style="color: #fff;">Suggest Me Something</span>
                     </button>
+                    <div id="suggestionTuning" style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px solid rgba(147, 112, 219, 0.2); border-top: none; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 0.75rem; display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+                        <button class="tuning-btn active" data-mode="balanced" title="Balanced: Mix of favorites and new discoveries">
+                            <i class="fas fa-balance-scale"></i> Balanced
+                        </button>
+                        <button class="tuning-btn" data-mode="safe" title="Safe Bets: Strictly based on your top-rated and liked items">
+                            <i class="fas fa-shield-alt"></i> Safe Bets
+                        </button>
+                        <button class="tuning-btn" data-mode="adventure" title="Adventure: Explores more diverse and 'good' items">
+                            <i class="fas fa-compass"></i> Adventure
+                        </button>
+                        <button class="tuning-btn" data-mode="hidden" title="Hidden Gems: Prioritizes less popular masterpieces">
+                            <i class="fas fa-gem"></i> Hidden Gems
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Admin-Only Actions Container -->

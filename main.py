@@ -728,6 +728,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         "most_recent": {
             "title": most_recent.title,
             "date": most_recent.date_added.strftime("%b %d, %Y"),
+            "poster": most_recent.cover_url
         },
         "favorite_genres": favorite_genre,
         "favorite_directors": favorite_directors
@@ -741,9 +742,10 @@ from tmdb_helper import get_tmdb_recommendations, get_movie_details, get_tv_deta
 from jikan_helper import get_jikan_recommendations, get_anime_details, get_manga_details
 
 @app.get("/api/suggestions")
-def get_suggestions(category: Optional[str] = None, session: Session = Depends(get_session)):
+def get_suggestions(category: Optional[str] = None, mode: str = "balanced", session: Session = Depends(get_session)):
     """
     Generates 3 rich media suggestions based on the user's high-rated and liked items.
+    Tuning modes: balanced, safe, adventure, hidden
     """
     try:
         # 1. Fetch items
@@ -788,7 +790,15 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
             elif score >= 7.0:
                 good_seeds.append(item)
                 
-        seeds = liked_seeds * 3 + top_seeds * 2 + good_seeds
+        # --- Tuning Logic: Seed Selection ---
+        if mode == "safe":
+            # Focus exclusively on absolute favorites
+            seeds = liked_seeds * 5 + top_seeds * 2
+        elif mode == "adventure":
+            # Broaden the horizon, including more "good" but not necessarily "best" items
+            seeds = liked_seeds + top_seeds + good_seeds * 3
+        else: # balanced & hidden
+            seeds = liked_seeds * 3 + top_seeds * 2 + good_seeds
                 
         if not seeds:
             return []
@@ -831,22 +841,30 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
         if not pool:
             return []
             
-        # 5. Sort by overlaps
-        groups = {}
-        for data in pool.values():
-            count = len(data["seeds"])
-            if count not in groups: groups[count] = []
-            groups[count].append(data)
-            
-        sorted_counts = sorted(groups.keys(), reverse=True)
-        final_picks = []
-        for count in sorted_counts:
-            group_items = groups[count]
-            random.shuffle(group_items)
-            for data in group_items:
-                final_picks.append(data)
+        # 5. Sort by overlaps or popularity
+        if mode == "hidden":
+            # Sort by popularity (ascending) to find "hidden gems"
+            # We still want some overlap, so we'll filter for at least 1 overlap then sort by popularity
+            eligible = list(pool.values())
+            # Sort by popularity if available, otherwise just random
+            final_picks = sorted(eligible, key=lambda x: x["item"].get("popularity", 999999))[:3]
+            random.shuffle(final_picks)
+        else:
+            groups = {}
+            for data in pool.values():
+                count = len(data["seeds"])
+                if count not in groups: groups[count] = []
+                groups[count].append(data)
+                
+            sorted_counts = sorted(groups.keys(), reverse=True)
+            final_picks = []
+            for count in sorted_counts:
+                group_items = groups[count]
+                random.shuffle(group_items)
+                for data in group_items:
+                    final_picks.append(data)
+                    if len(final_picks) == 3: break
                 if len(final_picks) == 3: break
-            if len(final_picks) == 3: break
                 
         # 6. Fetch rich details
         results = []
