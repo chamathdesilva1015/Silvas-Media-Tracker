@@ -761,8 +761,11 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
                 except ValueError: pass
         return 0
 
-    # 2. Identify potential seeds
-    seeds = []
+    # 2. Identify potential seeds with extreme preference for tastes (liked and 9+ scores)
+    liked_seeds = []
+    top_seeds = []
+    good_seeds = []
+    
     tracked_titles = {normalize_title(i.title) for i in all_items}
     tracked_ids = {(i.type, i.tmdb_id) for i in all_items if i.tmdb_id}
     
@@ -773,17 +776,33 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
 
     for item in all_items:
         score = parse_score(item)
-        if score >= 8.0 or item.is_liked:
-            weight = 3 if item.is_liked else 1
-            seeds.extend([item] * weight)
+        if item.is_liked:
+            liked_seeds.append(item)
+        elif score >= 9.0:
+            top_seeds.append(item)
+        elif score >= 8.0:
+            good_seeds.append(item)
+            
+    # Compile seeds prioritizing absolute favorites
+    seeds = liked_seeds * 3 + top_seeds * 2 + good_seeds
             
     if not seeds:
         return []
         
-    # 3. Pick up to 10 distinct seeds
+    # 3. Pick up to 15 distinct seeds for a massive pool
     unique_seeds_dict = {s.id: s for s in seeds}
     unique_seeds_list = list(unique_seeds_dict.values())
-    chosen_seeds = random.sample(unique_seeds_list, min(10, len(unique_seeds_list)))
+    
+    # We heavily weight the random sample towards the items that appeared most in our multiplied list
+    # But since random.sample requires unique elements, we just sample from the unique list.
+    # To keep the weighting, we can use random.choices, then deduplicate.
+    chosen_seeds = []
+    attempts = 0
+    while len(chosen_seeds) < min(15, len(unique_seeds_list)) and attempts < 100:
+        pick = random.choice(seeds)
+        if pick not in chosen_seeds:
+            chosen_seeds.append(pick)
+        attempts += 1
     
     # 4. Pool recommendations
     # Structure: {"tmdb_id": {"item": <rec_data>, "seed_titles": set()}}
@@ -793,9 +812,9 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
         recs = []
         try:
             if seed.type in ["Anime", "Manga"]:
-                recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=10)
+                recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=20)
             elif seed.type in ["Movies", "TV Series"]:
-                recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=10)
+                recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=20)
         except Exception as e:
             print(f"Error fetching recs for seed {seed.title}: {e}")
             continue

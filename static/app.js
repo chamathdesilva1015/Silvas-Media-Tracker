@@ -1362,6 +1362,51 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoTitle').textContent = item.title;
         document.getElementById('quickInfoYear').textContent = item.release_year ? `${item.release_year}` : '';
 
+        // Like Button Logic
+        const likeBtn = document.getElementById('quickInfoLikeBtn');
+        const updateLikeBtnUI = (isLiked) => {
+            if (isLiked) {
+                likeBtn.style.color = '#ff6b6b';
+                likeBtn.classList.remove('far');
+                likeBtn.classList.add('fas');
+            } else {
+                likeBtn.style.color = 'rgba(255, 255, 255, 0.4)';
+                likeBtn.classList.remove('fas');
+                likeBtn.classList.add('far');
+            }
+        };
+        
+        updateLikeBtnUI(item.is_liked);
+        
+        // Remove old listener if any to avoid stacking
+        const newLikeBtn = likeBtn.cloneNode(true);
+        likeBtn.parentNode.replaceChild(newLikeBtn, likeBtn);
+        
+        newLikeBtn.addEventListener('click', async () => {
+            if (!localStorage.getItem('admin_key')) {
+                alert("You don't have permission to modify data.");
+                return;
+            }
+            newLikeBtn.style.transform = 'scale(1.2)';
+            setTimeout(() => newLikeBtn.style.transform = 'scale(1)', 150);
+            
+            try {
+                const res = await fetch(`/api/media/like/${item.id}`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(true)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    item.is_liked = data.is_liked; // Update local item reference
+                    updateLikeBtnUI(item.is_liked);
+                    // Refresh allMedia silently to update the main card hearts
+                    fetchMedia(); 
+                }
+            } catch (err) {
+                console.error("Error toggling like:", err);
+            }
+        });
+
         // --- Ranking Ribbon ---
         const ribbon = document.getElementById('quickInfoRibbon');
         const rankKey = (item.title + '|' + item.type).toLowerCase();
