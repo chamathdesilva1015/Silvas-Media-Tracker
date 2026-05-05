@@ -722,6 +722,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isAdminUnlocked && addBtn) addBtn.style.display = 'flex';
         }
 
+        // --- Search/Filter Visibility Sync (Global) ---
+        const searchContainer = document.querySelector('.search-container');
+        const filterActions = document.querySelector('.header-filter-actions');
+        if (searchContainer && filterActions) {
+            const shouldShow = (currentSubTab === 'Completed');
+            searchContainer.style.visibility = shouldShow ? 'visible' : 'hidden';
+            searchContainer.style.pointerEvents = shouldShow ? 'auto' : 'none';
+            filterActions.style.visibility = shouldShow ? 'visible' : 'hidden';
+            filterActions.style.pointerEvents = shouldShow ? 'auto' : 'none';
+        }
+
         // Filter by current Category
         let filtered = allMedia.filter(item => item.type.toLowerCase() === currentCategory.toLowerCase());
         
@@ -1629,30 +1640,6 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             posterImg.src = item.cover_url;
         } else { posterImg.src = ''; }
-
-        // --- Recommendations ---
-        const recsSection = document.getElementById('quickInfoRecsSection');
-        const recsGrid = document.getElementById('quickInfoRecs');
-        recsSection.style.display = 'none';
-        recsGrid.innerHTML = '';
-
-        if (item.tmdb_id) {
-            fetch(`/api/recommendations/${item.id}`)
-                .then(r => r.json())
-                .then(recs => {
-                    if (recs && recs.length > 0) {
-                        recsSection.style.display = 'block';
-                        recsGrid.innerHTML = recs.map(r => `
-                            <div class="rec-card">
-                                <img src="${r.cover_url || ''}" class="rec-poster" alt="${r.title}">
-                                <div class="rec-title">${r.title}</div>
-                                <div class="rec-meta">${r.release_year || ''}</div>
-                            </div>
-                        `).join('');
-                    }
-                })
-                .catch(err => console.error("Error fetching recs:", err));
-        }
 
         quickInfoModal.style.zIndex = '10001';
         quickInfoModal.classList.add('show');
