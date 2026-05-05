@@ -1451,15 +1451,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Like Button Logic
         const likeBtn = document.getElementById('quickInfoLikeBtn');
+        const ratingLike = document.getElementById('quickInfoRatingLike');
         const updateLikeBtnUI = (isLiked) => {
-            if (isLiked) {
-                likeBtn.style.color = '#ff6b6b';
-                likeBtn.classList.remove('far');
-                likeBtn.classList.add('fas');
-            } else {
-                likeBtn.style.color = 'rgba(255, 255, 255, 0.4)';
-                likeBtn.classList.remove('fas');
-                likeBtn.classList.add('far');
+            const currentLikeBtn = document.getElementById('quickInfoLikeBtn');
+            const currentRatingLike = document.getElementById('quickInfoRatingLike');
+            if (currentLikeBtn) {
+                if (isLiked) {
+                    currentLikeBtn.style.color = '#ff6b6b';
+                    currentLikeBtn.classList.remove('far', 'liked');
+                    currentLikeBtn.classList.add('fas', 'liked');
+                    currentLikeBtn.setAttribute('data-liked', 'true');
+                    if (currentRatingLike) currentRatingLike.style.display = 'inline-block';
+                } else {
+                    currentLikeBtn.style.color = 'rgba(255, 255, 255, 0.4)';
+                    currentLikeBtn.classList.remove('fas', 'liked');
+                    currentLikeBtn.classList.add('far');
+                    currentLikeBtn.setAttribute('data-liked', 'false');
+                    if (currentRatingLike) currentRatingLike.style.display = 'none';
+                }
             }
         };
         updateLikeBtnUI(item.is_liked);
@@ -1630,19 +1639,6 @@ document.addEventListener('DOMContentLoaded', () => {
             reviewEl.textContent = reviewText;
             reviewSection.style.display = 'block';
         } else { reviewSection.style.display = 'none'; }
-
-        // --- Like Status ---
-        const likeBtn = document.getElementById('quickInfoLikeBtn');
-        const ratingLike = document.getElementById('quickInfoRatingLike');
-        if (item.is_liked) {
-            likeBtn.classList.add('liked');
-            likeBtn.setAttribute('data-liked', 'true');
-            ratingLike.style.display = 'inline-block';
-        } else {
-            likeBtn.classList.remove('liked');
-            likeBtn.setAttribute('data-liked', 'false');
-            ratingLike.style.display = 'none';
-        }
 
         // --- Poster ---
         const posterImg = document.getElementById('quickInfoPoster');
