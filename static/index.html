@@ -26,31 +26,37 @@
         <div class="main-content">
             <div id="pageBanner" class="page-banner"></div>
             <header>
-                <div class="header-left">
-                    <div class="header-content">
+                <div class="header-top">
+                    <div class="header-left">
                         <h1 id="pageTitle" class="serif">Movies</h1>
-                        <div class="page-tabs" id="pageTabs">
-                            <button class="pill-tab active" data-sub="Completed">Completed</button>
-                            <button class="pill-tab" data-sub="Rankings">Rankings</button>
-                            <button class="pill-tab" data-sub="Info">The Hub</button>
-                            <button class="pill-tab" data-sub="Stats">Run Stats</button>
+                        <div class="category-nav-desktop" id="desktopCategoryNav">
+                            <button class="pill-tab active" data-filter="Movies">Movies</button>
+                            <button class="pill-tab" data-filter="TV Series">TV Shows</button>
+                            <button class="pill-tab" data-filter="Manga">Manga</button>
+                            <button class="pill-tab" data-filter="Anime">Anime</button>
                         </div>
+                    </div>
+                    
+                    <div class="header-right">
+                        <button id="addMediaBtn" class="btn-primary" style="display: none; height: 44px; border-radius: 12px; font-weight: 800; white-space: nowrap;">
+                            <span class="desktop-text">+ Add Entry</span>
+                            <span class="mobile-text">+</span>
+                        </button>
+                        <button id="openAuthBtn" class="btn-secondary" style="border:none; background:rgba(255,255,255,0.05); padding: 0 1rem; height: 44px; border-radius: 12px;"><i class="fas fa-lock"></i></button>
                     </div>
                 </div>
 
-                <div class="category-nav-desktop" id="desktopCategoryNav">
-                    <button class="pill-tab active" data-filter="Movies">Movies</button>
-                    <button class="pill-tab" data-filter="TV Series">TV Shows</button>
-                    <button class="pill-tab" data-filter="Manga">Manga</button>
-                    <button class="pill-tab" data-filter="Anime">Anime</button>
-                </div>
+                <div class="header-bottom">
+                    <div class="page-tabs" id="pageTabs">
+                        <button class="pill-tab active" data-sub="Completed">Completed</button>
+                        <button class="pill-tab" data-sub="Rankings">Rankings</button>
+                        <button class="pill-tab" data-sub="Info">The Hub</button>
+                        <button class="pill-tab" data-sub="Stats">Run Stats</button>
+                    </div>
 
-                <div class="header-right">
-                    <!-- Sort Controls -->
                     <div class="filter-controls">
                         <div class="search-container">
-                            <span class="search-icon"></span>
-                            <input type="text" id="searchInput" class="search-bar" placeholder="Search titles or directors...">
+                            <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
                         </div>
                         
                         <div class="unified-filter-dropdown" id="unifiedFilter">
@@ -60,14 +66,10 @@
                                 <span class="filter-count" id="activeFilterCount" style="display: none;">0</span>
                             </button>
                         </div>
-                        
-                        <button id="addMediaBtn" class="btn-primary" style="display: none; height: 44px; border-radius: 12px; font-weight: 800; white-space: nowrap;">
-                            <span class="desktop-text">+ Add Entry</span>
-                            <span class="mobile-text">+</span>
-                        </button>
                     </div>
                 </div>
             </header>
+
 
             <main class="container">
         <!-- Loader -->
