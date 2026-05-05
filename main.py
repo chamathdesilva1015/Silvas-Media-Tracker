@@ -7,7 +7,8 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlmodel import Session, select
+from sqlmodel import Session, select, text
+
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -54,9 +55,27 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.on_event("startup")
 async def on_startup():
     create_db_and_tables()
-    # Removed obsolete health_check import
+    
+    # Self-healing migration for backdrop_url
+    with Session(engine) as session:
+        try:
+            # Check if column exists by trying to select it (cheap check)
+            session.exec(text("SELECT backdrop_url FROM mediaitem LIMIT 1"))
+        except Exception:
+            print("[!] backdrop_url missing. Attempting migration...")
+            try:
+                # Use raw SQL to add the column
+                # SQLite and Postgres both support this syntax
+                session.exec(text("ALTER TABLE mediaitem ADD COLUMN backdrop_url VARCHAR"))
+                session.commit()
+                print("[+] Successfully added backdrop_url column.")
+            except Exception as e:
+                print(f"[!] Migration failed: {e}")
+                session.rollback()
+
     # Launch enrichment in the background — site is immediately usable
     asyncio.create_task(run_enrichment())
+
 
 
 # Suppress Chromium/Brave devtools probe (harmless, just noisy)
