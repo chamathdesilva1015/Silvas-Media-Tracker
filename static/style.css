@@ -4158,3 +4158,28 @@ body.read-only-mode #clearReviewBtn {
     margin-top: auto;
     width: 100%;
 }
+
+.suggestion-director {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+}
+
+.suggestion-genres {
+    font-size: 0.75rem;
+    color: #64b4ff;
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
+.suggestion-overview {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-bottom: 1rem;
+    text-align: left;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}

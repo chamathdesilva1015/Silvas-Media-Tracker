@@ -177,6 +177,7 @@ def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
             "director": director,
             "runtime": runtime,
             "content_rating": content_rating,
+            "overview": data.get("overview")
         }
     except Exception as e:
         print(f"TMDB Details Error for {media_type} ID {tmdb_id}: {e}")

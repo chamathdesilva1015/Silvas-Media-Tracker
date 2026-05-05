@@ -2463,6 +2463,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.info-btn').forEach(btn => {
             btn.addEventListener('click', () => {
+                if (btn.id === 'suggestMeBtn') return; // Ignore Suggest Me Something button
                 const section = btn.getAttribute('data-section');
                 iTitle.innerText = section;
                 iSubtitle.innerText = infoSubtitles[section] || 'Detailed methodology and project documentation.';
@@ -2889,11 +2890,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         const coverUrl = item.cover_url || 'https://via.placeholder.com/180x270/2c3e50/ecf0f1?text=No+Poster';
                         const year = item.release_year ? `(${item.release_year})` : '';
+                        const genres = item.genres ? `<div class="suggestion-genres">${item.genres}</div>` : '';
+                        const director = item.director ? `<div class="suggestion-director">${item.type === 'Movies' ? 'Dir.' : 'By'} ${item.director}</div>` : '';
+                        const overview = item.overview ? `<div class="suggestion-overview">${item.overview}</div>` : '';
                         
                         card.innerHTML = `
                             <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
                             <div class="suggestion-title">${item.title}</div>
                             <div class="suggestion-meta">${item.type} ${year}</div>
+                            ${director}
+                            ${genres}
+                            ${overview}
                             <div class="suggestion-reason">${item.reason}</div>
                         `;
                         suggestionResults.appendChild(card);

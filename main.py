@@ -742,16 +742,15 @@ from jikan_helper import get_jikan_recommendations
 @app.get("/api/suggestions")
 def get_suggestions(category: Optional[str] = None, session: Session = Depends(get_session)):
     """
-    Generates 3 new media suggestions based on the user's high-rated and liked items.
+    Generates 3 rich media suggestions based on the user's high-rated and liked items.
     """
-    # 1. Fetch all items with a valid tmdb_id and a high score
+    # 1. Fetch items
     query = select(MediaItem).where(MediaItem.tmdb_id != None)
     if category:
         query = query.where(MediaItem.type == category)
         
     all_items = session.exec(query).all()
     
-    # Helper to parse score
     def parse_score(item):
         for field in [item.numeric_rating, item.rating]:
             if not field: continue
@@ -762,7 +761,7 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
                 except ValueError: pass
         return 0
 
-    # 2. Identify potential "seeds" (Score >= 8.0 or is_liked)
+    # 2. Identify potential seeds
     seeds = []
     tracked_titles = {normalize_title(i.title) for i in all_items}
     tracked_ids = {(i.type, i.tmdb_id) for i in all_items if i.tmdb_id}
@@ -770,53 +769,112 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
     for item in all_items:
         score = parse_score(item)
         if score >= 8.0 or item.is_liked:
-            # Weight 'liked' items heavier by adding them multiple times to the pool
             weight = 3 if item.is_liked else 1
             seeds.extend([item] * weight)
             
     if not seeds:
-        return [] # Not enough data
+        return []
         
-    # 3. Pick 3 distinct seeds randomly
-    # Deduplicate seeds by ID to ensure we pick distinct ones
+    # 3. Pick up to 10 distinct seeds
     unique_seeds_dict = {s.id: s for s in seeds}
     unique_seeds_list = list(unique_seeds_dict.values())
-    chosen_seeds = random.sample(unique_seeds_list, min(3, len(unique_seeds_list)))
+    chosen_seeds = random.sample(unique_seeds_list, min(10, len(unique_seeds_list)))
     
-    suggestions = []
+    # 4. Pool recommendations
+    # Structure: {"tmdb_id": {"item": <rec_data>, "seed_titles": set()}}
+    pool = {}
     
-    # 4. Fetch recommendations for each seed
     for seed in chosen_seeds:
         recs = []
         try:
             if seed.type in ["Anime", "Manga"]:
-                recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=5)
+                recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=10)
             elif seed.type in ["Movies", "TV Series"]:
-                recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=5)
+                recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=10)
         except Exception as e:
             print(f"Error fetching recs for seed {seed.title}: {e}")
             continue
             
-        # 5. Filter and pick one valid recommendation per seed
-        valid_recs = []
         for r in recs:
             norm_title = normalize_title(r["title"])
-            # Check if we already track this item
             if norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
                 continue
-            # Check if we already suggested this item
-            if any(s["title"] == r["title"] for s in suggestions):
-                continue
-            valid_recs.append(r)
+                
+            pool_key = (r["type"], r["tmdb_id"])
+            if pool_key not in pool:
+                pool[pool_key] = {"item": r, "seed_titles": set()}
+            pool[pool_key]["seed_titles"].add(seed.title)
             
-        if valid_recs:
-            # Pick a random valid recommendation from this seed
-            chosen_rec = random.choice(valid_recs)
-            chosen_rec["reason"] = f"Because you liked {seed.title}"
-            suggestions.append(chosen_rec)
+    if not pool:
+        return []
+        
+    # 5. Sort by overlaps (number of seed_titles)
+    # Group by count
+    groups = {}
+    for data in pool.values():
+        count = len(data["seed_titles"])
+        if count not in groups:
+            groups[count] = []
+        groups[count].append(data)
+        
+    sorted_counts = sorted(groups.keys(), reverse=True)
+    
+    final_picks = []
+    for count in sorted_counts:
+        group_items = groups[count]
+        random.shuffle(group_items) # Shuffle within the same tier
+        for data in group_items:
+            final_picks.append(data)
+            if len(final_picks) == 3:
+                break
+        if len(final_picks) == 3:
+            break
             
-    # If we didn't get 3 suggestions, we just return what we have
-    return suggestions
+    # 6. Fetch rich details for the top 3
+    results = []
+    for data in final_picks:
+        item = data["item"]
+        seed_titles = list(data["seed_titles"])
+        
+        # Connect string
+        if len(seed_titles) == 1:
+            reason = f"Because you liked {seed_titles[0]}"
+        elif len(seed_titles) == 2:
+            reason = f"Because you liked {seed_titles[0]} and {seed_titles[1]}"
+        else:
+            reason = f"Because you liked {seed_titles[0]}, {seed_titles[1]}, and more"
+            
+        # Fetch details
+        details = {}
+        try:
+            if item["type"] == "Anime":
+                from jikan_helper import get_anime_details
+                details = get_anime_details(item["tmdb_id"])
+            elif item["type"] == "Manga":
+                from jikan_helper import get_manga_details
+                details = get_manga_details(item["tmdb_id"])
+            elif item["type"] == "Movies":
+                from tmdb_helper import get_movie_details
+                details = get_movie_details(item["tmdb_id"])
+            elif item["type"] == "TV Series":
+                from tmdb_helper import get_tv_details
+                details = get_tv_details(item["tmdb_id"])
+        except Exception as e:
+            print(f"Error fetching details for suggestion {item['title']}: {e}")
+            
+        results.append({
+            "title": details.get("title") or item["title"],
+            "release_year": details.get("release_year") or item["release_year"],
+            "cover_url": details.get("cover_url") or item["cover_url"],
+            "type": item["type"],
+            "tmdb_id": item["tmdb_id"],
+            "reason": reason,
+            "director": details.get("director"),
+            "genres": details.get("genres"),
+            "overview": details.get("overview")
+        })
+        
+    return results
 
 @app.post("/api/automation/enrich")
 async def trigger_enrich(category: Optional[str] = None):
