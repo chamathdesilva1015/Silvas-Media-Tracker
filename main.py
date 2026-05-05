@@ -736,172 +736,163 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
 
 import random
-from tmdb_helper import get_tmdb_recommendations
-from jikan_helper import get_jikan_recommendations
+import traceback
+from tmdb_helper import get_tmdb_recommendations, get_movie_details, get_tv_details
+from jikan_helper import get_jikan_recommendations, get_anime_details, get_manga_details
 
 @app.get("/api/suggestions")
 def get_suggestions(category: Optional[str] = None, session: Session = Depends(get_session)):
     """
     Generates 3 rich media suggestions based on the user's high-rated and liked items.
     """
-    # 1. Fetch items
-    query = select(MediaItem).where(MediaItem.tmdb_id != None)
-    if category:
-        query = query.where(MediaItem.type == category)
+    try:
+        # 1. Fetch items
+        query = select(MediaItem).where(MediaItem.tmdb_id != None)
+        if category and category != 'The Hub':
+            query = query.where(MediaItem.type == category)
+            
+        all_items = session.exec(query).all()
         
-    all_items = session.exec(query).all()
-    
-    def parse_score(item):
-        for field in [item.numeric_rating, item.rating]:
-            if not field: continue
-            try: return float(field)
-            except ValueError: pass
-            if "/10" in field:
-                try: return float(field.split("/")[0].strip())
+        def parse_score(item):
+            for field in [item.numeric_rating, item.rating]:
+                if not field: continue
+                try: return float(field)
                 except ValueError: pass
-        return 0
+                if "/10" in field:
+                    try: return float(field.split("/")[0].strip())
+                    except ValueError: pass
+            return 0
 
-    # 2. Identify potential seeds with extreme preference for tastes (liked and 9+ scores)
-    liked_seeds = []
-    top_seeds = []
-    good_seeds = []
-    
-    tracked_titles = {normalize_title(i.title) for i in all_items}
-    tracked_ids = {(i.type, i.tmdb_id) for i in all_items if i.tmdb_id}
-    
-    # Also fetch passed suggestions to avoid re-suggesting
-    passed_items = session.exec(select(PassedSuggestion)).all()
-    for p in passed_items:
-        tracked_ids.add((p.type, p.tmdb_id))
-
-    for item in all_items:
-        score = parse_score(item)
-        if item.is_liked:
-            liked_seeds.append(item)
-        elif score >= 8.5:
-            top_seeds.append(item)
-        elif score >= 7.0:
-            good_seeds.append(item)
-            
-    # Compile seeds prioritizing absolute favorites
-    seeds = liked_seeds * 3 + top_seeds * 2 + good_seeds
-            
-    if not seeds:
-        return []
+        # 2. Identify potential seeds
+        liked_seeds = []
+        top_seeds = []
+        good_seeds = []
         
-    # 3. Pick up to 15 distinct seeds for a massive pool
-    unique_seeds_dict = {s.id: s for s in seeds}
-    unique_seeds_list = list(unique_seeds_dict.values())
-    
-    # We heavily weight the random sample towards the items that appeared most in our multiplied list
-    # But since random.sample requires unique elements, we just sample from the unique list.
-    # To keep the weighting, we can use random.choices, then deduplicate.
-    chosen_seeds = []
-    attempts = 0
-    while len(chosen_seeds) < min(15, len(unique_seeds_list)) and attempts < 100:
-        pick = random.choice(seeds)
-        if pick not in chosen_seeds:
-            chosen_seeds.append(pick)
-        attempts += 1
-    
-    # 4. Pool recommendations
-    # Structure: {"tmdb_id": {"item": <rec_data>, "seed_titles": set()}}
-    pool = {}
-    
-    for seed in chosen_seeds:
-        recs = []
+        tracked_titles = {normalize_title(i.title) for i in all_items}
+        tracked_ids = {(i.type, i.tmdb_id) for i in all_items if i.tmdb_id}
+        
+        # Also fetch passed suggestions
         try:
-            if seed.type in ["Anime", "Manga"]:
-                recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=20)
-            elif seed.type in ["Movies", "TV Series"]:
-                recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=20)
-        except Exception as e:
-            print(f"Error fetching recs for seed {seed.title}: {e}")
-            continue
+            passed_items = session.exec(select(PassedSuggestion)).all()
+            for p in passed_items:
+                tracked_ids.add((p.type, p.tmdb_id))
+        except Exception as pe:
+            print(f"Error fetching passed list: {pe}")
+
+        for item in all_items:
+            score = parse_score(item)
+            if item.is_liked:
+                liked_seeds.append(item)
+            elif score >= 8.5:
+                top_seeds.append(item)
+            elif score >= 7.0:
+                good_seeds.append(item)
+                
+        seeds = liked_seeds * 3 + top_seeds * 2 + good_seeds
+                
+        if not seeds:
+            return []
             
-        for r in recs:
-            norm_title = normalize_title(r["title"])
-            if norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
+        # 3. Pick up to 15 distinct seeds
+        unique_seeds_dict = {s.id: s for s in seeds}
+        unique_seeds_list = list(unique_seeds_dict.values())
+        
+        chosen_seeds = []
+        attempts = 0
+        while len(chosen_seeds) < min(15, len(unique_seeds_list)) and attempts < 100:
+            pick = random.choice(seeds)
+            if pick not in chosen_seeds:
+                chosen_seeds.append(pick)
+            attempts += 1
+        
+        # 4. Pool recommendations
+        pool = {}
+        for seed in chosen_seeds:
+            recs = []
+            try:
+                if seed.type in ["Anime", "Manga"]:
+                    recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=20)
+                elif seed.type in ["Movies", "TV Series"]:
+                    recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=20)
+            except Exception as e:
+                print(f"Error fetching recs for seed {seed.title}: {e}")
                 continue
                 
-            pool_key = (r["type"], r["tmdb_id"])
-            if pool_key not in pool:
-                pool[pool_key] = {"item": r, "seeds": set()}
-            pool[pool_key]["seeds"].add((seed.title, seed.rating))
+            for r in recs:
+                norm_title = normalize_title(r.get("title", ""))
+                if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
+                    continue
+                    
+                pool_key = (r["type"], r["tmdb_id"])
+                if pool_key not in pool:
+                    pool[pool_key] = {"item": r, "seeds": set()}
+                pool[pool_key]["seeds"].add((seed.title, seed.rating or "N/A"))
+                
+        if not pool:
+            return []
             
-    if not pool:
-        return []
-        
-    # 5. Sort by overlaps (number of seeds)
-    # Group by count
-    groups = {}
-    for data in pool.values():
-        count = len(data["seeds"])
-        if count not in groups:
-            groups[count] = []
-        groups[count].append(data)
-        
-    sorted_counts = sorted(groups.keys(), reverse=True)
-    
-    final_picks = []
-    for count in sorted_counts:
-        group_items = groups[count]
-        random.shuffle(group_items) # Shuffle within the same tier
-        for data in group_items:
-            final_picks.append(data)
-            if len(final_picks) == 3:
-                break
-        if len(final_picks) == 3:
-            break
+        # 5. Sort by overlaps
+        groups = {}
+        for data in pool.values():
+            count = len(data["seeds"])
+            if count not in groups: groups[count] = []
+            groups[count].append(data)
             
-    # 6. Fetch rich details for the top 3
-    results = []
-    for data in final_picks:
-        item = data["item"]
-        seeds_info = list(data["seeds"]) # List of (title, rating)
-        
-        def format_seed(s):
-            return f"{s[0]} ({s[1]})"
+        sorted_counts = sorted(groups.keys(), reverse=True)
+        final_picks = []
+        for count in sorted_counts:
+            group_items = groups[count]
+            random.shuffle(group_items)
+            for data in group_items:
+                final_picks.append(data)
+                if len(final_picks) == 3: break
+            if len(final_picks) == 3: break
+                
+        # 6. Fetch rich details
+        results = []
+        def format_seed(s): return f"{s[0]} ({s[1]})"
 
-        # Connect string
-        if len(seeds_info) == 1:
-            reason = f"Because you liked {format_seed(seeds_info[0])}"
-        elif len(seeds_info) == 2:
-            reason = f"Because you liked {format_seed(seeds_info[0])} and {format_seed(seeds_info[1])}"
-        else:
-            reason = f"Because you liked {format_seed(seeds_info[0])}, {format_seed(seeds_info[1])}, and more"
+        for data in final_picks:
+            item = data["item"]
+            seeds_info = list(data["seeds"])
             
-        # Fetch details
-        details = {}
-        try:
-            if item["type"] == "Anime":
-                from jikan_helper import get_anime_details
-                details = get_anime_details(item["tmdb_id"])
-            elif item["type"] == "Manga":
-                from jikan_helper import get_manga_details
-                details = get_manga_details(item["tmdb_id"])
-            elif item["type"] == "Movies":
-                from tmdb_helper import get_movie_details
-                details = get_movie_details(item["tmdb_id"])
-            elif item["type"] == "TV Series":
-                from tmdb_helper import get_tv_details
-                details = get_tv_details(item["tmdb_id"])
-        except Exception as e:
-            print(f"Error fetching details for suggestion {item['title']}: {e}")
+            if len(seeds_info) == 1:
+                reason = f"Because you liked {format_seed(seeds_info[0])}"
+            elif len(seeds_info) == 2:
+                reason = f"Because you liked {format_seed(seeds_info[0])} and {format_seed(seeds_info[1])}"
+            else:
+                reason = f"Because you liked {format_seed(seeds_info[0])}, {format_seed(seeds_info[1])}, and {len(seeds_info)-2} more"
+                
+            details = {}
+            try:
+                if item["type"] == "Anime":
+                    details = get_anime_details(item["tmdb_id"])
+                elif item["type"] == "Manga":
+                    details = get_manga_details(item["tmdb_id"])
+                elif item["type"] == "Movies":
+                    details = get_movie_details(item["tmdb_id"])
+                elif item["type"] == "TV Series":
+                    details = get_tv_details(item["tmdb_id"])
+            except Exception as e:
+                print(f"Error fetching details for suggestion {item.get('title')}: {e}")
+                
+            results.append({
+                "title": details.get("title") or item["title"],
+                "release_year": details.get("release_year") or item["release_year"],
+                "cover_url": details.get("cover_url") or item["cover_url"],
+                "type": item["type"],
+                "tmdb_id": item["tmdb_id"],
+                "reason": reason,
+                "director": details.get("director"),
+                "genres": details.get("genres"),
+                "overview": details.get("overview")
+            })
             
-        results.append({
-            "title": details.get("title") or item["title"],
-            "release_year": details.get("release_year") or item["release_year"],
-            "cover_url": details.get("cover_url") or item["cover_url"],
-            "type": item["type"],
-            "tmdb_id": item["tmdb_id"],
-            "reason": reason,
-            "director": details.get("director"),
-            "genres": details.get("genres"),
-            "overview": details.get("overview")
-        })
-        
-    return results
+        return results
+    except Exception as e:
+        print("--- SUGGESTION ENGINE ERROR ---")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 class PassRequest(BaseModel):
     type: str
