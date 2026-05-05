@@ -742,12 +742,34 @@ document.addEventListener('DOMContentLoaded', () => {
             filtered.sort((a, b) => b.title.localeCompare(a.title));
         }
 
+        // 6. Final Priority Pass: Pull Unrated to the front (v250)
+        // We use a stable sort to keep the user's chosen sort order for the unrated items themselves
+        filtered.sort((a, b) => (isUnrated(b) ? 1 : 0) - (isUnrated(a) ? 1 : 0));
+
         renderMedia(filtered, isRankingRequired);
     };
 
     const parseRating = (r) => {
         if (!r) return 0;
         if (typeof r === 'number') return r;
+        const s = r.toString().replace('/10', '').trim();
+        const val = parseFloat(s);
+        return isNaN(val) ? 0 : val;
+    };
+
+    const isUnrated = (item) => {
+        const r = (item.rating || "").toString().trim().toLowerCase();
+        const nr = (item.numeric_rating || "").toString().trim().toLowerCase();
+        
+        const isMissing = (v) => {
+            return !v || v === "" || v === "-" || v === "-/10" || v === "none" || v === "null" || v === "undefined";
+        };
+
+        // If it starts with # it's a rank, which might count as "rated" in some contexts, 
+        // but the user wants to add numerical ratings. 
+        // Let's stick to the user's specific examples: blank or "-/10"
+        return isMissing(r) && isMissing(nr);
+    };
         if (r.includes('/')) return parseFloat(r.split('/')[0]);
         return parseFloat(r) || 0;
     };
@@ -2129,7 +2151,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const globalRank = rankMap[rankKey];
                 const finalRank = isValidVal(rankFromFields) ? rankFromFields : (globalRank ? `#${globalRank}` : '');
 
+                const unrated = isUnrated(item);
+                const sashHtml = unrated ? `<div class="no-rating-sash">Missing Rating</div>` : '';
+
                 card.innerHTML = `
+                    ${sashHtml}
                     <div class="card-header">
                         <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
