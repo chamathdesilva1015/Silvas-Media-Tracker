@@ -740,12 +740,16 @@ from tmdb_helper import get_tmdb_recommendations
 from jikan_helper import get_jikan_recommendations
 
 @app.get("/api/suggestions")
-def get_suggestions(session: Session = Depends(get_session)):
+def get_suggestions(category: Optional[str] = None, session: Session = Depends(get_session)):
     """
     Generates 3 new media suggestions based on the user's high-rated and liked items.
     """
     # 1. Fetch all items with a valid tmdb_id and a high score
-    all_items = session.exec(select(MediaItem).where(MediaItem.tmdb_id != None)).all()
+    query = select(MediaItem).where(MediaItem.tmdb_id != None)
+    if category:
+        query = query.where(MediaItem.type == category)
+        
+    all_items = session.exec(query).all()
     
     # Helper to parse score
     def parse_score(item):
@@ -774,7 +778,10 @@ def get_suggestions(session: Session = Depends(get_session)):
         return [] # Not enough data
         
     # 3. Pick 3 distinct seeds randomly
-    chosen_seeds = random.sample(list(set(seeds)), min(3, len(set(seeds))))
+    # Deduplicate seeds by ID to ensure we pick distinct ones
+    unique_seeds_dict = {s.id: s for s in seeds}
+    unique_seeds_list = list(unique_seeds_dict.values())
+    chosen_seeds = random.sample(unique_seeds_list, min(3, len(unique_seeds_list)))
     
     suggestions = []
     

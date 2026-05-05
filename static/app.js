@@ -2872,7 +2872,7 @@ document.addEventListener('DOMContentLoaded', () => {
             suggestionResults.innerHTML = '';
 
             try {
-                const res = await fetch('/api/suggestions', {
+                const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}`, {
                     headers: getAuthHeaders(false) // Guests can use this too
                 });
                 
