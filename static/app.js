@@ -2044,13 +2044,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (items.length === 0) {
             const query = searchInput.value.trim();
             grid.classList.add('media-grid'); // default back to square grid limits
+            const displayCat = currentCategory.toLowerCase().endsWith('s') ? currentCategory.toLowerCase() : currentCategory.toLowerCase() + 's';
             if (query) {
-                grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">No results found for "<strong>${query}</strong>" in ${currentSubTab.toLowerCase()} ${currentCategory.toLowerCase()}s.</p>`;
+                grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">No results found for "<strong>${query}</strong>" in ${currentSubTab.toLowerCase()} ${displayCat}.</p>`;
             } else if (filterState.likedOnly) {
-                grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">No liked ${currentCategory.toLowerCase()}s match your search or filter.</p>`;
+                grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">No liked ${displayCat} match your search or filter.</p>`;
             } else {
-                grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">Completed ${currentCategory.toLowerCase()}s were not listed yet.</p>`;
+                grid.innerHTML = `<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">Completed ${displayCat} were not listed yet.</p>`;
             }
+
             return;
         }
 

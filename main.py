@@ -60,33 +60,42 @@ async def on_startup():
     
     # Self-healing migration for backdrop_url
     with Session(engine) as session:
-        # 1. Try to detect if backdrop_url exists in either common table name
-        has_column = False
-        table_to_use = "mediaitem"
-        
+    # Self-healing migration for all potential missing columns
+    with Session(engine) as session:
         for table_name in ["mediaitem", "media_item"]:
+            # Check if table exists
             try:
-                session.exec(text(f"SELECT backdrop_url FROM {table_name} LIMIT 1"))
-                has_column = True
-                print(f"[*] backdrop_url already exists in {table_name}")
-                break
+                session.exec(text(f"SELECT id FROM {table_name} LIMIT 1"))
             except Exception:
-                # If column missing but table exists, we might need to migrate this specific table
+                continue # Table doesn't exist under this name
+                
+            # Attempt to add all potential new columns
+            new_columns = [
+                ("backdrop_url", "VARCHAR"),
+                ("director", "VARCHAR"),
+                ("runtime", "INTEGER"),
+                ("content_rating", "VARCHAR"),
+                ("genres", "VARCHAR"),
+                ("tmdb_id", "INTEGER"),
+                ("enrichment_attempts", "INTEGER DEFAULT 0"),
+                ("is_manual_rating", "BOOLEAN DEFAULT FALSE"),
+                ("numeric_rating", "VARCHAR")
+            ]
+            
+            for col_name, col_type in new_columns:
                 try:
-                    session.exec(text(f"SELECT id FROM {table_name} LIMIT 1"))
-                    table_to_use = table_name
+                    # Check if column exists first to avoid unnecessary errors
+                    session.exec(text(f"SELECT {col_name} FROM {table_name} LIMIT 1"))
                 except Exception:
-                    continue
-        
-        if not has_column:
-            print(f"[!] backdrop_url missing in {table_to_use}. Attempting migration...")
-            try:
-                session.exec(text(f"ALTER TABLE {table_to_use} ADD COLUMN backdrop_url VARCHAR"))
-                session.commit()
-                print(f"[+] Successfully added backdrop_url to {table_to_use}")
-            except Exception as e:
-                print(f"[!] Migration failed for {table_to_use}: {e}")
-                session.rollback()
+                    print(f"[!] {col_name} missing in {table_name}. Attempting migration...")
+                    try:
+                        session.exec(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+                        session.commit()
+                        print(f"[+] Successfully added {col_name} to {table_name}")
+                    except Exception as e:
+                        print(f"[!] Migration failed for {col_name} in {table_name}: {e}")
+                        session.rollback()
+
 
 
     # Launch enrichment in the background — site is immediately usable
