@@ -4572,16 +4572,16 @@ body.read-only-mode #clearReviewBtn {
 }
 
 .quick-info-poster-wrap {
-    width: 320px;
-    flex-shrink: 0;
-    position: relative;
-    padding: 0;
-    background: none;
-    display: flex;
-    align-items: flex-start;
-    overflow: hidden;
-    border-top-left-radius: 24px;
-    border-bottom-left-radius: 24px;
+    width: 320px !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    padding: 0 !important;
+    background: transparent !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    overflow: hidden !important;
+    border-top-left-radius: 24px !important;
+    border-bottom-left-radius: 24px !important;
 }
 
 @media (max-width: 768px) {

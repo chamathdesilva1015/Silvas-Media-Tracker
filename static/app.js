@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSubTab = 'Info'; // Land on The Hub
 
     const searchInput = document.getElementById('searchInput');
+    console.log("Media Tracker App v240 Initializing...");
     const navLinks = document.querySelectorAll('.nav-link');
     const pageTitle = document.getElementById('pageTitle');
     const pageBanner = document.getElementById('pageBanner');
