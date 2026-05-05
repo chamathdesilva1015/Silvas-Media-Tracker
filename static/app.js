@@ -1364,15 +1364,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Like Button Logic
         const likeBtn = document.getElementById('quickInfoLikeBtn');
+        const likeBadge = document.getElementById('quickInfoLikeBadge');
         const updateLikeBtnUI = (isLiked) => {
             if (isLiked) {
                 likeBtn.style.color = '#ff6b6b';
                 likeBtn.classList.remove('far');
                 likeBtn.classList.add('fas');
+                if (likeBadge) likeBadge.style.display = 'block';
             } else {
                 likeBtn.style.color = 'rgba(255, 255, 255, 0.4)';
                 likeBtn.classList.remove('fas');
                 likeBtn.classList.add('far');
+                if (likeBadge) likeBadge.style.display = 'none';
             }
         };
         
