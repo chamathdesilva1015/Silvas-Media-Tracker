@@ -13,8 +13,9 @@ class MediaItem(SQLModel, table=True):
     is_ranking: bool = Field(default=False, index=True)
     is_liked: bool = Field(default=False)
     is_manual_rating: bool = Field(default=False)
-    rating: str 
-    numeric_rating: Optional[str] = None # Stores 1-10 rating even for ranked items
+    rating: Optional[str] = Field(default=None)
+    numeric_rating: Optional[str] = Field(default=None) # Stores 1-10 rating even for ranked items
+
     review: Optional[str] = None
     source: str = "manual" 
     discord_id: Optional[str] = None 
@@ -42,8 +43,9 @@ class RatingHistory(SQLModel, table=True):
     media_item_id: Optional[int] = Field(default=None, index=True)  # FK to MediaItem (soft ref, no cascade)
     title: str
     media_type: str
-    old_rating: str
-    new_rating: str
+    old_rating: Optional[str] = Field(default=None)
+    new_rating: Optional[str] = Field(default=None)
+
     changed_at: datetime = Field(default_factory=datetime.utcnow)
 
 class PassedSuggestion(SQLModel, table=True):

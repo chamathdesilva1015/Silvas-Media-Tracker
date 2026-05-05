@@ -7,7 +7,9 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlmodel import Session, select, text
+from sqlmodel import Session, select
+from sqlalchemy import text
+
 
 from pydantic import BaseModel
 from typing import List, Optional
@@ -58,20 +60,34 @@ async def on_startup():
     
     # Self-healing migration for backdrop_url
     with Session(engine) as session:
-        try:
-            # Check if column exists by trying to select it (cheap check)
-            session.exec(text("SELECT backdrop_url FROM mediaitem LIMIT 1"))
-        except Exception:
-            print("[!] backdrop_url missing. Attempting migration...")
+        # 1. Try to detect if backdrop_url exists in either common table name
+        has_column = False
+        table_to_use = "mediaitem"
+        
+        for table_name in ["mediaitem", "media_item"]:
             try:
-                # Use raw SQL to add the column
-                # SQLite and Postgres both support this syntax
-                session.exec(text("ALTER TABLE mediaitem ADD COLUMN backdrop_url VARCHAR"))
+                session.exec(text(f"SELECT backdrop_url FROM {table_name} LIMIT 1"))
+                has_column = True
+                print(f"[*] backdrop_url already exists in {table_name}")
+                break
+            except Exception:
+                # If column missing but table exists, we might need to migrate this specific table
+                try:
+                    session.exec(text(f"SELECT id FROM {table_name} LIMIT 1"))
+                    table_to_use = table_name
+                except Exception:
+                    continue
+        
+        if not has_column:
+            print(f"[!] backdrop_url missing in {table_to_use}. Attempting migration...")
+            try:
+                session.exec(text(f"ALTER TABLE {table_to_use} ADD COLUMN backdrop_url VARCHAR"))
                 session.commit()
-                print("[+] Successfully added backdrop_url column.")
+                print(f"[+] Successfully added backdrop_url to {table_to_use}")
             except Exception as e:
-                print(f"[!] Migration failed: {e}")
+                print(f"[!] Migration failed for {table_to_use}: {e}")
                 session.rollback()
+
 
     # Launch enrichment in the background — site is immediately usable
     asyncio.create_task(run_enrichment())
