@@ -58,8 +58,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def on_startup():
     create_db_and_tables()
     
-    # Self-healing migration for backdrop_url
-    with Session(engine) as session:
     # Self-healing migration for all potential missing columns
     with Session(engine) as session:
         for table_name in ["mediaitem", "media_item"]:
@@ -87,6 +85,9 @@ async def on_startup():
                     # Check if column exists first to avoid unnecessary errors
                     session.exec(text(f"SELECT {col_name} FROM {table_name} LIMIT 1"))
                 except Exception:
+                    # After an error, the transaction is often poisoned in Postgres.
+                    # We should rollback to ensure the next ALTER TABLE can run.
+                    session.rollback()
                     print(f"[!] {col_name} missing in {table_name}. Attempting migration...")
                     try:
                         session.exec(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
