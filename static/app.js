@@ -1579,36 +1579,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            // PASS BUTTON (Admin Only)
-            const passBtn = card.querySelector('.pass-btn');
-            if (!localStorage.getItem('admin_key')) {
-                passBtn.style.display = 'none';
-            } else {
-                passBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    if (!confirm(`Are you sure you want to pass on "${item.title}"? It won't be suggested again.`)) return;
-                    
-                    try {
-                        const res = await fetch('/api/suggestions/pass', {
-                            method: 'POST',
-                            headers: getAuthHeaders(true),
-                            body: JSON.stringify({
-                                type: item.type,
-                                tmdb_id: item.tmdb_id,
-                                title: item.title
-                            })
-                        });
-                        if (res.ok) {
-                            card.style.opacity = '0.3';
-                            card.style.pointerEvents = 'none';
-                            passBtn.style.display = 'none';
-                        }
-                    } catch (err) {
-                        console.error("Error passing suggestion:", err);
-                    }
-                };
-            }
-
             applyLinkBtn.onclick = async () => {
                 const extId = parseInt(linkInput.value);
                 if (isNaN(extId) || extId <= 0) return alert("Please enter a valid numeric ID from the official URL.");
