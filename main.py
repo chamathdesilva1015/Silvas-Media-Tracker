@@ -778,9 +778,9 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
         score = parse_score(item)
         if item.is_liked:
             liked_seeds.append(item)
-        elif score >= 9.0:
+        elif score >= 8.5:
             top_seeds.append(item)
-        elif score >= 8.0:
+        elif score >= 7.0:
             good_seeds.append(item)
             
     # Compile seeds prioritizing absolute favorites
@@ -826,17 +826,17 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
                 
             pool_key = (r["type"], r["tmdb_id"])
             if pool_key not in pool:
-                pool[pool_key] = {"item": r, "seed_titles": set()}
-            pool[pool_key]["seed_titles"].add(seed.title)
+                pool[pool_key] = {"item": r, "seeds": set()}
+            pool[pool_key]["seeds"].add((seed.title, seed.rating))
             
     if not pool:
         return []
         
-    # 5. Sort by overlaps (number of seed_titles)
+    # 5. Sort by overlaps (number of seeds)
     # Group by count
     groups = {}
     for data in pool.values():
-        count = len(data["seed_titles"])
+        count = len(data["seeds"])
         if count not in groups:
             groups[count] = []
         groups[count].append(data)
@@ -858,15 +858,18 @@ def get_suggestions(category: Optional[str] = None, session: Session = Depends(g
     results = []
     for data in final_picks:
         item = data["item"]
-        seed_titles = list(data["seed_titles"])
+        seeds_info = list(data["seeds"]) # List of (title, rating)
         
+        def format_seed(s):
+            return f"{s[0]} ({s[1]})"
+
         # Connect string
-        if len(seed_titles) == 1:
-            reason = f"Because you liked {seed_titles[0]}"
-        elif len(seed_titles) == 2:
-            reason = f"Because you liked {seed_titles[0]} and {seed_titles[1]}"
+        if len(seeds_info) == 1:
+            reason = f"Because you liked {format_seed(seeds_info[0])}"
+        elif len(seeds_info) == 2:
+            reason = f"Because you liked {format_seed(seeds_info[0])} and {format_seed(seeds_info[1])}"
         else:
-            reason = f"Because you liked {seed_titles[0]}, {seed_titles[1]}, and more"
+            reason = f"Because you liked {format_seed(seeds_info[0])}, {format_seed(seeds_info[1])}, and more"
             
         # Fetch details
         details = {}
