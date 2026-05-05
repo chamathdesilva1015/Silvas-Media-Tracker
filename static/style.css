@@ -4594,12 +4594,12 @@ body.read-only-mode #clearReviewBtn {
 }
 
 .quick-info-poster {
-    width: 100%;
-    height: auto;
-    max-height: 85vh;
-    object-fit: contain;
-    transition: transform 0.3s ease;
-    background: none;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    transition: transform 0.3s ease !important;
+    background: transparent !important;
 }
 
 .quick-info-details {

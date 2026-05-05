@@ -1457,7 +1457,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentLikeBtn = document.getElementById('quickInfoLikeBtn');
             const currentRatingLike = document.getElementById('quickInfoRatingLike');
             if (currentLikeBtn) {
-                if (isLiked) {
+                const isLikedBool = (isLiked === true || isLiked === 1 || isLiked === "True" || isLiked === "1");
+                if (isLikedBool) {
                     currentLikeBtn.style.color = '#ff6b6b';
                     currentLikeBtn.classList.remove('far', 'liked');
                     currentLikeBtn.classList.add('fas', 'liked');
