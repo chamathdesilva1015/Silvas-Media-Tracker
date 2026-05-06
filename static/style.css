@@ -4981,15 +4981,33 @@ body.modal-open .bottom-nav {
         justify-content: center;
     }
 
+    .rating-display {
+        flex-direction: column !important;
+        gap: 0.1rem !important;
+        padding: 0.35rem 0.8rem !important;
+    }
+
     .rating-value {
         font-size: 1.1rem !important;
         font-weight: 800;
         line-height: 1;
     }
 
+
     .rating-label {
-        display: none !important; /* Hide label to save space, score is obvious */
+        display: block !important;
+        font-size: 0 !important; /* Hide original "Personal Rating" */
+        opacity: 0.6 !important;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: -1px;
     }
+
+    .rating-label::after {
+        content: "Rating";
+        font-size: 0.5rem !important;
+    }
+
 
     .director-display {
         flex-direction: column !important; /* Label above name inside the pill */
