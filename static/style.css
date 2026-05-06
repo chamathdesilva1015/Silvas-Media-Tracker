@@ -4714,8 +4714,8 @@ body.modal-open .bottom-nav {
         margin-bottom: 0.4rem;
     }
 
-    .genre-badge {
-        font-size: 1.1rem !important; /* Massive increase for visibility */
+    #quickInfoGenres .genre-badge {
+        font-size: 1.1rem !important; /* Massive increase for visibility - PROFILE ONLY */
         padding: 8px 18px !important;
         background: rgba(var(--theme-accent-rgb), 0.35) !important;
         border: 2px solid var(--theme-accent) !important;
