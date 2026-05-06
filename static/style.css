@@ -4451,7 +4451,7 @@ body.modal-open .bottom-nav {
     border-radius: 16px;
     padding: 0;
     overflow: hidden;
-    box-shadow: 0 0 60px var(--theme-accent-glow), 0 40px 100px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 100px var(--theme-accent), 0 40px 100px rgba(0, 0, 0, 0.9);
 }
 
 .modal-backdrop-image {
@@ -4527,11 +4527,12 @@ body.modal-open .bottom-nav {
     }
 
     .quick-info-content {
-        width: 92vw;
-        max-width: 380px;
-        border-radius: 16px;
-        max-height: 75vh;
+        width: 90vw;
+        max-width: 320px;
+        border-radius: 14px;
+        max-height: 70vh;
         overflow: hidden;
+        box-shadow: 0 0 60px var(--theme-accent), 0 20px 80px rgba(0, 0, 0, 0.9);
     }
 
     .quick-info-layout {
@@ -4543,7 +4544,7 @@ body.modal-open .bottom-nav {
     .quick-info-poster-wrap {
         width: 100%;
         align-self: auto;
-        border-radius: 16px 16px 0 0;
+        border-radius: 14px 14px 0 0;
         overflow: hidden;
         background: rgba(0,0,0,0.4);
         display: flex;
@@ -4554,13 +4555,13 @@ body.modal-open .bottom-nav {
     .quick-info-poster {
         width: 100%;
         height: auto;
-        max-height: 180px;
+        max-height: 140px;
         object-fit: contain;
     }
 
     .quick-info-details {
-        padding: 0.8rem 1rem;
-        max-height: 48vh;
+        padding: 0.6rem 0.8rem;
+        max-height: 45vh;
         overflow-y: auto;
     }
 
