@@ -22,21 +22,28 @@ The application is engineered with a modern, high-density stack optimized for pe
 
 ## Core Features
 
-### High-Density Media Dashboard
-The interface is designed for power users who want to see their entire collection at a glance. It utilizes a content-driven grid that automatically adapts to the available screen space, providing maximum information throughput without visual clutter.
+### Premium Visual Architecture
+A state-of-the-art "Glassmorphism" interface engineered for visual excellence and high-density information display. 
+- **Themed Radiance**: Deep, category-aware glows that dynamically adapt to the media type (Blue for Movies, Red for TV, Green for Manga, Gold for Anime).
+- **Parallax Gallery**: High-fidelity media cards featuring blurred poster backgrounds, 3D parallax hover effects, and "hover-to-front" priority logic.
+- **High-Contrast Clarity**: Precision-engineered typography with black outlines and multi-layered shadows for 100% legibility across all backgrounds.
 
-### Automated Metadata Enrichment
-Manual entry is supplemented by a "Magic Auto-Fill" system. By simply entering a title, the system queries official databases to retrieve high-quality cover art, directorial credits, and precise genre classifications.
+### Intelligent Discovery Engine
+A sophisticated recommendation system that leverages your personal taste profile for tailored discovery.
+- **Risk-Adjusted Suggestions**: Four distinct levels of discovery (Low to Extreme) with visual risk bars to tune the balance between "Safe" hits and "Wildcard" finds.
+- **Statistical Passion Indexing**: A weighted algorithm that identifies your true top directors and genres by balancing rating intensity against consumption volume.
 
-### Personal Ranking System
-A specialized "Rankings" view allows for the creation of curated leaderboards.
-- **Visual Badges**: Top-ranked items display exclusive rank ribbons (e.g., #1) throughout the application.
-- **State Synchronization**: Reviews, likes, and metadata stay perfectly synchronized between the global logs and your personal leaderboards.
+### Real-Time Metadata Enrichment
+An automated ingestion pipeline that transforms basic titles into high-fidelity media profiles instantly.
+- **Multi-Source Sync**: Deep integration with TMDB and Jikan APIs to fetch official posters, directorial credits, and precise production data.
+- **Interactive Metadata Pills**: Metadata is presented in interactive, themed pills that emit a vivid radiance on hover, matching the media's category color.
 
-### Advanced Analytics & Insights
-The application builds a profile of your media taste based on your ratings.
-- **Taste Profile**: Automatically identifies your top genres and directors based on statistical weighting.
-- **Metric Breakdown**: Visualizes score distributions and release decade trends.
+### Advanced Analytics Dashboard
+A comprehensive statistical engine that visualizes your media consumption habits and taste trends.
+- **Taste Heatmaps**: Dynamic visualizations of score distributions across genres, release decades, and media types.
+- **Hall of Fame**: Automated tracking of elite entries (9+ ratings) with exclusive visual distinctions and ranking ribbons.
+- **Director Indexing**: Statistical tracking of your most-watched creators, providing insights into your directorial preferences.
+
 
 ---
 
