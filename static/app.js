@@ -1451,59 +1451,64 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
         document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
-        // Like Button Logic — heart next to rating, only visible when liked
-        // Clone first to remove old listeners, THEN style
-        const ratingLikeBtnOld = document.getElementById('quickInfoRatingLike');
-        let newRatingLikeBtn = null;
-        if (ratingLikeBtnOld) {
-            newRatingLikeBtn = ratingLikeBtnOld.cloneNode(true);
-            ratingLikeBtnOld.parentNode.replaceChild(newRatingLikeBtn, ratingLikeBtnOld);
-        }
 
+        // --- Like Logic (v399) ---
         const updateLikeBtnUI = (isLiked) => {
-            const btn = newRatingLikeBtn || document.getElementById('quickInfoRatingLike');
             const pill = document.getElementById('quickInfoFavoritePill');
+            const btn = document.getElementById('quickInfoRatingLike');
             const label = document.getElementById('quickInfoFavoriteLabel');
-            if (!btn || !pill) return;
+            if (!pill || !btn) return;
+            
             const canEdit = computeCanEdit();
             
             if (isLiked) {
                 pill.style.display = 'flex';
-                btn.style.color = '#ff4757';
                 btn.classList.remove('far');
                 btn.classList.add('fas');
+                btn.style.color = '#ff4757';
                 btn.style.opacity = '1';
                 btn.style.filter = 'drop-shadow(0 0 10px rgba(255, 71, 87, 0.6))';
-                if (label) label.style.color = '#fff';
-                btn.title = "Unlike";
+                if (label) {
+                    label.textContent = "Liked";
+                    label.style.color = '#fff';
+                    label.style.opacity = '1';
+                }
             } else {
                 if (canEdit) {
                     pill.style.display = 'flex';
-                    btn.style.color = 'rgba(255, 255, 255, 0.8)';
                     btn.classList.remove('fas');
                     btn.classList.add('far');
-                    btn.style.opacity = '0.7';
+                    btn.style.color = 'rgba(255, 255, 255, 0.9)';
+                    btn.style.opacity = '0.6';
                     btn.style.filter = 'none';
-                    if (label) label.style.color = 'rgba(255,255,255,0.5)';
-                    btn.title = "Like";
+                    if (label) {
+                        label.textContent = "Like";
+                        label.style.color = 'rgba(255, 255, 255, 0.5)';
+                        label.style.opacity = '0.7';
+                    }
                 } else {
                     pill.style.display = 'none';
                 }
             }
         };
 
-
         updateLikeBtnUI(item.is_liked);
 
-
-        if (newRatingLikeBtn) {
-            newRatingLikeBtn.addEventListener('click', async () => {
-                if (!localStorage.getItem('admin_key')) {
+        const favPill = document.getElementById('quickInfoFavoritePill');
+        if (favPill) {
+            favPill.onclick = async (e) => {
+                e.stopPropagation();
+                if (!computeCanEdit()) {
                     alert("You need admin access to toggle likes.");
                     return;
                 }
-                newRatingLikeBtn.style.transform = 'scale(1.3)';
-                setTimeout(() => newRatingLikeBtn.style.transform = 'scale(1)', 150);
+                
+                const heartIcon = favPill.querySelector('i');
+                if (heartIcon) {
+                    heartIcon.style.transform = 'scale(1.3)';
+                    setTimeout(() => heartIcon.style.transform = 'scale(1)', 150);
+                }
+
                 try {
                     const res = await fetch(`/api/media/like/${item.id}`, {
                         method: 'POST',
@@ -1513,11 +1518,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         const data = await res.json();
                         item.is_liked = data.is_liked;
                         updateLikeBtnUI(item.is_liked);
-                        fetchMedia();
+                        fetchMedia(); // Refresh gallery
                     }
                 } catch (err) { console.error(err); }
-            });
+            };
         }
+
 
         // --- Ranking Ribbon ---
         const ribbon = document.getElementById('quickInfoRibbon');

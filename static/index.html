@@ -17,7 +17,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=399">
+    <link rel="stylesheet" href="style.css?v=400">
 </head>
 
 <body class="read-only-mode">
@@ -358,9 +358,9 @@
                             <span class="rating-label">Personal Rating</span>
                         </div>
                         
-                        <div class="favorite-display" id="quickInfoFavoritePill">
-                            <i class="fas fa-heart" id="quickInfoRatingLike" title="Toggle Like" style="color: #ff4757; font-size: 1.4rem; cursor: pointer; transition: transform 0.2s, color 0.2s;"></i>
-                            <span class="rating-label" id="quickInfoFavoriteLabel">Favorite</span>
+                        <div class="favorite-display" id="quickInfoFavoritePill" style="cursor: pointer; pointer-events: all;" title="Toggle Like">
+                            <i class="fas fa-heart" id="quickInfoRatingLike" style="color: #ff4757; font-size: 1.4rem; transition: transform 0.2s, color 0.2s;"></i>
+                            <span class="rating-label" id="quickInfoFavoriteLabel">Like</span>
                         </div>
 
                         <div class="director-display" id="quickInfoDirectorSection" style="display:none;">
@@ -368,6 +368,7 @@
                             <span class="director-name" id="quickInfoDirector"></span>
                         </div>
                     </div>
+
 
 
                     <div class="quick-info-overview-section" id="quickInfoOverviewSection" style="display:none;">
@@ -646,7 +647,8 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=399"></script>
+    <script src="app.js?v=400"></script>
+
 
 
 
