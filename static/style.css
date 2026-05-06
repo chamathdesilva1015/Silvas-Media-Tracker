@@ -4956,58 +4956,65 @@ body.modal-open .bottom-nav {
 
     .quick-info-rating-section {
         flex-direction: row !important;
+        flex-wrap: nowrap !important;
         justify-content: center;
         align-items: center;
-        gap: 0.8rem !important;
-        margin-bottom: 0.4rem;
-        padding: 0.7rem !important;
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        background: rgba(255, 255, 255, 0.04);
+        gap: 0.5rem !important;
+        margin-bottom: 0.6rem;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
         width: 100%;
-        border-radius: 12px;
     }
 
-    .rating-display {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    .rating-display, .director-display {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        padding: 0.45rem 0.8rem !important;
+        border-radius: 99px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 0.4rem !important;
+        flex: 1;
+        min-width: 0;
+        justify-content: center;
     }
 
     .rating-value {
-        font-size: 1.1rem;
+        font-size: 1.1rem !important;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .rating-label {
+        display: none !important; /* Hide label to save space, score is obvious */
     }
 
     .director-display {
-        font-size: 0.62rem !important;
-        margin-top: 0;
-        opacity: 0.9;
-        border-left: 1px solid rgba(255,255,255,0.1);
-        padding-left: 0.8rem;
-        text-align: left;
+        flex-direction: column !important; /* Label above name inside the pill */
+        gap: 0.1rem !important;
+        padding: 0.35rem 0.8rem !important;
     }
 
-    .rating-label, .director-label {
-        font-size: 0.62rem;
-        color: #fff !important;
-        opacity: 1;
+    .director-label {
+        font-size: 0.5rem !important;
+        opacity: 0.6 !important;
         text-transform: uppercase;
         font-weight: 700;
-        text-shadow: 
-            -1px -1px 0 #000,  
-             1px -1px 0 #000,
-            -1px  1px 0 #000,
-             1px  1px 0 #000;
+        margin-bottom: -1px;
     }
 
     .director-name {
+        font-size: 0.75rem !important;
+        font-weight: 700;
         color: #fff !important;
-        font-weight: 600;
-        text-shadow: 
-            -1px -1px 0 #000,  
-             1px -1px 0 #000,
-            -1px  1px 0 #000,
-             1px  1px 0 #000;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
     }
+
 
     .quick-info-header {
         margin-bottom: 0.6rem;
