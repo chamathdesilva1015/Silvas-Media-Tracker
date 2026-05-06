@@ -1461,24 +1461,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const updateLikeBtnUI = (isLiked) => {
-            const btn = document.getElementById('quickInfoRatingLike');
+            const btn = newRatingLikeBtn || document.getElementById('quickInfoRatingLike');
             if (!btn) return;
             const canEdit = computeCanEdit();
             
             if (isLiked) {
                 btn.style.display = 'inline-block';
-                btn.style.color = '#ff6b6b';
+                btn.style.color = '#ff4757';
                 btn.classList.remove('far');
                 btn.classList.add('fas');
                 btn.style.opacity = '1';
+                btn.style.filter = 'drop-shadow(0 0 10px rgba(255, 71, 87, 0.6))';
                 btn.title = "Unlike";
             } else {
                 if (canEdit) {
                     btn.style.display = 'inline-block';
-                    btn.style.color = 'rgba(255,255,255,0.5)';
+                    btn.style.color = 'rgba(255, 255, 255, 0.8)';
                     btn.classList.remove('fas');
                     btn.classList.add('far');
-                    btn.style.opacity = '0.4';
+                    btn.style.opacity = '0.7';
+                    btn.style.filter = 'none';
                     btn.title = "Like";
                 } else {
                     btn.style.display = 'none';
@@ -1486,8 +1488,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-
         updateLikeBtnUI(item.is_liked);
+
 
         if (newRatingLikeBtn) {
             newRatingLikeBtn.addEventListener('click', async () => {
