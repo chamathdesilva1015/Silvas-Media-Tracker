@@ -8,12 +8,15 @@ Visit the live site: [https://silvas-media-tracker.vercel.app/](https://silvas-m
 
 ## Technical Architecture
 
-The application utilizes a high-performance Python backend and a refined vanilla frontend stack:
+The application is engineered with a modern, high-density stack optimized for performance and visual excellence:
 
-- **Backend**: FastAPI manages asynchronous API requests and database operations.
-- **Database Layer**: SQLModel (SQLAlchemy + Pydantic) handles data persistence and object-relational mapping.
-- **Frontend**: Single-page application (SPA) engineered with HTML5, CSS3, and JavaScript, prioritizing visual density and sub-second load times.
-- **Metadata Engine**: An automated enrichment module (`enrich_data.py`) integrates with the TMDB API to fetch official posters, genres, directors, and runtimes.
+- **Backend**: Python-based FastAPI architecture managing asynchronous RESTful API endpoints and background data orchestration.
+- **Database Layer**: High-availability Supabase (PostgreSQL) instance managed via SQLModel for robust data persistence and strict schema integrity.
+- **UI/UX System**: A custom "Glassmorphism" design engine built with vanilla CSS3, utilizing deep backdrop blurs, dynamic theme-switching variables, and an intensive themed radiance system.
+- **Frontend Core**: A high-performance Single-Page Application (SPA) utilizing vanilla JavaScript and an event-driven architecture for sub-second interactions and real-time state management.
+- **Enrichment Pipeline**: An automated metadata engine integrating with the TMDB API and Jikan API to fetch high-resolution cover art, directorial credits, and production data.
+- **Statistical Modeling**: Custom JavaScript algorithms for weighted passion indexing, genre-specific rating distributions, and trend analysis.
+
 
 ---
 
