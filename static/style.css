@@ -976,10 +976,10 @@ header p {
 }
 
 .media-card:hover .card-poster-bg {
-    transform: scale(1.15);
-    opacity: 0.85; /* Much more visible */
-    filter: blur(5px) brightness(0.9); /* Significantly unblurred */
+    opacity: 0.85;
+    filter: blur(5px) brightness(0.9);
 }
+
 
 
 .media-card:hover {
@@ -5026,7 +5026,7 @@ body.modal-open .bottom-nav {
 
 
 
-    .rating-label {
+    .rating-display .rating-label {
         display: block !important;
         font-size: 0 !important; /* Hide original "Personal Rating" */
         opacity: 0.6 !important;
@@ -5035,10 +5035,11 @@ body.modal-open .bottom-nav {
         margin-bottom: -1px;
     }
 
-    .rating-label::after {
+    .rating-display .rating-label::after {
         content: "Rating";
         font-size: 0.5rem !important;
     }
+
 
 
     .director-display {
