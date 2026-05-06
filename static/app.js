@@ -1527,7 +1527,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!rawScore && item.numeric_rating && !item.numeric_rating.toString().startsWith('#')) {
             rawScore = item.numeric_rating.toString().replace('/10','').trim();
         }
-        document.getElementById('quickInfoRating').textContent = rawScore ? rawScore : '—';
+        document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore}/10` : '—';
+
 
         // --- Source Link ---
         const sourceBtn = document.getElementById('quickInfoSourceBtn');

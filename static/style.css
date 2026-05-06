@@ -4988,10 +4988,11 @@ body.modal-open .bottom-nav {
     }
 
     .rating-value {
-        font-size: 1.1rem !important;
+        font-size: 0.95rem !important; /* Slightly smaller to fit /10 */
         font-weight: 800;
         line-height: 1;
     }
+
 
 
     .rating-label {
