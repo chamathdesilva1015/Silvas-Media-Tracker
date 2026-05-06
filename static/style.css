@@ -4552,11 +4552,15 @@ body.modal-open .bottom-nav {
 
     .quick-info-content {
         width: 85vw;
-        max-width: 290px;
-        border-radius: 12px;
-        max-height: 65vh;
+        max-width: 280px;
+        border-radius: 20px;
+        max-height: 70vh;
         overflow: hidden;
-        box-shadow: 0 0 60px var(--theme-accent), 0 20px 80px rgba(0, 0, 0, 0.9);
+        position: relative;
+        background: rgba(10, 10, 12, 0.88) !important;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 80px var(--theme-accent), 0 20px 80px rgba(0, 0, 0, 0.9);
+        margin: auto;
     }
 
     .quick-info-layout {
@@ -4564,51 +4568,69 @@ body.modal-open .bottom-nav {
         align-items: stretch;
     }
 
-    /* Poster: compact banner at top */
+    /* Poster: Now the background for the whole profile on mobile */
     .quick-info-poster-wrap {
-        width: 100%;
-        align-self: auto;
-        border-radius: 14px 14px 0 0;
-        overflow: hidden;
-        background: rgba(0,0,0,0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: -1;
+        opacity: 0.35;
+        border-radius: 0;
+        background: #000;
     }
 
     .quick-info-poster {
-        width: 100%;
-        height: auto;
-        max-height: 110px;
-        object-fit: contain;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: none !important;
+        object-fit: cover !important;
+        filter: blur(6px) saturate(1.2);
     }
 
     .quick-info-details {
-        padding: 0.6rem 0.8rem;
-        max-height: 45vh;
+        padding: 1.8rem 1rem 1.2rem !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        max-height: 70vh;
         overflow-y: auto;
     }
 
     #quickInfoTitle {
-        font-size: 1.05rem;
-        margin-bottom: 0.2rem;
-        line-height: 1.2;
+        font-size: 0.95rem;
+        margin-bottom: 0.15rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
     }
 
     .quick-info-meta-row {
-        font-size: 0.75rem;
-        gap: 0.5rem;
+        font-size: 0.65rem;
+        gap: 0.4rem;
+        opacity: 0.7;
     }
 
     .quick-info-rating-section {
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-bottom: 0.8rem;
-        padding: 0.8rem 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.6rem;
+        padding: 0.6rem 0;
+        border: none;
     }
 
     .rating-value {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
+    }
+
+    .director-display {
+        font-size: 0.68rem !important;
+        margin-top: -0.2rem;
+        opacity: 0.8;
     }
 
     .rating-label {
@@ -4625,11 +4647,10 @@ body.modal-open .bottom-nav {
     }
 
     .genre-badge {
-        font-size: 0.72rem;
-        padding: 4px 10px;
-        background: rgba(255, 255, 255, 0.1);
-        color: #fff;
-        opacity: 0.9;
+        font-size: 0.6rem;
+        padding: 3px 8px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .quick-info-footer-actions {
