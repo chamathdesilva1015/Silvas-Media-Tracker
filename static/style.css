@@ -1219,13 +1219,14 @@ delete-btn {
     text-transform: lowercase;
     letter-spacing: 0.02em;
     padding: 0.15rem 0.45rem;
-    background: var(--theme-secondary-muted);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.35); /* More solid background for legibility */
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: var(--theme-secondary);
     border-radius: 4px;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
+    opacity: 0.85; /* Increased base visibility */
+    transition: all 0.2s ease;
 }
+
 
 .media-card:hover .genre-badge {
     opacity: 1;
@@ -1553,11 +1554,12 @@ delete-btn {
 }
 
 .director-badge {
-    background: rgba(var(--theme-accent-rgb), 0.1) !important;
+    background: rgba(var(--theme-accent-rgb), 0.25) !important; /* More solid */
     color: var(--theme-accent) !important;
-    border: 1px solid rgba(var(--theme-accent-rgb), 0.25) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.35) !important;
     padding: 0.4rem 1rem !important;
     border-radius: 99px !important;
+
     font-size: 0.75rem !important;
     font-weight: 700 !important;
     font-style: italic !important;
