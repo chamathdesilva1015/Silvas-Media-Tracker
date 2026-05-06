@@ -4527,10 +4527,10 @@ body.modal-open .bottom-nav {
     }
 
     .quick-info-content {
-        width: 90vw;
-        max-width: 320px;
-        border-radius: 14px;
-        max-height: 70vh;
+        width: 85vw;
+        max-width: 290px;
+        border-radius: 12px;
+        max-height: 65vh;
         overflow: hidden;
         box-shadow: 0 0 60px var(--theme-accent), 0 20px 80px rgba(0, 0, 0, 0.9);
     }
@@ -4555,7 +4555,7 @@ body.modal-open .bottom-nav {
     .quick-info-poster {
         width: 100%;
         height: auto;
-        max-height: 140px;
+        max-height: 110px;
         object-fit: contain;
     }
 
@@ -4566,8 +4566,8 @@ body.modal-open .bottom-nav {
     }
 
     #quickInfoTitle {
-        font-size: 1.15rem;
-        margin-bottom: 0.3rem;
+        font-size: 1.05rem;
+        margin-bottom: 0.2rem;
         line-height: 1.2;
     }
 
@@ -4601,8 +4601,11 @@ body.modal-open .bottom-nav {
     }
 
     .genre-badge {
-        font-size: 0.65rem;
-        padding: 3px 8px;
+        font-size: 0.72rem;
+        padding: 4px 10px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        opacity: 0.9;
     }
 
     .quick-info-footer-actions {
