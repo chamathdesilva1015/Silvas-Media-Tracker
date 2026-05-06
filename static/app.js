@@ -1451,37 +1451,42 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
         document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
-        // --- Like Logic (v404) ---
-        const updateLikeBtnUI = (isLiked) => {
+        // --- Like Logic (v406) ---
+        const updateLikeBtnUI = (isLikedVal) => {
             const pill = document.getElementById('quickInfoFavoritePill');
             if (!pill) return;
             
             const canEdit = computeCanEdit();
+            // Extremely strict boolean evaluation
+            const isLiked = (isLikedVal === true || isLikedVal === 1 || String(isLikedVal).toLowerCase() === 'true');
+            
+            pill.style.display = 'none'; // Default to hidden
             
             if (isLiked) {
                 pill.style.display = 'flex';
                 pill.style.opacity = '1';
                 pill.style.background = 'rgba(255, 71, 87, 0.15)';
                 pill.style.borderColor = 'rgba(255, 71, 87, 0.4)';
-                pill.style.boxShadow = '0 0 15px rgba(255, 71, 87, 0.2)'; // Passive glow
+                pill.style.boxShadow = '0 0 15px rgba(255, 71, 87, 0.2)';
                 pill.innerHTML = `
-                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.1rem; display: inline-block; margin-right: 4px; filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.6));"></i>
-                    <span class="rating-label" style="color: #ff4757; opacity: 1; margin: 0; font-weight: 800; letter-spacing: 0.05em;">Liked</span>
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2rem; margin-right: 6px;">
+                        <i class="fas fa-heart" style="color: #ff4757; font-size: 1.1rem; filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.6));"></i>
+                    </span>
+                    <span class="rating-label" style="color: #ff4757; opacity: 1; margin: 0; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">Liked</span>
                 `;
-            } else {
-
-                if (canEdit) {
-                    pill.style.display = 'flex';
-                    pill.style.opacity = '0.6';
-                    pill.style.background = 'rgba(255, 255, 255, 0.04)';
-                    pill.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                    pill.innerHTML = `
-                        <i class="far fa-heart" style="color: rgba(255, 255, 255, 0.8); font-size: 1.1rem; display: inline-block; margin-right: 2px;"></i>
-                        <span class="rating-label" style="color: rgba(255, 255, 255, 0.5); opacity: 1; margin: 0; font-weight: 600;">Like</span>
-                    `;
-                } else {
-                    pill.style.display = 'none';
-                }
+            } else if (canEdit) {
+                // Only show unliked pill if we are an admin
+                pill.style.display = 'flex';
+                pill.style.opacity = '0.6';
+                pill.style.background = 'rgba(255, 255, 255, 0.04)';
+                pill.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                pill.style.boxShadow = 'none';
+                pill.innerHTML = `
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 1.2rem; margin-right: 6px;">
+                        <i class="far fa-heart" style="color: rgba(255, 255, 255, 0.8); font-size: 1.1rem;"></i>
+                    </span>
+                    <span class="rating-label" style="color: rgba(255, 255, 255, 0.5); opacity: 1; margin: 0; font-weight: 600; text-transform: uppercase;">Like</span>
+                `;
             }
         };
 
