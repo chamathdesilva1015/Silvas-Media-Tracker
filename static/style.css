@@ -4784,9 +4784,14 @@ body.modal-open .bottom-nav {
     width: fit-content !important;
 
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    cursor: default !important;
+    cursor: pointer !important;
     margin: 0 !important;
 }
+
+.favorite-display:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
 
 .rating-value {
     font-size: 1.6rem !important;
