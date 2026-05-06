@@ -976,10 +976,11 @@ header p {
 }
 
 .media-card:hover .card-poster-bg {
-    transform: scale(1.2);
-    opacity: 0.55;
-    filter: blur(15px) brightness(0.6); /* Sharpen slightly on hover */
+    transform: scale(1.15);
+    opacity: 0.85; /* Much more visible */
+    filter: blur(5px) brightness(0.9); /* Significantly unblurred */
 }
+
 
 .media-card:hover {
     transform: translateY(-8px) scale(1.02) !important;
