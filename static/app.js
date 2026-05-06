@@ -2206,26 +2206,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-header">
                         <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
-                    ${item.genres ? `
-                        <div class="genre-container">
-                            ${item.genres.split(',').map(g => `<span class="genre-badge">${g.trim()}</span>`).join('')}
-                        </div>
-                    ` : ''}
-                    ${(item.type === 'Movies' && item.director) ? `
-                        <div class="director-container">
-                            <span class="director-badge">Dir. ${item.director}</span>
-                        </div>
-                    ` : ''}
-                    ${((item.type === 'TV Series' || item.type === 'Anime') && item.director) ? `
-                        <div class="director-container">
-                            <span class="director-badge">Creator: ${item.director}</span>
-                        </div>
-                    ` : ''}
-                    ${(item.type === 'Manga' && item.director) ? `
-                        <div class="director-container">
-                            <span class="director-badge">Author: ${item.director}</span>
-                        </div>
-                    ` : ''}
                     <div class="card-badges">
                         <div class="badge-slot-left">
                             ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
