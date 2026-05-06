@@ -4578,7 +4578,7 @@ body.modal-open .bottom-nav {
         width: 100% !important;
         height: 100% !important;
         z-index: -1;
-        opacity: 0.2; /* Darkened further for better readability */
+        opacity: 0.3; /* Increased slightly for visibility */
         border-radius: 0;
         background: #000;
     }
@@ -4588,7 +4588,7 @@ body.modal-open .bottom-nav {
         height: 100% !important;
         max-height: none !important;
         object-fit: cover !important;
-        filter: blur(6px) saturate(1.2);
+        filter: blur(2px) saturate(1.1); /* Reduced blur as requested */
     }
 
     .quick-info-details {
@@ -4670,10 +4670,12 @@ body.modal-open .bottom-nav {
     }
 
     .genre-badge {
-        font-size: 0.6rem;
-        padding: 3px 8px;
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.72rem;
+        padding: 4px 10px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.5);
     }
 
     .quick-info-footer-actions {
