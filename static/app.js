@@ -1463,15 +1463,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const updateLikeBtnUI = (isLiked) => {
             const btn = document.getElementById('quickInfoRatingLike');
             if (!btn) return;
+            const canEdit = computeCanEdit();
+            
             if (isLiked) {
                 btn.style.display = 'inline-block';
                 btn.style.color = '#ff6b6b';
                 btn.classList.remove('far');
                 btn.classList.add('fas');
+                btn.style.opacity = '1';
+                btn.title = "Unlike";
             } else {
-                btn.style.display = 'none';  // hide when not liked
+                if (canEdit) {
+                    btn.style.display = 'inline-block';
+                    btn.style.color = 'rgba(255,255,255,0.5)';
+                    btn.classList.remove('fas');
+                    btn.classList.add('far');
+                    btn.style.opacity = '0.4';
+                    btn.title = "Like";
+                } else {
+                    btn.style.display = 'none';
+                }
             }
         };
+
 
         updateLikeBtnUI(item.is_liked);
 
@@ -2234,14 +2248,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
-                    ${(isAdminUnlocked || item.is_liked) ? `
-                        <div class="card-actions-row">
-                            <button class="like-btn-inline ${likedClass}" 
-                                    title="${isAdminUnlocked ? (item.is_liked ? 'Unlike' : 'Like') : ''}"
-                                    style="${!isAdminUnlocked ? 'pointer-events: none; cursor: default;' : ''}">${likedIcon}</button>
-                        </div>
-                    ` : ''}
+                    </div>
                 `;
+
 
 
                 // Wire up review modal trigger -> Now opens Quick Info if item has review
@@ -2256,16 +2265,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 card.style.cursor = 'pointer';
 
-                // Wire up like button click (with stopPropagation)
-                const cardLikeBtn = card.querySelector('.like-btn-inline');
-                if (cardLikeBtn && isAdminUnlocked) {
-                    cardLikeBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleLike(item.id);
-                    });
-                }
-
                 const delBtn = document.createElement('button');
+
                 delBtn.className = 'delete-btn';
                 delBtn.innerHTML = '&times;';
                 delBtn.title = 'Delete Entry';
