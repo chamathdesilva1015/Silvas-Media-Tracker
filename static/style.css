@@ -27,6 +27,7 @@
 /* Theme Overrides */
 [data-theme="movies"] {
     --theme-accent: #3498db; /* Blue */
+    --theme-accent-rgb: 52, 152, 219;
     --theme-secondary: #9b59b6; /* Purple */
     --theme-accent-muted: rgba(52, 152, 219, 0.15);
     --theme-accent-glow: rgba(52, 152, 219, 0.4);
@@ -36,6 +37,7 @@
 
 [data-theme="tv-series"] {
     --theme-accent: #e74c3c; /* Red */
+    --theme-accent-rgb: 231, 76, 60;
     --theme-secondary: #e67e22; /* Orange */
     --theme-accent-muted: rgba(231, 76, 60, 0.15);
     --theme-accent-glow: rgba(231, 76, 60, 0.4);
@@ -45,6 +47,7 @@
 
 [data-theme="manga"] {
     --theme-accent: #2ecc71; /* Green */
+    --theme-accent-rgb: 46, 204, 113;
     --theme-secondary: #f1c40f; /* Yellow */
     --theme-accent-muted: rgba(46, 204, 113, 0.15);
     --theme-accent-glow: rgba(46, 204, 113, 0.4);
@@ -54,6 +57,7 @@
 
 [data-theme="anime"] {
     --theme-accent: #f1c40f; /* Yellow */
+    --theme-accent-rgb: 241, 196, 15;
     --theme-secondary: #2ecc71; /* Green */
     --theme-accent-muted: rgba(241, 196, 15, 0.15);
     --theme-accent-glow: rgba(241, 196, 15, 0.3);
@@ -4453,6 +4457,19 @@ body.modal-open .bottom-nav {
         height: 75vh;
     }
     
+    .type-badge {
+        background: var(--theme-accent) !important;
+        color: #000 !important;
+        padding: 0.3rem 0.8rem;
+        border-radius: 99px;
+        font-size: 0.7rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-shadow: none !important; /* Remove dropshadow from badge */
+        transition: all 0.3s ease;
+    }
+
     .ranking-manager-add-section {
         border-left: none;
         border-top: 1px solid var(--border-color);
@@ -4579,7 +4596,7 @@ body.modal-open .bottom-nav {
     overflow: hidden;
     box-shadow: 
         0 0 0 1px rgba(var(--theme-accent-rgb), 0.2),
-        0 0 80px rgba(var(--theme-accent-rgb), 0.45), 
+        0 0 100px rgba(var(--theme-accent-rgb), 0.5), 
         0 40px 100px rgba(0, 0, 0, 0.9) !important;
     position: relative;
     z-index: 10;
