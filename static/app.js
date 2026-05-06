@@ -1461,13 +1461,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isLiked) {
                 pill.style.display = 'flex';
                 pill.style.opacity = '1';
-                pill.style.background = 'rgba(255, 71, 87, 0.1)';
-                pill.style.borderColor = 'rgba(255, 71, 87, 0.3)';
+                pill.style.background = 'rgba(255, 71, 87, 0.15)';
+                pill.style.borderColor = 'rgba(255, 71, 87, 0.4)';
+                pill.style.boxShadow = '0 0 15px rgba(255, 71, 87, 0.2)'; // Passive glow
                 pill.innerHTML = `
-                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.1rem; display: inline-block; margin-right: 2px; filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.5));"></i>
-                    <span class="rating-label" style="color: #fff; opacity: 1; margin: 0; font-weight: 700; letter-spacing: 0.05em;">Liked</span>
+                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.1rem; display: inline-block; margin-right: 4px; filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.6));"></i>
+                    <span class="rating-label" style="color: #ff4757; opacity: 1; margin: 0; font-weight: 800; letter-spacing: 0.05em;">Liked</span>
                 `;
             } else {
+
                 if (canEdit) {
                     pill.style.display = 'flex';
                     pill.style.opacity = '0.6';

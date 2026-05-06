@@ -1069,13 +1069,15 @@ header p {
 
 .card-liked-indicator {
     color: #ff4757;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    text-shadow: 0 0 10px rgba(255, 71, 87, 0.8); /* Stronger passive glow */
     filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.4));
     pointer-events: none;
     margin-right: 0.3rem;
     display: inline-block;
     vertical-align: middle;
 }
+
 
 
 .stagger-in {
