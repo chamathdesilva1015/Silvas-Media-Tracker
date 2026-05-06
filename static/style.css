@@ -4797,12 +4797,13 @@ body.modal-open .bottom-nav {
 .quick-info-rating-section {
     display: flex;
     flex-wrap: nowrap !important;
-    justify-content: space-between;
+    justify-content: flex-start; /* Pulled closer together */
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
     margin: 2rem 0 2.5rem;
     width: 100%;
 }
+
 
 
 
