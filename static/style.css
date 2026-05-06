@@ -573,8 +573,19 @@ header p {
         align-items: center;
         gap: 0.5rem;
     }
-    #addMediaBtn, #openAuthBtn {
+    #addMediaBtn, #openAuthBtn, #devConsoleActions, #guestConsoleActions {
         display: none !important;
+    }
+
+    .hub-category-switcher {
+        display: flex !important;
+        justify-content: center !important;
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+        width: 100%;
+        margin: 1.5rem 0 !important;
+        background: transparent !important;
+        border: none !important;
     }
 }
 
@@ -3111,11 +3122,12 @@ body.modal-open .bottom-nav {
         overflow-x: auto;
         white-space: nowrap;
         display: flex;
-        justify-content: center;
-        padding-bottom: 2px;
+        justify-content: flex-start; /* Changed from center to prevent cutoff on narrow screens */
+        padding: 0.5rem 1rem;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
-        gap: 0.3rem !important;
+        gap: 0.4rem !important;
+        box-sizing: border-box;
     }
 
     .page-tabs::-webkit-scrollbar {
@@ -3124,8 +3136,8 @@ body.modal-open .bottom-nav {
 
     .pill-tab {
         flex: 0 0 auto;
-        font-size: 0.7rem !important;
-        padding: 0.35rem 0.6rem !important;
+        font-size: 0.72rem !important;
+        padding: 0.4rem 0.8rem !important;
     }
 
     /* Subtler active tab for mobile */
