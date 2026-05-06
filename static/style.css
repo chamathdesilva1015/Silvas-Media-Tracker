@@ -4458,16 +4458,7 @@ body.modal-open .bottom-nav {
     }
     
     .type-badge {
-        background: var(--theme-accent) !important;
-        color: #000 !important;
-        padding: 0.3rem 0.8rem;
-        border-radius: 99px;
-        font-size: 0.7rem;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        text-shadow: none !important; /* Remove dropshadow from badge */
-        transition: all 0.3s ease;
+        display: none !important; /* Remove media type badge as requested */
     }
 
     .ranking-manager-add-section {
