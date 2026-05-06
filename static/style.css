@@ -4604,17 +4604,21 @@ body.modal-open .bottom-nav {
         filter: blur(0px) saturate(1.1); /* Removed blur as requested */
     }
 
+    #quickInfoType {
+        display: none !important;
+    }
+
     .quick-info-details {
-        padding: 1rem !important;
+        padding: 0.8rem !important;
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
         max-height: 70vh;
         overflow-y: auto;
-        gap: 0.5rem;
+        gap: 0.35rem;
         /* Theme-aware text glow for all details */
-        text-shadow: 0 0 12px var(--theme-accent), 0 1px 5px rgba(0,0,0,0.9); 
+        text-shadow: 0 0 10px var(--theme-accent), 0 1px 4px rgba(0,0,0,0.9); 
     }
 
     .quick-info-header {
@@ -4627,13 +4631,13 @@ body.modal-open .bottom-nav {
     }
 
     #quickInfoTitle {
-        font-size: 0.68rem; /* Even smaller as requested */
+        font-size: 0.6rem; /* Even smaller as requested */
         margin-bottom: 0.1rem;
         font-weight: 800;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.04em;
         line-height: 1.2;
         text-transform: uppercase;
-        opacity: 0.95;
+        opacity: 0.9;
     }
 
     .quick-info-meta-row {
@@ -4715,16 +4719,16 @@ body.modal-open .bottom-nav {
     }
 
     #quickInfoGenres .genre-badge {
-        font-size: 1.1rem !important; /* Massive increase for visibility - PROFILE ONLY */
-        padding: 8px 18px !important;
-        background: rgba(var(--theme-accent-rgb), 0.35) !important;
-        border: 2px solid var(--theme-accent) !important;
+        font-size: 0.7rem !important; /* Shrunk back down */
+        padding: 4px 10px !important;
+        background: rgba(var(--theme-accent-rgb), 0.3) !important;
+        border: 1px solid var(--theme-accent) !important;
         color: #fff !important;
-        text-shadow: 0 0 15px var(--theme-accent), 0 2px 5px #000 !important;
-        font-weight: 800 !important;
-        border-radius: 40px !important;
+        text-shadow: 0 0 10px var(--theme-accent), 0 1px 4px #000 !important;
+        font-weight: 700 !important;
+        border-radius: 20px !important;
         display: inline-block !important;
-        margin: 3px !important;
+        margin: 2px !important;
     }
 
     .quick-info-footer-actions {
