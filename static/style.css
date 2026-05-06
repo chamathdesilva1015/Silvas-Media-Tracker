@@ -4973,3 +4973,128 @@ body.modal-open .bottom-nav {
     border-color: #ff4757;
     transform: scale(1.1);
 }
+
+/* --- Information Hub Mobile Redesign --- */
+@media (max-width: 800px) {
+    .info-page {
+        padding: 1.5rem 1rem !important;
+    }
+
+    .info-main-title {
+        font-size: 1.8rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+
+    .info-subtitle {
+        font-size: 0.8rem !important;
+        margin-bottom: 1.5rem !important;
+        opacity: 0.7;
+    }
+
+    /* 1. Media Type Switcher: Large, Accessible, Themed Glows */
+    .hub-category-switcher {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.6rem !important;
+        margin: 1.5rem 0 2rem 0 !important;
+    }
+
+    .hub-category-switcher .pill-tab {
+        padding: 1rem 0.5rem !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        transition: all 0.3s ease !important;
+        height: auto !important;
+        width: 100% !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+    }
+
+    /* Media Specific Active Glows */
+    .hub-category-switcher .pill-tab[data-filter="Movies"].active {
+        border-color: #3498db !important;
+        box-shadow: 0 0 20px rgba(52, 152, 219, 0.4) !important;
+        background: rgba(52, 152, 219, 0.15) !important;
+        color: #fff !important;
+    }
+    .hub-category-switcher .pill-tab[data-filter="TV Series"].active {
+        border-color: #e74c3c !important;
+        box-shadow: 0 0 20px rgba(231, 76, 60, 0.4) !important;
+        background: rgba(231, 76, 60, 0.15) !important;
+        color: #fff !important;
+    }
+    .hub-category-switcher .pill-tab[data-filter="Manga"].active {
+        border-color: #2ecc71 !important;
+        box-shadow: 0 0 20px rgba(46, 204, 113, 0.4) !important;
+        background: rgba(46, 204, 113, 0.15) !important;
+        color: #fff !important;
+    }
+    .hub-category-switcher .pill-tab[data-filter="Anime"].active {
+        border-color: #f1c40f !important;
+        box-shadow: 0 0 20px rgba(241, 196, 15, 0.4) !important;
+        background: rgba(241, 196, 15, 0.15) !important;
+        color: #fff !important;
+    }
+
+    /* 2. Info Buttons: 2x2 Grid */
+    .info-button-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.8rem !important;
+        margin-top: 1rem !important;
+    }
+
+    .info-btn {
+        padding: 1.2rem 0.8rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 12px !important;
+        min-height: 80px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    /* 3. Suggest Me Something: Compact & Themed Glow */
+    #suggestMeBtn {
+        grid-column: 1 / -1 !important;
+        margin-top: 1.5rem !important;
+        padding: 1.2rem !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        border-radius: 15px 15px 0 0 !important;
+        /* Default theme glow */
+        box-shadow: 0 0 25px var(--theme-accent-glow) !important;
+        border: 1px solid var(--theme-accent) !important;
+        background: rgba(var(--theme-accent-rgb), 0.1) !important;
+    }
+
+    #suggestionTuning {
+        grid-column: 1 / -1 !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.4rem !important;
+        padding: 0.6rem !important;
+        margin-bottom: 2rem !important;
+        border-radius: 0 0 15px 15px !important;
+        border: 1px solid var(--theme-accent) !important;
+        border-top: none !important;
+        background: rgba(0,0,0,0.2) !important;
+    }
+
+    .tuning-btn {
+        padding: 0.6rem 0.3rem !important;
+        font-size: 0.65rem !important;
+        border-radius: 8px !important;
+        gap: 0.3rem !important;
+    }
+
+    .tuning-btn.active {
+        background: var(--theme-accent) !important;
+        color: #000 !important;
+        box-shadow: 0 0 10px var(--theme-accent-glow) !important;
+    }
+}
