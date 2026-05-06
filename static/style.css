@@ -4987,76 +4987,98 @@ body.modal-open .bottom-nav {
 
     .info-subtitle {
         font-size: 0.8rem !important;
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 2rem !important;
         opacity: 0.7;
     }
 
-    /* 1. Media Type Switcher: Large, Accessible, Themed Glows */
+    .hub-section-label {
+        font-size: 0.55rem !important;
+        letter-spacing: 0.18em !important;
+        text-transform: uppercase !important;
+        opacity: 0.4 !important;
+        font-weight: 900 !important;
+        margin: 2rem 0 0.8rem 0 !important;
+        text-align: center !important;
+        display: block !important;
+    }
+
+    /* 1. Media Type Switcher: PRIMARY - Large Cards */
     .hub-category-switcher {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 0.6rem !important;
-        margin: 1.5rem 0 2rem 0 !important;
+        gap: 0.8rem !important;
+        margin: 0 0 2rem 0 !important;
     }
 
     .hub-category-switcher .pill-tab {
-        padding: 1rem 0.5rem !important;
-        font-size: 0.9rem !important;
-        font-weight: 700 !important;
-        border-radius: 12px !important;
+        padding: 1.6rem 0.5rem !important; /* Very tall cards */
+        font-size: 0.95rem !important;
+        font-weight: 800 !important;
+        border-radius: 16px !important;
         background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        transition: all 0.3s ease !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         height: auto !important;
         width: 100% !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
+        letter-spacing: 0.08em !important;
     }
 
-    /* Media Specific Active Glows */
+    /* Media Specific Active Glows - Intense for Primary */
     .hub-category-switcher .pill-tab[data-filter="Movies"].active {
         border-color: #3498db !important;
-        box-shadow: 0 0 20px rgba(52, 152, 219, 0.4) !important;
-        background: rgba(52, 152, 219, 0.15) !important;
-        color: #fff !important;
+        box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4) !important;
+        background: rgba(52, 152, 219, 0.2) !important;
+        transform: translateY(-2px) !important;
     }
     .hub-category-switcher .pill-tab[data-filter="TV Series"].active {
         border-color: #e74c3c !important;
-        box-shadow: 0 0 20px rgba(231, 76, 60, 0.4) !important;
-        background: rgba(231, 76, 60, 0.15) !important;
-        color: #fff !important;
+        box-shadow: 0 10px 30px rgba(231, 76, 60, 0.4) !important;
+        background: rgba(231, 76, 60, 0.2) !important;
+        transform: translateY(-2px) !important;
     }
     .hub-category-switcher .pill-tab[data-filter="Manga"].active {
         border-color: #2ecc71 !important;
-        box-shadow: 0 0 20px rgba(46, 204, 113, 0.4) !important;
-        background: rgba(46, 204, 113, 0.15) !important;
-        color: #fff !important;
+        box-shadow: 0 10px 30px rgba(46, 204, 113, 0.4) !important;
+        background: rgba(46, 204, 113, 0.2) !important;
+        transform: translateY(-2px) !important;
     }
     .hub-category-switcher .pill-tab[data-filter="Anime"].active {
         border-color: #f1c40f !important;
-        box-shadow: 0 0 20px rgba(241, 196, 15, 0.4) !important;
-        background: rgba(241, 196, 15, 0.15) !important;
-        color: #fff !important;
+        box-shadow: 0 10px 30px rgba(241, 196, 15, 0.4) !important;
+        background: rgba(241, 196, 15, 0.2) !important;
+        transform: translateY(-2px) !important;
     }
 
-    /* 2. Info Buttons: 2x2 Grid */
+    /* 2. Info Buttons: SECONDARY - Compact Buttons */
     .info-button-grid {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 0.8rem !important;
-        margin-top: 1rem !important;
+        gap: 0.6rem !important;
+        margin-top: 0 !important;
     }
 
     .info-btn {
-        padding: 1.2rem 0.8rem !important;
-        font-size: 0.8rem !important;
-        border-radius: 12px !important;
-        min-height: 80px !important;
+        padding: 0.8rem 0.5rem !important;
+        font-size: 0.7rem !important; /* Smaller text */
+        border-radius: 10px !important;
+        min-height: 55px !important; /* Much shorter than media cards */
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
+        background: rgba(255,255,255,0.02) !important;
+        border: 1px solid rgba(255,255,255,0.04) !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        font-weight: 500 !important;
     }
+
+    .info-btn.active {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.2) !important;
+    }
+
 
     /* 3. Suggest Me Something: Compact & Themed Glow */
     #suggestMeBtn {
