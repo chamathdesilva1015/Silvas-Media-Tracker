@@ -4635,7 +4635,15 @@ body.modal-open .bottom-nav {
     .quick-info-meta-row {
         font-size: 0.65rem;
         gap: 0.4rem;
-        opacity: 0.7;
+        color: #fff !important;
+        opacity: 1;
+        /* Thin black border via multi-shadow */
+        text-shadow: 
+            -1px -1px 0 #000,  
+             1px -1px 0 #000,
+            -1px  1px 0 #000,
+             1px  1px 0 #000,
+             0 0 10px var(--theme-accent); /* Keep themed glow too */
     }
 
     .quick-info-rating-section {
@@ -4670,8 +4678,27 @@ body.modal-open .bottom-nav {
         text-align: left;
     }
 
-    .rating-label {
-        font-size: 0.6rem;
+    .rating-label, .director-label {
+        font-size: 0.62rem;
+        color: #fff !important;
+        opacity: 1;
+        text-transform: uppercase;
+        font-weight: 700;
+        text-shadow: 
+            -1px -1px 0 #000,  
+             1px -1px 0 #000,
+            -1px  1px 0 #000,
+             1px  1px 0 #000;
+    }
+
+    .director-name {
+        color: #fff !important;
+        font-weight: 600;
+        text-shadow: 
+            -1px -1px 0 #000,  
+             1px -1px 0 #000,
+            -1px  1px 0 #000,
+             1px  1px 0 #000;
     }
 
     .quick-info-header {
