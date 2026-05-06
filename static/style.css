@@ -4772,7 +4772,8 @@ body.modal-open .bottom-nav {
 }
 
 .rating-display, 
-.director-display {
+.director-display,
+.favorite-display {
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     padding: 0.6rem 1.2rem !important;
@@ -4781,6 +4782,7 @@ body.modal-open .bottom-nav {
     align-items: center !important;
     gap: 0.8rem !important;
     width: fit-content !important;
+
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: default !important;
     margin: 0 !important;
@@ -4965,19 +4967,20 @@ body.modal-open .bottom-nav {
         width: 100%;
     }
 
-    .rating-display, .director-display {
+    .rating-display, .director-display, .favorite-display {
         background: rgba(255, 255, 255, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        padding: 0.45rem 0.8rem !important;
+        padding: 0.3rem 0.5rem !important; /* Even smaller to fit 3 pills */
         border-radius: 99px !important;
         display: flex !important;
-        flex-direction: row !important;
+        flex-direction: column !important; /* Always vertical on mobile */
         align-items: center !important;
-        gap: 0.4rem !important;
+        gap: 0.1rem !important;
         flex: 1;
         min-width: 0;
         justify-content: center;
     }
+
 
     .rating-display {
         flex-direction: column !important;

@@ -17,7 +17,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=398">
+    <link rel="stylesheet" href="style.css?v=399">
 </head>
 
 <body class="read-only-mode">
@@ -339,10 +339,7 @@
                                 <a id="quickInfoSourceBtn" target="_blank" title="View Source"><i class="fas fa-external-link-alt"></i></a>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; width: 100%;">
-                            <h2 class="serif" id="quickInfoTitle" style="margin:0;"></h2>
-                            <i class="fas fa-heart" id="quickInfoRatingLike" title="Toggle Like" style="display:none; color: #ff6b6b; font-size: 1.8rem; cursor: pointer; transition: transform 0.2s, color 0.2s; filter: drop-shadow(0 0 12px rgba(255, 107, 107, 0.4)); margin-top: 0.2rem;"></i>
-                        </div>
+                        <h2 class="serif" id="quickInfoTitle"></h2>
 
                         <div class="quick-info-meta-row">
                             <span id="quickInfoYear"></span>
@@ -360,12 +357,18 @@
                             <span class="rating-value" id="quickInfoRating"></span>
                             <span class="rating-label">Personal Rating</span>
                         </div>
+                        
+                        <div class="favorite-display" id="quickInfoFavoritePill">
+                            <i class="fas fa-heart" id="quickInfoRatingLike" title="Toggle Like" style="color: #ff4757; font-size: 1.4rem; cursor: pointer; transition: transform 0.2s, color 0.2s;"></i>
+                            <span class="rating-label" id="quickInfoFavoriteLabel">Favorite</span>
+                        </div>
 
                         <div class="director-display" id="quickInfoDirectorSection" style="display:none;">
                             <span class="director-label">Directed by</span>
                             <span class="director-name" id="quickInfoDirector"></span>
                         </div>
                     </div>
+
 
                     <div class="quick-info-overview-section" id="quickInfoOverviewSection" style="display:none;">
                         <h3 class="section-title">Overview</h3>
@@ -643,7 +646,8 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=398"></script>
+    <script src="app.js?v=399"></script>
+
 
 
 </body>

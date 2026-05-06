@@ -1462,31 +1462,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const updateLikeBtnUI = (isLiked) => {
             const btn = newRatingLikeBtn || document.getElementById('quickInfoRatingLike');
-            if (!btn) return;
+            const pill = document.getElementById('quickInfoFavoritePill');
+            const label = document.getElementById('quickInfoFavoriteLabel');
+            if (!btn || !pill) return;
             const canEdit = computeCanEdit();
             
             if (isLiked) {
-                btn.style.display = 'inline-block';
+                pill.style.display = 'flex';
                 btn.style.color = '#ff4757';
                 btn.classList.remove('far');
                 btn.classList.add('fas');
                 btn.style.opacity = '1';
                 btn.style.filter = 'drop-shadow(0 0 10px rgba(255, 71, 87, 0.6))';
+                if (label) label.style.color = '#fff';
                 btn.title = "Unlike";
             } else {
                 if (canEdit) {
-                    btn.style.display = 'inline-block';
+                    pill.style.display = 'flex';
                     btn.style.color = 'rgba(255, 255, 255, 0.8)';
                     btn.classList.remove('fas');
                     btn.classList.add('far');
                     btn.style.opacity = '0.7';
                     btn.style.filter = 'none';
+                    if (label) label.style.color = 'rgba(255,255,255,0.5)';
                     btn.title = "Like";
                 } else {
-                    btn.style.display = 'none';
+                    pill.style.display = 'none';
                 }
             }
         };
+
 
         updateLikeBtnUI(item.is_liked);
 
