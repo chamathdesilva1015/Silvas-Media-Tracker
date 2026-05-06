@@ -1450,32 +1450,41 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
         document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
-        // Like Button Logic (Now strictly bound to the heart next to the rating)
+        // Like Button Logic - heart next to the rating
+        // Clone first to remove any old listeners, THEN style it
+        const ratingLikeBtnOld = document.getElementById('quickInfoRatingLike');
+        let newRatingLikeBtn = null;
+        if (ratingLikeBtnOld) {
+            newRatingLikeBtn = ratingLikeBtnOld.cloneNode(true);
+            ratingLikeBtnOld.parentNode.replaceChild(newRatingLikeBtn, ratingLikeBtnOld);
+        }
+
         const updateLikeBtnUI = (isLiked) => {
-            const currentRatingLike = document.getElementById('quickInfoRatingLike');
-            if (currentRatingLike) {
-                currentRatingLike.style.display = 'inline-block';
-                if (isLiked) {
-                    currentRatingLike.style.color = '#ff6b6b';
-                    currentRatingLike.classList.remove('far', 'liked');
-                    currentRatingLike.classList.add('fas', 'liked');
-                } else {
-                    currentRatingLike.style.color = 'rgba(255, 255, 255, 0.4)';
-                    currentRatingLike.classList.remove('fas', 'liked');
-                    currentRatingLike.classList.add('far');
-                }
+            // Re-query after clone so we always get the live node
+            const btn = document.getElementById('quickInfoRatingLike');
+            if (!btn) return;
+            btn.style.display = 'inline-block';
+            if (isLiked) {
+                btn.style.color = '#ff6b6b';
+                btn.classList.remove('far');
+                btn.classList.add('fas');
+                btn.title = 'Liked ♥';
+            } else {
+                btn.style.color = 'rgba(255,255,255,0.3)';
+                btn.classList.remove('fas');
+                btn.classList.add('far');
+                btn.title = 'Not liked — click to like';
             }
         };
+
+        // Style the button now that it's in the DOM
         updateLikeBtnUI(item.is_liked);
-        
-        // Refresh Listener on the Rating Like Button
-        const ratingLikeBtn = document.getElementById('quickInfoRatingLike');
-        if (ratingLikeBtn) {
-            const newRatingLikeBtn = ratingLikeBtn.cloneNode(true);
-            ratingLikeBtn.parentNode.replaceChild(newRatingLikeBtn, ratingLikeBtn);
+
+        // Attach click listener
+        if (newRatingLikeBtn) {
             newRatingLikeBtn.addEventListener('click', async () => {
                 if (!localStorage.getItem('admin_key')) {
-                    alert("You don't have permission to modify data.");
+                    alert("You need admin access to toggle likes.");
                     return;
                 }
                 newRatingLikeBtn.style.transform = 'scale(1.3)';
@@ -1489,7 +1498,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const data = await res.json();
                         item.is_liked = data.is_liked;
                         updateLikeBtnUI(item.is_liked);
-                        fetchMedia(); 
+                        fetchMedia();
                     }
                 } catch (err) { console.error(err); }
             });
