@@ -4457,9 +4457,9 @@ body.modal-open .bottom-nav {
         height: 75vh;
     }
     
-    .type-badge {
-        display: none !important; /* Remove media type badge as requested */
-    }
+.type-badge {
+    display: none !important;
+}
 
     .ranking-manager-add-section {
         border-left: none;
@@ -4993,16 +4993,7 @@ body.modal-open .bottom-nav {
     margin-bottom: 1rem;
 }
 
-.type-badge {
-    background: var(--theme-accent);
-    color: #000;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
+
 
 .header-actions {
     display: flex;
