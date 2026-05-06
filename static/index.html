@@ -17,7 +17,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=411">
+    <link rel="stylesheet" href="style.css?v=412">
 </head>
 
 <body class="read-only-mode">
@@ -334,11 +334,19 @@
                 <div class="quick-info-details">
                     <div class="quick-info-header">
                         <div class="header-top-row">
-                            <span class="type-badge" id="quickInfoType">Movie</span>
+                            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                <span class="type-badge" id="quickInfoType">Movie</span>
+                                <!-- Moved Favorite/Like Pill here -->
+                                <div class="favorite-display" id="quickInfoFavoritePill" style="cursor: pointer; pointer-events: all; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.85rem;" title="Toggle Like">
+                                    <i class="fas fa-heart" id="quickInfoRatingLike" style="color: #ff4757; font-size: 1rem; transition: transform 0.2s, color 0.2s;"></i>
+                                    <span class="rating-label" id="quickInfoFavoriteLabel" style="font-size: 0.65rem; margin-left: 4px;">Like</span>
+                                </div>
+                            </div>
                             <div class="header-actions">
                                 <a id="quickInfoSourceBtn" target="_blank" title="View Source"><i class="fas fa-external-link-alt"></i></a>
                             </div>
                         </div>
+
                         <h2 class="serif" id="quickInfoTitle"></h2>
 
                         <div class="quick-info-meta-row">
@@ -358,16 +366,14 @@
                             <span class="rating-label">Personal Rating</span>
                         </div>
                         
-                        <div class="favorite-display" id="quickInfoFavoritePill" style="cursor: pointer; pointer-events: all;" title="Toggle Like">
-                            <i class="fas fa-heart" id="quickInfoRatingLike" style="color: #ff4757; font-size: 1.4rem; transition: transform 0.2s, color 0.2s;"></i>
-                            <span class="rating-label" id="quickInfoFavoriteLabel">Like</span>
-                        </div>
+                        <!-- Like Pill removed from here and moved to top -->
 
                         <div class="director-display" id="quickInfoDirectorSection" style="display:none;">
                             <span class="director-label">Directed by</span>
                             <span class="director-name" id="quickInfoDirector"></span>
                         </div>
                     </div>
+
 
 
 
@@ -648,7 +654,8 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=411"></script>
+    <script src="app.js?v=412"></script>
+
 
 
 
