@@ -1791,6 +1791,58 @@ delete-btn {
     opacity: 0.7;
 }
 
+/* Recently Discovered Card Styles */
+#recentDiscoveryCard {
+    padding: 1.2rem;
+    flex: 2;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: linear-gradient(135deg, var(--bg-card), rgba(var(--theme-accent-rgb, 147, 112, 219), 0.08));
+    position: relative;
+    overflow: hidden;
+}
+.discovery-poster {
+    width: 80px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+.discovery-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.discovery-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    opacity: 0.5;
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+}
+.discovery-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.discovery-date {
+    font-size: 0.75rem;
+    color: var(--theme-accent);
+    opacity: 0.8;
+    font-weight: 600;
+}
+
+
 /* Full-width stat cards */
 .stats-full-row {
     display: grid;
@@ -4043,6 +4095,29 @@ body.modal-open .bottom-nav {
         font-size: 0.5rem !important;
         letter-spacing: 0.05em !important;
     }
+    
+    /* Recently Discovered Mobile Overrides */
+    #recentDiscoveryCard {
+        grid-column: 1 / -1 !important; /* Full width row on mobile */
+        padding: 1.2rem !important;
+        gap: 1.2rem !important;
+        min-height: 140px !important;
+        background: linear-gradient(135deg, var(--bg-card), rgba(var(--theme-accent-rgb), 0.12)) !important;
+        border: 1px solid rgba(var(--theme-accent-rgb), 0.2) !important;
+    }
+    .discovery-poster {
+        width: 85px !important;
+        height: 120px !important;
+    }
+    .discovery-title {
+        white-space: normal !important; /* Allow wrap on mobile */
+        font-size: 1.05rem !important;
+    }
+    .discovery-label {
+        font-size: 0.55rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+
     
     /* Distribution & Decade Breakdown - Stacked & Tighter */
     .stats-full-row {

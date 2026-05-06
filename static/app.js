@@ -555,12 +555,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-value">1 in ${data.like_ratio || '—'}</div>
                     <div class="stat-card-label">Like Ratio <span style="font-size:0.6em;opacity:0.6">(Exclusivity)</span></div>
                 </div>
-                <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer; padding: 1rem; flex: 1.5; text-align: left; display: flex; align-items: center; gap: 1.5rem; background: linear-gradient(135deg, var(--bg-card), rgba(147, 112, 219, 0.05));">
-                    <img src="${data.most_recent?.item?.cover_url || ''}" style="width: 80px; height: 110px; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);" />
-                    <div>
-                        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.5; margin-bottom: 0.25rem;">Recently Discovered</div>
-                        <div style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; line-height: 1.2;">${data.most_recent?.item?.title || 'Unknown'}</div>
-                        <div style="font-size: 0.75rem; color: var(--theme-accent); opacity: 0.8; font-weight: 600;">Added on ${data.most_recent?.display_date || 'N/A'}</div>
+                <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer;">
+                    <img src="${data.most_recent?.item?.cover_url || ''}" class="discovery-poster" />
+                    <div class="discovery-details">
+                        <div class="discovery-label">Recently Discovered</div>
+                        <div class="discovery-title">${data.most_recent?.item?.title || 'Unknown'}</div>
+                        <div class="discovery-date">Added on ${data.most_recent?.display_date || 'N/A'}</div>
                     </div>
                 </div>
             </div>
