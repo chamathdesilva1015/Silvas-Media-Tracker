@@ -1449,7 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Basic Info ---
         document.getElementById('quickInfoTitle').textContent = item.title;
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
-        document.getElementById('quickInfoYear').textContent = item.release_year || '????';
+        document.getElementById('quickInfoYear').innerHTML = `<span class="year-pill">${item.release_year || '????'}</span>`;
 
         // Like Button Logic — heart next to rating, only visible when liked
         // Clone first to remove old listeners, THEN style
@@ -1598,23 +1598,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Metadata Row (Runtime, Rating) ---
         const rtEl = document.getElementById('quickInfoRuntime');
-        if (item.runtime) {
-            const h = Math.floor(item.runtime / 60);
-            const m = item.runtime % 60;
-            rtEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
-            rtEl.style.display = 'inline';
-        } else { rtEl.style.display = 'none'; }
+        if (item.runtime && item.runtime !== 'N/A') {
+            rtEl.innerHTML = `<span class="runtime-pill">${item.runtime}m</span>`;
+            rtEl.style.display = 'inline-block';
+        } else {
+            rtEl.style.display = 'none';
+        }
 
         const crEl = document.getElementById('quickInfoContentRating');
-        crEl.textContent = item.content_rating || '';
-        crEl.style.display = item.content_rating ? 'inline-block' : 'none';
+        if (item.content_rating) {
+            crEl.innerHTML = `<span class="meta-chip">${item.content_rating}</span>`;
+            crEl.style.display = 'inline-block';
+        } else {
+            crEl.style.display = 'none';
+        }
 
         // --- Director / Creator ---
         const dirSection = document.getElementById('quickInfoDirectorSection');
         const dirLabel = dirSection.querySelector('.director-label');
         const dirEl = document.getElementById('quickInfoDirector');
         if (item.director) {
-            dirEl.textContent = item.director;
+            dirEl.innerHTML = `<span class="director-pill">${item.director}</span>`;
             let label = 'Created by';
             if (item.type === 'Movies') label = 'Directed by';
             if (item.type === 'Manga') label = 'Written by';

@@ -2248,178 +2248,110 @@ delete-btn {
     opacity: 0.5;
 }
 
-/* ── Quick Info Modal ──────────────────────────────────────────────────── */
-/* quick-info styles moved to bottom v240 block — stubs kept for reference */
-.quick-info-poster-placeholder {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    opacity: 0.4;
-    text-align: center;
+/* ── Quick Info Modal (PC Redesign) ──────────────────────────────────────────────────── */
+.quick-info-content {
+    background: rgba(15, 15, 20, 0.7) !important;
+    backdrop-filter: blur(25px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.3) !important;
+    border-radius: 24px !important;
+    padding: 2.5rem !important;
+    max-width: 900px !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 
+                0 25px 50px -12px rgba(0,0,0,0.7),
+                0 0 40px rgba(var(--theme-accent-rgb), 0.15) !important;
+    position: relative;
+}
+
+/* Decorative Border Accent */
+.quick-info-content::before {
+    content: "";
     position: absolute;
+    inset: -2px;
+    border-radius: 26px;
+    padding: 2px;
+    background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.5), transparent 40%, transparent 60%, rgba(var(--theme-accent-rgb), 0.5));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
 }
 
-/* Ranking ribbon — positioned at bottom-left of the poster */
-/* Ranking corner flag — top-left of poster, solid so it never blends */
-.rank-ribbon {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 3;
-    padding: 0.35rem 0.7rem 0.35rem 0.55rem;
-    font-size: 0.8rem;
-    font-weight: 900;
-    letter-spacing: 0.06em;
-    border-radius: 0 0 10px 0;
-    display: flex;
-    align-items: center;
-    gap: 0.2rem;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.45);
+/* Text Outlines & Shadows for PC Profile */
+.quick-info-content h2, 
+.quick-info-content h3, 
+.quick-info-content p,
+.quick-info-content span:not(.meta-chip):not(.genre-badge):not(.type-badge) {
+    color: #fff !important;
+    text-shadow: -1px -1px 0 #000, 
+                 1px -1px 0 #000, 
+                -1px 1px 0 #000, 
+                 1px 1px 0 #000,
+                 0 2px 4px rgba(0,0,0,0.5) !important;
 }
 
-.ribbon-gold {
-    background: linear-gradient(135deg, #ffd700, #b8860b);
-    color: #1a1000;
-}
-.ribbon-silver {
-    background: linear-gradient(135deg, #d0d5db, #8c949e);
-    color: #111;
-}
-.ribbon-bronze {
-    background: linear-gradient(135deg, #cd8246, #8b4513);
-    color: #fff;
-}
-.ribbon-ranked {
-    background: #000;
-    color: var(--theme-accent);
-    border-right: 1px solid rgba(var(--theme-accent-rgb), 0.3);
-    border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.3);
-    opacity: 1;
-}
-
-/* Movie metadata chips (content_rating / runtime) — director removed to its own section */
-.quick-info-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-top: 0.1rem;
-}
-
-.meta-chip {
+/* Metadata Pills (Common Styles) */
+.meta-chip, .genre-badge, .type-badge, .director-pill, .year-pill, .runtime-pill {
     display: inline-flex;
     align-items: center;
-    padding: 0.2rem 0.65rem;
-    border-radius: 99px;
-    border: 1px solid var(--border-color);
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: rgba(255,255,255,0.04);
-    letter-spacing: 0.03em;
-    white-space: nowrap;
+    padding: 0.35rem 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
 }
 
-/* Director — exclusive section in the popup */
-.quick-info-director-section {
+/* Hover Glows for all Pills */
+.meta-chip:hover, 
+.genre-badge:hover, 
+.type-badge:hover, 
+.director-pill:hover, 
+.year-pill:hover, 
+.runtime-pill:hover {
+    background: rgba(var(--theme-accent-rgb), 0.15) !important;
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 0 15px var(--theme-accent-glow) !important;
+    transform: translateY(-2px);
+    color: #fff !important;
+}
+
+.quick-info-meta-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    margin-top: 0.8rem;
+}
+
+/* Redesign Rating & Director Section */
+.quick-info-rating-section {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.2rem;
+    gap: 2rem;
+    margin: 1.5rem 0;
+    background: rgba(255,255,255,0.02);
+    padding: 1.2rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
-.director-label {
-    font-size: 0.62rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    opacity: 0.45;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.director-name {
-    font-size: 0.9rem;
-    font-weight: 700;
-    font-style: italic;
-    color: var(--text-primary);
-    letter-spacing: 0.01em;
-}
-
-.director-container {
-    margin-top: 0.6rem;
-    margin-bottom: 0.6rem;
-}
-
-/* Director badge on entry tiles — visually distinct from genre badges */
-.director-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3em;
-    padding: 0.15rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.62rem;
-    font-weight: 700;
-    font-style: italic;
-    background: var(--theme-accent-muted);
-    color: var(--theme-accent);
-    border: 1px solid var(--theme-accent-glow);
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    margin-bottom: 0.5rem;
-}
-
-.quick-info-details {
-    flex: 1;
+.director-display {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-    min-width: 0;
+    gap: 0.2rem;
 }
 
-.quick-info-details h2 {
-    font-size: 1.4rem;
-    line-height: 1.2;
-    margin: 0;
+.director-pill {
+    font-size: 0.9rem !important;
+    padding: 0.5rem 1rem !important;
+    background: rgba(var(--theme-accent-rgb), 0.05) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.1) !important;
 }
 
-.quick-info-year {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin: 0;
-    opacity: 0.6;
-}
-
-.quick-info-genres {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-top: 0.25rem;
-}
-
-.quick-info-rating {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--theme-accent);
-    line-height: 1;
-    margin-top: 0.5rem;
-}
-
-.quick-info-review {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    line-height: 1.65;
-    margin: 0.5rem 0 0 0;
-    max-height: 250px;
-    overflow-y: auto;
-    border-top: 1px solid var(--border-color);
-    padding-top: 0.75rem;
-    scrollbar-width: thin;
-    /* Removed line-clamp to allow full scrolling */
-}
-
-.quick-info-review:empty {
-    display: none;
-}
 
 /* mobile quick-info styles moved to bottom v240 block */
 
