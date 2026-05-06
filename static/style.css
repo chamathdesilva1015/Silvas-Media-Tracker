@@ -5008,7 +5008,9 @@ body.modal-open .bottom-nav {
         line-height: 1.2;
         text-transform: uppercase;
         opacity: 0.9;
+        text-shadow: 0 0 10px rgba(var(--theme-accent-rgb), 0.6) !important;
     }
+
 
     .quick-info-meta-row {
         font-size: 0.65rem;
@@ -5209,14 +5211,17 @@ body.modal-open .bottom-nav {
 }
 
 #quickInfoTitle {
-    font-size: 2.8rem;
+    font-size: 3.2rem;
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 0.8rem;
     color: var(--text-primary);
-    text-shadow: 0 0 20px rgba(var(--theme-accent-rgb), 0.35); /* Section-theme glow */
+    text-shadow: 
+        0 0 15px rgba(var(--theme-accent-rgb), 0.7),
+        0 0 30px rgba(var(--theme-accent-rgb), 0.4) !important; /* Multilayer theme glow */
     letter-spacing: -0.02em;
 }
+
 
 
 .quick-info-meta-row {
