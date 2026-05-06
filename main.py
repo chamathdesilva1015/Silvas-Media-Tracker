@@ -863,68 +863,84 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
         if not seeds:
             return []
             
-        # 3. Pick up to 15 distinct seeds
+        # 3. Pick distinct seeds and fetch in a loop until we have 3 picks
         unique_seeds_dict = {s.id: s for s in seeds}
         unique_seeds_list = list(unique_seeds_dict.values())
         
-        chosen_seeds = []
-        attempts = 0
-        while len(chosen_seeds) < min(15, len(unique_seeds_list)) and attempts < 100:
-            pick = random.choice(seeds)
-            if pick not in chosen_seeds:
-                chosen_seeds.append(pick)
-            attempts += 1
+        final_picks = []
+        major_attempts = 0
+        used_seeds = set()
         
-        # 4. Pool recommendations
-        pool = {}
-        for seed in chosen_seeds:
-            recs = []
-            try:
-                if seed.type in ["Anime", "Manga"]:
-                    recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=20)
-                elif seed.type in ["Movies", "TV Series"]:
-                    recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=20)
-            except Exception as e:
-                print(f"Error fetching recs for seed {seed.title}: {e}")
-                continue
+        while len(final_picks) < 3 and major_attempts < 4:
+            major_attempts += 1
+            
+            available_seeds = [s for s in seeds if s.id not in used_seeds]
+            if not available_seeds:
+                available_seeds = seeds  # fallback if all used
                 
-            for r in recs:
-                norm_title = normalize_title(r.get("title", ""))
-                if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
+            chosen_seeds = []
+            attempts = 0
+            batch_size = min(20, len(unique_seeds_list))
+            
+            while len(chosen_seeds) < batch_size and attempts < 100:
+                pick = random.choice(available_seeds)
+                if pick not in chosen_seeds:
+                    chosen_seeds.append(pick)
+                    used_seeds.add(pick.id)
+                attempts += 1
+            
+            # 4. Pool recommendations
+            pool = {}
+            for seed in chosen_seeds:
+                recs = []
+                try:
+                    if seed.type in ["Anime", "Manga"]:
+                        recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=40)
+                    elif seed.type in ["Movies", "TV Series"]:
+                        recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=40)
+                except Exception as e:
+                    print(f"Error fetching recs for seed {seed.title}: {e}")
                     continue
                     
-                pool_key = (r["type"], r["tmdb_id"])
-                if pool_key not in pool:
-                    pool[pool_key] = {"item": r, "seeds": set()}
-                pool[pool_key]["seeds"].add((seed.title, seed.rating or "N/A"))
+                for r in recs:
+                    norm_title = normalize_title(r.get("title", ""))
+                    if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
+                        continue
+                        
+                    # Skip if already picked in a previous loop iteration
+                    if any(fp["item"]["tmdb_id"] == r["tmdb_id"] for fp in final_picks):
+                        continue
+                        
+                    pool_key = (r["type"], r["tmdb_id"])
+                    if pool_key not in pool:
+                        pool[pool_key] = {"item": r, "seeds": set()}
+                    pool[pool_key]["seeds"].add((seed.title, seed.rating or "N/A"))
+                    
+            if not pool:
+                continue
                 
-        if not pool:
-            return []
-            
-        # 5. Sort by overlaps or popularity
-        if mode == "hidden":
-            # Sort by popularity (ascending) to find "hidden gems"
-            # We still want some overlap, so we'll filter for at least 1 overlap then sort by popularity
-            eligible = list(pool.values())
-            # Sort by popularity if available, otherwise just random
-            final_picks = sorted(eligible, key=lambda x: x["item"].get("popularity", 999999))[:3]
-            random.shuffle(final_picks)
-        else:
-            groups = {}
-            for data in pool.values():
-                count = len(data["seeds"])
-                if count not in groups: groups[count] = []
-                groups[count].append(data)
-                
-            sorted_counts = sorted(groups.keys(), reverse=True)
-            final_picks = []
-            for count in sorted_counts:
-                group_items = groups[count]
-                random.shuffle(group_items)
-                for data in group_items:
-                    final_picks.append(data)
+            # 5. Sort by overlaps or popularity
+            needed = 3 - len(final_picks)
+            if mode == "hidden":
+                eligible = list(pool.values())
+                new_picks = sorted(eligible, key=lambda x: x["item"].get("popularity", 999999))[:needed]
+                random.shuffle(new_picks)
+                final_picks.extend(new_picks)
+            else:
+                groups = {}
+                for data in pool.values():
+                    count = len(data["seeds"])
+                    if count not in groups: groups[count] = []
+                    groups[count].append(data)
+                    
+                sorted_counts = sorted(groups.keys(), reverse=True)
+                for count in sorted_counts:
+                    group_items = groups[count]
+                    random.shuffle(group_items)
+                    for data in group_items:
+                        final_picks.append(data)
+                        if len(final_picks) == 3: break
                     if len(final_picks) == 3: break
-                if len(final_picks) == 3: break
                 
         # 6. Fetch rich details
         results = []

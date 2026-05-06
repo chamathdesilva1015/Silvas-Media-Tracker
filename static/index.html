@@ -14,7 +14,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=250">
+    <link rel="stylesheet" href="style.css?v=255">
 </head>
 <body class="read-only-mode">
     <div class="mesh-bg">
@@ -29,6 +29,11 @@
                 <div class="header-main">
                     <div class="header-left">
                         <h1 id="pageTitle" class="serif">Movies</h1>
+                        <button id="addMediaBtn" class="btn-primary" style="display: none; height: 42px; border-radius: 12px; font-weight: 700; padding: 0 1.2rem; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;">
+                            <i class="fas fa-plus"></i>
+                            <span class="desktop-text">Add Entry</span>
+                            <span class="mobile-text">Add</span>
+                        </button>
                     </div>
                     
                     <div class="header-right">
@@ -36,11 +41,7 @@
                             <i class="fas fa-search search-icon"></i>
                             <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
                         </div>
-                        <button id="addMediaBtn" class="btn-primary" style="display: none; height: 40px; border-radius: 10px; font-weight: 700; padding: 0 1.2rem;">
-                            <span class="desktop-text">+ Add Entry</span>
-                            <span class="mobile-text">+</span>
-                        </button>
-                        <button id="openAuthBtn" class="btn-secondary" style="border:none; background:rgba(255,255,255,0.05); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-lock"></i></button>
+                        <button id="openAuthBtn" class="btn-secondary" style="border:none; background:rgba(255,255,255,0.05); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><i class="fas fa-lock"></i></button>
                     </div>
                 </div>
 
@@ -536,26 +537,8 @@
         </div>
     </div>
 
-    <!-- Custom JS -->
-    <nav class="bottom-nav" id="bottomNav">
-        <button class="nav-item active" data-sub="Completed">
-            <i class="fas fa-check-circle"></i>
-            <span>Library</span>
-        </button>
-        <button class="nav-item" data-sub="Rankings">
-            <i class="fas fa-trophy"></i>
-            <span>Rankings</span>
-        </button>
-        <button class="nav-item active" data-sub="Info">
-            <i class="fas fa-info-circle"></i>
-            <span>The Hub</span>
-        </button>
-        <button class="nav-item" data-sub="Stats">
-            <i class="fas fa-chart-pie"></i>
-            <span>Stats</span>
-        </button>
-    </nav>
-    </div> <!-- End app-layout -->
+    <!-- App Layout Ends -->
+    </div>
 
     <!-- Global Filter Menu (Relocated for stacking context safety) -->
     <div class="filter-menu" id="filterMenu">
@@ -644,6 +627,6 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=270"></script>
+    <script src="app.js?v=275"></script>
 </body>
 </html>
