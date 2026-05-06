@@ -38,27 +38,36 @@ An automated ingestion pipeline that transforms basic titles into high-fidelity 
 - **Multi-Source Sync**: Deep integration with TMDB and Jikan APIs to fetch official posters, directorial credits, and precise production data.
 - **Interactive Metadata Pills**: Metadata is presented in interactive, themed pills that emit a vivid radiance on hover, matching the media's category color.
 
-### Advanced Analytics Dashboard
-A comprehensive statistical engine that visualizes your media consumption habits and taste trends.
+
+---
+
+## Advanced Analytics & Insights
+
+The application utilizes a comprehensive statistical engine to visualize media consumption habits and identify deep taste trends:
+
 - **Taste Heatmaps**: Dynamic visualizations of score distributions across genres, release decades, and media types.
 - **Hall of Fame**: Automated tracking of elite entries (9+ ratings) with exclusive visual distinctions and ranking ribbons.
-- **Director Indexing**: Statistical tracking of your most-watched creators, providing insights into your directorial preferences.
-
+- **Director Indexing**: Statistical tracking of your most-watched creators, providing deep insights into directorial preferences.
+- **Passion-Volume Indexing**: A weighted algorithm that identifies true favorites by balancing rating intensity against total consumption volume.
 
 ---
 
 ## Engineering Solutions
 
-### Smart Visibility & Navigation
-Implemented a "Smart Scroll" behavior where the header and navigation elements intelligently hide during active scrolling to maximize the viewing area, reappearing instantly when needed.
+### Thematic Radiance Engine
+Developed a dynamic CSS variable system that injects category-specific HSL values into the global DOM. This allows the entire interface to "pulse" with the theme of the active media (e.g., Deep Blue for Movies, Vibrant Red for TV), maintaining a cohesive visual identity across all modules.
 
-### Asset Versioning
-A manual cache-busting system ensures browsers load the latest CSS and JavaScript assets. Unique query strings are appended to resource links, forcing the browser to fetch the most recent code upon deployment.
+### High-Density Stacking Contexts
+Solved complex `z-index` and `backdrop-filter` conflicts to enable high-end hover interactions. Gallery cards utilize "hover-to-front" priority logic, allowing them to overlap the sticky header and neighboring elements while maintaining crystal-clear blur effects.
 
-### Data Normalization
-The ingestion pipeline includes a validation layer to normalize titles and enforce logical bounds for release dates and ratings, ensuring a clean and consistent database.
+### Asynchronous Enrichment Pipeline
+Engineered a robust metadata ingestion layer that orchestrates concurrent API requests to TMDB and Jikan. The system includes failure-safe fallbacks, manual ID anchoring for ambiguous titles, and sub-second data normalization.
+
+### Risk-Tuned Discovery Logic
+Developed a 4-tier recommendation algorithm that allows users to tune discovery "wildcards." The solution translates mathematical risk thresholds into user-friendly "Risk Levels" (Low to Extreme), visualized through a dynamic progress bar system.
 
 ---
+
 
 ## Deployment and Configuration
 
