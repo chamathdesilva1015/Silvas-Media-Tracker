@@ -1451,7 +1451,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
         document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
-        // --- Like Logic (v403) ---
+        // --- Like Logic (v404) ---
         const updateLikeBtnUI = (isLiked) => {
             const pill = document.getElementById('quickInfoFavoritePill');
             if (!pill) return;
@@ -1460,22 +1460,29 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (isLiked) {
                 pill.style.display = 'flex';
+                pill.style.opacity = '1';
+                pill.style.background = 'rgba(255, 71, 87, 0.1)';
+                pill.style.borderColor = 'rgba(255, 71, 87, 0.3)';
                 pill.innerHTML = `
-                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.2rem; filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.4));"></i>
-                    <span class="rating-label" style="color: #fff; opacity: 1; margin: 0; font-weight: 600;">Liked</span>
+                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.1rem; display: inline-block; margin-right: 2px; filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.5));"></i>
+                    <span class="rating-label" style="color: #fff; opacity: 1; margin: 0; font-weight: 700; letter-spacing: 0.05em;">Liked</span>
                 `;
             } else {
                 if (canEdit) {
                     pill.style.display = 'flex';
+                    pill.style.opacity = '0.6';
+                    pill.style.background = 'rgba(255, 255, 255, 0.04)';
+                    pill.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                     pill.innerHTML = `
-                        <i class="far fa-heart" style="color: rgba(255, 255, 255, 0.9); font-size: 1.2rem;"></i>
-                        <span class="rating-label" style="color: rgba(255, 255, 255, 0.5); opacity: 0.7; margin: 0; font-weight: 600;">Like</span>
+                        <i class="far fa-heart" style="color: rgba(255, 255, 255, 0.8); font-size: 1.1rem; display: inline-block; margin-right: 2px;"></i>
+                        <span class="rating-label" style="color: rgba(255, 255, 255, 0.5); opacity: 1; margin: 0; font-weight: 600;">Like</span>
                     `;
                 } else {
                     pill.style.display = 'none';
                 }
             }
         };
+
 
         updateLikeBtnUI(item.is_liked);
 
