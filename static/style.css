@@ -4578,9 +4578,9 @@ body.modal-open .bottom-nav {
     padding: 0;
     overflow: hidden;
     box-shadow: 
-        0 0 0 1px rgba(var(--theme-accent-rgb), 0.1),
-        0 30px 100px rgba(0, 0, 0, 0.9), 
-        0 0 40px rgba(var(--theme-accent-rgb), 0.15) !important;
+        0 0 0 1px rgba(var(--theme-accent-rgb), 0.2),
+        0 0 80px rgba(var(--theme-accent-rgb), 0.45), 
+        0 40px 100px rgba(0, 0, 0, 0.9) !important;
     position: relative;
     z-index: 10;
 }
