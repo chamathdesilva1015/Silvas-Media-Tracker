@@ -1463,8 +1463,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (isLiked) {
                 pill.style.display = 'flex';
-                btn.classList.remove('far');
-                btn.classList.add('fas');
+                btn.className = 'fas fa-heart'; // Force both classes
                 btn.style.color = '#ff4757';
                 btn.style.opacity = '1';
                 btn.style.filter = 'drop-shadow(0 0 10px rgba(255, 71, 87, 0.6))';
@@ -1476,8 +1475,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 if (canEdit) {
                     pill.style.display = 'flex';
-                    btn.classList.remove('fas');
-                    btn.classList.add('far');
+                    btn.className = 'far fa-heart'; // Force both classes
                     btn.style.color = 'rgba(255, 255, 255, 0.9)';
                     btn.style.opacity = '0.6';
                     btn.style.filter = 'none';
@@ -1491,6 +1489,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         };
+
 
         updateLikeBtnUI(item.is_liked);
 

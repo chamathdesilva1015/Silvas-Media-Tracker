@@ -4772,8 +4772,7 @@ body.modal-open .bottom-nav {
 }
 
 .rating-display, 
-.director-display,
-.favorite-display {
+.director-display {
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     padding: 0.6rem 1.2rem !important;
@@ -4782,11 +4781,25 @@ body.modal-open .bottom-nav {
     align-items: center !important;
     gap: 0.8rem !important;
     width: fit-content !important;
-
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: pointer !important;
     margin: 0 !important;
 }
+
+.favorite-display {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0.8rem 1.6rem !important;
+    border-radius: 99px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.8rem !important;
+    width: fit-content !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+}
+
 
 .favorite-display:hover {
     background: rgba(255, 255, 255, 0.1) !important;
