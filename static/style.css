@@ -3417,38 +3417,23 @@ body.modal-open .bottom-nav {
         padding: 0.5rem 0.8rem 0.5rem 2rem;
     }
 
-    /* --- Phase B: Adaptive 2-Column Grid & Touch Interactions --- */
+    /* --- Phase B: Adaptive 3-Column Grid & Touch Interactions --- */
     .media-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns is better for these rich cards */
-        gap: 0.75rem; /* More breathing room */
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.3rem; /* Very tight grid */
     }
 
     .media-card {
-        min-height: 180px !important; /* Shorter than PC, but enough for poster bg */
-        padding: 1rem !important;
-        border-radius: 16px !important;
-    }
-
-    .card-poster-bg {
-        filter: blur(15px) brightness(0.5) !important; /* Less blur on mobile for clearer context */
-    }
-
-    .media-title {
-        font-size: 0.95rem !important;
-    }
-
-    .genre-badge {
-        font-size: 0.65rem !important;
-        padding: 0.2rem 0.5rem !important;
-    }
-
-    .director-badge {
-        font-size: 0.68rem !important;
-        padding: 0.3rem 0.7rem !important;
-    }
+        min-height: 120px !important; /* Fixed: Explicitly override desktop 220px min-height */
+        padding: 0.6rem !important;
+        display: flex;
+        flex-direction: column;
         gap: 0.15rem;
         position: relative;
+        background: rgba(15, 15, 20, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
     }
+
 
     .director-container {
         margin-top: 0.1rem;
