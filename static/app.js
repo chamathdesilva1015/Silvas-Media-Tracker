@@ -2199,6 +2199,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const finalRank = isValidVal(rankFromFields) ? rankFromFields : (globalRank ? `#${globalRank}` : '');
 
                 card.innerHTML = `
+                    <div class="card-poster-bg" style="background-image: url('${item.cover_url || ''}')"></div>
+                    <div class="card-content-overlay"></div>
                     <div class="card-header">
                         <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
