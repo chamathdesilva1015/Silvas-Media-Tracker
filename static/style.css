@@ -608,11 +608,13 @@ header p {
     flex: 1;
 }
 
+
 .unified-filter-dropdown {
     position: relative;
 }
 
 .filter-trigger {
+
     background: rgba(var(--theme-accent-rgb), 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(var(--theme-accent-rgb), 0.3);
@@ -1065,20 +1067,16 @@ header p {
     opacity: 0.8;
 }
 
-.like-btn-inline {
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.2);
+.card-liked-indicator {
+    color: #ff4757;
     font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.4));
+    pointer-events: none;
+    margin-right: 0.3rem;
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.like-btn-inline.liked {
-    color: #ff6b6b;
-    text-shadow: 0 0 10px rgba(255,107,107,0.4);
-}
 
 .stagger-in {
     animation: staggerInit 0.6s cubic-bezier(0.19, 1, 0.22, 1) forwards;

@@ -2244,9 +2244,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
                         </div>
                         <div class="badge-slot-right">
+                            ${item.is_liked ? `<span class="card-liked-indicator">♥</span>` : ''}
                             ${hasReview ? `<span class="review-badge">Reviewed</span>` : ''}
                         </div>
                     </div>
+
 
                     </div>
                 `;
