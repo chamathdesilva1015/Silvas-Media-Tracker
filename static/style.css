@@ -3082,14 +3082,22 @@ body.modal-open .bottom-nav {
         position: sticky;
         top: 0;
         z-index: 1000;
-        background: rgba(15, 14, 12, 0.9);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        padding: 0.6rem 0.8rem !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(15, 14, 12, 0.95);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        padding: 0.4rem 0.5rem !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         flex-direction: column;
-        gap: 0.5rem !important;
+        gap: 0.3rem !important;
         align-items: stretch;
+    }
+
+    .header-sub {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        border: none !important;
+        padding-top: 0 !important;
+        align-items: center !important;
     }
 
     .category-nav-desktop {
@@ -3105,9 +3113,9 @@ body.modal-open .bottom-nav {
     }
 
     #pageTitle {
-        font-size: 1.4rem !important;
+        font-size: 1.15rem !important;
         margin-bottom: 0;
-        line-height: 1.2;
+        line-height: 1.1;
     }
 
     .header-count {
@@ -3116,17 +3124,14 @@ body.modal-open .bottom-nav {
         margin-left: 0.3rem !important;
     }
 
-    /* Make pill tabs scrollable instead of wrapping */
+    /* Make pill tabs scrollable or wrapped */
     .page-tabs {
         width: 100%;
-        overflow-x: auto;
-        white-space: nowrap;
         display: flex;
-        justify-content: flex-start; /* Changed from center to prevent cutoff on narrow screens */
-        padding: 0.5rem 1rem;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        gap: 0.4rem !important;
+        justify-content: center !important;
+        flex-wrap: wrap; /* Allow wrapping if they don't fit */
+        gap: 0.25rem !important;
+        padding: 0.1rem 0;
         box-sizing: border-box;
     }
 
@@ -3135,9 +3140,9 @@ body.modal-open .bottom-nav {
     }
 
     .pill-tab {
-        flex: 0 0 auto;
-        font-size: 0.72rem !important;
-        padding: 0.4rem 0.8rem !important;
+        flex: 0 1 auto;
+        font-size: 0.65rem !important;
+        padding: 0.3rem 0.6rem !important;
     }
 
     /* Subtler active tab for mobile */
@@ -3148,12 +3153,19 @@ body.modal-open .bottom-nav {
         box-shadow: none !important;
     }
 
+    .header-filter-actions {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 0.2rem;
+    }
+
     /* Group search and filters more cleanly */
     .header-right {
         display: flex;
         flex-direction: column;
         width: 100%;
-        gap: 0.4rem !important;
+        gap: 0.25rem !important;
         margin-top: 0;
         padding: 0;
     }
