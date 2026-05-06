@@ -147,34 +147,34 @@ Focus: Modernized navigation and robust statistical modeling.
 ### Update 9: Standalone Evolution
 Focus: Decoupling from external platforms for true independence.
 
-Discord Decommissioning: Removed all legacy synchronization logic and channel-based ingestion.
-Standalone Architecture: Transitioned the core engine to direct manual entry and TMDB enrichment.
-Desktop Navigation: Restored category navigation for desktop while maintaining mobile bottom nav.
-Auth Consolidation: Centralized developer login within "The Hub" for a unified experience.
-Review Integrity: Implemented a "Real Review" safety check to filter out system placeholders.
-Add Entry Refinement: Integrated a compact "+" entry button for instant access on all devices.
+- **Discord Decommissioning**: Removed all legacy synchronization logic and channel-based ingestion.
+- **Standalone Architecture**: Transitioned the core engine to direct manual entry and TMDB enrichment.
+- **Desktop Navigation**: Restored category navigation for desktop while maintaining mobile bottom nav.
+- **Auth Consolidation**: Centralized developer login within "The Hub" for a unified experience.
+- **Review Integrity**: Implemented a "Real Review" safety check to filter out system placeholders.
+- **Add Entry Refinement**: Integrated a compact "+" entry button for instant access on all devices.
 
 ### Update 10: Extreme Mobile UI Refinement
 Focus: High-density compaction and native-feeling mobile aesthetics.
 
-Extreme UI Compaction: Compressed metrics and distribution graphs by 50% to maximize vertical density.
-Micro-Grid Architecture: Optimized 3-column mobile grid with micro-typography to eliminate grayspace.
-Quick-Info Modal: Redesigned with a floating close button, header clearance, and integrated scrolling.
-Responsive Navigation: Engineered a unified search/filter row for mobile headers to reclaim viewport space.
-Premium Footer Design: Replaced bulky highlights with sleek underline indicators and enhanced blur.
-Mobile-Exclusive Logic: Implemented text-swap mechanisms to replace verbose text with concise formulas.
+- **Extreme UI Compaction**: Compressed metrics and distribution graphs by 50% to maximize vertical density.
+- **Micro-Grid Architecture**: Optimized 3-column mobile grid with micro-typography to eliminate grayspace.
+- **Quick-Info Modal**: Redesigned with a floating close button, header clearance, and integrated scrolling.
+- **Responsive Navigation**: Engineered a unified search/filter row for mobile headers to reclaim viewport space.
+- **Premium Footer Design**: Replaced bulky highlights with sleek underline indicators and enhanced blur.
+- **Mobile-Exclusive Logic**: Implemented text-swap mechanisms to replace verbose text with concise formulas.
 
 ### Update 11: Premium Glassmorphism & High-Pop Aesthetics
 Focus: Visual excellence, deep glassmorphism, and interactive micro-animations.
 
-Glassmorphism Overhaul: Implemented a deep-blur (40px) design with translucent backgrounds.
-Dynamic Card Backgrounds: Engineered blurred poster backgrounds for cards and profiles.
-High-Pop Typography: Added black outlines and shadows to all white text for 100% legibility.
-Metadata Pills: Replaced flat metadata with interactive, glowing pills themed to each category.
-Advanced Glow Engine: Developed an intense themed radiance for modals and hover states.
-Parallax Gallery: Implemented scale and blur animations with "hover-to-front" priority logic.
-Mobile Hub Redesign: Reorganized navigation into high-visibility themed tiles and a 2x2 grid.
-Risk Level Visuals: Renamed suggestion modes and added dynamic risk progress bars.
+- **Glassmorphism Overhaul**: Implemented a deep-blur (40px) design with translucent backgrounds.
+- **Dynamic Card Backgrounds**: Engineered blurred poster backgrounds for cards and profiles.
+- **High-Pop Typography**: Added black outlines and shadows to all white text for 100% legibility.
+- **Metadata Pills**: Replaced flat metadata with interactive, glowing pills themed to each category.
+- **Advanced Glow Engine**: Developed an intense themed radiance for modals and hover states.
+- **Parallax Gallery**: Implemented scale and blur animations with "hover-to-front" priority logic.
+- **Mobile Hub Redesign**: Reorganized navigation into high-visibility themed tiles and a 2x2 grid.
+- **Risk Level Visuals**: Renamed suggestion modes and added dynamic risk progress bars.
 
 ---
 
