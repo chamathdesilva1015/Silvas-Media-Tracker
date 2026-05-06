@@ -984,10 +984,13 @@ header p {
 
 .media-card:hover {
     transform: translateY(-8px) scale(1.02) !important;
-    box-shadow: 0 30px 70px rgba(0,0,0,0.7), 0 0 60px rgba(var(--theme-accent-rgb), 0.5) !important;
-    border-color: rgba(var(--theme-accent-rgb), 0.6) !important;
-    z-index: 2001 !important; /* Bring to front, higher than header (z-index 1000) */
+    box-shadow: 
+        0 35px 80px rgba(0,0,0,0.8), 
+        0 0 80px rgba(var(--theme-accent-rgb), 0.6) !important; /* Massive intensified glow */
+    border-color: rgba(var(--theme-accent-rgb), 0.7) !important;
+    z-index: 2001 !important; 
 }
+
 
 
 /* Ensure all card content stays above the poster background */
@@ -1059,28 +1062,29 @@ header p {
 }
 
 .card-rank-badge {
-    color: #ffd700;
+    color: #ffd700 !important; /* Keep gold, but enhance */
     font-weight: 800;
-    background: rgba(0, 0, 0, 0.35); /* Solid base for visibility */
+    background: rgba(0, 0, 0, 0.45); 
     padding: 0.15rem 0.5rem;
     border-radius: 4px;
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    text-shadow: 0 1px 1px #000, 0 -1px 1px #000, 1px 0 1px #000, -1px 0 1px #000; /* Prominent outline */
     display: inline-flex;
     align-items: center;
 }
 
 .review-badge {
-    color: var(--theme-accent);
-    background: rgba(0, 0, 0, 0.35); /* Solid base for visibility */
+    color: #ffffff !important; /* White text for better pop */
+    background: rgba(0, 0, 0, 0.45); 
     padding: 0.15rem 0.5rem;
     border-radius: 4px;
-    border: 1px solid rgba(var(--theme-accent-rgb), 0.2);
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.3);
     opacity: 0.95;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px 1px #000, 0 -1px 1px #000, 1px 0 1px #000, -1px 0 1px #000; /* Prominent outline */
     display: inline-flex;
     align-items: center;
 }
+
 
 
 
@@ -1567,11 +1571,13 @@ delete-btn {
 }
 
 .director-badge {
-    background: rgba(var(--theme-accent-rgb), 0.25) !important; /* More solid */
-    color: var(--theme-accent) !important;
-    border: 1px solid rgba(var(--theme-accent-rgb), 0.35) !important;
+    background: rgba(var(--theme-accent-rgb), 0.3) !important; 
+    color: #ffffff !important; /* Brighter white text */
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.4) !important;
     padding: 0.4rem 1rem !important;
     border-radius: 99px !important;
+    text-shadow: 0 1px 1px #000, 0 -1px 1px #000, 1px 0 1px #000, -1px 0 1px #000; /* Outline */
+
 
     font-size: 0.75rem !important;
     font-weight: 700 !important;
@@ -3512,18 +3518,21 @@ body.modal-open .bottom-nav {
     .card-badges .card-rank-badge {
         font-size: 0.48rem;
         padding: 0.1rem 0.3rem;
-        background: rgba(0,0,0,0.4) !important;
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        background: rgba(0,0,0,0.5) !important;
+        border: 1px solid rgba(255, 215, 0, 0.4);
+        color: #ffd700 !important;
+        text-shadow: 0 1px 1px #000, 0 -1px 1px #000, 1px 0 1px #000, -1px 0 1px #000;
     }
 
     .card-badges .review-badge {
         font-size: 0.48rem;
         padding: 0.1rem 0.3rem;
-        background: rgba(0,0,0,0.4) !important;
-        border: 1px solid rgba(var(--theme-accent-rgb), 0.3);
-        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        background: rgba(0,0,0,0.5) !important;
+        border: 1px solid rgba(var(--theme-accent-rgb), 0.4);
+        color: #ffffff !important;
+        text-shadow: 0 1px 1px #000, 0 -1px 1px #000, 1px 0 1px #000, -1px 0 1px #000;
     }
+
 
 
 
@@ -4694,8 +4703,9 @@ body.modal-open .bottom-nav {
     overflow: hidden;
     box-shadow: 
         0 0 0 1px rgba(var(--theme-accent-rgb), 0.3),
-        0 0 150px rgba(var(--theme-accent-rgb), 0.65), 
+        0 0 200px rgba(var(--theme-accent-rgb), 0.8), /* Intensified bloom */
         0 40px 100px rgba(0, 0, 0, 0.9) !important;
+
     position: relative;
     z-index: 10;
 }
