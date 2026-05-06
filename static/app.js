@@ -546,17 +546,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-label">Total Entries</div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-pen-nib" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
-                    <div class="stat-card-value">${data.with_reviews}</div>
-                    <div class="stat-card-label">With Reviews <span style="font-size:0.6em;opacity:0.6">(${reviewPct}%)</span></div>
-                </div>
-                <div class="stat-card">
                     <i class="fas fa-star" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
-                    <div class="stat-card-value">${data.avg_score || '—'}</div>
-                    <div class="stat-card-label">Average Score <span style="font-size:0.6em;opacity:0.6">(/10)</span></div>
-                    <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 0.4rem; color: var(--text-primary);">
-                        Includes all partial ratings (e.g. 1.5, 4.5)
-                    </div>
+                    <div class="stat-card-value">${data.avg_score || '—'}<span style="font-size: 0.5em; opacity: 0.5; margin-left: 2px;">/10</span></div>
+                    <div class="stat-card-label">Average Score</div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-heart" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
@@ -566,8 +558,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         I like 1 in every ${data.like_ratio || 'X'} ${category.toLowerCase()} I watch
                     </div>
                 </div>
-
-
                 <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer;">
                     <img src="${data.most_recent?.item?.cover_url || ''}" class="discovery-poster" />
                     <div class="discovery-details">
@@ -577,6 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             </div>
+
 
             ${data.favorite_genres && data.favorite_genres.length ? `
             <div class="hof-accordion" id="genresAccordion" style="margin-bottom: 1.5rem; border-color: var(--theme-accent-muted);">
@@ -1474,14 +1465,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isLiked) {
                 pill.style.display = 'flex';
                 pill.style.opacity = '1';
-                pill.style.background = 'rgba(255, 71, 87, 0.25)'; /* Brighter background */
-                pill.style.borderColor = 'rgba(255, 71, 87, 0.6)';  /* More prominent border */
-                pill.style.boxShadow = '0 0 20px rgba(255, 71, 87, 0.4)'; /* Stronger glow */
+                pill.style.background = 'rgba(255, 59, 75, 0.35)'; /* High-voltage background */
+                pill.style.borderColor = 'rgba(255, 59, 75, 0.8)';  /* Strong solid border */
+                pill.style.boxShadow = '0 0 30px rgba(255, 59, 75, 0.5)'; /* Massive glow */
                 pill.innerHTML = `
-                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.1rem; display: inline-block; margin-right: 4px; filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.9));"></i>
-                    <span class="rating-label" style="color: #ff4757; opacity: 1; margin: 0; font-weight: 800; letter-spacing: 0.05em; text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);">Liked</span>
+                    <i class="fas fa-heart" style="color: #ff3b4b; font-size: 1.1rem; display: inline-block; margin-right: 4px; filter: drop-shadow(0 0 10px rgba(255, 59, 75, 1));"></i>
+                    <span class="rating-label" style="color: #ff3b4b; opacity: 1; margin: 0; font-weight: 900; letter-spacing: 0.08em; text-shadow: 0 0 12px rgba(255, 59, 75, 0.7);">Liked</span>
                 `;
             } else {
+
 
                 pill.style.display = 'flex';
                 pill.style.opacity = '0.4'; // Dimmed for unliked
