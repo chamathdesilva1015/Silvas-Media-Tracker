@@ -4571,10 +4571,14 @@ body.modal-open .bottom-nav {
     }
 
     .rank-ribbon {
-        font-size: 1.15rem !important;
-        padding: 0.5rem 1rem !important;
-        border-radius: 0 0 20px 0 !important;
+        font-size: 1.25rem !important;
+        padding: 0.6rem 1.4rem !important;
+        border-radius: 0 0 25px 0 !important;
         box-shadow: 4px 4px 15px rgba(0,0,0,0.6) !important;
+        z-index: 10 !important; /* Force to the very front */
+        position: absolute;
+        top: 0;
+        left: 0;
     }
 
     /* Poster: Now the background for the whole profile on mobile */
@@ -4711,14 +4715,16 @@ body.modal-open .bottom-nav {
     }
 
     .genre-badge {
-        font-size: 0.95rem; /* Drastically larger as requested */
-        padding: 6px 16px;
-        background: rgba(var(--theme-accent-rgb), 0.25);
-        border: 1px solid var(--theme-accent);
-        color: #fff;
-        text-shadow: 0 0 15px var(--theme-accent), 0 1px 5px #000;
-        font-weight: 800;
-        border-radius: 30px;
+        font-size: 1.1rem !important; /* Massive increase for visibility */
+        padding: 8px 18px !important;
+        background: rgba(var(--theme-accent-rgb), 0.35) !important;
+        border: 2px solid var(--theme-accent) !important;
+        color: #fff !important;
+        text-shadow: 0 0 15px var(--theme-accent), 0 2px 5px #000 !important;
+        font-weight: 800 !important;
+        border-radius: 40px !important;
+        display: inline-block !important;
+        margin: 3px !important;
     }
 
     .quick-info-footer-actions {
