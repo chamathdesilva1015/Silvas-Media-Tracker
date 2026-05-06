@@ -983,7 +983,9 @@ header p {
     transform: translateY(-8px) scale(1.02) !important;
     box-shadow: 0 30px 70px rgba(0,0,0,0.7), 0 0 60px rgba(var(--theme-accent-rgb), 0.5) !important;
     border-color: rgba(var(--theme-accent-rgb), 0.6) !important;
+    z-index: 2001 !important; /* Bring to front, higher than header (z-index 1000) */
 }
+
 
 /* Ensure all card content stays above the poster background */
 .card-header, .genre-container, .director-container, .card-badges {
