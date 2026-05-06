@@ -4766,10 +4766,14 @@ body.modal-open .bottom-nav {
 /* Rating & Director Pill Redesign */
 .quick-info-rating-section {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin: 1rem 0;
+    flex-wrap: nowrap !important;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+    width: 100%;
 }
+
 
 .rating-display, 
 .director-display {
@@ -4789,16 +4793,21 @@ body.modal-open .bottom-nav {
 .favorite-display {
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    padding: 0.8rem 1.6rem !important;
+    padding: 0.5rem 1rem !important;
     border-radius: 99px !important;
     display: flex !important;
     align-items: center !important;
-    gap: 0.8rem !important;
-    width: fit-content !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    justify-content: center !important;
+    gap: 0.6rem !important;
+    flex: 1;
+    min-width: 80px;
+    transition: all 0.2s ease !important;
     cursor: pointer !important;
     margin: 0 !important;
+    pointer-events: auto !important;
+    z-index: 10;
 }
+
 
 
 .favorite-display:hover {

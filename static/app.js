@@ -1451,63 +1451,48 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
         document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
-
-        // --- Like Logic (v399) ---
+        // --- Like Logic (v403) ---
         const updateLikeBtnUI = (isLiked) => {
             const pill = document.getElementById('quickInfoFavoritePill');
-            const btn = document.getElementById('quickInfoRatingLike');
-            const label = document.getElementById('quickInfoFavoriteLabel');
-            if (!pill || !btn) return;
+            if (!pill) return;
             
             const canEdit = computeCanEdit();
             
             if (isLiked) {
                 pill.style.display = 'flex';
-                btn.className = 'fas fa-heart'; // Force both classes
-                btn.style.color = '#ff4757';
-                btn.style.opacity = '1';
-                btn.style.filter = 'drop-shadow(0 0 10px rgba(255, 71, 87, 0.6))';
-                if (label) {
-                    label.textContent = "Liked";
-                    label.style.color = '#fff';
-                    label.style.opacity = '1';
-                }
+                pill.innerHTML = `
+                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.2rem; filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.4));"></i>
+                    <span class="rating-label" style="color: #fff; opacity: 1; margin: 0; font-weight: 600;">Liked</span>
+                `;
             } else {
                 if (canEdit) {
                     pill.style.display = 'flex';
-                    btn.className = 'far fa-heart'; // Force both classes
-                    btn.style.color = 'rgba(255, 255, 255, 0.9)';
-                    btn.style.opacity = '0.6';
-                    btn.style.filter = 'none';
-                    if (label) {
-                        label.textContent = "Like";
-                        label.style.color = 'rgba(255, 255, 255, 0.5)';
-                        label.style.opacity = '0.7';
-                    }
+                    pill.innerHTML = `
+                        <i class="far fa-heart" style="color: rgba(255, 255, 255, 0.9); font-size: 1.2rem;"></i>
+                        <span class="rating-label" style="color: rgba(255, 255, 255, 0.5); opacity: 0.7; margin: 0; font-weight: 600;">Like</span>
+                    `;
                 } else {
                     pill.style.display = 'none';
                 }
             }
         };
 
-
         updateLikeBtnUI(item.is_liked);
 
         const favPill = document.getElementById('quickInfoFavoritePill');
         if (favPill) {
-            favPill.onclick = async (e) => {
+            const newFavPill = favPill.cloneNode(true);
+            favPill.parentNode.replaceChild(newFavPill, favPill);
+            
+            newFavPill.addEventListener('click', async (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 if (!computeCanEdit()) {
                     alert("You need admin access to toggle likes.");
                     return;
                 }
-                
-                const heartIcon = favPill.querySelector('i');
-                if (heartIcon) {
-                    heartIcon.style.transform = 'scale(1.3)';
-                    setTimeout(() => heartIcon.style.transform = 'scale(1)', 150);
-                }
-
+                newFavPill.style.transform = 'scale(0.95)';
+                setTimeout(() => newFavPill.style.transform = 'translateY(-1px)', 100);
                 try {
                     const res = await fetch(`/api/media/like/${item.id}`, {
                         method: 'POST',
@@ -1517,11 +1502,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         const data = await res.json();
                         item.is_liked = data.is_liked;
                         updateLikeBtnUI(item.is_liked);
-                        fetchMedia(); // Refresh gallery
+                        fetchMedia();
                     }
                 } catch (err) { console.error(err); }
-            };
+            });
         }
+
 
 
         // --- Ranking Ribbon ---
