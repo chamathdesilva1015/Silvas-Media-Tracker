@@ -2238,9 +2238,11 @@ delete-btn {
     color: #fff;
 }
 .ribbon-ranked {
-    background: var(--theme-accent);
-    color: #000;
-    opacity: 0.92;
+    background: #000;
+    color: var(--theme-accent);
+    border-right: 1px solid rgba(var(--theme-accent-rgb), 0.3);
+    border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.3);
+    opacity: 1;
 }
 
 /* Movie metadata chips (content_rating / runtime) — director removed to its own section */
@@ -4566,6 +4568,13 @@ body.modal-open .bottom-nav {
     .quick-info-layout {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .rank-ribbon {
+        font-size: 1.15rem !important;
+        padding: 0.5rem 1rem !important;
+        border-radius: 0 0 20px 0 !important;
+        box-shadow: 4px 4px 15px rgba(0,0,0,0.6) !important;
     }
 
     /* Poster: Now the background for the whole profile on mobile */
