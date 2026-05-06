@@ -2254,11 +2254,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                // Expert: Wire up the entire card to open the quick info profile
                 card.style.cursor = 'pointer';
-                card.addEventListener('click', () => {
-                    window.openQuickInfo(item);
-                });
 
                 // Wire up like button click (with stopPropagation)
                 const cardLikeBtn = card.querySelector('.like-btn-inline');
@@ -2269,7 +2265,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                // Delete button for cards (all sources allowed)
                 const delBtn = document.createElement('button');
                 delBtn.className = 'delete-btn';
                 delBtn.innerHTML = '&times;';
