@@ -1449,7 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Basic Info ---
         document.getElementById('quickInfoTitle').textContent = item.title;
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
-        document.getElementById('quickInfoYear').innerHTML = `<span class="year-pill">${item.release_year || '????'}</span>`;
+        document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
         // Like Button Logic — heart next to rating, only visible when liked
         // Clone first to remove old listeners, THEN style
@@ -1598,27 +1598,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Metadata Row (Runtime, Rating) ---
         const rtEl = document.getElementById('quickInfoRuntime');
-        if (item.runtime && item.runtime !== 'N/A') {
-            rtEl.innerHTML = `<span class="runtime-pill">${item.runtime}m</span>`;
-            rtEl.style.display = 'inline-block';
-        } else {
-            rtEl.style.display = 'none';
-        }
+        if (item.runtime) {
+            const h = Math.floor(item.runtime / 60);
+            const m = item.runtime % 60;
+            rtEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
+            rtEl.style.display = 'inline';
+        } else { rtEl.style.display = 'none'; }
 
         const crEl = document.getElementById('quickInfoContentRating');
-        if (item.content_rating) {
-            crEl.innerHTML = `<span class="meta-chip">${item.content_rating}</span>`;
-            crEl.style.display = 'inline-block';
-        } else {
-            crEl.style.display = 'none';
-        }
+        crEl.textContent = item.content_rating || '';
+        crEl.style.display = item.content_rating ? 'inline-block' : 'none';
 
         // --- Director / Creator ---
         const dirSection = document.getElementById('quickInfoDirectorSection');
         const dirLabel = dirSection.querySelector('.director-label');
         const dirEl = document.getElementById('quickInfoDirector');
         if (item.director) {
-            dirEl.innerHTML = `<span class="director-pill">${item.director}</span>`;
+            dirEl.textContent = item.director;
             let label = 'Created by';
             if (item.type === 'Movies') label = 'Directed by';
             if (item.type === 'Manga') label = 'Written by';
@@ -2206,6 +2202,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-header">
                         <h3 class="media-title ${canClickReview ? 'clickable-review-trigger' : ''}" data-id="${item.id}">${item.title} ${yearBadge}</h3>
                     </div>
+                    ${item.genres ? `
+                        <div class="genre-container">
+                            ${item.genres.split(',').map(g => `<span class="genre-badge">${g.trim()}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    ${(item.type === 'Movies' && item.director) ? `
+                        <div class="director-container">
+                            <span class="director-badge">Dir. ${item.director}</span>
+                        </div>
+                    ` : ''}
+                    ${((item.type === 'TV Series' || item.type === 'Anime') && item.director) ? `
+                        <div class="director-container">
+                            <span class="director-badge">Creator: ${item.director}</span>
+                        </div>
+                    ` : ''}
+                    ${(item.type === 'Manga' && item.director) ? `
+                        <div class="director-container">
+                            <span class="director-badge">Author: ${item.director}</span>
+                        </div>
+                    ` : ''}
                     <div class="card-badges">
                         <div class="badge-slot-left">
                             ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
