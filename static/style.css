@@ -933,26 +933,29 @@ header p {
 }
 
 .media-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(15px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(160%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 20px !important;
+    padding: 1.4rem !important;
     position: relative;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
     display: flex;
     flex-direction: column;
     min-height: unset;
     overflow: hidden;
     opacity: 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
 }
 
 .media-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: var(--shadow-hover);
-    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-8px) scale(1.02) !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 25px rgba(var(--theme-accent-rgb), 0.2) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.4) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
 }
+
 
 .hub-category-switcher {
     display: flex;
@@ -1446,17 +1449,23 @@ delete-btn {
 }
 
 .media-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.3;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fff !important;
+    line-height: 1.25;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: all 0.2s ease;
+    text-shadow: 
+        -1px -1px 0 rgba(0,0,0,0.8),  
+         1px -1px 0 rgba(0,0,0,0.8),
+        -1px  1px 0 rgba(0,0,0,0.8),
+         1px  1px 0 rgba(0,0,0,0.8),
+         0 3px 6px rgba(0,0,0,0.9) !important;
 }
 
 .media-title:hover {
-    color: var(--theme-accent);
-    text-decoration: underline;
+    color: var(--theme-accent) !important;
+    transform: translateX(4px);
 }
 
 .media-card .card-header h2 {
@@ -1483,15 +1492,43 @@ delete-btn {
     letter-spacing: 0.3px;
 }
 
-.media-type {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0.3rem 0.6rem;
-    border-radius: 6px;
-    font-weight: 700;
-    font-family: 'Nunito', sans-serif;
+.genre-badge {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0.3rem 0.8rem !important;
+    border-radius: 99px !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
 }
+
+.media-card:hover .genre-badge {
+    border-color: rgba(var(--theme-accent-rgb), 0.3) !important;
+    color: #fff !important;
+}
+
+.director-badge {
+    background: rgba(var(--theme-accent-rgb), 0.1) !important;
+    color: var(--theme-accent) !important;
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.25) !important;
+    padding: 0.4rem 1rem !important;
+    border-radius: 99px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    font-style: italic !important;
+    display: inline-block !important;
+    transition: all 0.3s ease !important;
+    margin-top: 0.5rem !important;
+}
+
+.director-badge:hover {
+    background: rgba(var(--theme-accent-rgb), 0.2) !important;
+    box-shadow: 0 0 15px var(--theme-accent-glow) !important;
+    transform: scale(1.05);
+}
+
 
 /* Dark Mode Vibrant Badges */
 .type-movies {
