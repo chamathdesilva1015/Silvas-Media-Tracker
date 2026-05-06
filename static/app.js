@@ -551,10 +551,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-label">With Reviews <span style="font-size:0.6em;opacity:0.6">(${reviewPct}%)</span></div>
                 </div>
                 <div class="stat-card">
+                    <i class="fas fa-star" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
+                    <div class="stat-card-value">${data.avg_score || '—'}</div>
+                    <div class="stat-card-label">Average Score <span style="font-size:0.6em;opacity:0.6">(/10)</span></div>
+                    <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 0.4rem; color: var(--text-primary);">
+                        Includes all partial ratings (e.g. 1.5, 4.5)
+                    </div>
+                </div>
+                <div class="stat-card">
                     <i class="fas fa-heart" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
                     <div class="stat-card-value">1 in ${data.like_ratio || '—'}</div>
                     <div class="stat-card-label">Like Ratio <span style="font-size:0.6em;opacity:0.6">(Exclusivity)</span></div>
+                    <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 0.4rem; color: var(--text-primary);">
+                        I like 1 in every ${data.like_ratio || 'X'} ${category.toLowerCase()} I watch
+                    </div>
                 </div>
+
+
                 <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer;">
                     <img src="${data.most_recent?.item?.cover_url || ''}" class="discovery-poster" />
                     <div class="discovery-details">
@@ -1461,14 +1474,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isLiked) {
                 pill.style.display = 'flex';
                 pill.style.opacity = '1';
-                pill.style.background = 'rgba(255, 71, 87, 0.15)';
-                pill.style.borderColor = 'rgba(255, 71, 87, 0.4)';
-                pill.style.boxShadow = '0 0 15px rgba(255, 71, 87, 0.2)';
+                pill.style.background = 'rgba(255, 71, 87, 0.25)'; /* Brighter background */
+                pill.style.borderColor = 'rgba(255, 71, 87, 0.6)';  /* More prominent border */
+                pill.style.boxShadow = '0 0 20px rgba(255, 71, 87, 0.4)'; /* Stronger glow */
                 pill.innerHTML = `
-                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.1rem; display: inline-block; margin-right: 4px; filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.6));"></i>
-                    <span class="rating-label" style="color: #ff4757; opacity: 1; margin: 0; font-weight: 800; letter-spacing: 0.05em;">Liked</span>
+                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1.1rem; display: inline-block; margin-right: 4px; filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.9));"></i>
+                    <span class="rating-label" style="color: #ff4757; opacity: 1; margin: 0; font-weight: 800; letter-spacing: 0.05em; text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);">Liked</span>
                 `;
             } else {
+
                 pill.style.display = 'flex';
                 pill.style.opacity = '0.4'; // Dimmed for unliked
                 pill.style.background = 'rgba(255, 255, 255, 0.04)';
