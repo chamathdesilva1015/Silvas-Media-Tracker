@@ -1421,7 +1421,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const quickInfoModal = document.getElementById('quickInfoModal');
     const closeQuickInfo = () => {
         quickInfoModal.classList.remove('show');
-        quickInfoModal.style.zIndex = ''; // Reset z-index after close
+        quickInfoModal.style.zIndex = '';
+        document.body.classList.remove('modal-open');
     };
     document.getElementById('closeQuickInfoBtn').onclick = closeQuickInfo;
     window.addEventListener('dblclick', (e) => {
@@ -1450,8 +1451,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
         document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
-        // Like Button Logic - heart next to the rating
-        // Clone first to remove any old listeners, THEN style it
+        // Like Button Logic — heart next to rating, only visible when liked
+        // Clone first to remove old listeners, THEN style
         const ratingLikeBtnOld = document.getElementById('quickInfoRatingLike');
         let newRatingLikeBtn = null;
         if (ratingLikeBtnOld) {
@@ -1460,27 +1461,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const updateLikeBtnUI = (isLiked) => {
-            // Re-query after clone so we always get the live node
             const btn = document.getElementById('quickInfoRatingLike');
             if (!btn) return;
-            btn.style.display = 'inline-block';
             if (isLiked) {
+                btn.style.display = 'inline-block';
                 btn.style.color = '#ff6b6b';
                 btn.classList.remove('far');
                 btn.classList.add('fas');
-                btn.title = 'Liked ♥';
             } else {
-                btn.style.color = 'rgba(255,255,255,0.3)';
-                btn.classList.remove('fas');
-                btn.classList.add('far');
-                btn.title = 'Not liked — click to like';
+                btn.style.display = 'none';  // hide when not liked
             }
         };
 
-        // Style the button now that it's in the DOM
         updateLikeBtnUI(item.is_liked);
 
-        // Attach click listener
         if (newRatingLikeBtn) {
             newRatingLikeBtn.addEventListener('click', async () => {
                 if (!localStorage.getItem('admin_key')) {
@@ -1662,6 +1656,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         quickInfoModal.style.zIndex = '10001';
         quickInfoModal.classList.add('show');
+        document.body.classList.add('modal-open');
 
         // Restore Metadata Repair Logic
         const refreshBtn = document.getElementById('quickInfoRefreshBtn');

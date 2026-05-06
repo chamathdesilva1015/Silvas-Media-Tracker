@@ -3011,8 +3011,15 @@ body.read-only-mode #clearReviewBtn {
 .bottom-nav.nav-hidden {
     transform: translate(-50%, 150%);
     opacity: 0;
+    pointer-events: none;
 }
 
+/* Hide bottom nav when any modal is open */
+body.modal-open .bottom-nav {
+    transform: translate(-50%, 150%);
+    opacity: 0;
+    pointer-events: none;
+}
 
 .bottom-nav .nav-link {
     flex: 1;
@@ -4486,20 +4493,22 @@ body.read-only-mode #clearReviewBtn {
     display: flex;
     flex-direction: row;
     gap: 0;
-    align-items: stretch;
+    align-items: flex-start;  /* don't stretch — let poster dictate its own height */
 }
 
-/* Poster column: fixed width, the image fills it naturally */
+/* Poster column: fixed width, shrinks to image height — no black box */
 .quick-info-poster-wrap {
     flex-shrink: 0;
     width: 240px;
     position: relative;
-    background: rgba(0, 0, 0, 0.45);
+    background: transparent;         /* no dark background since image fills it */
     border-top-left-radius: 24px;
     border-bottom-left-radius: 24px;
     display: flex;
     align-items: flex-start;
     justify-content: center;
+    align-self: flex-start;          /* KEY: shrink to image height, no extra space below */
+    overflow: hidden;
 }
 
 /* Image: fill the column, height auto = no crop, no bars */
@@ -4527,81 +4536,118 @@ body.read-only-mode #clearReviewBtn {
     flex-direction: column;
 }
 
-/* Mobile: bottom sheet, poster as banner */
+/* Mobile: compact centered card, NOT a bottom sheet */
 @media (max-width: 700px) {
     #quickInfoModal {
-        align-items: flex-end;
-        padding: 0;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
     }
 
     .quick-info-content {
-        width: 100%;
-        max-width: 100%;
-        border-radius: 20px 20px 0 0;
-        margin: 0;
+        width: 92vw;
+        max-width: 380px;
+        border-radius: 18px;
+        max-height: 82vh;
+        overflow: hidden;
     }
 
     .quick-info-layout {
         flex-direction: column;
+        align-items: stretch;
     }
 
+    /* Poster: compact banner at top */
     .quick-info-poster-wrap {
         width: 100%;
-        height: 230px;
-        border-radius: 20px 20px 0 0;
-        align-items: center;
+        align-self: auto;
+        border-radius: 18px 18px 0 0;
         overflow: hidden;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .quick-info-poster {
-        width: auto;
-        height: 100%;
-        max-width: 100%;
+        width: 100%;
+        height: auto;
+        max-height: 200px;
         object-fit: contain;
-        object-position: center top;
     }
 
     .quick-info-details {
-        padding: 1.2rem 1rem 2rem;
-        max-height: 62vh;
+        padding: 1rem;
+        max-height: 50vh;
+        overflow-y: auto;
     }
 
     #quickInfoTitle {
-        font-size: 1.35rem;
+        font-size: 1.15rem;
         margin-bottom: 0.3rem;
+        line-height: 1.2;
+    }
+
+    .quick-info-meta-row {
+        font-size: 0.75rem;
+        gap: 0.5rem;
     }
 
     .quick-info-rating-section {
         flex-wrap: wrap;
         gap: 1rem;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
         padding: 0.8rem 0;
     }
 
     .rating-value {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
+    }
+
+    .rating-label {
+        font-size: 0.6rem;
     }
 
     .quick-info-header {
-        margin-bottom: 0.8rem;
+        margin-bottom: 0.6rem;
     }
 
     .quick-info-genres {
-        gap: 0.3rem;
-        margin-bottom: 0.5rem;
+        gap: 0.25rem;
+        margin-bottom: 0.4rem;
     }
 
     .genre-badge {
-        font-size: 0.7rem;
-        padding: 4px 10px;
+        font-size: 0.65rem;
+        padding: 3px 8px;
+    }
+
+    .quick-info-footer-actions {
+        margin-top: 1rem;
+    }
+
+    .quick-info-overview,
+    .quick-info-review {
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .quick-info-review {
+        padding: 0.8rem 1rem;
+    }
+
+    .section-title {
+        font-size: 0.65rem;
+        margin-bottom: 0.5rem;
     }
 
     #closeQuickInfoBtn {
-        top: 0.75rem;
-        right: 0.75rem;
-        width: 30px;
-        height: 30px;
-        font-size: 1.1rem;
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 1rem;
+        width: 26px;
+        height: 26px;
+        z-index: 100;
     }
 }
 
