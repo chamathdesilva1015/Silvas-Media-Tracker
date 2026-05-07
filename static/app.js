@@ -2727,6 +2727,69 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentRankedItems = [];
     let sortableInstance = null;
 
+    // --- Scouting Panel: Infinite Scroll State ---
+    let scoutPool = [];
+    let scoutPage = 0;
+    const SCOUT_PAGE_SIZE = 20;
+
+    const buildScoutItemHTML = (it) => {
+        const itemJson = JSON.stringify({id: it.id, title: it.title.replace(/'/g, "\\'"), release_year: it.release_year});
+        const scoreStr = (() => {
+            const s = String(it.numeric_rating || it.rating || '');
+            if (s && !s.startsWith('#')) return s.replace('/10', '').trim();
+            return null;
+        })();
+        return `
+            <div class="ranking-search-item">
+                <div class="ranking-search-item-info" onclick='window.openQuickInfo(${JSON.stringify(it)})' title="View profile" style="cursor:pointer;flex:1;">
+                    <span class="ranking-search-item-title">${it.title}</span>
+                    <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}${scoreStr ? ' &bull; ' + scoreStr + '/10' : ''}</span>
+                </div>
+                <div class="ranking-search-item-plus" onclick='window.addToRankings(${itemJson})' title="Add to rankings">+</div>
+            </div>`;
+    };
+
+    const appendScoutPage = () => {
+        const start = scoutPage * SCOUT_PAGE_SIZE;
+        const slice = scoutPool.slice(start, start + SCOUT_PAGE_SIZE);
+        if (slice.length === 0) return; // Nothing more to add
+        rankingSearchResults.insertAdjacentHTML('beforeend', slice.map(buildScoutItemHTML).join(''));
+        scoutPage++;
+    };
+
+    const renderScoutingPool = () => {
+        // Build pool: all items in this category not already ranked
+        const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
+        const raw = allMedia.filter(it =>
+            it.type.toLowerCase() === currentCategory.toLowerCase() &&
+            !rankedTitles.has(it.title.toLowerCase().trim())
+        );
+        // Fisher-Yates shuffle
+        scoutPool = [...raw];
+        for (let i = scoutPool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [scoutPool[i], scoutPool[j]] = [scoutPool[j], scoutPool[i]];
+        }
+        scoutPage = 0;
+        rankingSearchResults.innerHTML = '';
+
+        if (scoutPool.length === 0) {
+            rankingSearchResults.innerHTML = '<p style="opacity:0.4;font-size:0.85rem;padding:0.5rem;">All entries are already in your rankings.</p>';
+            return;
+        }
+
+        // Render first page
+        appendScoutPage();
+
+        // Attach scroll listener for infinite scroll (remove old listener first)
+        rankingSearchResults.onscroll = () => {
+            const el = rankingSearchResults;
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 60) {
+                appendScoutPage();
+            }
+        };
+    };
+
     const updateRankingCounter = () => {
         const subtitle = document.getElementById('rankingManagerSubtitle');
         if (subtitle) {
@@ -2815,40 +2878,8 @@ document.addEventListener('DOMContentLoaded', () => {
         rankingManagerModal.classList.add('show');
         rankingSearchInput.value = '';
         
-        // Pre-populate scouting panel with random entries from the current category
-        const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
-        const pool = allMedia.filter(it =>
-            it.type.toLowerCase() === currentCategory.toLowerCase() &&
-            !rankedTitles.has(it.title.toLowerCase().trim())
-        );
-        // Fisher-Yates shuffle for random sample
-        const shuffled = [...pool];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        const sample = shuffled.slice(0, 12);
-        
-        rankingSearchResults.innerHTML = sample.length > 0
-            ? sample.map(it => {
-                const safeTitle = it.title.replace(/'/g, "\\'");
-                const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
-                const scoreStr = (() => {
-                    const s = String(it.numeric_rating || it.rating || '');
-                    if (s && !s.startsWith('#')) return s.replace('/10','').trim();
-                    return null;
-                })();
-                return `
-                    <div class="ranking-search-item">
-                        <div class="ranking-search-item-info" onclick='window.openQuickInfo(${JSON.stringify(it)})' title="View profile" style="cursor:pointer;flex:1;">
-                            <span class="ranking-search-item-title">${it.title}</span>
-                            <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}${scoreStr ? ' • ' + scoreStr + '/10' : ''}</span>
-                        </div>
-                        <div class="ranking-search-item-plus" onclick='window.addToRankings(${itemJson})' title="Add to rankings">+</div>
-                    </div>
-                `;
-            }).join('')
-            : '<p style="opacity:0.4;font-size:0.85rem;padding:0.5rem;">All entries are already in your rankings.</p>';
+        // Pre-populate scouting panel using infinite-scroll helper
+        renderScoutingPool();
     };
 
     const closeRankingManager = () => {
@@ -2869,10 +2900,20 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Item is already in your rankings.');
             return;
         }
+        const wasSearching = rankingSearchInput.value.trim().length >= 2;
         currentRankedItems.push(item);
         renderRankingList();
         rankingSearchInput.value = '';
-        rankingSearchResults.innerHTML = '';
+        // Re-render scouting pool so the panel stays populated (minus the added item)
+        if (!wasSearching) {
+            renderScoutingPool();
+        } else {
+            // Still searching: just remove the added item from current search results
+            const rows = rankingSearchResults.querySelectorAll('.ranking-search-item');
+            rows.forEach(row => {
+                if (row.querySelector('.ranking-search-item-title')?.textContent === item.title) row.remove();
+            });
+        }
     };
 
     if (manageRankingsBtn) {
@@ -2896,36 +2937,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
             
-            // If search is cleared, go back to showing the random filler
+            // If search is cleared, go back to infinite-scroll random pool
             if (query.length < 2) {
-                const pool = allMedia.filter(it =>
-                    it.type.toLowerCase() === currentCategory.toLowerCase() &&
-                    !rankedTitles.has(it.title.toLowerCase().trim())
-                );
-                const shuffled = [...pool];
-                for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                }
-                const sample = shuffled.slice(0, 12);
-                rankingSearchResults.innerHTML = sample.map(it => {
-                    const safeTitle = it.title.replace(/'/g, "\\'");
-                    const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
-                    const scoreStr = (() => {
-                        const s = String(it.numeric_rating || it.rating || '');
-                        if (s && !s.startsWith('#')) return s.replace('/10','').trim();
-                        return null;
-                    })();
-                    return `
-                        <div class="ranking-search-item">
-                            <div class="ranking-search-item-info" onclick='window.openQuickInfo(${JSON.stringify(it)})' title="View profile" style="cursor:pointer;flex:1;">
-                                <span class="ranking-search-item-title">${it.title}</span>
-                                <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}${scoreStr ? ' • ' + scoreStr + '/10' : ''}</span>
-                            </div>
-                            <div class="ranking-search-item-plus" onclick='window.addToRankings(${itemJson})' title="Add to rankings">+</div>
-                        </div>
-                    `;
-                }).join('');
+                renderScoutingPool();
                 return;
             }
             
@@ -3043,11 +3057,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (suggestionControls) suggestionControls.style.display = 'none';
         suggestionResults.innerHTML = '';
 
+        // Abort if the request takes longer than 25 seconds (Jikan can be slow)
+        const abortController = new AbortController();
+        const abortTimeout = setTimeout(() => abortController.abort(), 25000);
+
         try {
             const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
-                headers: getAuthHeaders(false) // Guests can use this too
+                headers: getAuthHeaders(false), // Guests can use this too
+                signal: abortController.signal
             });
-            
+            clearTimeout(abortTimeout);
+
             if (!res.ok) throw new Error('Failed to fetch suggestions');
             const data = await res.json();
             

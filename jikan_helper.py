@@ -12,10 +12,10 @@ def search_manga(title: str) -> Optional[int]:
     params = {"q": title, "limit": 5}
     
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=5)
         if response.status_code == 429:
             time.sleep(1) # Rate limit hit
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=5)
             
         response.raise_for_status()
         data = response.json()
@@ -60,10 +60,10 @@ def search_anime(title: str) -> Optional[int]:
     params = {"q": title, "limit": 5}
     
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=5)
         if response.status_code == 429:
             time.sleep(1) # Rate limit hit
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=5)
             
         response.raise_for_status()
         data = response.json()
@@ -107,10 +107,10 @@ def get_manga_details(mal_id: int) -> Dict:
     url = f"{BASE_URL}/manga/{mal_id}/full"
     
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
         if response.status_code == 429:
             time.sleep(1)
-            response = requests.get(url)
+            response = requests.get(url, timeout=5)
             
         response.raise_for_status()
         data = response.json().get("data", {})
@@ -151,10 +151,10 @@ def get_anime_details(mal_id: int) -> dict:
     url = f"{BASE_URL}/anime/{mal_id}/full"
     
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
         if response.status_code == 429:
             time.sleep(1)
-            response = requests.get(url)
+            response = requests.get(url, timeout=5)
             
         response.raise_for_status()
         data = response.json().get("data", {})
@@ -199,10 +199,10 @@ def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int
     url = f"{BASE_URL}/{endpoint}/{mal_id}/recommendations"
     
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
         if response.status_code == 429:
             time.sleep(1)
-            response = requests.get(url)
+            response = requests.get(url, timeout=5)
             
         response.raise_for_status()
         data = response.json()
