@@ -1073,6 +1073,13 @@ header p {
     align-items: center;
 }
 
+/* Top 5 ranked badge: gold text + gold glow */
+.card-rank-badge.rank-top5 {
+    color: #ffd700 !important;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.8), 0 1px 1px #000, 0 -1px 1px #000, 1px 0 1px #000, -1px 0 1px #000 !important;
+    border-color: rgba(255, 215, 0, 0.6) !important;
+}
+
 .review-badge {
     color: #ffffff !important; /* White text for better pop */
     background: rgba(0, 0, 0, 0.45); 
@@ -2385,19 +2392,29 @@ delete-btn {
 
 .ribbon-gold {
     background: linear-gradient(135deg, #ffd700, #b8860b);
-    color: #1a1000;
+    color: #fff; /* White on gold background */
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7), 0 1px 2px rgba(0,0,0,0.6);
 }
 .ribbon-silver {
     background: linear-gradient(135deg, #d0d5db, #8c949e);
-    color: #111;
+    color: #fff; /* White on silver */
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5), 0 1px 2px rgba(0,0,0,0.6);
 }
 .ribbon-bronze {
     background: linear-gradient(135deg, #cd8246, #8b4513);
     color: #fff;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5), 0 1px 2px rgba(0,0,0,0.6);
+}
+.ribbon-top5 {
+    background: rgba(0, 0, 0, 0.85);
+    color: #ffd700; /* Gold text for #4-5 */
+    border-right: 1px solid rgba(255, 215, 0, 0.5);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 1px 2px rgba(0,0,0,0.9);
 }
 .ribbon-ranked {
     background: #000;
-    color: var(--theme-accent);
+    color: #ffffff; /* White text for ranks 6+ */
     border-right: 1px solid rgba(var(--theme-accent-rgb), 0.3);
     border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.3);
     opacity: 1;
@@ -3521,8 +3538,15 @@ body.modal-open .bottom-nav {
         padding: 0.1rem 0.3rem;
         background: rgba(0,0,0,0.5) !important;
         border: 1px solid rgba(255, 215, 0, 0.4);
-        color: #ffd700 !important;
+        color: #ffffff !important; /* White by default on mobile too */
         text-shadow: 0 1px 1px #000, 0 -1px 1px #000, 1px 0 1px #000, -1px 0 1px #000;
+    }
+
+    /* Top 5 override on mobile: gold text + glow */
+    .card-badges .card-rank-badge.rank-top5 {
+        color: #ffd700 !important;
+        text-shadow: 0 0 6px rgba(255, 215, 0, 0.8), 0 1px 1px #000, 0 -1px 1px #000, 1px 0 1px #000, -1px 0 1px #000 !important;
+        border-color: rgba(255, 215, 0, 0.6) !important;
     }
 
     .card-badges .review-badge {

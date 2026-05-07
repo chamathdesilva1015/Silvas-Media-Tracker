@@ -1533,6 +1533,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (rank === 1)      ribbon.classList.add('ribbon-gold');
             else if (rank === 2) ribbon.classList.add('ribbon-silver');
             else if (rank === 3) ribbon.classList.add('ribbon-bronze');
+            else if (rank <= 5)  ribbon.classList.add('ribbon-top5');
             else                 ribbon.classList.add('ribbon-ranked');
         } else {
             ribbon.style.display = 'none';
@@ -2251,7 +2252,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ` : ''}
                     <div class="card-badges">
                         <div class="badge-slot-left">
-                            ${finalRank ? `<span class="card-rank-badge">★ ${finalRank}</span>` : ''}
+                            ${finalRank ? `<span class="card-rank-badge${finalRank <= 5 ? ' rank-top5' : ''}">★ ${finalRank}</span>` : ''}
                         </div>
                         <div class="badge-slot-right">
                             ${item.is_liked ? `<span class="card-liked-indicator">♥</span>` : ''}
