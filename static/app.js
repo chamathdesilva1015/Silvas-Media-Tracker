@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-value">1 in ${data.like_ratio || '—'}</div>
                     <div class="stat-card-label">Like Ratio <span style="font-size:0.6em;opacity:0.6">(Exclusivity)</span></div>
                     <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 0.4rem; color: var(--text-primary);">
-                        I like 1 in every ${data.like_ratio || 'X'} ${category.toLowerCase()} I watch
+                        I like 1 in every ${data.like_ratio || 'X'} ${currentCategory.toLowerCase()} I ${currentCategory.toLowerCase() === 'manga' ? 'read' : 'watch'}
                     </div>
                 </div>
                 <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer;">

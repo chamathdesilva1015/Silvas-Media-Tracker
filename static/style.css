@@ -411,14 +411,16 @@ header {
 
 .header-main {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 3rem;
     align-items: center;
     width: 100%;
 }
 
 .header-sub {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 2rem;
     align-items: center;
     width: 100%;
     padding-top: 0.5rem;
@@ -1120,10 +1122,8 @@ header p {
 
 .media-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    /* Force 5 columns on typical resolutions */
+    grid-template-columns: repeat(5, 1fr);
     gap: 1.5rem;
-    /* Slightly larger gaps for breathability */
 }
 
 .media-card {
@@ -1456,6 +1456,8 @@ delete-btn {
     gap: 1.2rem;
     grid-template-columns: 1fr;
     /* Override grid */
+    max-width: 800px;
+    margin: 0 auto !important;
 }
 
 /* Rankings Page Redesign */
