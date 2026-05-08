@@ -3082,37 +3082,66 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingText) loadingText.textContent = "Analyzing your library...";
         if (loadingSubtext) loadingSubtext.textContent = "Starting up...";
 
+        const startTime = Date.now();
+        
+        if (loadingText) loadingText.textContent = "Processing Request";
+
         const isSlow = currentCategory === 'Anime' || currentCategory === 'Manga';
-        const estimatedTime = isSlow ? 45000 : 10000; // 45s for Anime/Manga, 10s for others
+        // Enforce a minimum of 4 seconds for fast categories so users can see the stages
+        const estimatedTime = isSlow ? 45000 : 4000; 
         let elapsed = 0;
         const interval = 200; // ms
         
+        const checkItems = [
+            document.getElementById('check1'),
+            document.getElementById('check2'),
+            document.getElementById('check3'),
+            document.getElementById('check4')
+        ];
+
         progressInterval = setInterval(() => {
             elapsed += interval;
             const progress = Math.min(95, (elapsed / estimatedTime) * 100);
             if (stepLineProgress) stepLineProgress.style.width = `${progress}%`;
             
             const remaining = Math.max(1, Math.round((estimatedTime - elapsed) / 1000));
+            if (loadingSubtext) loadingSubtext.textContent = `Est. remaining: ${remaining}s`;
             
-            // Update steps based on progress
+            // Update steps and checklist based on progress
             if (progress < 25) {
                 updateActiveStep(0);
-                if (loadingText) loadingText.textContent = "Scanning your library...";
-                if (loadingSubtext) loadingSubtext.textContent = `Finding your highest-rated seeds. (Est. ${remaining}s remaining)`;
+                updateChecklist(0);
             } else if (progress < 60) {
                 updateActiveStep(1);
-                if (loadingText) loadingText.textContent = `Querying ${isSlow ? 'Jikan' : 'TMDB'}...`;
-                if (loadingSubtext) loadingSubtext.textContent = `Fetching raw recommendations. (Est. ${remaining}s remaining)`;
+                updateChecklist(1);
             } else if (progress < 85) {
                 updateActiveStep(2);
-                if (loadingText) loadingText.textContent = "Filtering duplicates...";
-                if (loadingSubtext) loadingSubtext.textContent = `Ensuring distinct suggestions. (Est. ${remaining}s remaining)`;
+                updateChecklist(2);
             } else {
                 updateActiveStep(3);
-                if (loadingText) loadingText.textContent = "Finalizing picks...";
-                if (loadingSubtext) loadingSubtext.textContent = `Preparing the display. (Est. ${remaining}s remaining)`;
+                updateChecklist(3);
             }
         }, interval);
+        
+        function updateChecklist(activeIndex) {
+            checkItems.forEach((item, idx) => {
+                if (!item) return;
+                const icon = item.querySelector('i');
+                if (idx < activeIndex) {
+                    item.style.opacity = '1';
+                    if (icon) icon.className = 'fas fa-check';
+                    if (icon) icon.style.color = '#2ed573';
+                } else if (idx === activeIndex) {
+                    item.style.opacity = '1';
+                    if (icon) icon.className = 'fas fa-circle-notch fa-spin';
+                    if (icon) icon.style.color = 'var(--theme-accent)';
+                } else {
+                    item.style.opacity = '0.5';
+                    if (icon) icon.className = 'far fa-circle';
+                    if (icon) icon.style.color = '';
+                }
+            });
+        }
         
         function updateActiveStep(activeIndex) {
             steps.forEach((s, idx) => {
@@ -3153,13 +3182,29 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             clearInterval(progressInterval);
             
-            // Force bar to 100% and mark all completed
-            if (stepLineProgress) stepLineProgress.style.width = '100%';
-            steps.forEach(s => { if (s) { s.classList.remove('active'); s.classList.add('completed'); } });
+            // Calculate how much longer we need to wait to hit the 3-second minimum
+            const elapsedActual = Date.now() - startTime;
+            const waitTime = Math.max(3000 - elapsedActual, 0);
             
-            // Wait for the animation to finish before showing results
             setTimeout(() => {
-                suggestionLoading.style.display = 'none';
+                // Force bar to 100% and mark all completed
+                if (stepLineProgress) stepLineProgress.style.width = '100%';
+                steps.forEach(s => { if (s) { s.classList.remove('active'); s.classList.add('completed'); } });
+                
+                // Complete all checklist items
+                checkItems.forEach(item => {
+                    if (!item) return;
+                    item.style.opacity = '1';
+                    const icon = item.querySelector('i');
+                    if (icon) icon.className = 'fas fa-check';
+                    if (icon) icon.style.color = '#2ed573';
+                });
+                
+                if (loadingSubtext) loadingSubtext.textContent = "Est. remaining: 0s";
+                
+                // Wait for the animation to finish before showing results
+                setTimeout(() => {
+                    suggestionLoading.style.display = 'none';
                 
                 if (suggestionsData) {
                     if (suggestionsData.length === 0) {

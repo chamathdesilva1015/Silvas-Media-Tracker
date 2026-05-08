@@ -314,8 +314,28 @@
                     <div id="stepLineProgress" style="position: absolute; top: 6px; left: 0; width: 0%; height: 2px; background: var(--theme-accent); z-index: 2; transition: width 0.5s ease; box-shadow: 0 0 10px var(--theme-accent);"></div>
                 </div>
 
-                <p id="suggestionLoadingText" style="margin-top: 1.5rem; color: var(--theme-accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8rem;">Analyzing your library...</p>
-                <p id="suggestionLoadingSubtext" style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.8rem; color: #fff;">Starting up...</p>
+                <p id="suggestionLoadingText" style="margin-top: 1.5rem; color: var(--theme-accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8rem;">Processing Request</p>
+                
+                <div id="suggestionChecklist" style="margin: 1.5rem auto; width: 250px; text-align: left; font-size: 0.85rem; color: rgba(255,255,255,0.8); display: inline-block;">
+                    <div id="check1" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-circle-notch fa-spin" style="color: var(--theme-accent);"></i>
+                        <span>Scanning library seeds</span>
+                    </div>
+                    <div id="check2" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
+                        <i class="far fa-circle"></i>
+                        <span>Querying external APIs</span>
+                    </div>
+                    <div id="check3" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
+                        <i class="far fa-circle"></i>
+                        <span>Removing duplicates</span>
+                    </div>
+                    <div id="check4" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
+                        <i class="far fa-circle"></i>
+                        <span>Preparing visual cards</span>
+                    </div>
+                </div>
+
+                <p id="suggestionLoadingSubtext" style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.8rem; color: #fff;">Est. remaining: --</p>
             </div>
 
             
