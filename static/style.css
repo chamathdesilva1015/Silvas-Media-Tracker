@@ -380,6 +380,30 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     }
 }
 
+/* Hub Buttons with White Glowing Outlines */
+.hub-category-switcher .pill-tab, 
+.info-btn, 
+.premium-suggest-btn, 
+.premium-segmented-control .tuning-btn {
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hub-category-switcher .pill-tab:hover, 
+.info-btn:hover, 
+.premium-suggest-btn:hover, 
+.premium-segmented-control .tuning-btn:hover {
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+.hub-category-switcher .pill-tab.active,
+.premium-segmented-control .tuning-btn.active {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
 header {
     padding: 0.75rem 5% 0.5rem;
     background: rgba(10, 10, 10, 0.9);
