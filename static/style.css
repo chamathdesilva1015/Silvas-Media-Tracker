@@ -47,6 +47,16 @@
     --theme-header-bg: url('tv_shows_header.png');
 }
 
+[data-theme="tv-series"] header::before {
+    background-image: linear-gradient(rgba(231, 76, 60, 0.4), rgba(231, 76, 60, 0.4)), url('tv_shows_header.png');
+    background-blend-mode: multiply;
+}
+
+[data-theme="tv-series"] .page-banner {
+    background-image: linear-gradient(rgba(231, 76, 60, 0.4), rgba(231, 76, 60, 0.4)), url('tv_shows_header.png') !important;
+    background-blend-mode: multiply !important;
+}
+
 [data-theme="manga"] {
     --theme-accent: #2ecc71; /* Green */
     --theme-accent-rgb: 46, 204, 113;
