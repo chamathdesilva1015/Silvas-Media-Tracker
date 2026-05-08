@@ -327,7 +327,7 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 }
 
 .leave-recommendation-btn {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); /* Cool blue gradient */
+    background: linear-gradient(135deg, var(--theme-accent), rgba(var(--theme-accent-rgb), 0.6));
     color: white;
     border: none;
     padding: 1rem 2rem;
@@ -335,14 +335,13 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     font-weight: 700;
     font-size: 1rem;
     letter-spacing: 0.05em;
-    text-transform: uppercase;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
     transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb), 0.3);
     margin: 2rem auto;
     width: 100%;
     max-width: 600px;
@@ -350,7 +349,14 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 
 .leave-recommendation-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+    box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb), 0.5);
+}
+
+.last-recommendations-footer {
+    margin-bottom: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
 }
 
 .premium-segmented-control {
