@@ -274,7 +274,7 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 }
 
 .premium-suggest-btn {
-    background: linear-gradient(135deg, #6366f1, #a855f7);
+    background: linear-gradient(135deg, var(--theme-accent), rgba(var(--theme-accent-rgb), 0.6));
     color: white;
     border: none;
     padding: 0.85rem;
@@ -289,12 +289,12 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     justify-content: center;
     gap: 0.75rem;
     transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb), 0.3);
 }
 
 .premium-suggest-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+    box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb), 0.5);
 }
 
 .premium-segmented-control {
@@ -368,6 +368,15 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     .premium-segmented-control {
         flex: 2;
         max-width: 550px;
+    }
+}
+
+@media (max-width: 700px) {
+    .premium-segmented-control .tuning-btn span {
+        display: none;
+    }
+    .premium-segmented-control .tuning-btn i {
+        font-size: 1.1rem !important;
     }
 }
 

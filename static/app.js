@@ -3267,9 +3267,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         suggestionResults.style.display = 'grid';
                         if (suggestionControls) suggestionControls.style.display = 'block';
                     }
-                }
-            }, 800); // 800ms gives time for the 100% line to draw
-        }
+            }, 800);
+        }, waitTime);
     }
 
     if (suggestMeBtn) {
