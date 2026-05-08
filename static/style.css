@@ -36,6 +36,11 @@
     --theme-header-bg: url('movies_header.png');
 }
 
+[data-theme="movies"] header::before {
+    background-image: linear-gradient(rgba(52, 152, 219, 0.4), rgba(52, 152, 219, 0.4)), url('movies_header.png');
+    background-blend-mode: multiply;
+}
+
 [data-theme="tv-series"] {
     --theme-accent: #e74c3c; /* Red */
     --theme-accent-rgb: 231, 76, 60;
