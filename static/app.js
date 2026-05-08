@@ -258,6 +258,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     modalTitle.innerText = `Add ${displayLabel}`;
                 }
 
+                const suggestMeBtn = document.getElementById('suggestMeBtn');
+                if (suggestMeBtn) {
+                    const span = suggestMeBtn.querySelector('span');
+                    if (span) {
+                        span.innerText = `${displayLabel} Suggestions`;
+                    }
+                }
+
                 const typeInput = document.getElementById('typeInput');
                 if (typeInput) {
                     typeInput.value = category;
@@ -317,6 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (modalTitle) {
                 modalTitle.innerText = `Add ${displayLabel}`;
+            }
+
+            const suggestMeBtn = document.getElementById('suggestMeBtn');
+            if (suggestMeBtn) {
+                const span = suggestMeBtn.querySelector('span');
+                if (span) {
+                    span.innerText = `${displayLabel} Suggestions`;
+                }
             }
 
             const typeInput = document.getElementById('typeInput');
