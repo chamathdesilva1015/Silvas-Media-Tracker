@@ -21,6 +21,22 @@
 </head>
 
 <body class="read-only-mode">
+    <!-- Security & Safety Gateway -->
+    <div id="securityOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #07070a; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Outfit', sans-serif;">
+        <div style="border: 1px solid rgba(255,255,255,0.1); padding: 2.5rem; border-radius: 16px; background: rgba(15,15,20,0.8); max-width: 450px; width: 85%; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                <i class="fas fa-shield-alt" style="color: var(--theme-accent); font-size: 1.5rem;"></i>
+                <h3 style="color: #fff; margin: 0; font-size: 1.2rem; letter-spacing: 1px; font-weight: 700;">SYSTEM INTEGRITY CHECK</h3>
+            </div>
+            <div id="securityLog" style="font-size: 0.85rem; line-height: 1.8; color: rgba(255,255,255,0.7); font-family: 'Inter', sans-serif;">
+                <div id="securityStep"><i class="fas fa-circle-notch fa-spin" style="color: var(--theme-accent); margin-right: 0.5rem;"></i>Verifying device environment...</div>
+            </div>
+            <div style="width: 100%; height: 2px; background: rgba(255,255,255,0.05); margin-top: 1.5rem; position: relative; border-radius: 1px; overflow: hidden;">
+                <div id="securityProgressBar" style="width: 0%; height: 100%; background: var(--theme-accent); transition: width 0.3s ease; box-shadow: 0 0 10px var(--theme-accent);"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="mesh-bg">
         <div class="mesh-blob blob-1"></div>
         <div class="mesh-blob blob-2"></div>
@@ -45,7 +61,6 @@
                             <i class="fas fa-search search-icon"></i>
                             <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
                         </div>
-                        <button id="openAuthBtn" class="btn-secondary" style="border:none; background:rgba(255,255,255,0.05); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><i class="fas fa-lock"></i></button>
                     </div>
                 </div>
 
@@ -137,6 +152,14 @@
                             </button>
                             <div class="segmented-indicator"></div>
                         </div>
+                        
+                        <!-- Risk Settings Footer -->
+                        <div style="margin-top: 1.5rem; font-size: 0.75rem; color: rgba(255,255,255,0.4); text-align: center; width: 100%; line-height: 1.5;">
+                            <span style="color: var(--text-primary); font-weight: 600;">Low Risk</span>: Based on favorites. | 
+                            <span style="color: var(--text-primary); font-weight: 600;">Moderate</span>: Balanced mix. | 
+                            <span style="color: var(--text-primary); font-weight: 600;">High Risk</span>: Broader exploration. | 
+                            <span style="color: var(--text-primary); font-weight: 600;">Extreme</span>: Wildcard picks.
+                        </div>
                     </div>
                 </div>
                 
@@ -166,7 +189,7 @@
                 </div>
 
                 <div id="guestConsoleActions" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <button id="loginAdminBtn" class="btn-secondary" style="width: 100%; padding: 1.2rem; border-radius: 12px; opacity: 0.6; font-size: 0.9rem;">
+                    <button id="loginAdminBtn" class="btn-secondary" style="width: 100%; padding: 1.2rem; border-radius: 12px; font-size: 0.9rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer;">
                         Developer Login
                     </button>
                 </div>
@@ -294,8 +317,8 @@
                     </div>
                     
                     <!-- Stepped Progress Bar -->
-                    <div class="suggestion-steps" style="display: flex; justify-content: space-between; position: relative; margin: 2rem 0;">
-                        <div class="step-item active" id="step1" style="z-index: 2;">
+                    <div class="suggestion-steps">
+                        <div class="step-item active" id="step1">
                             <div class="step-dot"></div>
                             <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Scan</div>
                         </div>
@@ -497,7 +520,7 @@
             <div style="position: relative; margin-bottom: 2rem;">
                 <input type="password" id="adminPasswordInput" placeholder="••••" maxlength="4" 
                     style="width: 100%; background: rgba(0,0,0,0.2); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.2rem; color: var(--theme-accent); font-size: 2.5rem; font-weight: 800; text-align: center; letter-spacing: 0.5em; transition: all 0.3s ease; font-family: 'Inter', sans-serif;"
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length === 4) document.getElementById('submitLoginBtn').click();">
             </div>
 
             <button id="submitLoginBtn" class="btn-primary" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; box-shadow: 0 10px 20px rgba(var(--theme-accent-rgb, 100, 180, 255), 0.2);">

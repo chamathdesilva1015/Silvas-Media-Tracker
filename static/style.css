@@ -33,6 +33,7 @@
     --theme-accent-glow: rgba(52, 152, 219, 0.4);
     --theme-secondary-muted: rgba(155, 89, 182, 0.15);
     --theme-banner: linear-gradient(135deg, #0f1c2e 0%, #1b2838 100%);
+    --theme-header-bg: url('movies_header.png');
 }
 
 [data-theme="tv-series"] {
@@ -43,6 +44,7 @@
     --theme-accent-glow: rgba(231, 76, 60, 0.4);
     --theme-secondary-muted: rgba(230, 126, 34, 0.15);
     --theme-banner: linear-gradient(135deg, #2d0a0a 0%, #30171a 100%);
+    --theme-header-bg: url('tv_shows_header.png');
 }
 
 [data-theme="manga"] {
@@ -53,6 +55,7 @@
     --theme-accent-glow: rgba(46, 204, 113, 0.4);
     --theme-secondary-muted: rgba(241, 196, 15, 0.15);
     --theme-banner: linear-gradient(135deg, #0a1a10 0%, #142e1f 100%);
+    --theme-header-bg: url('manga_header.png');
 }
 
 [data-theme="anime"] {
@@ -60,9 +63,10 @@
     --theme-accent-rgb: 241, 196, 15;
     --theme-secondary: #2ecc71; /* Green */
     --theme-accent-muted: rgba(241, 196, 15, 0.15);
-    --theme-accent-glow: rgba(241, 196, 15, 0.3);
+    --theme-accent-glow: rgba(241, 196, 15, 0.5);
     --theme-secondary-muted: rgba(46, 204, 113, 0.15);
     --theme-banner: linear-gradient(135deg, #241b0a 0%, #302416 100%);
+    --theme-header-bg: url('anime_header.png');
 }
 
 * {
@@ -389,14 +393,14 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 
 .hub-category-switcher .pill-tab.active,
 .premium-segmented-control .tuning-btn.active {
-    border-color: rgba(255, 255, 255, 0.5) !important;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 0 25px var(--theme-accent-glow), 0 0 50px rgba(var(--theme-accent-rgb), 0.3);
 }
 
 
 header {
     padding: 0.75rem 5% 0.5rem;
-    background: rgba(10, 10, 10, 0.9);
+    background: rgba(10, 10, 10, 0.85);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     border-bottom: 1px solid var(--border-color);
@@ -407,6 +411,19 @@ header {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    overflow: hidden; /* Ensure pseudo-element doesn't spill */
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: var(--theme-header-bg);
+    background-size: cover;
+    background-position: center;
+    opacity: 0.25; /* Subtle illustration */
+    z-index: -1;
+    transition: opacity 0.5s ease;
 }
 
 .header-main {
@@ -5754,4 +5771,39 @@ body.modal-open .bottom-nav {
         color: #000 !important;
         box-shadow: 0 0 10px var(--theme-accent-glow) !important;
     }
+}
+
+/* --- Sliding Animations for Tabs --- */
+.slide-out-left {
+    animation: slideOutLeft 0.3s ease-in-out forwards;
+}
+.slide-out-right {
+    animation: slideOutRight 0.3s ease-in-out forwards;
+}
+.slide-in-left {
+    animation: slideInLeft 0.3s ease-in-out forwards;
+}
+.slide-in-right {
+    animation: slideInRight 0.3s ease-in-out forwards;
+}
+
+@keyframes slideOutLeft {
+    to { transform: translateX(-50px); opacity: 0; }
+}
+@keyframes slideOutRight {
+    to { transform: translateX(50px); opacity: 0; }
+}
+@keyframes slideInLeft {
+    from { transform: translateX(50px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideInRight {
+    from { transform: translateX(-50px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* --- Clipping Fix on Hover --- */
+.main-content:has(.media-card:hover) {
+    z-index: 2000;
+    position: relative;
 }

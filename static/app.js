@@ -1,4 +1,37 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- FEATURE: Security & Safety Gateway on Load ---
+    const runSecurityChecks = () => {
+        const overlay = document.getElementById('securityOverlay');
+        const log = document.getElementById('securityLog');
+        const bar = document.getElementById('securityProgressBar');
+        if (!overlay) return;
+
+        const steps = [
+            "Verifying device environment...",
+            "Checking secure connection...",
+            "Authenticating session...",
+            "Integrity verified. Access granted."
+        ];
+
+        let currentStep = 0;
+        const interval = setInterval(() => {
+            if (currentStep < steps.length) {
+                log.innerHTML = `<div id="securityStep"><i class="fas fa-circle-notch fa-spin" style="color: var(--theme-accent); margin-right: 0.5rem;"></i>${steps[currentStep]}</div>`;
+                bar.style.width = `${(currentStep + 1) * 25}%`;
+                currentStep++;
+            } else {
+                clearInterval(interval);
+                log.innerHTML = `<div id="securityStep" style="color: #2ecc71;"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Access Granted.</div>`;
+                setTimeout(() => {
+                    overlay.style.transition = 'opacity 0.5s ease';
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.remove(), 500);
+                }, 500);
+            }
+        }, 600);
+    };
+    runSecurityChecks();
+
     // --- FEATURE: Organic Background Blobs & Theming ---
     const blobs = document.querySelectorAll('.mesh-blob');
     let mouseX = 0, mouseY = 0;
@@ -186,73 +219,138 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     // v205: Centralized category switch logic
+    const categoryOrder = ['Movies', 'TV Series', 'Manga', 'Anime'];
     const handleCategorySwitch = (category) => {
-        currentCategory = category;
-        // Do NOT reset currentSubTab here, allow switching categories while staying in Hub/Stats
-
-
-        // Apply theme for colors & blobs
-        updateGlobalTheme(category);
-
-
-        // 1. Update Search Placeholder
-        if (searchInput) {
-            if (currentCategory === 'TV Series') {
-                searchInput.placeholder = "Search titles or creators...";
-            } else if (currentCategory === 'Movies') {
-                searchInput.placeholder = "Search titles or directors...";
-            } else {
-                searchInput.placeholder = `Search ${currentCategory.toLowerCase()}...`;
-            }
-        }
-
-        // 2. Update Add Button Text & Modal Title
-        const addBtn = document.getElementById('addMediaBtn');
-        const modalTitle = document.getElementById('modalTitle');
-        const displayLabel = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.replace(/s$/, '');
+        const prevIndex = categoryOrder.indexOf(currentCategory);
+        const newIndex = categoryOrder.indexOf(category);
+        const direction = newIndex > prevIndex ? 'left' : 'right';
         
-        if (addBtn) {
-            const desktopLabel = addBtn.querySelector('.desktop-text');
-            if (desktopLabel) {
-                desktopLabel.innerText = `+ Add ${displayLabel}`;
-            }
-        }
-        if (modalTitle) {
-            modalTitle.innerText = `Add ${displayLabel}`;
-        }
-
-        // Sync the hidden typeInput for the preview system
-        const typeInput = document.getElementById('typeInput');
-        if (typeInput) {
-            typeInput.value = category;
-        }
-
-        // 3. Clear and Re-populate Genre Filters
-        filterState.genres.clear();
-        updateActiveFilterCount();
-        populateGenreFilters();
-
-        // 4. Sync ALL category buttons (Desktop + Mobile)
-        navLinks.forEach(l => {
-            l.classList.remove('active');
-            if (l.getAttribute('data-filter') === currentCategory) l.classList.add('active');
-        });
+        const mainContent = document.querySelector('.main-content');
         
-        document.querySelectorAll('.pill-tab[data-filter]').forEach(t => {
-            t.classList.remove('active');
-            if (t.getAttribute('data-filter') === currentCategory) t.classList.add('active');
-        });
+        if (mainContent && prevIndex !== -1 && prevIndex !== newIndex) {
+            mainContent.classList.add(`slide-out-${direction}`);
+            
+            setTimeout(() => {
+                mainContent.classList.remove(`slide-out-${direction}`);
+                mainContent.classList.add(`slide-in-${direction}`);
+                
+                // Perform the actual switch
+                currentCategory = category;
+                updateGlobalTheme(category);
 
-        // Sync the sub-tabs to current selection
-        document.querySelectorAll('.pill-tab[data-sub]').forEach(t => {
-            t.classList.remove('active');
-            if (t.getAttribute('data-sub') === currentSubTab) t.classList.add('active');
-        });
+                if (searchInput) {
+                    if (currentCategory === 'TV Series') {
+                        searchInput.placeholder = "Search titles or creators...";
+                    } else if (currentCategory === 'Movies') {
+                        searchInput.placeholder = "Search titles or directors...";
+                    } else {
+                        searchInput.placeholder = `Search ${currentCategory.toLowerCase()}...`;
+                    }
+                }
 
-        // 5. Update UI
-        updateCategoryTitleCount();
-        updateTheme();
-        filterAndRenderMedia();
+                const addBtn = document.getElementById('addMediaBtn');
+                const modalTitle = document.getElementById('modalTitle');
+                const displayLabel = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.replace(/s$/, '');
+                
+                if (addBtn) {
+                    const desktopLabel = addBtn.querySelector('.desktop-text');
+                    if (desktopLabel) {
+                        desktopLabel.innerText = `+ Add ${displayLabel}`;
+                    }
+                }
+                if (modalTitle) {
+                    modalTitle.innerText = `Add ${displayLabel}`;
+                }
+
+                const typeInput = document.getElementById('typeInput');
+                if (typeInput) {
+                    typeInput.value = category;
+                }
+
+                filterState.genres.clear();
+                updateActiveFilterCount();
+                populateGenreFilters();
+
+                navLinks.forEach(l => {
+                    l.classList.remove('active');
+                    if (l.getAttribute('data-filter') === currentCategory) l.classList.add('active');
+                });
+                
+                document.querySelectorAll('.pill-tab[data-filter]').forEach(t => {
+                    t.classList.remove('active');
+                    if (t.getAttribute('data-filter') === currentCategory) t.classList.add('active');
+                });
+
+                document.querySelectorAll('.pill-tab[data-sub]').forEach(t => {
+                    t.classList.remove('active');
+                    if (t.getAttribute('data-sub') === currentSubTab) t.classList.add('active');
+                });
+
+                updateCategoryTitleCount();
+                updateTheme();
+                filterAndRenderMedia();
+                
+                setTimeout(() => {
+                    mainContent.classList.remove(`slide-in-${direction}`);
+                }, 300);
+            }, 300);
+        } else {
+            // Fallback if no animation needed or container missing
+            currentCategory = category;
+            updateGlobalTheme(category);
+
+            if (searchInput) {
+                if (currentCategory === 'TV Series') {
+                    searchInput.placeholder = "Search titles or creators...";
+                } else if (currentCategory === 'Movies') {
+                    searchInput.placeholder = "Search titles or directors...";
+                } else {
+                    searchInput.placeholder = `Search ${currentCategory.toLowerCase()}...`;
+                }
+            }
+
+            const addBtn = document.getElementById('addMediaBtn');
+            const modalTitle = document.getElementById('modalTitle');
+            const displayLabel = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.replace(/s$/, '');
+            
+            if (addBtn) {
+                const desktopLabel = addBtn.querySelector('.desktop-text');
+                if (desktopLabel) {
+                    desktopLabel.innerText = `+ Add ${displayLabel}`;
+                }
+            }
+            if (modalTitle) {
+                modalTitle.innerText = `Add ${displayLabel}`;
+            }
+
+            const typeInput = document.getElementById('typeInput');
+            if (typeInput) {
+                typeInput.value = category;
+            }
+
+            filterState.genres.clear();
+            updateActiveFilterCount();
+            populateGenreFilters();
+
+            navLinks.forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('data-filter') === currentCategory) l.classList.add('active');
+            });
+            
+            document.querySelectorAll('.pill-tab[data-filter]').forEach(t => {
+                t.classList.remove('active');
+                if (t.getAttribute('data-filter') === currentCategory) t.classList.add('active');
+            });
+
+            document.querySelectorAll('.pill-tab[data-sub]').forEach(t => {
+                t.classList.remove('active');
+                if (t.getAttribute('data-sub') === currentSubTab) t.classList.add('active');
+            });
+
+            updateCategoryTitleCount();
+            updateTheme();
+            filterAndRenderMedia();
+        }
     };
 
     navLinks.forEach(link => {
