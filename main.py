@@ -862,15 +862,18 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 
         if not seeds:
             return []
-           # 3. Pick distinct seeds and fetch in a loop until we have 6 picks
+            
+        # 3. Pick distinct seeds and fetch in a loop until we have up to 6 picks
         unique_seeds_dict = {s.id: s for s in seeds}
         unique_seeds_list = list(unique_seeds_dict.values())
         
-        final_picks = {} # Use dict to guarantee uniqueness by (type, tmdb_id)
+        final_picks = []
+        picked_keys = set() # Track (type, tmdb_id) to prevent duplicates
         major_attempts = 0
         used_seeds = set()
         
-        while len(final_picks) < 6 and major_attempts < 4:
+        # Aim for 6 suggestions, try hard up to 6 times
+        while len(final_picks) < 6 and major_attempts < 6:
             major_attempts += 1
             
             available_seeds = [s for s in seeds if s.id not in used_seeds]
@@ -906,10 +909,9 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                     if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
                         continue
                         
+                    # Skip if already picked in a previous loop iteration or current pool
                     pool_key = (r["type"], r["tmdb_id"])
-                    
-                    # Skip if already picked in a previous loop iteration
-                    if pool_key in final_picks:
+                    if pool_key in picked_keys:
                         continue
                         
                     if pool_key not in pool:
@@ -925,10 +927,9 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 eligible = list(pool.values())
                 new_picks = sorted(eligible, key=lambda x: x["item"].get("popularity", 999999))[:needed]
                 random.shuffle(new_picks)
-                for p in new_picks:
-                    pk = (p["item"]["type"], p["item"]["tmdb_id"])
-                    if pk not in final_picks:
-                        final_picks[pk] = p
+                for np in new_picks:
+                    final_picks.append(np)
+                    picked_keys.add((np["item"]["type"], np["item"]["tmdb_id"]))
             else:
                 groups = {}
                 for data in pool.values():
@@ -941,18 +942,25 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                     group_items = groups[count]
                     random.shuffle(group_items)
                     for data in group_items:
-                        pk = (data["item"]["type"], data["item"]["tmdb_id"])
-                        if pk not in final_picks:
-                            final_picks[pk] = data
-                            if len(final_picks) == 6: break
-                    if len(final_picks) == 6: break
+                        if (data["item"]["type"], data["item"]["tmdb_id"]) not in picked_keys:
+                            final_picks.append(data)
+                            picked_keys.add((data["item"]["type"], data["item"]["tmdb_id"]))
+                            if len(final_picks) >= 6: break
+                    if len(final_picks) >= 6: break
+                    
+        # Ensure we have at least 4 if possible, but no more than 6
+        if len(final_picks) > 6:
+            final_picks = final_picks[:6]
+        
+        # (The user wants minimum 4, if we have less than 4 here, we just return what we have as we tried our best)
+
                 
         # 6. Fetch rich details
         results = []
         def format_seed(s): return f"{s[0]} ({s[1]})"
- 
-        for data in final_picks.values():
-            item = data["item"]ta["item"]
+
+        for data in final_picks:
+            item = data["item"]
             seeds_info = list(data["seeds"])
             
             if len(seeds_info) == 1:
