@@ -10,7 +10,6 @@ from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 from sqlalchemy import text
 
-
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -923,30 +922,22 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 
             # 5. Sort by overlaps or popularity
             needed = 6 - len(final_picks)
-            if mode == "hidden":
-                eligible = list(pool.values())
-                new_picks = sorted(eligible, key=lambda x: x["item"].get("popularity", 999999))[:needed]
-                random.shuffle(new_picks)
-                for np in new_picks:
-                    final_picks.append(np)
-                    picked_keys.add((np["item"]["type"], np["item"]["tmdb_id"]))
-            else:
-                groups = {}
-                for data in pool.values():
-                    count = len(data["seeds"])
-                    if count not in groups: groups[count] = []
-                    groups[count].append(data)
-                    
-                sorted_counts = sorted(groups.keys(), reverse=True)
-                for count in sorted_counts:
-                    group_items = groups[count]
-                    random.shuffle(group_items)
-                    for data in group_items:
-                        if (data["item"]["type"], data["item"]["tmdb_id"]) not in picked_keys:
-                            final_picks.append(data)
-                            picked_keys.add((data["item"]["type"], data["item"]["tmdb_id"]))
-                            if len(final_picks) >= 6: break
-                    if len(final_picks) >= 6: break
+            groups = {}
+            for data in pool.values():
+                count = len(data["seeds"])
+                if count not in groups: groups[count] = []
+                groups[count].append(data)
+                
+            sorted_counts = sorted(groups.keys(), reverse=True)
+            for count in sorted_counts:
+                group_items = groups[count]
+                random.shuffle(group_items)
+                for data in group_items:
+                    if (data["item"]["type"], data["item"]["tmdb_id"]) not in picked_keys:
+                        final_picks.append(data)
+                        picked_keys.add((data["item"]["type"], data["item"]["tmdb_id"]))
+                        if len(final_picks) >= 6: break
+                if len(final_picks) >= 6: break
                     
         # Ensure we have at least 4 if possible, but no more than 6
         if len(final_picks) > 6:
