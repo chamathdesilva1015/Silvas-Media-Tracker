@@ -422,6 +422,7 @@ header {
     flex-direction: column;
     gap: 0.75rem;
     overflow: hidden; /* Ensure pseudo-element doesn't spill */
+    min-height: 180px; /* Ensure enough height to show image content */
 }
 
 header::before {
@@ -432,7 +433,6 @@ header::before {
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
-    background-attachment: fixed;
     opacity: 0.6; /* Less dark */
     z-index: -1;
     transition: opacity 0.5s ease;
