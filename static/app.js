@@ -3271,6 +3271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 800);
         }, waitTime);
     }
+}
 
     if (suggestMeBtn) {
         suggestMeBtn.addEventListener('click', () => {
