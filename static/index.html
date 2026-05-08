@@ -112,31 +112,31 @@
                     <button class="info-btn" data-section="Bias & Effects">
                         <span class="info-btn-text">Bias & Effects</span>
                     </button>
-                    <button class="info-btn" id="suggestMeBtn" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(147, 112, 219, 0.2)); border-color: rgba(147, 112, 219, 0.4); margin-top: 1rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
-                        <i class="fas fa-magic" style="color: #9370db;"></i>
-                        <span class="info-btn-text" style="color: #fff;">Suggest Me Something</span>
-                    </button>
-                    <div id="suggestionTuning" style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px solid rgba(147, 112, 219, 0.2); border-top: none; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 0.75rem; display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
-                        <button class="tuning-btn" data-mode="safe" title="Low Risk: Strictly based on your favorites">
-                            <i class="fas fa-shield-alt"></i> 
-                            <span>Low Risk</span>
-                            <div class="risk-bar-wrap"><div class="risk-bar" style="width: 25%"></div></div>
+                    <div class="suggestion-control-panel">
+                        <button id="suggestMeBtn" class="premium-suggest-btn">
+                            <i class="fas fa-magic"></i>
+                            <span>Suggest Me Something</span>
                         </button>
-                        <button class="tuning-btn active" data-mode="balanced" title="Moderate: Balanced mix of safe and new">
-                            <i class="fas fa-balance-scale"></i> 
-                            <span>Moderate</span>
-                            <div class="risk-bar-wrap"><div class="risk-bar" style="width: 50%"></div></div>
-                        </button>
-                        <button class="tuning-btn" data-mode="adventure" title="High Risk: Explores broader recommendations">
-                            <i class="fas fa-compass"></i> 
-                            <span>High Risk</span>
-                            <div class="risk-bar-wrap"><div class="risk-bar" style="width: 75%"></div></div>
-                        </button>
-                        <button class="tuning-btn" data-mode="hidden" title="Extreme: Deep cuts and wildcard picks">
-                            <i class="fas fa-bolt"></i> 
-                            <span>Extreme</span>
-                            <div class="risk-bar-wrap"><div class="risk-bar" style="width: 100%"></div></div>
-                        </button>
+                        
+                        <div class="premium-segmented-control">
+                            <button class="tuning-btn" data-mode="safe" title="Low Risk: Strictly based on your favorites">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Low Risk</span>
+                            </button>
+                            <button class="tuning-btn active" data-mode="balanced" title="Moderate: Balanced mix of safe and new">
+                                <i class="fas fa-balance-scale"></i>
+                                <span>Moderate</span>
+                            </button>
+                            <button class="tuning-btn" data-mode="adventure" title="High Risk: Explores broader recommendations">
+                                <i class="fas fa-compass"></i>
+                                <span>High Risk</span>
+                            </button>
+                            <button class="tuning-btn" data-mode="hidden" title="Extreme: Deep cuts and wildcard picks">
+                                <i class="fas fa-bolt"></i>
+                                <span>Extreme</span>
+                            </button>
+                            <div class="segmented-indicator"></div>
+                        </div>
                     </div>
                 </div>
                 
