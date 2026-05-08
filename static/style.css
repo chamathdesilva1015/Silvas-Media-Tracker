@@ -404,11 +404,17 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
+/* PC Specific Styles for Suggestion Modal */
+#suggestionModal .modal-content {
+    min-width: 600px !important;
+}
+
 /* Mobile Specific Styles for Suggestion Modal */
 @media (max-width: 700px) {
     #suggestionModal .modal-content {
         width: 92% !important;
         max-width: 380px !important;
+        min-width: unset !important;
         height: auto !important;
         max-height: 80vh !important;
         border-radius: 16px !important;
