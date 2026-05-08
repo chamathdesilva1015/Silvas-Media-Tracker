@@ -3083,7 +3083,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingSubtext) loadingSubtext.textContent = "Starting up...";
 
         const isSlow = currentCategory === 'Anime' || currentCategory === 'Manga';
-        const estimatedTime = isSlow ? 20000 : 8000; // ms
+        const estimatedTime = isSlow ? 45000 : 10000; // 45s for Anime/Manga, 10s for others
         let elapsed = 0;
         const interval = 200; // ms
         
@@ -3127,9 +3127,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Abort if the request takes longer than 25 seconds (Jikan can be slow)
+        // Abort if the request takes longer than 60 seconds (Jikan can be very slow with multiple seeds)
         const abortController = new AbortController();
-        const abortTimeout = setTimeout(() => abortController.abort(), 25000);
+        const abortTimeout = setTimeout(() => abortController.abort(), 60000);
 
         try {
             const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
