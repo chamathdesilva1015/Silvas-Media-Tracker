@@ -3067,23 +3067,35 @@ document.addEventListener('DOMContentLoaded', () => {
             "Fetching cover art and details...",
             "Finalizing your personalized list..."
         ];
-        let msgIndex = 0;
-        if (loadingTextEl) loadingTextEl.textContent = messages[0];
         
-        const loadingInterval = setInterval(() => {
-            msgIndex = (msgIndex + 1) % messages.length;
-            if (loadingTextEl) loadingTextEl.textContent = messages[msgIndex];
-        }, 4000);
+        const updateMessage = (index) => {
+            if (loadingTextEl) loadingTextEl.textContent = messages[index];
+        };
+        
+        updateMessage(0);
 
-        // Abort if the request takes longer than 25 seconds (Jikan can be slow)
+        // Abort if the request takes longer than 25 seconds
         const abortController = new AbortController();
         const abortTimeout = setTimeout(() => abortController.abort(), 25000);
 
         try {
-            const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
+            // Start the fetch
+            const fetchPromise = fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
                 headers: getAuthHeaders(false), // Guests can use this too
                 signal: abortController.signal
             });
+
+            // Start the visual sequence (1.5s per step)
+            const playSequence = async () => {
+                for (let i = 1; i < messages.length; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    updateMessage(i);
+                }
+            };
+
+            // Wait for BOTH the fetch and the visual sequence to complete
+            const [res] = await Promise.all([fetchPromise, playSequence()]);
+            
             clearTimeout(abortTimeout);
 
             if (!res.ok) throw new Error('Failed to fetch suggestions');
@@ -3156,7 +3168,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (suggestionControls) suggestionControls.style.display = 'block'; // Allow retry on error
         } finally {
             suggestionLoading.style.display = 'none';
-            clearInterval(loadingInterval);
         }
     }
 
