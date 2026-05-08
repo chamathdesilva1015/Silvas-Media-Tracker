@@ -3058,6 +3058,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (suggestionControls) suggestionControls.style.display = 'none';
         suggestionResults.innerHTML = '';
 
+        const loadingTextEl = document.querySelector('#suggestionLoading p');
+        const messages = [
+            "Analyzing your library...",
+            "Selecting recommendation seeds...",
+            "Querying external databases (this may take a moment)...",
+            "Filtering and deduplicating results...",
+            "Fetching cover art and details...",
+            "Finalizing your personalized list..."
+        ];
+        let msgIndex = 0;
+        if (loadingTextEl) loadingTextEl.textContent = messages[0];
+        
+        const loadingInterval = setInterval(() => {
+            msgIndex = (msgIndex + 1) % messages.length;
+            if (loadingTextEl) loadingTextEl.textContent = messages[msgIndex];
+        }, 4000);
+
         // Abort if the request takes longer than 25 seconds (Jikan can be slow)
         const abortController = new AbortController();
         const abortTimeout = setTimeout(() => abortController.abort(), 25000);
@@ -3139,6 +3156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (suggestionControls) suggestionControls.style.display = 'block'; // Allow retry on error
         } finally {
             suggestionLoading.style.display = 'none';
+            clearInterval(loadingInterval);
         }
     }
 

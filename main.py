@@ -862,16 +862,15 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 
         if not seeds:
             return []
-            
-        # 3. Pick distinct seeds and fetch in a loop until we have 3 picks
+           # 3. Pick distinct seeds and fetch in a loop until we have 6 picks
         unique_seeds_dict = {s.id: s for s in seeds}
         unique_seeds_list = list(unique_seeds_dict.values())
         
-        final_picks = []
+        final_picks = {} # Use dict to guarantee uniqueness by (type, tmdb_id)
         major_attempts = 0
         used_seeds = set()
         
-        while len(final_picks) < 3 and major_attempts < 4:
+        while len(final_picks) < 6 and major_attempts < 4:
             major_attempts += 1
             
             available_seeds = [s for s in seeds if s.id not in used_seeds]
@@ -907,11 +906,12 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                     if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
                         continue
                         
+                    pool_key = (r["type"], r["tmdb_id"])
+                    
                     # Skip if already picked in a previous loop iteration
-                    if any(fp["item"]["tmdb_id"] == r["tmdb_id"] for fp in final_picks):
+                    if pool_key in final_picks:
                         continue
                         
-                    pool_key = (r["type"], r["tmdb_id"])
                     if pool_key not in pool:
                         pool[pool_key] = {"item": r, "seeds": set()}
                     pool[pool_key]["seeds"].add((seed.title, seed.rating or "N/A"))
@@ -920,12 +920,15 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 continue
                 
             # 5. Sort by overlaps or popularity
-            needed = 3 - len(final_picks)
+            needed = 6 - len(final_picks)
             if mode == "hidden":
                 eligible = list(pool.values())
                 new_picks = sorted(eligible, key=lambda x: x["item"].get("popularity", 999999))[:needed]
                 random.shuffle(new_picks)
-                final_picks.extend(new_picks)
+                for p in new_picks:
+                    pk = (p["item"]["type"], p["item"]["tmdb_id"])
+                    if pk not in final_picks:
+                        final_picks[pk] = p
             else:
                 groups = {}
                 for data in pool.values():
@@ -938,16 +941,18 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                     group_items = groups[count]
                     random.shuffle(group_items)
                     for data in group_items:
-                        final_picks.append(data)
-                        if len(final_picks) == 3: break
-                    if len(final_picks) == 3: break
+                        pk = (data["item"]["type"], data["item"]["tmdb_id"])
+                        if pk not in final_picks:
+                            final_picks[pk] = data
+                            if len(final_picks) == 6: break
+                    if len(final_picks) == 6: break
                 
         # 6. Fetch rich details
         results = []
         def format_seed(s): return f"{s[0]} ({s[1]})"
-
-        for data in final_picks:
-            item = data["item"]
+ 
+        for data in final_picks.values():
+            item = data["item"]ta["item"]
             seeds_info = list(data["seeds"])
             
             if len(seeds_info) == 1:

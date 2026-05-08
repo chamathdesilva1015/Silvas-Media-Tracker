@@ -5532,7 +5532,10 @@ body.modal-open .bottom-nav {
         /* Default theme glow */
         box-shadow: 0 0 25px var(--theme-accent-glow) !important;
         border: 1px solid var(--theme-accent) !important;
-        background: rgba(var(--theme-accent-rgb), 0.1) !important;
+        background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.2), rgba(var(--theme-accent-rgb), 0.05)) !important;
+    }
+    #suggestMeBtn i {
+        color: var(--theme-accent) !important;
     }
 
     #suggestionTuning {
