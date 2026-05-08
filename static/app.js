@@ -2657,51 +2657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function setupDevConsole() {
 
 
-            const enrichBtn = document.getElementById('triggerEnrichBtn');
-            const wrapper = document.getElementById('consoleWrapper');
-            const log = document.getElementById('consoleLog');
-            const spinner = document.getElementById('consoleSpinner');
-
-            if (enrichBtn) enrichBtn.onclick = async () => {
-                wrapper.style.display = 'block';
-                spinner.style.display = 'block';
-                log.innerHTML = '<div style="color: #64b4ff;">[System] Initializing Metadata Enrichment...</div>';
-                try {
-                    const res = await fetch('/api/automation/enrich', { method: 'POST', headers: getAuthHeaders() });
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    const reader = res.body.getReader();
-                    const decoder = new TextDecoder("utf-8");
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        const chunk = decoder.decode(value, { stream: true });
-                        const lines = chunk.split('\n');
-                        lines.forEach(msg => {
-                            if (!msg.trim()) return;
-                            const line = document.createElement('div');
-                            line.style.marginBottom = '2px';
-                            line.innerText = msg;
-                            if (msg.includes('Error')) line.style.color = '#ff6b6b';
-                            if (msg.includes('Complete')) line.style.color = '#51cf66';
-                            log.appendChild(line);
-                            log.scrollTop = log.scrollHeight;
-                        });
-                    }
-                    spinner.style.display = 'none';
-                    const final = document.createElement('div');
-                    final.style.marginTop = '10px';
-                    final.style.paddingTop = '5px';
-                    final.style.borderTop = '1px dashed #444';
-                    final.style.color = '#fff';
-                    final.innerText = `[System] Task "enrichment" completed.`;
-                    log.appendChild(final);
-                    log.scrollTop = log.scrollHeight;
-                    fetchMedia();
-                } catch (err) {
-                    log.innerHTML += `<div style="color: #ff6b6b;">Request Error: ${err.message}</div>`;
-                    spinner.style.display = 'none';
-                }
-            };
+            // Magic Auto-Fill removed as requested
 
             // --- Manage Passed Suggestions ---
             const managePassedBtn = document.getElementById('managePassedBtn');
