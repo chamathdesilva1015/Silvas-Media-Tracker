@@ -355,29 +355,18 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (min-width: 701px) {
-    .suggestion-control-panel {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .premium-suggest-btn {
-        flex: 1;
-        max-width: 250px;
-    }
-    .premium-segmented-control {
-        flex: 2;
-        max-width: 550px;
-    }
+.suggestion-control-panel {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
 }
-
-@media (max-width: 700px) {
-    .premium-segmented-control .tuning-btn span {
-        display: none;
-    }
-    .premium-segmented-control .tuning-btn i {
-        font-size: 1.1rem !important;
-    }
+.premium-suggest-btn {
+    flex: 1;
+    max-width: 250px;
+}
+.premium-segmented-control {
+    flex: 2;
+    max-width: 550px;
 }
 
 /* Hub Buttons with White Glowing Outlines */
@@ -404,88 +393,6 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
-/* PC Specific Styles for Suggestion Modal */
-#suggestionModal .modal-content {
-    min-width: 600px !important;
-}
-
-/* Mobile Specific Styles for Suggestion Modal */
-@media (max-width: 700px) {
-    #suggestionModal .modal-content {
-        width: 92% !important;
-        max-width: 380px !important;
-        min-width: unset !important;
-        height: auto !important;
-        max-height: 80vh !important;
-        border-radius: 16px !important;
-        padding: 1.25rem !important;
-        background: rgba(15, 15, 15, 0.95) !important;
-        backdrop-filter: blur(20px) !important;
-        display: flex;
-        flex-direction: column;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        position: relative;
-    }
-    
-    #suggestionModal .modal-body {
-        max-height: 60vh !important;
-        overflow-y: auto;
-    }
-    
-    #suggestionResults {
-        grid-template-columns: 1fr !important; /* 1 column on mobile */
-        gap: 1rem !important;
-    }
-    
-    #suggestionModal .close-btn {
-        top: 0.75rem !important;
-        right: 0.75rem !important;
-        font-size: 1.5rem !important; /* Smaller close button */
-        position: absolute !important;
-    }
-    
-    /* Make text and cards smaller on mobile */
-    #suggestionModal h2 {
-        font-size: 1.3rem !important;
-        margin-bottom: 0.25rem !important;
-    }
-    
-    #suggestionModal p {
-        font-size: 0.8rem !important;
-    }
-    
-    .suggestion-card {
-        padding: 0.75rem !important;
-        border-radius: 12px !important;
-    }
-    
-    .suggestion-card h3 {
-        font-size: 1rem !important;
-    }
-    
-    .suggestion-card p {
-        font-size: 0.75rem !important;
-    }
-    
-    .suggestion-reason {
-        font-size: 0.7rem !important;
-        padding: 0.5rem !important;
-    }
-    
-    /* Make the suggest button in the hub smaller on mobile */
-    .premium-suggest-btn {
-        padding: 0.75rem 1rem !important;
-        font-size: 0.9rem !important;
-    }
-    
-    .premium-segmented-control {
-        height: 35px !important;
-    }
-    
-    .premium-segmented-control .tuning-btn {
-        font-size: 0.75rem !important;
-    }
-}
 
 header {
     padding: 0.75rem 5% 0.5rem;
