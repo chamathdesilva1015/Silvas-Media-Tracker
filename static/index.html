@@ -68,7 +68,6 @@
                         <button class="pill-tab" data-sub="Completed">Finished</button>
                         <button class="pill-tab" data-sub="Rankings">Top 20</button>
                         <button class="pill-tab active" data-sub="Info">The Hub</button>
-                        <button class="pill-tab" data-sub="Stats">Run Stats</button>
                     </div>
 
                     <div class="header-filter-actions">
@@ -112,7 +111,7 @@
                 
                 <button id="leaveRecommendationBtn" class="leave-recommendation-btn">
                     <i class="fas fa-comment-dots"></i>
-                    <span>Leave Silva a Movie Recommendation</span>
+                    <span>Leave Silva a<br>Movie Recommendation</span>
                 </button>
 
                 <div id="lastRecommendationsFooter" class="last-recommendations-footer">
@@ -184,6 +183,10 @@
 
                 </div>
 
+                <div id="hubStatsContainer" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <!-- Stats will be loaded here -->
+                </div>
+
                 <div id="guestConsoleActions" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
                     <button id="loginAdminBtn" class="btn-secondary" style="width: 100%; padding: 1.2rem; border-radius: 12px; font-size: 0.9rem; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); color: #fff; cursor: pointer;">
                         Developer Login
@@ -217,10 +220,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Stats Page (per-category, hidden by default) -->
-        <div id="statsPage"></div>
-
         </main><!-- /.container -->
         </div><!-- /.main-content -->
     </div><!-- /.app-layout -->

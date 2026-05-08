@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const statsPage = document.getElementById('statsPage');
+    const statsPage = document.getElementById('hubStatsContainer');
 
     const renderStats = async (category) => {
         if (!statsPage) return;
@@ -823,18 +823,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-        if (currentSubTab === 'Stats') {
-            grid.style.display = 'none';
-            if (infoPage) infoPage.style.display = 'none';
-            if (statsPage) statsPage.style.display = 'block';
-            if (controls) controls.style.display = 'none';
-            if (addBtn) addBtn.style.display = 'none';
-            renderStats(currentCategory);
-            return;
-        } else {
-            if (statsPage) statsPage.style.display = 'none';
-        }
-
         if (currentSubTab === 'Info') {
             grid.style.display = 'none';
             if (infoPage) {
@@ -842,6 +830,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Always reset to the dashboard view when landing on Info
                 const infoIntroView = document.getElementById('infoIntro');
+                
+                // Load stats for the Hub
+                renderStats(currentCategory);
                 const infoDetailView = document.getElementById('infoDetail');
                 if (infoIntroView) infoIntroView.style.display = 'block';
                 if (infoDetailView) infoDetailView.style.display = 'none';

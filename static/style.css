@@ -1145,8 +1145,7 @@ header p {
 }
 
 /* Stats page must be full-width block so margin:0 auto centering works inside flex parent */
-#statsPage {
-    display: none;
+#hubStatsContainer {
     width: 100%;
     max-width: 900px;
     margin: 0 auto !important;
