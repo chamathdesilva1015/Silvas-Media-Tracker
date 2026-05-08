@@ -3104,8 +3104,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const progress = Math.min(95, (elapsed / estimatedTime) * 100);
             if (stepLineProgress) stepLineProgress.style.width = `${progress}%`;
             
-            const remaining = Math.max(1, Math.round((estimatedTime - elapsed) / 1000));
-            if (loadingSubtext) loadingSubtext.textContent = `Est. remaining: ${remaining}s`;
+            if (loadingSubtext) {
+                if (isSlow && elapsed > 5000) {
+                    loadingSubtext.textContent = "Anime/Manga APIs have strict rate limits, thanks for your patience...";
+                } else if (progress > 80) {
+                    loadingSubtext.textContent = "Almost there, finalizing picks...";
+                } else {
+                    loadingSubtext.textContent = "Finding the best matches for you...";
+                }
+            }
             
             // Update steps and checklist based on progress
             if (progress < 25) {
