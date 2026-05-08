@@ -112,11 +112,11 @@
                     <button class="info-btn" data-section="Bias & Effects">
                         <span class="info-btn-text">Bias & Effects</span>
                     </button>
-                    <button class="info-btn" id="suggestMeBtn" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.1), rgba(var(--theme-accent-rgb), 0.2)); border-color: rgba(var(--theme-accent-rgb), 0.4); margin-top: 1rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
-                        <i class="fas fa-magic" style="color: var(--theme-accent);"></i>
+                    <button class="info-btn" id="suggestMeBtn" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(147, 112, 219, 0.2)); border-color: rgba(147, 112, 219, 0.4); margin-top: 1rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+                        <i class="fas fa-magic" style="color: #9370db;"></i>
                         <span class="info-btn-text" style="color: #fff;">Suggest Me Something</span>
                     </button>
-                    <div id="suggestionTuning" style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px solid rgba(var(--theme-accent-rgb), 0.2); border-top: none; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 0.75rem; display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div id="suggestionTuning" style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px solid rgba(147, 112, 219, 0.2); border-top: none; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 0.75rem; display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
                         <button class="tuning-btn" data-mode="safe" title="Low Risk: Strictly based on your favorites">
                             <i class="fas fa-shield-alt"></i> 
                             <span>Low Risk</span>
@@ -291,7 +291,11 @@
                     <div class="radar-circle"></div>
                     <div class="radar-circle"></div>
                 </div>
-                <p style="margin-top: 2rem; color: var(--theme-accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8rem;">Analyzing your library...</p>
+                <p id="suggestionLoadingText" style="margin-top: 2rem; color: var(--theme-accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8rem;">Analyzing your library...</p>
+                <div class="suggestion-progress-container" style="width: 80%; max-width: 400px; margin: 1rem auto 0; background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; overflow: hidden; border: 1px solid rgba(var(--theme-accent-rgb), 0.1);">
+                    <div id="suggestionProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--theme-accent), #fff); box-shadow: 0 0 10px var(--theme-accent); transition: width 0.4s ease;"></div>
+                </div>
+                <p id="suggestionLoadingSubtext" style="margin-top: 0.8rem; opacity: 0.6; font-size: 0.8rem; color: #fff;">Starting up...</p>
             </div>
 
             
@@ -654,7 +658,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=422"></script>
+    <script src="app.js?v=421"></script>
 
 
 

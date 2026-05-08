@@ -3051,6 +3051,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateTuningUI();
 
+    let progressInterval;
+
     async function fetchSuggestions() {
         suggestionLoading.style.display = 'block';
         suggestionResults.style.display = 'none';
@@ -3058,44 +3060,49 @@ document.addEventListener('DOMContentLoaded', () => {
         if (suggestionControls) suggestionControls.style.display = 'none';
         suggestionResults.innerHTML = '';
 
-        const loadingTextEl = document.querySelector('#suggestionLoading p');
-        const messages = [
-            "Analyzing your library...",
-            "Selecting recommendation seeds...",
-            "Querying external databases (this may take a moment)...",
-            "Filtering and deduplicating results...",
-            "Fetching cover art and details...",
-            "Finalizing your personalized list..."
-        ];
+        const progressBar = document.getElementById('suggestionProgressBar');
+        const loadingText = document.getElementById('suggestionLoadingText');
+        const loadingSubtext = document.getElementById('suggestionLoadingSubtext');
         
-        const updateMessage = (index) => {
-            if (loadingTextEl) loadingTextEl.textContent = messages[index];
-        };
-        
-        updateMessage(0);
+        if (progressBar) progressBar.style.width = '0%';
+        if (loadingText) loadingText.textContent = "Analyzing your library...";
+        if (loadingSubtext) loadingSubtext.textContent = "Starting up...";
 
-        // Abort if the request takes longer than 25 seconds
+        const isSlow = currentCategory === 'Anime' || currentCategory === 'Manga';
+        const estimatedTime = isSlow ? 20000 : 8000; // ms
+        let elapsed = 0;
+        const interval = 200; // ms
+        
+        progressInterval = setInterval(() => {
+            elapsed += interval;
+            const progress = Math.min(95, (elapsed / estimatedTime) * 100);
+            if (progressBar) progressBar.style.width = `${progress}%`;
+            
+            // Update text based on progress
+            if (progress < 20) {
+                if (loadingText) loadingText.textContent = "Scanning your library...";
+                if (loadingSubtext) loadingSubtext.textContent = "Finding your highest-rated seeds.";
+            } else if (progress < 50) {
+                if (loadingText) loadingText.textContent = `Querying ${isSlow ? 'Jikan' : 'TMDB'}...`;
+                if (loadingSubtext) loadingSubtext.textContent = "Fetching raw recommendations.";
+            } else if (progress < 75) {
+                if (loadingText) loadingText.textContent = "Filtering duplicates...";
+                if (loadingSubtext) loadingSubtext.textContent = "Ensuring you see new things.";
+            } else {
+                if (loadingText) loadingText.textContent = "Finalizing picks...";
+                if (loadingSubtext) loadingSubtext.textContent = "Preparing the display.";
+            }
+        }, interval);
+
+        // Abort if the request takes longer than 25 seconds (Jikan can be slow)
         const abortController = new AbortController();
         const abortTimeout = setTimeout(() => abortController.abort(), 25000);
 
         try {
-            // Start the fetch
-            const fetchPromise = fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
+            const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
                 headers: getAuthHeaders(false), // Guests can use this too
                 signal: abortController.signal
             });
-
-            // Start the visual sequence (1.5s per step)
-            const playSequence = async () => {
-                for (let i = 1; i < messages.length; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    updateMessage(i);
-                }
-            };
-
-            // Wait for BOTH the fetch and the visual sequence to complete
-            const [res] = await Promise.all([fetchPromise, playSequence()]);
-            
             clearTimeout(abortTimeout);
 
             if (!res.ok) throw new Error('Failed to fetch suggestions');
@@ -3167,6 +3174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             suggestionError.textContent = "An error occurred while generating suggestions. Please try again.";
             if (suggestionControls) suggestionControls.style.display = 'block'; // Allow retry on error
         } finally {
+            clearInterval(progressInterval);
             suggestionLoading.style.display = 'none';
         }
     }
