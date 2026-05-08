@@ -79,6 +79,11 @@
     --theme-header-bg: url('anime_header.png');
 }
 
+[data-theme="anime"] header::before {
+    background-image: linear-gradient(rgba(241, 196, 15, 0.4), rgba(241, 196, 15, 0.4)), url('anime_header.png');
+    background-blend-mode: multiply;
+}
+
 * {
     margin: 0;
     padding: 0;
