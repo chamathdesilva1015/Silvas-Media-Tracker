@@ -829,9 +829,9 @@ header p {
 
 .filter-trigger {
 
-    background: rgba(var(--theme-accent-rgb), 0.1);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(var(--theme-accent-rgb), 0.3);
+    border: 1px solid var(--theme-accent);
     color: var(--theme-accent);
     padding: 0.5rem 1.1rem;
     border-radius: 10px;
@@ -1058,9 +1058,9 @@ header p {
 
 .search-bar {
     padding: 0.6rem 1rem 0.6rem 2.5rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--theme-accent);
     border-radius: 12px;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(0, 0, 0, 0.6);
     color: var(--text-primary);
     font-family: inherit;
     outline: none;
