@@ -3060,11 +3060,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (suggestionControls) suggestionControls.style.display = 'none';
         suggestionResults.innerHTML = '';
 
-        const progressBar = document.getElementById('suggestionProgressBar');
+        const stepLineProgress = document.getElementById('stepLineProgress');
         const loadingText = document.getElementById('suggestionLoadingText');
         const loadingSubtext = document.getElementById('suggestionLoadingSubtext');
         
-        if (progressBar) progressBar.style.width = '0%';
+        const steps = [
+            document.getElementById('step1'),
+            document.getElementById('step2'),
+            document.getElementById('step3'),
+            document.getElementById('step4')
+        ];
+        
+        if (stepLineProgress) stepLineProgress.style.width = '0%';
+        steps.forEach((s, idx) => {
+            if (s) {
+                s.classList.remove('active', 'completed');
+                if (idx === 0) s.classList.add('active');
+            }
+        });
+        
         if (loadingText) loadingText.textContent = "Analyzing your library...";
         if (loadingSubtext) loadingSubtext.textContent = "Starting up...";
 
@@ -3076,23 +3090,42 @@ document.addEventListener('DOMContentLoaded', () => {
         progressInterval = setInterval(() => {
             elapsed += interval;
             const progress = Math.min(95, (elapsed / estimatedTime) * 100);
-            if (progressBar) progressBar.style.width = `${progress}%`;
+            if (stepLineProgress) stepLineProgress.style.width = `${progress}%`;
             
-            // Update text based on progress
-            if (progress < 20) {
+            // Update steps based on progress
+            if (progress < 25) {
+                updateActiveStep(0);
                 if (loadingText) loadingText.textContent = "Scanning your library...";
                 if (loadingSubtext) loadingSubtext.textContent = "Finding your highest-rated seeds.";
-            } else if (progress < 50) {
+            } else if (progress < 60) {
+                updateActiveStep(1);
                 if (loadingText) loadingText.textContent = `Querying ${isSlow ? 'Jikan' : 'TMDB'}...`;
                 if (loadingSubtext) loadingSubtext.textContent = "Fetching raw recommendations.";
-            } else if (progress < 75) {
+            } else if (progress < 85) {
+                updateActiveStep(2);
                 if (loadingText) loadingText.textContent = "Filtering duplicates...";
-                if (loadingSubtext) loadingSubtext.textContent = "Ensuring you see new things.";
+                if (loadingSubtext) loadingSubtext.textContent = "Ensuring distinct suggestions.";
             } else {
+                updateActiveStep(3);
                 if (loadingText) loadingText.textContent = "Finalizing picks...";
                 if (loadingSubtext) loadingSubtext.textContent = "Preparing the display.";
             }
         }, interval);
+        
+        function updateActiveStep(activeIndex) {
+            steps.forEach((s, idx) => {
+                if (!s) return;
+                if (idx < activeIndex) {
+                    s.classList.remove('active');
+                    s.classList.add('completed');
+                } else if (idx === activeIndex) {
+                    s.classList.add('active');
+                    s.classList.remove('completed');
+                } else {
+                    s.classList.remove('active', 'completed');
+                }
+            });
+        }
 
         // Abort if the request takes longer than 25 seconds (Jikan can be slow)
         const abortController = new AbortController();
@@ -3175,6 +3208,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (suggestionControls) suggestionControls.style.display = 'block'; // Allow retry on error
         } finally {
             clearInterval(progressInterval);
+            if (stepLineProgress) stepLineProgress.style.width = '100%';
+            steps.forEach(s => { if (s) { s.classList.remove('active'); s.classList.add('completed'); } });
             suggestionLoading.style.display = 'none';
         }
     }

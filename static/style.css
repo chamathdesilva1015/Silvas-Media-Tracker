@@ -202,6 +202,61 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     100% { transform: scale(1.5); opacity: 0; }
 }
 
+/* Stepped Progress for Suggestions */
+.suggestion-steps {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    max-width: 500px;
+    margin: 2rem auto;
+    position: relative;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 3;
+    flex: 1;
+}
+
+.step-dot {
+    width: 12px;
+    height: 12px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.step-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.4);
+    transition: color 0.3s;
+}
+
+.step-item.active .step-dot {
+    background: var(--theme-accent);
+    box-shadow: 0 0 10px var(--theme-accent), 0 0 20px var(--theme-accent);
+}
+
+.step-item.active .step-label {
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255,255,255,0.5);
+}
+
+.step-item.completed .step-dot {
+    background: var(--theme-accent);
+}
+
+.step-item.completed .step-label {
+    color: var(--theme-accent);
+}
+
 header {
     padding: 0.75rem 5% 0.5rem;
     background: rgba(10, 10, 10, 0.9);
@@ -5532,10 +5587,7 @@ body.modal-open .bottom-nav {
         /* Default theme glow */
         box-shadow: 0 0 25px var(--theme-accent-glow) !important;
         border: 1px solid var(--theme-accent) !important;
-        background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.2), rgba(var(--theme-accent-rgb), 0.05)) !important;
-    }
-    #suggestMeBtn i {
-        color: var(--theme-accent) !important;
+        background: rgba(var(--theme-accent-rgb), 0.1) !important;
     }
 
     #suggestionTuning {
