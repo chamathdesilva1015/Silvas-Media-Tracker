@@ -266,6 +266,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                const leaveRecBtn = document.getElementById('leaveRecommendationBtn');
+                if (leaveRecBtn) {
+                    const span = leaveRecBtn.querySelector('span');
+                    if (span) {
+                        span.innerText = `Leave Silva a${displayLabel === 'Anime' ? 'n' : ''} ${displayLabel} Recommendation`;
+                    }
+                }
+
                 const typeInput = document.getElementById('typeInput');
                 if (typeInput) {
                     typeInput.value = category;
@@ -332,6 +340,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const span = suggestMeBtn.querySelector('span');
                 if (span) {
                     span.innerText = `${displayLabel} Suggestions`;
+                }
+            }
+
+            const leaveRecBtn = document.getElementById('leaveRecommendationBtn');
+            if (leaveRecBtn) {
+                const span = leaveRecBtn.querySelector('span');
+                if (span) {
+                    span.innerText = `Leave Silva a${displayLabel === 'Anime' ? 'n' : ''} ${displayLabel} Recommendation`;
                 }
             }
 
@@ -3353,6 +3369,13 @@ document.addEventListener('DOMContentLoaded', () => {
         suggestMeBtn.addEventListener('click', () => {
             suggestionModal.classList.add('show');
             fetchSuggestions();
+        });
+    }
+
+    const leaveRecBtn = document.getElementById('leaveRecommendationBtn');
+    if (leaveRecBtn) {
+        leaveRecBtn.addEventListener('click', () => {
+            alert('Recommendation feature coming soon!');
         });
     }
     
