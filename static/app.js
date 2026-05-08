@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (leaveRecBtn) {
                     const span = leaveRecBtn.querySelector('span');
                     if (span) {
-                        span.innerText = `Leave Silva a${displayLabel === 'Anime' ? 'n' : ''} ${displayLabel} Recommendation`;
+                        span.innerHTML = `Leave Silva a${displayLabel === 'Anime' ? 'n' : ''}<br>${displayLabel} Recommendation`;
                     }
                 }
 
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (leaveRecBtn) {
                 const span = leaveRecBtn.querySelector('span');
                 if (span) {
-                    span.innerText = `Leave Silva a${displayLabel === 'Anime' ? 'n' : ''} ${displayLabel} Recommendation`;
+                    span.innerHTML = `Leave Silva a${displayLabel === 'Anime' ? 'n' : ''}<br>${displayLabel} Recommendation`;
                 }
             }
 
