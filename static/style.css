@@ -431,7 +431,7 @@ header::before {
     top: 0; left: 0; right: 0; bottom: 0;
     background-image: var(--theme-header-bg);
     background-size: cover;
-    background-position: center top;
+    background-position: right top;
     background-repeat: no-repeat;
     opacity: 0.6; /* Less dark */
     z-index: -1;
