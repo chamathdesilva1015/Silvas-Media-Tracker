@@ -818,10 +818,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const filterActions = document.querySelector('.header-filter-actions');
         if (searchContainer && filterActions) {
             const shouldShow = (currentSubTab === 'Completed');
-            searchContainer.style.visibility = shouldShow ? 'visible' : 'hidden';
-            searchContainer.style.pointerEvents = shouldShow ? 'auto' : 'none';
-            filterActions.style.visibility = shouldShow ? 'visible' : 'hidden';
-            filterActions.style.pointerEvents = shouldShow ? 'auto' : 'none';
+            searchContainer.style.display = shouldShow ? 'flex' : 'none';
+            filterActions.style.display = shouldShow ? 'flex' : 'none';
         }
 
 
