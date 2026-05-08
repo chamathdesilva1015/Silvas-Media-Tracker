@@ -4208,6 +4208,10 @@ body.modal-open .bottom-nav {
     gap: 16px;
     margin-top: 2rem;
     padding-bottom: 4rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
 }
 
 .rating-item {
