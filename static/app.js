@@ -3267,6 +3267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         suggestionResults.style.display = 'grid';
                         if (suggestionControls) suggestionControls.style.display = 'block';
                     }
+                }
             }, 800);
         }, waitTime);
     }
