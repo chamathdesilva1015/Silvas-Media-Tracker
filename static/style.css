@@ -409,7 +409,7 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 
 
 header {
-    padding: 0.75rem 5% 0.5rem;
+    padding: 3rem 5% 1rem; /* Increased top padding to act as banner */
     background: rgba(10, 10, 10, 0.85);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
@@ -480,30 +480,7 @@ header::before {
     transform: translateY(120%);
 }
 
-/* Category Banners */
-.page-banner {
-    width: 100%;
-    height: 140px;
-    background: var(--theme-header-bg) !important;
-    background-size: cover !important;
-    background-position: center top !important;
-    background-repeat: no-repeat !important;
-    background-attachment: fixed !important;
-    position: relative;
-    /* transition between background gradients */
-    transition: background 0.5s ease;
-}
-
-.page-banner::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 40px; /* Reduced to show more image */
-    background: linear-gradient(to bottom, transparent, var(--bg-base));
-    pointer-events: none;
-}
+/* Category Banners removed - combined with header */
 
 .header-left {
     display: flex;

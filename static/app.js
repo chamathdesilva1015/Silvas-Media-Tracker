@@ -201,15 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Media Tracker App v240 Initializing...");
     const navLinks = document.querySelectorAll('.nav-link');
     const pageTitle = document.getElementById('pageTitle');
-    const pageBanner = document.getElementById('pageBanner');
 
     const updateTheme = () => {
         const theme = currentCategory.toLowerCase().replace(' ', '-');
         document.body.setAttribute('data-theme', theme);
         
-        // Update banner background
-        pageBanner.style.background = 'var(--theme-banner)';
-
         // Update mesh blob positions for "movement"
         const blobs = document.querySelectorAll('.mesh-blob');
         blobs.forEach((blob, i) => {
