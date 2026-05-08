@@ -68,6 +68,11 @@
     --theme-header-bg: url('manga_header.png');
 }
 
+[data-theme="manga"] header::before {
+    background-image: linear-gradient(rgba(46, 204, 113, 0.4), rgba(46, 204, 113, 0.4)), url('manga_header.png');
+    background-blend-mode: multiply;
+}
+
 [data-theme="anime"] {
     --theme-accent: #f1c40f; /* Yellow */
     --theme-accent-rgb: 241, 196, 15;
