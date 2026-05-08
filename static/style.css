@@ -430,8 +430,8 @@ header::before {
     top: 0; left: 0; right: 0; bottom: 0;
     background-image: var(--theme-header-bg);
     background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background-position: center top;
+    background-repeat: no-repeat;
     opacity: 0.6; /* Less dark */
     z-index: -1;
     transition: opacity 0.5s ease;
@@ -485,8 +485,8 @@ header::before {
     height: 140px;
     background: var(--theme-header-bg) !important;
     background-size: cover !important;
-    background-position: center !important;
-    background-attachment: fixed !important;
+    background-position: center top !important;
+    background-repeat: no-repeat !important;
     position: relative;
     /* transition between background gradients */
     transition: background 0.5s ease;
