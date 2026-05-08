@@ -432,6 +432,7 @@ header::before {
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
+    background-attachment: fixed;
     opacity: 0.6; /* Less dark */
     z-index: -1;
     transition: opacity 0.5s ease;
@@ -487,6 +488,7 @@ header::before {
     background-size: cover !important;
     background-position: center top !important;
     background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
     position: relative;
     /* transition between background gradients */
     transition: background 0.5s ease;
