@@ -3136,15 +3136,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const icon = item.querySelector('i');
                 if (idx < activeIndex) {
                     item.style.opacity = '1';
-                    if (icon) icon.className = 'fas fa-check';
+                    if (icon) icon.className = 'fas fa-check fa-fw';
                     if (icon) icon.style.color = '#2ed573';
                 } else if (idx === activeIndex) {
                     item.style.opacity = '1';
-                    if (icon) icon.className = 'fas fa-circle-notch fa-spin';
+                    if (icon) icon.className = 'fas fa-circle-notch fa-spin fa-fw';
                     if (icon) icon.style.color = 'var(--theme-accent)';
                 } else {
                     item.style.opacity = '0.5';
-                    if (icon) icon.className = 'far fa-circle';
+                    if (icon) icon.className = 'far fa-circle fa-fw';
                     if (icon) icon.style.color = '';
                 }
             });
