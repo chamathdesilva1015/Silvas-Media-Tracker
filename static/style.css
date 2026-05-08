@@ -363,26 +363,7 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     color: #fff !important;
 }
 
-/* Sliding Indicator */
-.premium-segmented-control .tuning-btn[data-mode="safe"].active ~ .segmented-indicator { transform: translateX(0%); }
-.premium-segmented-control .tuning-btn[data-mode="balanced"].active ~ .segmented-indicator { transform: translateX(100%); }
-.premium-segmented-control .tuning-btn[data-mode="adventure"].active ~ .segmented-indicator { transform: translateX(200%); }
-.premium-segmented-control .tuning-btn[data-mode="hidden"].active ~ .segmented-indicator { transform: translateX(300%); }
 
-.segmented-indicator {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: calc(25% - 2px);
-    height: calc(100% - 8px);
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    z-index: 1;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
 .suggestion-control-panel {
     flex-direction: row;
