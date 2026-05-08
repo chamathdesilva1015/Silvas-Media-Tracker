@@ -3092,23 +3092,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const progress = Math.min(95, (elapsed / estimatedTime) * 100);
             if (stepLineProgress) stepLineProgress.style.width = `${progress}%`;
             
+            const remaining = Math.max(1, Math.round((estimatedTime - elapsed) / 1000));
+            
             // Update steps based on progress
             if (progress < 25) {
                 updateActiveStep(0);
                 if (loadingText) loadingText.textContent = "Scanning your library...";
-                if (loadingSubtext) loadingSubtext.textContent = "Finding your highest-rated seeds.";
+                if (loadingSubtext) loadingSubtext.textContent = `Finding your highest-rated seeds. (Est. ${remaining}s remaining)`;
             } else if (progress < 60) {
                 updateActiveStep(1);
                 if (loadingText) loadingText.textContent = `Querying ${isSlow ? 'Jikan' : 'TMDB'}...`;
-                if (loadingSubtext) loadingSubtext.textContent = "Fetching raw recommendations.";
+                if (loadingSubtext) loadingSubtext.textContent = `Fetching raw recommendations. (Est. ${remaining}s remaining)`;
             } else if (progress < 85) {
                 updateActiveStep(2);
                 if (loadingText) loadingText.textContent = "Filtering duplicates...";
-                if (loadingSubtext) loadingSubtext.textContent = "Ensuring distinct suggestions.";
+                if (loadingSubtext) loadingSubtext.textContent = `Ensuring distinct suggestions. (Est. ${remaining}s remaining)`;
             } else {
                 updateActiveStep(3);
                 if (loadingText) loadingText.textContent = "Finalizing picks...";
-                if (loadingSubtext) loadingSubtext.textContent = "Preparing the display.";
+                if (loadingSubtext) loadingSubtext.textContent = `Preparing the display. (Est. ${remaining}s remaining)`;
             }
         }, interval);
         
@@ -3131,6 +3133,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const abortController = new AbortController();
         const abortTimeout = setTimeout(() => abortController.abort(), 60000);
 
+        let suggestionsData = null;
+
         try {
             const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
                 headers: getAuthHeaders(false), // Guests can use this too
@@ -3139,68 +3143,8 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(abortTimeout);
 
             if (!res.ok) throw new Error('Failed to fetch suggestions');
-            const data = await res.json();
+            suggestionsData = await res.json();
             
-            if (data.length === 0) {
-                suggestionError.style.display = 'block';
-                suggestionError.textContent = "We don't have enough highly-rated data in your tracker to make good suggestions yet!";
-            } else {
-                data.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'suggestion-card';
-                    
-                    const coverUrl = item.cover_url || 'https://via.placeholder.com/180x270/2c3e50/ecf0f1?text=No+Poster';
-                    const year = item.release_year ? `(${item.release_year})` : '';
-                    const genres = item.genres ? `<div class="suggestion-genres">${item.genres}</div>` : '';
-                    const director = item.director ? `<div class="suggestion-director">${item.type === 'Movies' ? 'Dir.' : 'By'} ${item.director}</div>` : '';
-                    const overview = item.overview ? `<div class="suggestion-overview">${item.overview}</div>` : '';
-                    
-                    card.innerHTML = `
-                        <div class="suggestion-pass-btn" title="Pass (Never show again)"><i class="fas fa-times"></i></div>
-                        <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
-                        <div class="suggestion-title">${item.title}</div>
-                        <div class="suggestion-meta">${item.type} ${year}</div>
-                        ${director}
-                        ${genres}
-                        ${overview}
-                        <div class="suggestion-reason">${item.reason}</div>
-                    `;
-                    
-                    const passBtn = card.querySelector('.suggestion-pass-btn');
-                    if (!localStorage.getItem('admin_key')) {
-                        passBtn.style.display = 'none';
-                    } else {
-                        passBtn.addEventListener('click', async () => {
-                            passBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                            try {
-                                const pRes = await fetch('/api/suggestions/pass', {
-                                    method: 'POST',
-                                    headers: getAuthHeaders(true),
-                                    body: JSON.stringify({ 
-                                        type: item.type, 
-                                        tmdb_id: item.tmdb_id,
-                                        title: item.title
-                                    })
-                                });
-                                if (pRes.ok) {
-                                    card.style.opacity = '0.3';
-                                    card.style.pointerEvents = 'none';
-                                    passBtn.innerHTML = '<i class="fas fa-check" style="color:#2ed573;"></i>';
-                                } else {
-                                    throw new Error('Failed to pass');
-                                }
-                            } catch (e) {
-                                console.error("Pass error:", e);
-                                passBtn.innerHTML = '<i class="fas fa-times"></i>';
-                            }
-                        });
-                    }
-
-                    suggestionResults.appendChild(card);
-                });
-                suggestionResults.style.display = 'grid';
-                if (suggestionControls) suggestionControls.style.display = 'block';
-            }
         } catch (err) {
             console.error("Suggestion Engine Error:", err);
             suggestionError.style.display = 'block';
@@ -3208,9 +3152,78 @@ document.addEventListener('DOMContentLoaded', () => {
             if (suggestionControls) suggestionControls.style.display = 'block'; // Allow retry on error
         } finally {
             clearInterval(progressInterval);
+            
+            // Force bar to 100% and mark all completed
             if (stepLineProgress) stepLineProgress.style.width = '100%';
             steps.forEach(s => { if (s) { s.classList.remove('active'); s.classList.add('completed'); } });
-            suggestionLoading.style.display = 'none';
+            
+            // Wait for the animation to finish before showing results
+            setTimeout(() => {
+                suggestionLoading.style.display = 'none';
+                
+                if (suggestionsData) {
+                    if (suggestionsData.length === 0) {
+                        suggestionError.style.display = 'block';
+                        suggestionError.textContent = "We don't have enough highly-rated data in your tracker to make good suggestions yet!";
+                    } else {
+                        suggestionsData.forEach(item => {
+                            const card = document.createElement('div');
+                            card.className = 'suggestion-card';
+                            
+                            const coverUrl = item.cover_url || 'https://via.placeholder.com/180x270/2c3e50/ecf0f1?text=No+Poster';
+                            const year = item.release_year ? `(${item.release_year})` : '';
+                            const genres = item.genres ? `<div class="suggestion-genres">${item.genres}</div>` : '';
+                            const director = item.director ? `<div class="suggestion-director">${item.type === 'Movies' ? 'Dir.' : 'By'} ${item.director}</div>` : '';
+                            const overview = item.overview ? `<div class="suggestion-overview">${item.overview}</div>` : '';
+                            
+                            card.innerHTML = `
+                                <div class="suggestion-pass-btn" title="Pass (Never show again)"><i class="fas fa-times"></i></div>
+                                <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
+                                <div class="suggestion-title">${item.title}</div>
+                                <div class="suggestion-meta">${item.type} ${year}</div>
+                                ${director}
+                                ${genres}
+                                ${overview}
+                                <div class="suggestion-reason">${item.reason}</div>
+                            `;
+                            
+                            const passBtn = card.querySelector('.suggestion-pass-btn');
+                            if (!localStorage.getItem('admin_key')) {
+                                passBtn.style.display = 'none';
+                            } else {
+                                passBtn.addEventListener('click', async () => {
+                                    passBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                                    try {
+                                        const pRes = await fetch('/api/suggestions/pass', {
+                                            method: 'POST',
+                                            headers: getAuthHeaders(true),
+                                            body: JSON.stringify({ 
+                                                type: item.type, 
+                                                tmdb_id: item.tmdb_id,
+                                                title: item.title
+                                            })
+                                        });
+                                        if (pRes.ok) {
+                                            card.style.opacity = '0.3';
+                                            card.style.pointerEvents = 'none';
+                                            passBtn.innerHTML = '<i class="fas fa-check" style="color:#2ed573;"></i>';
+                                        } else {
+                                            throw new Error('Failed to pass');
+                                        }
+                                    } catch (e) {
+                                        console.error("Pass error:", e);
+                                        passBtn.innerHTML = '<i class="fas fa-times"></i>';
+                                    }
+                                });
+                            }
+        
+                            suggestionResults.appendChild(card);
+                        });
+                        suggestionResults.style.display = 'grid';
+                        if (suggestionControls) suggestionControls.style.display = 'block';
+                    }
+                }
+            }, 800); // 800ms gives time for the 100% line to draw
         }
     }
 
