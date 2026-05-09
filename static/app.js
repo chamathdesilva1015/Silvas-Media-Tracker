@@ -3816,7 +3816,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
         // Desktop
-        modal.addEventListener('dblclick', (e) => {
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 const closeBtn = modal.querySelector('.close-btn');
                 if (closeBtn) {
