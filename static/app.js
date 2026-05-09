@@ -1594,9 +1594,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
 
-        updateLikeBtnUI(item.is_liked);
-
         const favPill = document.getElementById('quickInfoFavoritePill');
+        
+        if (item.isRecommendation) {
+            if (favPill) favPill.style.display = 'none';
+        } else {
+            if (favPill) favPill.style.display = 'flex';
+            updateLikeBtnUI(item.is_liked);
+        }
+
         if (favPill) {
             const newFavPill = favPill.cloneNode(true);
             favPill.parentNode.replaceChild(newFavPill, favPill);
@@ -2746,6 +2752,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCategoryTitleCount();
     updateTheme();
     window.updateAuthUI(); // Ensure auth UI is set before media loads
+    fetchRecentRecommendations(currentCategory);
     fetchMedia().then(() => {
         updateCategoryTitleCount();
     });
@@ -3409,6 +3416,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             backdrop_url: data.backdrop_url,
                             poster_url: data.cover_url,
                             overview: data.overview,
+                            genres: data.genres,
+                            runtime: data.runtime,
+                            director: data.director,
+                            content_rating: data.content_rating,
                             isRecommendation: true // Flag to hide rating
                         };
                         
