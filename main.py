@@ -1112,7 +1112,7 @@ def get_recent_recommendations(category: str, session: Session = Depends(get_ses
         select(Recommendation)
         .where(Recommendation.type == category)
         .order_by(Recommendation.date_added.desc())
-        .limit(10)
+        .limit(50)
     ).all()
     return recs
 
