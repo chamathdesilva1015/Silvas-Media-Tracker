@@ -117,10 +117,15 @@
                     
                     <div style="text-align: center;">
                         <h4 style="font-size: 0.85rem; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 700;">Recent 3 Recommendations:</h4>
-                        <div id="recentRecommendationsList" style="display: flex; flex-direction: column; gap: 16px; text-align: left;">
+                        <div id="recentRecommendationsList" style="display: flex; flex-direction: column; gap: 16px; text-align: left; margin-bottom: 1.5rem;">
                             <!-- Populated via JS -->
                             <div style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1rem;">No recommendations yet.</div>
                         </div>
+                        
+                        <button id="manageRecommendationsBtn" class="btn-secondary" style="width: 100%; padding: 1.2rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); transition: all 0.2s;">
+                            <strong>Recommendations</strong>
+                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">View, Delete, or Watch</span>
+                        </button>
                     </div>
                 </div>
 
@@ -172,11 +177,6 @@
                 <div id="devConsoleActions" style="display: none; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
                     <h3 class="serif" style="margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--theme-accent);">Developer Console</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-                        <button id="manageRecommendationsBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
-                            <strong>Recommendations</strong>
-                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">View, Delete, or Watch</span>
-                        </button>
-
                         <button id="logoutAdminBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.2); color: #e74c3c;">
                             <strong>Logout</strong>
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Revoke Admin Access</span>
@@ -731,16 +731,48 @@
 
             <!-- Category filter -->
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
-                <button class="rec-mgr-filter active" data-type="all">All</button>
-                <button class="rec-mgr-filter" data-type="Movies">Movies</button>
-                <button class="rec-mgr-filter" data-type="TV Series">TV Series</button>
-                <button class="rec-mgr-filter" data-type="Manga">Manga</button>
-                <button class="rec-mgr-filter" data-type="Anime">Anime</button>
+                <button class="rec-mgr-filter active" data-type="Movies" style="--tab-color: #e50914;">Movies</button>
+                <button class="rec-mgr-filter" data-type="TV Series" style="--tab-color: #3498db;">TV Series</button>
+                <button class="rec-mgr-filter" data-type="Manga" style="--tab-color: #f39c12;">Manga</button>
+                <button class="rec-mgr-filter" data-type="Anime" style="--tab-color: #9b59b6;">Anime</button>
             </div>
 
             <div id="allRecommendationsList" style="max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 6px;">
                 <p style="text-align: center; opacity: 0.5; padding: 2rem;">Loading...</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Watch Recommendation Modal (Custom 3-step) -->
+    <div id="watchRecModal" class="modal" style="z-index: 4000;">
+        <div class="modal-content" style="max-width: 400px; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center;">
+            <span class="close-btn" id="closeWatchRecBtn">&times;</span>
+            <h2 class="serif" id="watchRecTitle" style="margin-bottom: 0.4rem; font-size: 1.5rem;">Mark as Watched</h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem;">Rate this recommendation and confirm.</p>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Your Rating (Optional)</label>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                    <input type="number" id="watchRecRatingInput" step="0.5" min="0" max="10" placeholder="-" style="width: 80px; text-align: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1.2rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <span style="font-size: 1.2rem; color: var(--text-secondary);">/ 10</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Did you like it?</label>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button id="watchRecLikeBtn" class="btn-secondary" style="flex: 1; padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; transition: all 0.2s;">
+                        <i class="far fa-heart" style="margin-right: 6px;"></i> Yes
+                    </button>
+                    <button id="watchRecDislikeBtn" class="btn-secondary active" style="flex: 1; padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; transition: all 0.2s;">
+                        <i class="fas fa-times" style="margin-right: 6px;"></i> No
+                    </button>
+                </div>
+            </div>
+
+            <button id="watchRecSubmitBtn" class="btn-primary" style="width: 100%; padding: 1rem; border-radius: 12px; font-size: 1rem; font-weight: bold; background: var(--theme-accent); color: #000; border: none; cursor: pointer;">
+                Add to Database
+            </button>
         </div>
     </div>
 

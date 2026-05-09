@@ -2698,138 +2698,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Magic Auto-Fill removed as requested
 
-            // --- Manage Recommendations ---
-            const manageRecsBtn = document.getElementById('manageRecommendationsBtn');
-            const manageRecsModal = document.getElementById('manageRecommendationsModal');
-            const closeManageRecsBtn = document.getElementById('closeManageRecommendationsBtn');
-            const allRecsList = document.getElementById('allRecommendationsList');
-            let currentRecFilter = 'all';
-            let allRecsData = [];
-
-            async function fetchAllRecs() {
-                allRecsList.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">Loading...</p>';
-                try {
-                    const url = currentRecFilter === 'all'
-                        ? '/api/recommendations/all'
-                        : `/api/recommendations/all?type=${encodeURIComponent(currentRecFilter)}`;
-                    const res = await fetch(url, { headers: getAuthHeaders() });
-                    if (!res.ok) throw new Error('Failed');
-                    allRecsData = await res.json();
-                    renderAllRecs();
-                } catch (e) {
-                    allRecsList.innerHTML = '<p style="text-align:center;color:#ff6b6b;padding:2rem;">Could not load recommendations.</p>';
-                }
-            }
-
-            function renderAllRecs() {
-                if (!allRecsData.length) {
-                    allRecsList.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">No recommendations yet.</p>';
-                    return;
-                }
-                allRecsList.innerHTML = '';
-                allRecsData.forEach(rec => {
-                    const card = document.createElement('div');
-                    card.className = 'rec-mgr-card';
-
-                    const info = document.createElement('div');
-                    info.className = 'rec-mgr-card-info';
-
-                    const titleEl = document.createElement('div');
-                    titleEl.className = 'rec-mgr-card-title';
-                    titleEl.textContent = rec.title + (rec.year ? ` (${rec.year})` : '');
-
-                    const meta = document.createElement('div');
-                    meta.className = 'rec-mgr-card-meta';
-                    meta.textContent = `${rec.type} · By ${rec.recommender_name || 'Anonymous'}`;
-
-                    info.appendChild(titleEl);
-                    info.appendChild(meta);
-
-                    if (rec.note) {
-                        const noteEl = document.createElement('div');
-                        noteEl.className = 'rec-mgr-card-note';
-                        noteEl.textContent = `"${rec.note}"`;
-                        info.appendChild(noteEl);
-                    }
-
-                    const actions = document.createElement('div');
-                    actions.className = 'rec-mgr-card-actions';
-
-                    const watchBtn = document.createElement('button');
-                    watchBtn.className = 'rec-mgr-btn rec-mgr-btn-watch';
-                    watchBtn.textContent = '✓ Watched';
-                    watchBtn.title = 'Mark as watched and add to database';
-                    watchBtn.addEventListener('click', () => markRecWatched(rec, card));
-
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'rec-mgr-btn rec-mgr-btn-delete';
-                    deleteBtn.textContent = '✕ Delete';
-                    deleteBtn.addEventListener('click', () => deleteRec(rec.id, card));
-
-                    actions.appendChild(watchBtn);
-                    actions.appendChild(deleteBtn);
-
-                    card.appendChild(info);
-                    card.appendChild(actions);
-                    allRecsList.appendChild(card);
-                });
-            }
-
-            async function deleteRec(recId, cardEl) {
-                if (!confirm('Delete this recommendation? This cannot be undone.')) return;
-                try {
-                    const res = await fetch(`/api/recommendations/${recId}`, {
-                        method: 'DELETE',
-                        headers: getAuthHeaders()
-                    });
-                    if ((await res.json()).ok) {
-                        cardEl.style.opacity = '0';
-                        cardEl.style.transition = 'opacity 0.3s';
-                        setTimeout(() => cardEl.remove(), 320);
-                        allRecsData = allRecsData.filter(r => r.id !== recId);
-                    }
-                } catch (e) { alert('Error deleting recommendation.'); }
-            }
-
-            async function markRecWatched(rec, cardEl) {
-                const rating = prompt(`Add a rating for "${rec.title}" (0–10, half steps ok). Leave blank to add without rating:`);
-                if (rating === null) return; // User cancelled
-                const isLiked = confirm(`Did you like "${rec.title}"?`);
-                try {
-                    const res = await fetch(`/api/recommendations/${rec.id}/mark-watched`, {
-                        method: 'POST',
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify({ rating: rating.trim() || null, is_liked: isLiked })
-                    });
-                    const data = await res.json();
-                    if (data.ok) {
-                        cardEl.style.opacity = '0';
-                        cardEl.style.transition = 'opacity 0.3s';
-                        setTimeout(() => cardEl.remove(), 320);
-                        allRecsData = allRecsData.filter(r => r.id !== rec.id);
-                        fetchMedia();
-                        fetchRecentRecommendations(currentCategory);
-                    } else {
-                        alert(data.detail || 'Error adding to database.');
-                    }
-                } catch (e) { alert('Error: ' + e.message); }
-            }
-
-            if (manageRecsBtn) manageRecsBtn.onclick = () => {
-                manageRecsModal.classList.add('show');
-                fetchAllRecs();
-            };
-            if (closeManageRecsBtn) closeManageRecsBtn.onclick = () => manageRecsModal.classList.remove('show');
-
-            document.querySelectorAll('.rec-mgr-filter').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.rec-mgr-filter').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentRecFilter = btn.dataset.type;
-                    fetchAllRecs();
-                });
-            });
-
             // --- Manage Passed Suggestions ---
             const managePassedBtn = document.getElementById('managePassedBtn');
             const passedModal = document.getElementById('passedEntriesModal');
@@ -4003,6 +3871,193 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             lastTouchEnd = now;
+        });
+    });
+
+    // --- Manage Recommendations (Global) ---
+    const manageRecsBtn = document.getElementById('manageRecommendationsBtn');
+    const manageRecsModal = document.getElementById('manageRecommendationsModal');
+    const closeManageRecsBtn = document.getElementById('closeManageRecommendationsBtn');
+    const allRecsList = document.getElementById('allRecommendationsList');
+    let currentRecFilter = 'Movies'; // Default to Movies
+    let allRecsData = [];
+
+    // Custom watch modal flow
+    const watchRecModal = document.getElementById('watchRecModal');
+    const closeWatchRecBtn = document.getElementById('closeWatchRecBtn');
+    const watchRecRatingInput = document.getElementById('watchRecRatingInput');
+    const watchRecLikeBtn = document.getElementById('watchRecLikeBtn');
+    const watchRecDislikeBtn = document.getElementById('watchRecDislikeBtn');
+    const watchRecSubmitBtn = document.getElementById('watchRecSubmitBtn');
+    
+    let currentWatchRec = null;
+    let currentWatchCard = null;
+    let isWatchLiked = false;
+
+    if (closeWatchRecBtn) closeWatchRecBtn.onclick = () => watchRecModal.classList.remove('show');
+    if (watchRecLikeBtn) watchRecLikeBtn.onclick = () => {
+        isWatchLiked = true;
+        watchRecLikeBtn.classList.add('active');
+        watchRecDislikeBtn.classList.remove('active');
+    };
+    if (watchRecDislikeBtn) watchRecDislikeBtn.onclick = () => {
+        isWatchLiked = false;
+        watchRecDislikeBtn.classList.add('active');
+        watchRecLikeBtn.classList.remove('active');
+    };
+
+    function markRecWatched(rec, cardEl) {
+        currentWatchRec = rec;
+        currentWatchCard = cardEl;
+        watchRecRatingInput.value = '';
+        isWatchLiked = false;
+        watchRecDislikeBtn.classList.add('active');
+        watchRecLikeBtn.classList.remove('active');
+        watchRecModal.classList.add('show');
+        watchRecRatingInput.focus();
+    }
+
+    if (watchRecSubmitBtn) {
+        watchRecSubmitBtn.onclick = async () => {
+            if (!currentWatchRec) return;
+            watchRecSubmitBtn.disabled = true;
+            watchRecSubmitBtn.textContent = 'Adding...';
+            try {
+                const ratingStr = watchRecRatingInput.value.trim();
+                let finalRating = parseFloat(ratingStr);
+                if (!isNaN(finalRating)) {
+                    finalRating = Math.round(finalRating * 2) / 2;
+                } else {
+                    finalRating = null;
+                }
+
+                // If not logged in, we can't actually do this (server will reject), but UI shouldn't allow it anyway.
+                const res = await fetch(`/api/recommendations/${currentWatchRec.id}/mark-watched`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ rating: finalRating !== null ? finalRating.toString() : null, is_liked: isWatchLiked })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    watchRecModal.classList.remove('show');
+                    if (currentWatchCard) {
+                        currentWatchCard.style.opacity = '0';
+                        currentWatchCard.style.transition = 'opacity 0.3s';
+                        setTimeout(() => currentWatchCard.remove(), 320);
+                    }
+                    allRecsData = allRecsData.filter(r => r.id !== currentWatchRec.id);
+                    fetchMedia();
+                    fetchRecentRecommendations(currentCategory);
+                } else {
+                    alert(data.detail || 'Error adding to database.');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            } finally {
+                watchRecSubmitBtn.disabled = false;
+                watchRecSubmitBtn.textContent = 'Add to Database';
+            }
+        };
+    }
+
+    async function fetchAllRecs() {
+        allRecsList.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">Loading...</p>';
+        try {
+            const url = `/api/recommendations/all?type=${encodeURIComponent(currentRecFilter)}`;
+            const res = await fetch(url, { headers: getAuthHeaders() });
+            if (!res.ok) throw new Error('Failed');
+            allRecsData = await res.json();
+            renderAllRecs();
+        } catch (e) {
+            allRecsList.innerHTML = '<p style="text-align:center;color:#ff6b6b;padding:2rem;">Could not load recommendations.</p>';
+        }
+    }
+
+    function renderAllRecs() {
+        if (!allRecsData.length) {
+            allRecsList.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">No recommendations yet.</p>';
+            return;
+        }
+        allRecsList.innerHTML = '';
+        allRecsData.forEach(rec => {
+            const card = document.createElement('div');
+            card.className = 'rec-mgr-card';
+
+            const info = document.createElement('div');
+            info.className = 'rec-mgr-card-info';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'rec-mgr-card-title';
+            titleEl.textContent = rec.title + (rec.year ? ` (${rec.year})` : '');
+
+            const meta = document.createElement('div');
+            meta.className = 'rec-mgr-card-meta';
+            meta.textContent = `${rec.type} · By ${rec.recommender_name || 'Anonymous'}`;
+
+            info.appendChild(titleEl);
+            info.appendChild(meta);
+
+            if (rec.note) {
+                const noteEl = document.createElement('div');
+                noteEl.className = 'rec-mgr-card-note';
+                noteEl.textContent = `"${rec.note}"`;
+                info.appendChild(noteEl);
+            }
+
+            const actions = document.createElement('div');
+            actions.className = 'rec-mgr-card-actions';
+
+            // ONLY show Watch and Delete buttons if logged in as Admin!
+            if (runtimeAdminKey) {
+                const watchBtn = document.createElement('button');
+                watchBtn.className = 'rec-mgr-btn rec-mgr-btn-watch';
+                watchBtn.textContent = '✓ Watched';
+                watchBtn.title = 'Mark as watched and add to database';
+                watchBtn.addEventListener('click', () => markRecWatched(rec, card));
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'rec-mgr-btn rec-mgr-btn-delete';
+                deleteBtn.textContent = '✕ Delete';
+                deleteBtn.addEventListener('click', () => deleteRec(rec.id, card));
+
+                actions.appendChild(watchBtn);
+                actions.appendChild(deleteBtn);
+            }
+
+            card.appendChild(info);
+            card.appendChild(actions);
+            allRecsList.appendChild(card);
+        });
+    }
+
+    async function deleteRec(recId, cardEl) {
+        if (!confirm('Delete this recommendation? This cannot be undone.')) return;
+        try {
+            const res = await fetch(`/api/recommendations/${recId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            if ((await res.json()).ok) {
+                cardEl.style.opacity = '0';
+                cardEl.style.transition = 'opacity 0.3s';
+                setTimeout(() => cardEl.remove(), 320);
+                allRecsData = allRecsData.filter(r => r.id !== recId);
+            }
+        } catch (e) { alert('Error deleting recommendation.'); }
+    }
+
+    if (manageRecsBtn) manageRecsBtn.onclick = () => {
+        manageRecsModal.classList.add('show');
+        fetchAllRecs();
+    };
+    if (closeManageRecsBtn) closeManageRecsBtn.onclick = () => manageRecsModal.classList.remove('show');
+
+    document.querySelectorAll('.rec-mgr-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.rec-mgr-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentRecFilter = btn.dataset.type;
+            fetchAllRecs();
         });
     });
 });

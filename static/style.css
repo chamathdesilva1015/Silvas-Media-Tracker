@@ -3248,6 +3248,12 @@ textarea:focus {
     color: var(--text-primary);
 }
 
+.btn-secondary.active {
+    background: rgba(var(--theme-accent-rgb), 0.2);
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+}
+
 /* Toast Notification System */
 .toast {
     position: fixed;
@@ -5849,10 +5855,14 @@ body.modal-open .bottom-nav {
     color: var(--text-primary);
 }
 .rec-mgr-filter.active {
-    background: rgba(var(--theme-accent-rgb), 0.15);
-    border-color: var(--theme-accent);
-    color: var(--theme-accent);
+    background: rgba(255,255,255,0.08); /* Fallback */
+    border-color: var(--tab-color, var(--theme-accent));
+    color: var(--tab-color, var(--theme-accent));
 }
+.rec-mgr-filter.active[data-type="Movies"] { background: rgba(229, 9, 20, 0.15); }
+.rec-mgr-filter.active[data-type="TV Series"] { background: rgba(52, 152, 219, 0.15); }
+.rec-mgr-filter.active[data-type="Manga"] { background: rgba(243, 156, 18, 0.15); }
+.rec-mgr-filter.active[data-type="Anime"] { background: rgba(155, 89, 182, 0.15); }
 
 .rec-mgr-card {
     background: rgba(255,255,255,0.03);

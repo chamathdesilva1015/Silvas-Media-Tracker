@@ -1122,8 +1122,8 @@ def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_
 
 @app.get("/api/recommendations/all")
 def get_all_recommendations(request: Request, type: Optional[str] = None, session: Session = Depends(get_session)):
-    """Returns all recommendations, optionally filtered by type. Admin only."""
-    check_readonly(request)
+    """Returns all recommendations, optionally filtered by type."""
+
     query = select(Recommendation).order_by(Recommendation.date_added.desc())
     if type and type != "all":
         query = query.where(Recommendation.type == type)
