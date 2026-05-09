@@ -3360,7 +3360,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (leaveRecBtn && recModal) {
         leaveRecBtn.addEventListener('click', () => {
-            recModal.style.display = 'block';
+            recModal.classList.add('show');
             // Reset to page 1
             recPage1.style.display = 'block';
             recPage2.style.display = 'none';
@@ -3375,12 +3375,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         closeRecBtn.addEventListener('click', () => {
-            recModal.style.display = 'none';
+            recModal.classList.remove('show');
         });
         
         window.addEventListener('click', (e) => {
             if (e.target === recModal) {
-                recModal.style.display = 'none';
+                recModal.classList.remove('show');
             }
         });
         
@@ -3494,7 +3494,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 if (result.status === 'success') {
                     alert('Recommendation submitted successfully!');
-                    recModal.style.display = 'none';
+                    recModal.classList.remove('show');
                 } else {
                     alert('Error submitting recommendation.');
                 }
