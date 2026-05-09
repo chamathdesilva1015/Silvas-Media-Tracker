@@ -3649,20 +3649,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(`/api/recommendations/check?ext_id=${selectedRecItem.tmdb_id}&type=${category}`);
                 const data = await response.json();
                 
-                if (!data.allow_recommendation) {
+                if (!data.allow_recommendation || data.in_library) {
                     // Show duplicate message
                     recPage2Instructions.style.display = 'none';
                     recSearchResultsContainer.style.display = 'none';
                     recDuplicateMessage.style.display = 'block';
                     
                     let msg = `"${selectedRecItem.title}" is already in the database.`;
+                    const continueBtn = document.getElementById('recContinueDuplicateBtn');
+                    
                     if (data.in_library) {
                         msg = `"${selectedRecItem.title}" is already in your tracked list!`;
-                    } else if (data.rec_count >= 2) {
-                        msg = `"${selectedRecItem.title}" has already been recommended twice, so all good!`;
+                        if (continueBtn) continueBtn.style.display = 'block';
                     }
+                    
+                    if (data.rec_count >= 2) {
+                        msg = `"${selectedRecItem.title}" has already been recommended twice, so all good!`;
+                        if (continueBtn) continueBtn.style.display = 'none';
+                    }
+                    
                     recDuplicateText.textContent = msg;
-                    return;
+                    
+                    if (!data.allow_recommendation) {
+                        return;
+                    }
+                    return; // Wait for user to click Continue or Recommend Another
                 }
             } catch (error) {
                 console.error('Check error:', error);
@@ -3677,6 +3688,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (recCloseDuplicateBtn) {
             recCloseDuplicateBtn.addEventListener('click', () => {
                 recModal.classList.remove('show');
+            });
+        }
+        
+        const recContinueDuplicateBtn = document.getElementById('recContinueDuplicateBtn');
+        if (recContinueDuplicateBtn) {
+            recContinueDuplicateBtn.addEventListener('click', () => {
+                // Go to page 3
+                recPage2.style.display = 'none';
+                recPage3.style.display = 'block';
+                updateRecSteps(3);
+                
+                // Reset Page 2 display for next time
+                recPage2Instructions.style.display = 'block';
+                recSearchResultsContainer.style.display = 'block';
+                recDuplicateMessage.style.display = 'none';
+                recContinueDuplicateBtn.style.display = 'none';
             });
         }
         
@@ -3698,6 +3725,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 recPage2Instructions.style.display = 'block';
                 recSearchResultsContainer.style.display = 'block';
                 recDuplicateMessage.style.display = 'none';
+                if (recContinueDuplicateBtn) recContinueDuplicateBtn.style.display = 'none';
                 
                 updateRecSteps(1);
             });
