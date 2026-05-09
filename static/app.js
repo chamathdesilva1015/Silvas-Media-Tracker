@@ -682,7 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer;">
                     <div class="discovery-details">
                         <div class="discovery-label">Recently Discovered</div>
-                        <div class="discovery-title">${data.most_recent?.item?.title || 'Unknown'} (${data.most_recent?.item?.release_year || 'N/A'})</div>
+                        <div class="discovery-title">${data.most_recent?.item?.title || 'Unknown'}</div>
                         <div class="discovery-date">Added on ${data.most_recent?.display_date || 'N/A'}</div>
                     </div>
                 </div>
