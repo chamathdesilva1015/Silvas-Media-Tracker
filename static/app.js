@@ -3401,7 +3401,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <img src="${posterUrl}" class="rec-entry-poster" alt="Poster">
                         <div class="rec-entry-info">
                             <div class="rec-entry-title">${rec.title}</div>
-                            <div class="rec-entry-meta">${rec.year || '????'} • ${rec.name || 'Anonymous'}</div>
+                            <div class="rec-entry-meta">
+                                ${rec.year || '????'} • ${rec.recommender_name || 'Anonymous'}
+                                <div style="font-size: 0.65rem; opacity: 0.5; margin-top: 2px;">
+                                    ${new Date(rec.date_added + 'Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${new Date(rec.date_added + 'Z').toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                                </div>
+                            </div>
                         </div>
                         <div class="rec-entry-actions">
                             ${!isWatched && computeCanEdit() ? `
@@ -3744,7 +3749,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         recSubmitBtn.addEventListener('click', async () => {
-            const note = recNoteInput.value.trim();
             const name = recNameInput.value.trim();
             
             if (!selectedRecItem) {
@@ -3760,8 +3764,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 year: selectedRecItem.release_year ? parseInt(selectedRecItem.release_year) : null,
                 ext_id: selectedRecItem.tmdb_id,
                 type: category,
-                note: note || null,
-                recommender_name: name || null
+                note: null,
+                recommender_name: name || 'Anonymous'
             };
             
             try {

@@ -2403,10 +2403,15 @@ delete-btn {
 
 .hub-accordion {
     background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(var(--theme-accent-rgb), 0.15);
     border-radius: 16px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hub-accordion.open {
+    border-color: rgba(var(--theme-accent-rgb), 0.3);
+    box-shadow: 0 0 20px rgba(var(--theme-accent-rgb), 0.05);
 }
 
 .hub-accordion-header {
