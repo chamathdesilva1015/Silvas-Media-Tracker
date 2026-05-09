@@ -1143,5 +1143,60 @@ def submit_recommendation(rec: Recommendation, session: Session = Depends(get_se
     session.commit()
     return {"status": "success"}
 
+@app.get("/api/recommendations/all")
+def get_all_recommendations(request: Request, type: Optional[str] = None, session: Session = Depends(get_session)):
+    """Returns all recommendations, optionally filtered by type. Admin only."""
+    check_readonly(request)
+    query = select(Recommendation).order_by(Recommendation.date_added.desc())
+    if type and type != "all":
+        query = query.where(Recommendation.type == type)
+    recs = session.exec(query).all()
+    return recs
+
+@app.delete("/api/recommendations/{rec_id}")
+def delete_recommendation(rec_id: int, request: Request, session: Session = Depends(get_session)):
+    """Deletes a recommendation by ID. Admin only."""
+    check_readonly(request)
+    rec = session.get(Recommendation, rec_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recommendation not found.")
+    session.delete(rec)
+    session.commit()
+    return {"ok": True}
+
+class MarkWatchedPayload(BaseModel):
+    rating: Optional[str] = None
+    is_liked: bool = False
+
+@app.post("/api/recommendations/{rec_id}/mark-watched")
+def mark_recommendation_watched(rec_id: int, payload: MarkWatchedPayload, request: Request, session: Session = Depends(get_session)):
+    """Converts a recommendation into an official MediaItem entry, then deletes the rec. Admin only."""
+    check_readonly(request)
+    rec = session.get(Recommendation, rec_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recommendation not found.")
+
+    # Check for duplicates
+    existing = session.exec(
+        select(MediaItem).where(MediaItem.tmdb_id == rec.ext_id, MediaItem.type == rec.type)
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail=f"'{rec.title}' already exists in the database.")
+
+    new_item = MediaItem(
+        title=rec.title,
+        release_year=rec.year,
+        type=rec.type,
+        tmdb_id=rec.ext_id,
+        rating=payload.rating,
+        is_liked=payload.is_liked,
+        source="recommendation",
+    )
+    session.add(new_item)
+    session.delete(rec)
+    session.commit()
+    session.refresh(new_item)
+    return {"ok": True, "item_id": new_item.id}
+
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

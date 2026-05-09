@@ -5831,3 +5831,92 @@ body.modal-open .bottom-nav {
     z-index: 2000;
     position: relative;
 }
+
+/* --- Recommendation Manager Modal --- */
+.rec-mgr-filter {
+    padding: 0.4rem 1rem;
+    border-radius: 99px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.rec-mgr-filter:hover {
+    background: rgba(255,255,255,0.08);
+    color: var(--text-primary);
+}
+.rec-mgr-filter.active {
+    background: rgba(var(--theme-accent-rgb), 0.15);
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+}
+
+.rec-mgr-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: background 0.2s;
+}
+.rec-mgr-card:hover {
+    background: rgba(255,255,255,0.06);
+}
+.rec-mgr-card-info {
+    flex: 1;
+    min-width: 0;
+}
+.rec-mgr-card-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.rec-mgr-card-meta {
+    font-size: 0.8rem;
+    color: var(--theme-accent);
+    margin-top: 2px;
+}
+.rec-mgr-card-note {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 4px;
+}
+.rec-mgr-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.rec-mgr-btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+.rec-mgr-btn-watch {
+    background: rgba(46, 204, 113, 0.15);
+    border-color: rgba(46, 204, 113, 0.4);
+    color: #2ecc71;
+}
+.rec-mgr-btn-watch:hover {
+    background: rgba(46, 204, 113, 0.3);
+}
+.rec-mgr-btn-delete {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+}
+.rec-mgr-btn-delete:hover {
+    background: rgba(231, 76, 60, 0.25);
+}

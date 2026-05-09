@@ -1703,7 +1703,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (newYear) payload.release_year = newYear;
                 if (newTitle) payload.title = newTitle;
-                
+
+                // If this is a recommendation profile, confirm watched before proceeding
+                if (item.isRecommendation && item._recId) {
+                    const confirmed = confirm(`Mark "${item.title}" as watched and add it to your finished database?`);
+                    if (!confirmed) return;
+                    const isLiked = confirm(`Did you like "${item.title}"?`);
+                    btn.disabled = true;
+                    btn.textContent = 'Saving...';
+                    try {
+                        const res = await fetch(`/api/recommendations/${item._recId}/mark-watched`, {
+                            method: 'POST',
+                            headers: getAuthHeaders(),
+                            body: JSON.stringify({ rating: payload.rating || null, is_liked: isLiked })
+                        });
+                        const data = await res.json();
+                        if (data.ok) {
+                            quickInfoModal.classList.remove('show');
+                            fetchMedia();
+                            fetchRecentRecommendations(currentCategory);
+                        } else {
+                            alert(data.detail || 'Error adding to database.');
+                        }
+                    } catch (e) { alert(e.message); }
+                    finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
+                    return;
+                }
+
                 btn.disabled = true;
                 btn.textContent = 'Saving...';
                 try {
@@ -2656,8 +2682,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.info-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                if (btn.id === 'suggestMeBtn') return; // Ignore Suggest Me Something button
                 const section = btn.getAttribute('data-section');
+                if (!section) return; // Ignore buttons without a data-section (e.g. dev console)
                 iTitle.innerText = section;
                 iSubtitle.innerText = infoSubtitles[section] || 'Detailed methodology and project documentation.';
                 iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
@@ -2670,8 +2696,139 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function setupDevConsole() {
 
-
             // Magic Auto-Fill removed as requested
+
+            // --- Manage Recommendations ---
+            const manageRecsBtn = document.getElementById('manageRecommendationsBtn');
+            const manageRecsModal = document.getElementById('manageRecommendationsModal');
+            const closeManageRecsBtn = document.getElementById('closeManageRecommendationsBtn');
+            const allRecsList = document.getElementById('allRecommendationsList');
+            let currentRecFilter = 'all';
+            let allRecsData = [];
+
+            async function fetchAllRecs() {
+                allRecsList.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">Loading...</p>';
+                try {
+                    const url = currentRecFilter === 'all'
+                        ? '/api/recommendations/all'
+                        : `/api/recommendations/all?type=${encodeURIComponent(currentRecFilter)}`;
+                    const res = await fetch(url, { headers: getAuthHeaders() });
+                    if (!res.ok) throw new Error('Failed');
+                    allRecsData = await res.json();
+                    renderAllRecs();
+                } catch (e) {
+                    allRecsList.innerHTML = '<p style="text-align:center;color:#ff6b6b;padding:2rem;">Could not load recommendations.</p>';
+                }
+            }
+
+            function renderAllRecs() {
+                if (!allRecsData.length) {
+                    allRecsList.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">No recommendations yet.</p>';
+                    return;
+                }
+                allRecsList.innerHTML = '';
+                allRecsData.forEach(rec => {
+                    const card = document.createElement('div');
+                    card.className = 'rec-mgr-card';
+
+                    const info = document.createElement('div');
+                    info.className = 'rec-mgr-card-info';
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'rec-mgr-card-title';
+                    titleEl.textContent = rec.title + (rec.year ? ` (${rec.year})` : '');
+
+                    const meta = document.createElement('div');
+                    meta.className = 'rec-mgr-card-meta';
+                    meta.textContent = `${rec.type} · By ${rec.recommender_name || 'Anonymous'}`;
+
+                    info.appendChild(titleEl);
+                    info.appendChild(meta);
+
+                    if (rec.note) {
+                        const noteEl = document.createElement('div');
+                        noteEl.className = 'rec-mgr-card-note';
+                        noteEl.textContent = `"${rec.note}"`;
+                        info.appendChild(noteEl);
+                    }
+
+                    const actions = document.createElement('div');
+                    actions.className = 'rec-mgr-card-actions';
+
+                    const watchBtn = document.createElement('button');
+                    watchBtn.className = 'rec-mgr-btn rec-mgr-btn-watch';
+                    watchBtn.textContent = '✓ Watched';
+                    watchBtn.title = 'Mark as watched and add to database';
+                    watchBtn.addEventListener('click', () => markRecWatched(rec, card));
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'rec-mgr-btn rec-mgr-btn-delete';
+                    deleteBtn.textContent = '✕ Delete';
+                    deleteBtn.addEventListener('click', () => deleteRec(rec.id, card));
+
+                    actions.appendChild(watchBtn);
+                    actions.appendChild(deleteBtn);
+
+                    card.appendChild(info);
+                    card.appendChild(actions);
+                    allRecsList.appendChild(card);
+                });
+            }
+
+            async function deleteRec(recId, cardEl) {
+                if (!confirm('Delete this recommendation? This cannot be undone.')) return;
+                try {
+                    const res = await fetch(`/api/recommendations/${recId}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
+                    if ((await res.json()).ok) {
+                        cardEl.style.opacity = '0';
+                        cardEl.style.transition = 'opacity 0.3s';
+                        setTimeout(() => cardEl.remove(), 320);
+                        allRecsData = allRecsData.filter(r => r.id !== recId);
+                    }
+                } catch (e) { alert('Error deleting recommendation.'); }
+            }
+
+            async function markRecWatched(rec, cardEl) {
+                const rating = prompt(`Add a rating for "${rec.title}" (0–10, half steps ok). Leave blank to add without rating:`);
+                if (rating === null) return; // User cancelled
+                const isLiked = confirm(`Did you like "${rec.title}"?`);
+                try {
+                    const res = await fetch(`/api/recommendations/${rec.id}/mark-watched`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ rating: rating.trim() || null, is_liked: isLiked })
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                        cardEl.style.opacity = '0';
+                        cardEl.style.transition = 'opacity 0.3s';
+                        setTimeout(() => cardEl.remove(), 320);
+                        allRecsData = allRecsData.filter(r => r.id !== rec.id);
+                        fetchMedia();
+                        fetchRecentRecommendations(currentCategory);
+                    } else {
+                        alert(data.detail || 'Error adding to database.');
+                    }
+                } catch (e) { alert('Error: ' + e.message); }
+            }
+
+            if (manageRecsBtn) manageRecsBtn.onclick = () => {
+                manageRecsModal.classList.add('show');
+                fetchAllRecs();
+            };
+            if (closeManageRecsBtn) closeManageRecsBtn.onclick = () => manageRecsModal.classList.remove('show');
+
+            document.querySelectorAll('.rec-mgr-filter').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.rec-mgr-filter').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentRecFilter = btn.dataset.type;
+                    fetchAllRecs();
+                });
+            });
 
             // --- Manage Passed Suggestions ---
             const managePassedBtn = document.getElementById('managePassedBtn');
@@ -3421,7 +3578,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             runtime: data.runtime,
                             director: data.director,
                             content_rating: data.content_rating,
-                            isRecommendation: true // Flag to hide rating
+                            isRecommendation: true, // Flag to hide like button
+                            _recId: rec1.id // For mark-watched via Save Changes
                         };
                         
                         window.openQuickInfo(item);
