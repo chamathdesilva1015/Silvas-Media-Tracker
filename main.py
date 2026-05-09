@@ -1094,6 +1094,17 @@ def search_multi(title: str, type: str, year: Optional[int] = None):
         return search_jikan_multi(title, "manga")
     return []
 
+@app.get("/api/recommendations/recent/{category}")
+def get_recent_recommendations(category: str, session: Session = Depends(get_session)):
+    """Fetches the last 3 recommendations for a category."""
+    recs = session.exec(
+        select(Recommendation)
+        .where(Recommendation.type == category)
+        .order_by(Recommendation.date_added.desc())
+        .limit(3)
+    ).all()
+    return recs
+
 @app.get("/api/recommendations/check")
 def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_session)):
     """Checks if a media item already exists in the library or recommendations."""

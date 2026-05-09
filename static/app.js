@@ -279,6 +279,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     typeInput.value = category;
                 }
 
+                // Fetch recent recommendations for this category
+                fetchRecentRecommendations(category);
+
                 filterState.genres.clear();
                 updateActiveFilterCount();
                 populateGenreFilters();
@@ -3335,6 +3338,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    async function fetchRecentRecommendations(category) {
+        const listContainer = document.getElementById('recentRecommendationsList');
+        if (!listContainer) return;
+        
+        try {
+            const response = await fetch(`/api/recommendations/recent/${category}`);
+            const data = await response.json();
+            
+            listContainer.innerHTML = '';
+            
+            if (data.length === 0) {
+                listContainer.innerHTML = '<div style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1rem;">No recommendations yet.</div>';
+                return;
+            }
+            
+            data.forEach(rec => {
+                const div = document.createElement('div');
+                div.className = 'recent-rec-item';
+                div.style.background = 'rgba(255,255,255,0.02)';
+                div.style.padding = '1rem';
+                div.style.borderRadius = '12px';
+                div.style.border = '1px solid rgba(255,255,255,0.05)';
+                
+                const title = document.createElement('div');
+                title.style.fontWeight = '700';
+                title.style.fontSize = '0.95rem';
+                title.style.color = 'var(--text-primary)';
+                title.textContent = rec.title;
+                if (rec.year) title.textContent += ` (${rec.year})`;
+                
+                const byWho = document.createElement('div');
+                byWho.style.fontSize = '0.85rem';
+                byWho.style.color = 'var(--theme-accent)';
+                byWho.style.marginTop = '4px';
+                byWho.textContent = `Recommended by ${rec.recommender_name || 'Anonymous'}`;
+                
+                div.appendChild(title);
+                div.appendChild(byWho);
+                
+                if (rec.note) {
+                    const note = document.createElement('div');
+                    note.style.fontSize = '0.8rem';
+                    note.style.color = 'var(--text-secondary)';
+                    note.style.marginTop = '6px';
+                    note.style.fontStyle = 'italic';
+                    note.textContent = `"${rec.note}"`;
+                    div.appendChild(note);
+                }
+                
+                listContainer.appendChild(div);
+            });
+        } catch (error) {
+            console.error('Error fetching recent recommendations:', error);
+        }
+    }
+
     const leaveRecBtn = document.getElementById('leaveRecommendationBtn');
     const recModal = document.getElementById('recommendationModal');
     const closeRecBtn = document.getElementById('closeRecommendationBtn');
@@ -3614,6 +3673,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (result.status === 'success') {
                     alert('Recommendation submitted successfully!');
                     recModal.classList.remove('show');
+                    // Refresh recent recommendations
+                    fetchRecentRecommendations(category);
                 } else {
                     alert('Error submitting recommendation.');
                 }
