@@ -3812,4 +3812,39 @@ document.addEventListener('DOMContentLoaded', () => {
     currentSubTab = 'Info';
     handleCategorySwitch('Movies');
 
+    // Global Modal Close on Double Click / Double Tap
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        // Desktop
+        modal.addEventListener('dblclick', (e) => {
+            if (e.target === modal) {
+                const closeBtn = modal.querySelector('.close-btn');
+                if (closeBtn) {
+                    closeBtn.click();
+                } else {
+                    modal.classList.remove('show');
+                    document.body.classList.remove('modal-open');
+                }
+            }
+        });
+
+        // Mobile
+        let lastTouchEnd = 0;
+        modal.addEventListener('touchend', (e) => {
+            const now = new Date().getTime();
+            if (now - lastTouchEnd <= 300) {
+                if (e.target === modal) {
+                    e.preventDefault(); // Prevent ghost click
+                    const closeBtn = modal.querySelector('.close-btn');
+                    if (closeBtn) {
+                        closeBtn.click();
+                    } else {
+                        modal.classList.remove('show');
+                        document.body.classList.remove('modal-open');
+                    }
+                }
+            }
+            lastTouchEnd = now;
+        });
+    });
 });
