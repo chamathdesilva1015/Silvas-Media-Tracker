@@ -225,3 +225,40 @@ def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int
     except Exception as e:
         print(f"Jikan Recommendations Error for {media_type} ID {mal_id}: {e}")
         return []
+
+def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
+    """
+    Searches for media items and returns a list of results.
+    """
+    url = f"{BASE_URL}/{media_type}"
+    params = {"q": title, "limit": 10}
+    
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        if response.status_code == 429:
+            time.sleep(1)
+            response = requests.get(url, params=params, timeout=5)
+            
+        response.raise_for_status()
+        data = response.json()
+        
+        results = data.get("data", [])
+        formatted_results = []
+        for r in results:
+            year = ""
+            if media_type == "manga":
+                year = str(r.get("published", {}).get("prop", {}).get("from", {}).get("year", "") or "")
+            else:
+                year = str(r.get("aired", {}).get("prop", {}).get("from", {}).get("year", "") or "")
+                
+            formatted_results.append({
+                "tmdb_id": r.get("mal_id"),
+                "title": r.get("title_english") or r.get("title"),
+                "release_year": year,
+                "cover_url": r.get("images", {}).get("webp", {}).get("large_image_url"),
+                "overview": r.get("synopsis")
+            })
+        return formatted_results
+    except Exception as e:
+        print(f"Jikan Multi Search Error for '{title}' ({media_type}): {e}")
+        return []

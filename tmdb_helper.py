@@ -94,6 +94,49 @@ def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie
     
     return None
 
+def search_tmdb_multi(title: str, year: Optional[int] = None, media_type: str = "movie") -> List[dict]:
+    """
+    Searches for media items and returns a list of results.
+    """
+    if not TMDB_API_KEY:
+        return []
+    
+    endpoint = "movie" if media_type == "movie" else "tv"
+    url = f"{BASE_URL}/search/{endpoint}"
+    
+    params = {
+        "query": title.strip(),
+    }
+    if TMDB_API_KEY and not TMDB_ACCESS_TOKEN:
+        params["api_key"] = TMDB_API_KEY
+    
+    if year:
+        if media_type == "movie":
+            params["primary_release_year"] = year
+        else:
+            params["first_air_date_year"] = year
+            
+    try:
+        headers = get_tmdb_headers()
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        
+        results = data.get("results", [])
+        formatted_results = []
+        for r in results[:10]: # Return top 10
+            formatted_results.append({
+                "tmdb_id": r.get("id"),
+                "title": r.get("name" if media_type == "tv" else "title"),
+                "release_year": (r.get("first_air_date" if media_type == "tv" else "release_date", ""))[:4],
+                "cover_url": f"https://image.tmdb.org/t/p/w500{r.get('poster_path')}" if r.get("poster_path") else None,
+                "overview": r.get("overview")
+            })
+        return formatted_results
+    except Exception as e:
+        print(f"TMDB Multi Search Error for '{title}' ({media_type}): {e}")
+        return []
+
 def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
     """
     Fetches genres, poster, director/creator, runtime, and content_rating.

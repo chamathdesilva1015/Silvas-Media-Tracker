@@ -716,6 +716,60 @@
         </div>
     </div>
 
+    <!-- Recommendation Modal -->
+    <div id="recommendationModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-btn" id="closeRecommendationBtn">&times;</span>
+            <h2 class="serif" id="recModalTitle">Leave a Recommendation</h2>
+            
+            <!-- Page 1: Title & Year -->
+            <div id="recPage1" class="rec-page">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Enter the title of the media you want to recommend.</p>
+                <div class="form-group">
+                    <label for="recTitleInput">Title *</label>
+                    <input type="text" id="recTitleInput" placeholder="e.g. Inception" required>
+                </div>
+                <div class="form-group">
+                    <label for="recYearInput">Year (Optional)</label>
+                    <input type="number" id="recYearInput" placeholder="e.g. 2010">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
+                    <button id="recNext1Btn" class="btn-primary">Next</button>
+                </div>
+            </div>
+            
+            <!-- Page 2: Search Results -->
+            <div id="recPage2" class="rec-page" style="display: none;">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Select the correct version from the results.</p>
+                <div id="recSearchResults" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
+                    <!-- Populated via JS -->
+                    <p style="text-align: center; opacity: 0.5;">Searching...</p>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
+                    <button id="recBack2Btn" class="btn-secondary">Back</button>
+                    <button id="recNext2Btn" class="btn-primary" disabled>Next</button>
+                </div>
+            </div>
+            
+            <!-- Page 3: Note & Name -->
+            <div id="recPage3" class="rec-page" style="display: none;">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Add a note and your name (optional).</p>
+                <div class="form-group">
+                    <label for="recNoteInput">Note (Optional)</label>
+                    <textarea id="recNoteInput" placeholder="Why are you recommending this?" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="recNameInput">Your Name (Optional)</label>
+                    <input type="text" id="recNameInput" placeholder="Anonymous">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
+                    <button id="recBack3Btn" class="btn-secondary">Back</button>
+                    <button id="recSubmitBtn" class="btn-primary">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="app.js?v=421"></script>

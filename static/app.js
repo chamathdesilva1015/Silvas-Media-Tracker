@@ -3336,9 +3336,172 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const leaveRecBtn = document.getElementById('leaveRecommendationBtn');
-    if (leaveRecBtn) {
+    const recModal = document.getElementById('recommendationModal');
+    const closeRecBtn = document.getElementById('closeRecommendationBtn');
+    
+    const recPage1 = document.getElementById('recPage1');
+    const recPage2 = document.getElementById('recPage2');
+    const recPage3 = document.getElementById('recPage3');
+    
+    const recTitleInput = document.getElementById('recTitleInput');
+    const recYearInput = document.getElementById('recYearInput');
+    const recNoteInput = document.getElementById('recNoteInput');
+    const recNameInput = document.getElementById('recNameInput');
+    
+    const recNext1Btn = document.getElementById('recNext1Btn');
+    const recBack2Btn = document.getElementById('recBack2Btn');
+    const recNext2Btn = document.getElementById('recNext2Btn');
+    const recBack3Btn = document.getElementById('recBack3Btn');
+    const recSubmitBtn = document.getElementById('recSubmitBtn');
+    
+    const recSearchResults = document.getElementById('recSearchResults');
+    
+    let selectedRecItem = null;
+    
+    if (leaveRecBtn && recModal) {
         leaveRecBtn.addEventListener('click', () => {
-            alert('Recommendation feature coming soon!');
+            recModal.style.display = 'block';
+            // Reset to page 1
+            recPage1.style.display = 'block';
+            recPage2.style.display = 'none';
+            recPage3.style.display = 'none';
+            selectedRecItem = null;
+            recNext2Btn.disabled = true;
+            recSearchResults.innerHTML = '';
+            recTitleInput.value = '';
+            recYearInput.value = '';
+            recNoteInput.value = '';
+            recNameInput.value = '';
+        });
+        
+        closeRecBtn.addEventListener('click', () => {
+            recModal.style.display = 'none';
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (e.target === recModal) {
+                recModal.style.display = 'none';
+            }
+        });
+        
+        recNext1Btn.addEventListener('click', async () => {
+            const title = recTitleInput.value.trim();
+            const year = recYearInput.value.trim();
+            
+            if (!title) {
+                alert('Please enter a title.');
+                return;
+            }
+            
+            recPage1.style.display = 'none';
+            recPage2.style.display = 'block';
+            recSearchResults.innerHTML = '<p style="text-align: center; opacity: 0.5;">Searching...</p>';
+            
+            try {
+                // Determine current category
+                const activeTab = document.querySelector('.tab-btn.active');
+                const category = activeTab ? activeTab.dataset.category : 'Movies';
+                
+                let url = `/api/search/multi?title=${encodeURIComponent(title)}&type=${encodeURIComponent(category)}`;
+                if (year) url += `&year=${year}`;
+                
+                const response = await fetch(url);
+                const results = await response.json();
+                
+                recSearchResults.innerHTML = '';
+                if (!results || results.length === 0) {
+                    recSearchResults.innerHTML = '<p style="text-align: center; opacity: 0.5;">No results found.</p>';
+                    return;
+                }
+                
+                results.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'rec-search-item';
+                    div.style.cssText = 'display: flex; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; margin-bottom: 8px;';
+                    
+                    if (item.cover_url) {
+                        const img = document.createElement('img');
+                        img.src = item.cover_url;
+                        img.style.cssText = 'width: 40px; height: 60px; object-fit: cover; border-radius: 4px;';
+                        div.appendChild(img);
+                    }
+                    
+                    const details = document.createElement('div');
+                    details.innerHTML = `<div><b>${item.title}</b></div><div style="font-size: 0.8rem; opacity: 0.7;">${item.release_year || 'N/A'}</div>`;
+                    div.appendChild(details);
+                    
+                    div.addEventListener('click', () => {
+                        // Deselect others
+                        document.querySelectorAll('.rec-search-item').forEach(el => el.style.background = 'rgba(255,255,255,0.05)');
+                        div.style.background = 'var(--theme-accent-muted)';
+                        selectedRecItem = item;
+                        recNext2Btn.disabled = false;
+                    });
+                    
+                    recSearchResults.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Search error:', error);
+                recSearchResults.innerHTML = '<p style="text-align: center; opacity: 0.5; color: var(--error-color);">Error searching.</p>';
+            }
+        });
+        
+        recBack2Btn.addEventListener('click', () => {
+            recPage2.style.display = 'none';
+            recPage1.style.display = 'block';
+        });
+        
+        recNext2Btn.addEventListener('click', () => {
+            recPage2.style.display = 'none';
+            recPage3.style.display = 'block';
+        });
+        
+        recBack3Btn.addEventListener('click', () => {
+            recPage3.style.display = 'none';
+            recPage2.style.display = 'block';
+        });
+        
+        recSubmitBtn.addEventListener('click', async () => {
+            const note = recNoteInput.value.trim();
+            const name = recNameInput.value.trim();
+            
+            if (!selectedRecItem) {
+                alert('Please select an item.');
+                return;
+            }
+            
+            const activeTab = document.querySelector('.tab-btn.active');
+            const category = activeTab ? activeTab.dataset.category : 'Movies';
+            
+            const payload = {
+                title: selectedRecItem.title,
+                year: selectedRecItem.release_year ? parseInt(selectedRecItem.release_year) : null,
+                ext_id: selectedRecItem.tmdb_id,
+                type: category,
+                note: note || null,
+                recommender_name: name || null
+            };
+            
+            try {
+                const response = await fetch('/api/recommendations/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Recommendation submitted successfully!');
+                    recModal.style.display = 'none';
+                } else {
+                    alert('Error submitting recommendation.');
+                }
+            } catch (error) {
+                console.error('Submit error:', error);
+                alert('Error submitting recommendation.');
+            }
         });
     }
     

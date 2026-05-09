@@ -59,6 +59,17 @@ class PassedSuggestion(SQLModel, table=True):
     title: Optional[str] = Field(default=None)
     passed_at: datetime = Field(default_factory=datetime.utcnow)
 
+class Recommendation(SQLModel, table=True):
+    """Stores recommendations left by users."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str = Field(index=True)
+    year: Optional[int] = Field(default=None, index=True)
+    ext_id: Optional[int] = Field(default=None) # TMDB ID or MAL ID
+    type: str = Field(index=True) # Movies, TV Series, Manga, Anime
+    note: Optional[str] = None
+    recommender_name: Optional[str] = None
+    date_added: datetime = Field(default_factory=datetime.utcnow)
+
 import os
 from dotenv import load_dotenv
 

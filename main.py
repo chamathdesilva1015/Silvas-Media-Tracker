@@ -13,7 +13,7 @@ from sqlalchemy import text
 from pydantic import BaseModel
 from typing import List, Optional
 
-from database import engine, create_db_and_tables, MediaItem, RatingHistory, PassedSuggestion
+from database import engine, create_db_and_tables, MediaItem, RatingHistory, PassedSuggestion, Recommendation
 from enrich_data import run_enrichment
 
 app = FastAPI(title="Silva's Media Tracker API")
@@ -1076,6 +1076,30 @@ def get_item_recommendations(item_id: int, session: Session = Depends(get_sessio
     except Exception as e:
         print(f"Error fetching recommendations for {item.title}: {e}")
         return []
+
+@app.get("/api/search/multi")
+def search_multi(title: str, type: str, year: Optional[int] = None):
+    """Searches for media items across APIs returning multiple results."""
+    if type == "Movies":
+        from tmdb_helper import search_tmdb_multi
+        return search_tmdb_multi(title, year, "movie")
+    elif type == "TV Series":
+        from tmdb_helper import search_tmdb_multi
+        return search_tmdb_multi(title, year, "tv")
+    elif type == "Anime":
+        from jikan_helper import search_jikan_multi
+        return search_jikan_multi(title, "anime")
+    elif type == "Manga":
+        from jikan_helper import search_jikan_multi
+        return search_jikan_multi(title, "manga")
+    return []
+
+@app.post("/api/recommendations/submit")
+def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
+    """Saves a recommendation."""
+    session.add(rec)
+    session.commit()
+    return {"status": "success"}
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
