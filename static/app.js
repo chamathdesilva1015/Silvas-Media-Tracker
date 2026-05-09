@@ -3381,8 +3381,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeData = data.filter(r => r.status === 'pending');
             const watchedData = data.filter(r => r.status === 'accepted');
             
-            activeCount.textContent = `(${activeData.length})`;
-            watchedCount.textContent = `(${watchedData.length})`;
+            if (activeCount) activeCount.textContent = `(${activeData.length})`;
+            if (watchedCount) watchedCount.textContent = `(${watchedData.length})`;
             
             const renderList = (container, recs, isWatched) => {
                 container.innerHTML = '';
@@ -3422,47 +3422,59 @@ document.addEventListener('DOMContentLoaded', () => {
                             _recId: rec.id
                         });
                     };
-                byWho.style.marginTop = '2px';
-                
-                let dateStr = '';
-                if (rec1.date_added) {
-                    const dateObj = new Date(rec1.date_added + 'Z');
-                    dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-                }
-                
-                if (recs.length === 1) {
-                    byWho.textContent = `By ${rec1.recommender_name || 'Anonymous'}${dateStr ? ' • ' + dateStr : ''}`;
-                } else {
-                    const names = [...new Set(recs.map(r => r.recommender_name || 'Anonymous'))];
-                    byWho.textContent = `By ${names.join(' and ')}${dateStr ? ' • ' + dateStr : ''}`;
-                }
-
-                content.appendChild(title);
-                content.appendChild(byWho);
-
-                // Add note if available (from the first recommendation in the group)
-                if (rec1.note) {
-                    const note = document.createElement('div');
-                    note.style.fontSize = '0.75rem';
-                    note.style.color = 'var(--text-secondary)';
-                    note.style.marginTop = '4px';
-                    note.style.fontStyle = 'italic';
-                    note.style.display = '-webkit-box';
-                    note.style.webkitLineClamp = '1';
-                    note.style.webkitBoxOrient = 'vertical';
-                    note.style.overflow = 'hidden';
-                    note.textContent = `"${rec1.note}"`;
-                    content.appendChild(note);
-                }
-                
-                div.appendChild(poster);
-                div.appendChild(content);
-                listContainer.appendChild(div);
-            });
+                    item.querySelector('.rec-entry-title').onclick = openInfo;
+                    item.querySelector('.rec-entry-poster').onclick = openInfo;
+                    
+                    // Admin Actions
+                    if (computeCanEdit()) {
+                        const acceptBtn = item.querySelector('.accept');
+                        const deleteBtn = item.querySelector('.delete');
+                        
+                        if (acceptBtn) {
+                            acceptBtn.onclick = async (e) => {
+                                e.stopPropagation();
+                                if (!confirm(`Mark "${rec.title}" as watched?`)) return;
+                                await updateRecStatus(rec.id, 'accepted');
+                                fetchHubRecommendations(category);
+                            };
+                        }
+                        
+                        if (deleteBtn) {
+                            deleteBtn.onclick = async (e) => {
+                                e.stopPropagation();
+                                if (!confirm(`Remove "${rec.title}" from recommendations?`)) return;
+                                await updateRecStatus(rec.id, 'rejected');
+                                fetchHubRecommendations(category);
+                            };
+                        }
+                    }
+                    
+                    container.appendChild(item);
+                });
+            };
+            
+            renderList(activeList, activeData, false);
+            renderList(watchedList, watchedData, true);
+            
         } catch (error) {
-            console.error('Error fetching recent recommendations:', error);
+            console.error('Error fetching hub recommendations:', error);
         }
     }
+
+    async function updateRecStatus(recId, status) {
+        try {
+            const res = await fetch(`/api/recommendations/${recId}/status`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ status })
+            });
+            return await res.json();
+        } catch (e) {
+            console.error('Error updating recommendation status:', e);
+            alert('Failed to update status.');
+        }
+    }
+
 
     const leaveRecBtn = document.getElementById('leaveRecommendationBtn');
     const recModal = document.getElementById('recommendationModal');
