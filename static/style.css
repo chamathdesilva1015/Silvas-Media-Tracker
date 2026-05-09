@@ -2302,7 +2302,6 @@ delete-btn {
     opacity: 0.6;
     min-width: 20px;
 }
-
 /* Hall of Fame Accordion */
 .hof-accordion {
     background: var(--bg-card);
@@ -2401,6 +2400,154 @@ delete-btn {
 .hof-accordion-body::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
+.hub-accordion {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.hub-accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.hub-accordion-header:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.hub-accordion-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.hub-accordion-body {
+    max-height: 0;
+    overflow-y: auto;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.hub-accordion.open .hub-accordion-body {
+    max-height: 500px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hub-accordion .fa-chevron-down {
+    font-size: 0.8rem;
+    opacity: 0.4;
+    transition: transform 0.3s ease;
+}
+
+.hub-accordion.open .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+.rec-entry-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.2s;
+}
+
+.rec-entry-item:last-child {
+    border-bottom: none;
+}
+
+.rec-entry-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.rec-entry-poster {
+    width: 38px;
+    height: 54px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.rec-entry-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.rec-entry-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 1px;
+    cursor: pointer;
+}
+
+.rec-entry-title:hover {
+    color: var(--theme-accent);
+}
+
+.rec-entry-meta {
+    font-size: 0.7rem;
+    opacity: 0.5;
+    font-weight: 500;
+}
+
+.rec-entry-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.rec-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.rec-action-btn.accept {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.2);
+}
+
+.rec-action-btn.accept:hover {
+    background: #2ecc71;
+    color: #fff;
+}
+
+.rec-action-btn.delete {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.2);
+}
+
+.rec-action-btn.delete:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
+
+
 
 .hof-entry {
     display: flex;

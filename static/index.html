@@ -115,17 +115,28 @@
                         <span style="font-size: 1.1rem; font-weight: 700; text-align: left;">Leave Silva a<br>Movie Recommendation</span>
                     </button>
                     
-                    <div style="text-align: center;">
-                        <h4 style="font-size: 0.85rem; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 700;">Recent 3 Recommendations:</h4>
-                        <div id="recentRecommendationsList" style="display: flex; flex-direction: column; gap: 16px; text-align: left; margin-bottom: 1.5rem;">
-                            <!-- Populated via JS -->
-                            <div style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1rem;">No recommendations yet.</div>
+                    <div class="recommendations-container" style="text-align: left; margin-top: 1rem;">
+                        <!-- Active Recommendations Accordion -->
+                        <div class="hub-accordion" id="activeRecsAccordion">
+                            <div class="hub-accordion-header" id="activeRecsHeader">
+                                <span class="hub-accordion-title">Active Recommendations <span id="activeRecsCount" style="opacity: 0.5; font-size: 0.8rem; margin-left: 5px;">(0)</span></span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="hub-accordion-body" id="activeRecsList">
+                                <div style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No active recommendations.</div>
+                            </div>
                         </div>
-                        
-                        <button id="manageRecommendationsBtn" class="btn-secondary" style="width: 100%; padding: 1.2rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); transition: all 0.2s;">
-                            <strong>Recommendations</strong>
-                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">View, Delete, or Watch</span>
-                        </button>
+
+                        <!-- Watched Recommendations Accordion -->
+                        <div class="hub-accordion" id="watchedRecsAccordion" style="margin-top: 1rem;">
+                            <div class="hub-accordion-header" id="watchedRecsHeader">
+                                <span class="hub-accordion-title">Recent Watched Recommendations <span id="watchedRecsCount" style="opacity: 0.5; font-size: 0.8rem; margin-left: 5px;">(0)</span></span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="hub-accordion-body" id="watchedRecsList">
+                                <div style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No watched recommendations yet.</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

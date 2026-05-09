@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Fetch recent recommendations for this category
-                fetchRecentRecommendations(category);
+                fetchHubRecommendations(category);
 
                 filterState.genres.clear();
                 updateActiveFilterCount();
@@ -2755,7 +2755,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCategoryTitleCount();
     updateTheme();
     window.updateAuthUI(); // Ensure auth UI is set before media loads
-    fetchRecentRecommendations(currentCategory);
+    fetchHubRecommendations(currentCategory);
     fetchMedia().then(() => {
         updateCategoryTitleCount();
     });
@@ -3358,104 +3358,70 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function fetchRecentRecommendations(category) {
-        const listContainer = document.getElementById('recentRecommendationsList');
-        if (!listContainer) return;
+    // Accordion Toggle Logic
+    document.querySelectorAll('.hub-accordion-header').forEach(header => {
+        header.onclick = () => {
+            const accordion = header.parentElement;
+            accordion.classList.toggle('open');
+        };
+    });
+
+    async function fetchHubRecommendations(category) {
+        const activeList = document.getElementById('activeRecsList');
+        const watchedList = document.getElementById('watchedRecsList');
+        const activeCount = document.getElementById('activeRecsCount');
+        const watchedCount = document.getElementById('watchedRecsCount');
+        
+        if (!activeList || !watchedList) return;
         
         try {
             const response = await fetch(`/api/recommendations/recent/${category}`);
             const data = await response.json();
             
-            listContainer.innerHTML = '';
+            const activeData = data.filter(r => r.status === 'pending');
+            const watchedData = data.filter(r => r.status === 'accepted');
             
-            if (data.length === 0) {
-                listContainer.innerHTML = '<div style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1rem;">No recommendations yet.</div>';
-                return;
-            }
+            activeCount.textContent = `(${activeData.length})`;
+            watchedCount.textContent = `(${watchedData.length})`;
             
-            // Group by ext_id or title
-            const grouped = {};
-            data.forEach(rec => {
-                const key = rec.ext_id || rec.title;
-                if (!grouped[key]) {
-                    grouped[key] = [];
+            const renderList = (container, recs, isWatched) => {
+                container.innerHTML = '';
+                if (recs.length === 0) {
+                    container.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No ${isWatched ? 'watched' : 'active'} recommendations.</div>`;
+                    return;
                 }
-                grouped[key].push(rec);
-            });
-            
-            // Take the first 3 groups to display at most 3 unique items
-            const groups = Object.values(grouped).slice(0, 3);
-            groups.forEach(recs => {
-                const rec1 = recs[0];
-                const div = document.createElement('div');
-                div.className = 'recent-rec-item';
-                div.style.background = 'rgba(255,255,255,0.02)';
-                div.style.padding = '0.75rem';
-                div.style.borderRadius = '12px';
-                div.style.border = '1px solid rgba(255,255,255,0.05)';
-                div.style.cursor = 'pointer';
-                div.style.transition = 'all 0.2s ease';
-                div.style.display = 'flex';
-                div.style.alignItems = 'center';
-                div.style.gap = '12px';
-                div.style.textAlign = 'left';
-                div.style.marginBottom = '10px';
                 
-                div.addEventListener('mouseenter', () => {
-                    div.style.background = 'rgba(255,255,255,0.05)';
-                    div.style.transform = 'translateY(-2px)';
-                    div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                });
-                div.addEventListener('mouseleave', () => {
-                    div.style.background = 'rgba(255,255,255,0.02)';
-                    div.style.transform = 'translateY(0)';
-                    div.style.boxShadow = 'none';
-                });
-                
-                div.addEventListener('click', () => {
-                    const item = {
-                        ...rec1,
-                        release_year: rec1.year,
-                        isRecommendation: true,
-                        _recId: rec1.id
+                recs.forEach(rec => {
+                    const item = document.createElement('div');
+                    item.className = 'rec-entry-item';
+                    
+                    const posterUrl = rec.cover_url || 'https://via.placeholder.com/150x225?text=No+Poster';
+                    
+                    item.innerHTML = `
+                        <img src="${posterUrl}" class="rec-entry-poster" alt="Poster">
+                        <div class="rec-entry-info">
+                            <div class="rec-entry-title">${rec.title}</div>
+                            <div class="rec-entry-meta">${rec.year || '????'} • ${rec.name || 'Anonymous'}</div>
+                        </div>
+                        <div class="rec-entry-actions">
+                            ${!isWatched && computeCanEdit() ? `
+                                <div class="rec-action-btn accept" title="Mark as Watched"><i class="fas fa-check"></i></div>
+                                <div class="rec-action-btn delete" title="Remove"><i class="fas fa-trash-alt"></i></div>
+                            ` : (isWatched && computeCanEdit() ? `
+                                <div class="rec-action-btn delete" title="Remove"><i class="fas fa-trash-alt"></i></div>
+                            ` : '')}
+                        </div>
+                    `;
+                    
+                    // Open Quick Info on Title/Poster click
+                    const openInfo = () => {
+                        window.openQuickInfo({
+                            ...rec,
+                            release_year: rec.year,
+                            isRecommendation: true,
+                            _recId: rec.id
+                        });
                     };
-                    window.openQuickInfo(item);
-                });
-                
-                const poster = document.createElement('div');
-                poster.style.width = '40px';
-                poster.style.height = '60px';
-                poster.style.borderRadius = '6px';
-                poster.style.backgroundSize = 'cover';
-                poster.style.backgroundPosition = 'center';
-                poster.style.flexShrink = '0';
-                if (rec1.cover_url) {
-                    poster.style.backgroundImage = `url(${rec1.cover_url})`;
-                } else {
-                    poster.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                    poster.innerHTML = '<i class="fas fa-image" style="opacity:0.2; font-size: 0.9rem;"></i>';
-                    poster.style.display = 'flex';
-                    poster.style.alignItems = 'center';
-                    poster.style.justifyContent = 'center';
-                }
-                
-                const content = document.createElement('div');
-                content.style.flex = '1';
-                content.style.minWidth = '0';
-
-                const title = document.createElement('div');
-                title.style.fontWeight = '700';
-                title.style.fontSize = '0.9rem';
-                title.style.color = 'var(--text-primary)';
-                title.style.whiteSpace = 'nowrap';
-                title.style.overflow = 'hidden';
-                title.style.textOverflow = 'ellipsis';
-                title.textContent = rec1.title;
-                if (rec1.year) title.textContent += ` (${rec1.year})`;
-                
-                const byWho = document.createElement('div');
-                byWho.style.fontSize = '0.75rem';
-                byWho.style.color = 'var(--theme-accent)';
                 byWho.style.marginTop = '2px';
                 
                 let dateStr = '';
@@ -3800,7 +3766,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Recommendation submitted successfully!');
                     recModal.classList.remove('show');
                     // Refresh recent recommendations
-                    fetchRecentRecommendations(category);
+                    fetchHubRecommendations(category);
                 } else {
                     alert('Error submitting recommendation.');
                 }
@@ -4042,12 +4008,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { alert('Error deleting recommendation.'); }
     }
 
-    if (manageRecsBtn) manageRecsBtn.onclick = () => {
-        manageRecsModal.classList.add('show');
-        recMgrListView.style.display = 'block';
-        recMgrWatchView.style.display = 'none';
-        fetchAllRecs();
-    };
     if (closeManageRecsBtn) closeManageRecsBtn.onclick = () => manageRecsModal.classList.remove('show');
 
     // Tab Switches
