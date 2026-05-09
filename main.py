@@ -141,11 +141,32 @@ def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Se
             detail=f"This piece of media ('{item.title}' {item.release_year or ''}) already exists in your tracker."
         )
         
-    # Ensure rating fields are synchronized
-    if item.rating and not item.numeric_rating:
-        item.numeric_rating = item.rating
-    if item.numeric_rating and not item.rating:
-        item.rating = f"{item.numeric_rating}/10" if "/10" not in str(item.numeric_rating) else str(item.numeric_rating)
+    # Ensure rating fields are synchronized and handle 0.5 edge case
+    raw_val = None
+    if item.rating and str(item.rating).strip():
+        raw_val = str(item.rating).replace("/10", "").strip()
+    elif item.numeric_rating and str(item.numeric_rating).strip():
+        raw_val = str(item.numeric_rating).strip()
+
+    if raw_val:
+        try:
+            num = float(raw_val)
+            if num <= 0.5 and num > 0:
+                num = 1.0
+            
+            # Format nicely (remove trailing .0 if integer, but wait, frontend expects 8.5, etc.)
+            # Actually, keeping it as str(num) is fine, e.g., "1.0", "8.5".
+            # To match existing behavior, if it's a whole number like 8.0, we can leave it or store "8"
+            clean_str = str(int(num)) if num.is_integer() else str(num)
+            
+            item.numeric_rating = clean_str
+            item.rating = f"{clean_str}/10"
+        except ValueError:
+            # If it's not a number (e.g., "#1", "—"), just sync them as is
+            if item.rating and not item.numeric_rating:
+                item.numeric_rating = item.rating
+            elif item.numeric_rating and not item.rating:
+                item.rating = item.numeric_rating
         
     session.add(item)
     session.commit()
@@ -418,7 +439,9 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
     if "rating" in payload:
         try:
             new_score_val = float(payload["rating"])
-            new_score = str(new_score_val).strip()
+            if new_score_val <= 0.5 and new_score_val > 0:
+                new_score_val = 1.0
+            new_score = str(int(new_score_val)) if new_score_val.is_integer() else str(new_score_val)
         except (ValueError, TypeError):
             raise HTTPException(status_code=400, detail="Invalid numeric rating provided.")
             
@@ -1187,14 +1210,29 @@ def mark_recommendation_watched(rec_id: int, payload: MarkWatchedPayload, reques
         if existing:
             raise HTTPException(status_code=409, detail=f"'{rec.title}' already exists in the database.")
 
+    # Format the rating properly
+    final_rating = payload.rating
+    numeric_rating = None
+    if payload.rating:
+        try:
+            val = float(payload.rating.replace("/10", "").strip())
+            if val <= 0.5 and val > 0:
+                val = 1.0
+            numeric_rating = str(int(val)) if val.is_integer() else str(val)
+            final_rating = f"{numeric_rating}/10"
+        except ValueError:
+            pass
+
     new_item = MediaItem(
         title=rec.title,
         release_year=rec.year,
         type=rec.type,
         tmdb_id=rec.ext_id,
-        rating=payload.rating,
+        rating=final_rating,
+        numeric_rating=numeric_rating,
         is_liked=payload.is_liked,
         source="recommendation",
+        is_manual_rating=True
     )
     session.add(new_item)
     session.delete(rec)
