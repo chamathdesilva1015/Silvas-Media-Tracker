@@ -291,7 +291,7 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 @app.get("/api/media/fetch-metadata")
-def fetch_metadata(type: str, ext_id: str, _: None = Depends(check_readonly)):
+def fetch_metadata(type: str, ext_id: str):
     """Fetches metadata for autofill in the UI."""
     try:
         if type == "Anime":

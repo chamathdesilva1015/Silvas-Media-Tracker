@@ -1548,6 +1548,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Basic Info ---
         document.getElementById('quickInfoTitle').textContent = item.title;
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
+
+        // Hide rating section for recommendations
+        const ratingSection = document.querySelector('.quick-info-rating-section');
+        if (ratingSection) {
+            if (item.isRecommendation) {
+                ratingSection.style.display = 'none';
+            } else {
+                ratingSection.style.display = ''; // Restore default
+            }
+        }
         document.getElementById('quickInfoYear').textContent = item.release_year || '????';
 
         // --- Like Logic (v404) ---
@@ -3372,6 +3382,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 div.style.padding = '1rem';
                 div.style.borderRadius = '12px';
                 div.style.border = '1px solid rgba(255,255,255,0.05)';
+                div.style.cursor = 'pointer';
+                div.style.transition = 'all 0.2s ease';
+                
+                div.addEventListener('mouseenter', () => {
+                    div.style.background = 'rgba(255,255,255,0.05)';
+                    div.style.transform = 'translateY(-2px)';
+                    div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                });
+                div.addEventListener('mouseleave', () => {
+                    div.style.background = 'rgba(255,255,255,0.02)';
+                    div.style.transform = 'translateY(0)';
+                    div.style.boxShadow = 'none';
+                });
+                
+                div.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch(`/api/media/fetch-metadata?type=${rec1.type}&ext_id=${rec1.ext_id}`);
+                        const data = await response.json();
+                        
+                        // Create an item object for openQuickInfo
+                        const item = {
+                            title: data.title,
+                            type: rec1.type,
+                            release_year: data.release_year,
+                            backdrop_url: data.backdrop_url,
+                            poster_url: data.cover_url,
+                            overview: data.overview,
+                            isRecommendation: true // Flag to hide rating
+                        };
+                        
+                        window.openQuickInfo(item);
+                    } catch (error) {
+                        console.error('Error fetching metadata:', error);
+                    }
+                });
                 
                 const rec1 = recs[0];
                 
