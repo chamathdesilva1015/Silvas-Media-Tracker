@@ -3369,10 +3369,14 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchHubRecommendations(category) {
         const activeList = document.getElementById('activeRecsList');
         const watchedList = document.getElementById('watchedRecsList');
-        const activeCount = document.getElementById('activeRecsCount');
-        const watchedCount = document.getElementById('watchedRecsCount');
+        const activeTitle = document.getElementById('activeRecsTitle');
+        const watchedTitle = document.getElementById('watchedRecsTitle');
         
         if (!activeList || !watchedList) return;
+        
+        const isManga = category === 'Manga';
+        const watchedVerb = isManga ? 'Read' : 'Watched';
+        const watchedVerbLower = isManga ? 'read' : 'watched';
         
         try {
             const response = await fetch(`/api/recommendations/recent/${category}`);
@@ -3381,13 +3385,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeData = data.filter(r => r.status === 'pending');
             const watchedData = data.filter(r => r.status === 'accepted');
             
-            if (activeCount) activeCount.textContent = `(${activeData.length})`;
-            if (watchedCount) watchedCount.textContent = `(${watchedData.length})`;
+            if (activeTitle) activeTitle.textContent = `[${activeData.length}] Active Recommendations`;
+            if (watchedTitle) watchedTitle.textContent = `[${watchedData.length}] ${watchedVerb} Recommendations`;
             
             const renderList = (container, recs, isWatched) => {
                 container.innerHTML = '';
                 if (recs.length === 0) {
-                    container.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No ${isWatched ? 'watched' : 'active'} recommendations.</div>`;
+                    container.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No ${isWatched ? watchedVerbLower : 'active'} recommendations.</div>`;
                     return;
                 }
                 
@@ -3410,7 +3414,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="rec-entry-actions">
                             ${!isWatched && computeCanEdit() ? `
-                                <div class="rec-action-btn accept" title="Mark as Watched"><i class="fas fa-check"></i></div>
+                                <div class="rec-action-btn accept" title="Mark as ${watchedVerb}"><i class="fas fa-check"></i></div>
                                 <div class="rec-action-btn delete" title="Remove"><i class="fas fa-trash-alt"></i></div>
                             ` : (isWatched && computeCanEdit() ? `
                                 <div class="rec-action-btn delete" title="Remove"><i class="fas fa-trash-alt"></i></div>
@@ -3438,7 +3442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (acceptBtn) {
                             acceptBtn.onclick = async (e) => {
                                 e.stopPropagation();
-                                if (!confirm(`Mark "${rec.title}" as watched?`)) return;
+                                if (!confirm(`Mark "${rec.title}" as ${watchedVerbLower}?`)) return;
                                 const success = await updateRecStatus(rec.id, 'accepted');
                                 if (success) fetchHubRecommendations(category);
                             };
