@@ -1135,9 +1135,13 @@ def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_
         select(MediaItem).where(MediaItem.tmdb_id == ext_id, MediaItem.type == type)
     ).first() is not None
     
-    # Check recommendations count
+    # Check recommendations count (ignore rejected ones)
     recs = session.exec(
-        select(Recommendation).where(Recommendation.ext_id == ext_id, Recommendation.type == type)
+        select(Recommendation).where(
+            Recommendation.ext_id == ext_id, 
+            Recommendation.type == type,
+            Recommendation.status != "rejected"
+        )
     ).all()
     rec_count = len(recs)
     
