@@ -1678,13 +1678,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Admin Controls ---
         const editBtn = document.getElementById('quickInfoEditBtn');
+        const deleteBtn = document.getElementById('quickInfoDeleteBtn');
         const ratingEditSection = document.getElementById('quickInfoRatingEditSection');
-        if (computeCanEdit()) {
+        
+        if (computeCanEdit() && !item.isRecommendation) {
             editBtn.style.display = 'block';
+            deleteBtn.style.display = 'block';
+            
             editBtn.onclick = () => {
                 quickInfoModal.classList.remove('show');
                 window.openReviewModal(item.title, item.type, item.review, item.id);
             };
+            
+            deleteBtn.onclick = () => {
+                quickInfoModal.classList.remove('show');
+                window.openDeleteModal(item.id, item.title);
+            };
+            
             ratingEditSection.style.display = 'block';
             document.getElementById('quickInfoRatingInput').value = rawScore || '';
             document.getElementById('quickInfoYearInput').value = item.release_year || '';
@@ -1704,13 +1714,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (newYear) payload.release_year = newYear;
                 if (newTitle) payload.title = newTitle;
 
-                // If this is a recommendation profile, we don't allow editing year/title/rating here
-                // as they are fetched from official sources or not applicable yet.
-                if (item.isRecommendation) {
-                    alert("Recommendation metadata is managed via the hub.");
-                    return;
-                }
-
                 btn.disabled = true;
                 btn.textContent = 'Saving...';
                 try {
@@ -1729,6 +1732,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         } else {
             editBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
             ratingEditSection.style.display = 'none';
         }
 
@@ -1960,7 +1964,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === deleteModal) closeDeleteModal();
     });
 
-    const openDeleteModal = (id, title) => {
+    window.openDeleteModal = (id, title) => {
         itemToDeleteId = id;
         deleteTargetTitle.innerText = title;
         deleteModal.classList.add('show');
