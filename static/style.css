@@ -330,22 +330,22 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     background: linear-gradient(135deg, var(--theme-accent), rgba(var(--theme-accent-rgb), 0.6));
     color: white;
     border: none;
-    padding: 1rem 2rem;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1rem;
+    padding: 1.4rem 2.5rem;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 1.2rem;
     letter-spacing: 0.05em;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb), 0.3);
-    margin: 1.5rem auto;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 30px rgba(var(--theme-accent-rgb), 0.3);
+    margin: 2rem auto;
     width: 100%;
-    max-width: 350px;
-    text-align: center;
+    max-width: 450px;
+    text-transform: uppercase;
 }
 
 .leave-recommendation-btn:hover {
@@ -1229,22 +1229,30 @@ header p {
 
 
 .hub-category-switcher {
-    display: flex;
-    justify-content: center;
-    gap: 0.8rem;
-    margin: 2rem 0 1.5rem;
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 32px;
-    border: 1px solid var(--border-color);
     display: inline-flex;
+    justify-content: center;
+    gap: 1.2rem;
+    margin: 3rem 0 2rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 100px;
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+}
+
+.pill-tab {
+    padding: 1rem 2.2rem;
+    border-radius: 100px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
 .hub-category-switcher .pill-tab.active {
     background: var(--theme-accent);
     color: #000;
-    box-shadow: 0 0 30px var(--theme-accent-glow), 0 10px 30px rgba(0,0,0,0.4);
-    transform: scale(1.05);
+    box-shadow: 0 0 40px var(--theme-accent-glow), 0 15px 40px rgba(0,0,0,0.5);
+    transform: scale(1.08);
     font-weight: 800;
 }
 
@@ -2418,8 +2426,8 @@ delete-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    padding: 1rem 1.2rem;
+    gap: 16px;
+    padding: 1.5rem 2rem;
     cursor: pointer;
     user-select: none;
     transition: background 0.2s;
@@ -2430,11 +2438,11 @@ delete-btn {
 }
 
 .hub-accordion-title {
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 800;
     color: var(--text-primary);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
 }
 
 .hub-accordion-body {
@@ -2462,8 +2470,8 @@ delete-btn {
 .rec-entry-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0.75rem 1rem;
+    gap: 20px;
+    padding: 1.2rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     transition: background 0.2s;
 }
@@ -2477,13 +2485,13 @@ delete-btn {
 }
 
 .rec-entry-poster {
-    width: 38px;
-    height: 54px;
-    border-radius: 6px;
+    width: 60px;
+    height: 90px;
+    border-radius: 10px;
     object-fit: cover;
     flex-shrink: 0;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
 .rec-entry-info {
@@ -2492,13 +2500,13 @@ delete-btn {
 }
 
 .rec-entry-title {
-    font-size: 0.9rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 800;
     color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 1px;
+    margin-bottom: 6px;
     cursor: pointer;
 }
 
@@ -2507,9 +2515,10 @@ delete-btn {
 }
 
 .rec-entry-meta {
-    font-size: 0.7rem;
-    opacity: 0.5;
-    font-weight: 500;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    font-weight: 600;
+    line-height: 1.5;
 }
 
 .rec-entry-actions {
@@ -4187,8 +4196,8 @@ body.modal-open .bottom-nav {
 .info-btn {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
-    padding: 2.5rem 1.5rem;
-    border-radius: 16px;
+    padding: 3.5rem 2rem;
+    border-radius: 24px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -4198,8 +4207,8 @@ body.modal-open .bottom-nav {
 
 .info-btn-text {
     color: var(--text-primary);
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: 1.4rem;
+    font-weight: 800;
     font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: 0.02em;
 }
@@ -4327,8 +4336,9 @@ body.modal-open .bottom-nav {
 }
 
 .info-main-title {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: 4rem;
+    margin-bottom: 2.5rem;
+    letter-spacing: -0.02em;
 }
 
 .info-subtitle {
