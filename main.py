@@ -574,9 +574,8 @@ def delete_media(item_id: str, session: Session = Depends(get_session), _: None 
 
         raise HTTPException(status_code=404, detail="Item not found")
     
-    if item.source != "manual":
-
-        raise HTTPException(status_code=403, detail="Only manually added entries can be deleted.")
+    if item.source not in ["manual", "recommendation"]:
+        raise HTTPException(status_code=403, detail="Only manually added entries or accepted recommendations can be deleted.")
     
     session.delete(item)
     session.commit()

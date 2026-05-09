@@ -4066,25 +4066,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const actions = document.createElement('div');
             actions.className = 'rec-mgr-card-actions';
 
-            if (runtimeAdminKey && currentRecTab === 'pending') {
-                const watchBtn = document.createElement('button');
-                watchBtn.className = 'rec-mgr-btn rec-mgr-btn-watch';
-                watchBtn.textContent = '✓ Watched';
-                watchBtn.title = 'Mark as watched and add to database';
-                watchBtn.addEventListener('click', () => markRecWatched(rec, card));
+            if (runtimeAdminKey) {
+                if (currentRecTab === 'pending') {
+                    const watchBtn = document.createElement('button');
+                    watchBtn.className = 'rec-mgr-btn rec-mgr-btn-watch';
+                    watchBtn.textContent = '✓ Watched';
+                    watchBtn.title = 'Mark as watched and add to database';
+                    watchBtn.addEventListener('click', () => markRecWatched(rec, card));
+                    actions.appendChild(watchBtn);
+                }
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'rec-mgr-btn rec-mgr-btn-delete';
                 deleteBtn.textContent = '✕ Delete';
-                deleteBtn.addEventListener('click', () => deleteRec(rec.id, card));
-
-                actions.appendChild(watchBtn);
+                deleteBtn.addEventListener('click', (e) => {
+                    if (currentRecTab === 'pending') {
+                        deleteRec(rec.id, card);
+                    } else {
+                        deleteAcceptedRec(rec.id, card, e);
+                    }
+                });
                 actions.appendChild(deleteBtn);
             }
 
             card.appendChild(info);
-            if (currentRecTab === 'pending') {
-                card.appendChild(actions);
+            if (runtimeAdminKey || currentRecTab === 'pending') {
+                // we want actions to show up for admins on both tabs, but for public, it shouldn't show actions at all.
+                // Wait, if no actions are added, appending an empty div is harmless, but let's just conditionally append it.
+                if (actions.children.length > 0) {
+                    card.appendChild(actions);
+                }
             }
             allRecsList.appendChild(card);
         });
@@ -4104,6 +4115,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 allRecsData = allRecsData.filter(r => r.id !== recId);
             }
         } catch (e) { alert('Error deleting recommendation.'); }
+    }
+
+    async function deleteAcceptedRec(recId, cardEl, e) {
+        e.stopPropagation(); // prevent clicking the card from opening profile
+        if (!confirm('Delete this accepted recommendation from the database? This cannot be undone.')) return;
+        try {
+            const res = await fetch(`/api/media/delete/${recId}`, {
+                method: 'POST',
+                headers: getAuthHeaders()
+            });
+            if ((await res.json()).ok) {
+                cardEl.style.opacity = '0';
+                cardEl.style.transition = 'opacity 0.3s';
+                setTimeout(() => cardEl.remove(), 320);
+                allRecsData = allRecsData.filter(r => r.id !== recId);
+                fetchMedia(); // Refresh main library
+            } else {
+                alert('Failed to delete.');
+            }
+        } catch (e) { alert('Error deleting media.'); }
     }
 
     if (manageRecsBtn) manageRecsBtn.onclick = () => {
