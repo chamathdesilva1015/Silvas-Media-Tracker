@@ -1597,9 +1597,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const favPill = document.getElementById('quickInfoFavoritePill');
         
         if (item.isRecommendation) {
-            if (favPill) favPill.style.display = 'none';
+            if (favPill) favPill.style.setProperty('display', 'none', 'important');
         } else {
-            if (favPill) favPill.style.display = 'flex';
+            if (favPill) favPill.style.setProperty('display', 'flex', 'important');
             updateLikeBtnUI(item.is_liked);
         }
 
@@ -3391,6 +3391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 div.style.border = '1px solid rgba(255,255,255,0.05)';
                 div.style.cursor = 'pointer';
                 div.style.transition = 'all 0.2s ease';
+                div.style.textAlign = 'center';
                 
                 div.addEventListener('mouseenter', () => {
                     div.style.background = 'rgba(255,255,255,0.05)';
@@ -3414,7 +3415,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             type: rec1.type,
                             release_year: data.release_year,
                             backdrop_url: data.backdrop_url,
-                            poster_url: data.cover_url,
+                            cover_url: data.cover_url,
                             overview: data.overview,
                             genres: data.genres,
                             runtime: data.runtime,
