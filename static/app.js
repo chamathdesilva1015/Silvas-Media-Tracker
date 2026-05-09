@@ -3355,6 +3355,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const recSubmitBtn = document.getElementById('recSubmitBtn');
     
     const recSearchResults = document.getElementById('recSearchResults');
+    const recDuplicateMessage = document.getElementById('recDuplicateMessage');
+    const recDuplicateText = document.getElementById('recDuplicateText');
+    const recCloseDuplicateBtn = document.getElementById('recCloseDuplicateBtn');
+    const recRecommendAnotherBtn = document.getElementById('recRecommendAnotherBtn');
+    const recSearchResultsContainer = document.getElementById('recSearchResultsContainer');
+    const recPage2Instructions = document.getElementById('recPage2Instructions');
     
     let selectedRecItem = null;
     
@@ -3393,6 +3399,12 @@ document.addEventListener('DOMContentLoaded', () => {
             recYearInput.value = '';
             recNoteInput.value = '';
             recNameInput.value = '';
+            
+            // Reset Page 2 display
+            if (recPage2Instructions) recPage2Instructions.style.display = 'block';
+            if (recSearchResultsContainer) recSearchResultsContainer.style.display = 'block';
+            if (recDuplicateMessage) recDuplicateMessage.style.display = 'none';
+            
             updateRecSteps(1);
         });
         
@@ -3498,11 +3510,69 @@ document.addEventListener('DOMContentLoaded', () => {
             updateRecSteps(1);
         });
         
-        recNext2Btn.addEventListener('click', () => {
+        recNext2Btn.addEventListener('click', async () => {
+            if (!selectedRecItem) return;
+            
+            const activeTab = document.querySelector('.tab-btn.active');
+            const category = activeTab ? activeTab.dataset.category : 'Movies';
+            
+            try {
+                const response = await fetch(`/api/recommendations/check?ext_id=${selectedRecItem.tmdb_id}&type=${category}`);
+                const data = await response.json();
+                
+                if (data.exists) {
+                    // Show duplicate message
+                    recPage2Instructions.style.display = 'none';
+                    recSearchResultsContainer.style.display = 'none';
+                    recDuplicateMessage.style.display = 'block';
+                    
+                    let msg = `"${selectedRecItem.title}" is already in the database.`;
+                    if (data.in_library) {
+                        msg = `"${selectedRecItem.title}" is already in your tracked list!`;
+                    } else if (data.in_recommendations) {
+                        msg = `"${selectedRecItem.title}" has already been recommended!`;
+                    }
+                    recDuplicateText.textContent = msg;
+                    return;
+                }
+            } catch (error) {
+                console.error('Check error:', error);
+            }
+            
+            // If not exists or error, proceed to Page 3
             recPage2.style.display = 'none';
             recPage3.style.display = 'block';
             updateRecSteps(3);
         });
+        
+        if (recCloseDuplicateBtn) {
+            recCloseDuplicateBtn.addEventListener('click', () => {
+                recModal.classList.remove('show');
+            });
+        }
+        
+        if (recRecommendAnotherBtn) {
+            recRecommendAnotherBtn.addEventListener('click', () => {
+                // Reset to page 1
+                recPage1.style.display = 'block';
+                recPage2.style.display = 'none';
+                recPage3.style.display = 'none';
+                selectedRecItem = null;
+                recNext2Btn.disabled = true;
+                recSearchResults.innerHTML = '';
+                recTitleInput.value = '';
+                recYearInput.value = '';
+                recNoteInput.value = '';
+                recNameInput.value = '';
+                
+                // Reset Page 2 display for next time
+                recPage2Instructions.style.display = 'block';
+                recSearchResultsContainer.style.display = 'block';
+                recDuplicateMessage.style.display = 'none';
+                
+                updateRecSteps(1);
+            });
+        }
         
         recBack3Btn.addEventListener('click', () => {
             recPage3.style.display = 'none';

@@ -718,53 +718,74 @@
 
     <!-- Recommendation Modal -->
     <div id="recommendationModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content" style="max-width: 550px; background: rgba(20, 20, 25, 0.85); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
             <span class="close-btn" id="closeRecommendationBtn">&times;</span>
-            <h2 class="serif" id="recModalTitle">Leave a Recommendation</h2>
+            
+            <!-- Step Indicator -->
+            <div class="rec-steps" style="display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative;">
+                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.1); z-index: 1;"></div>
+                <div id="recStepCircle1" class="rec-step-circle active" style="width: 30px; height: 30px; border-radius: 50%; background: var(--theme-accent); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid var(--theme-accent);">1</div>
+                <div id="recStepCircle2" class="rec-step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid rgba(255,255,255,0.1);">2</div>
+                <div id="recStepCircle3" class="rec-step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid rgba(255,255,255,0.1);">3</div>
+            </div>
+            
+            <h2 class="serif" id="recModalTitle" style="margin-bottom: 0.5rem;">Leave a Recommendation</h2>
             
             <!-- Page 1: Title & Year -->
             <div id="recPage1" class="rec-page">
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Enter the title of the media you want to recommend.</p>
-                <div class="form-group">
-                    <label for="recTitleInput">Title *</label>
-                    <input type="text" id="recTitleInput" placeholder="e.g. Inception" required>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">What should Silva check out next?</p>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="recTitleInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Title *</label>
+                    <input type="text" id="recTitleInput" placeholder="e.g. Inception" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                 </div>
-                <div class="form-group">
-                    <label for="recYearInput">Year (Optional)</label>
-                    <input type="number" id="recYearInput" placeholder="e.g. 2010">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="recYearInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Release Year (Optional)</label>
+                    <input type="number" id="recYearInput" placeholder="e.g. 2010" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
-                    <button id="recNext1Btn" class="btn-primary">Next</button>
+                    <button id="recNext1Btn" class="btn-primary" style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Find Match</button>
                 </div>
             </div>
             
             <!-- Page 2: Search Results -->
             <div id="recPage2" class="rec-page" style="display: none;">
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Select the correct version from the results.</p>
-                <div id="recSearchResults" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
-                    <!-- Populated via JS -->
-                    <p style="text-align: center; opacity: 0.5;">Searching...</p>
+                <p id="recPage2Instructions" style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Select the correct version to ensure accurate tracking.</p>
+                
+                <!-- Duplicate Check Message (Hidden by default) -->
+                <div id="recDuplicateMessage" style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid #dc3545; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
+                    <p id="recDuplicateText" style="color: #fff; margin-bottom: 1.5rem; font-size: 0.95rem;">This item is already in the database.</p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="recCloseDuplicateBtn" class="btn-secondary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Close</button>
+                        <button id="recRecommendAnotherBtn" class="btn-primary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600; background: var(--theme-accent); color: #000;">Recommend Another</button>
+                    </div>
                 </div>
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
-                    <button id="recBack2Btn" class="btn-secondary">Back</button>
-                    <button id="recNext2Btn" class="btn-primary" disabled>Next</button>
+
+                <div id="recSearchResultsContainer">
+                    <div id="recSearchResults" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 8px;">
+                        <!-- Populated via JS -->
+                        <p style="text-align: center; opacity: 0.5;">Searching...</p>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
+                        <button id="recBack2Btn" class="btn-secondary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Back</button>
+                        <button id="recNext2Btn" class="btn-primary" disabled style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Confirm Selection</button>
+                    </div>
                 </div>
             </div>
             
             <!-- Page 3: Note & Name -->
             <div id="recPage3" class="rec-page" style="display: none;">
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Add a note and your name (optional).</p>
-                <div class="form-group">
-                    <label for="recNoteInput">Note (Optional)</label>
-                    <textarea id="recNoteInput" placeholder="Why are you recommending this?" rows="4"></textarea>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Add some context for your recommendation.</p>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="recNoteInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Note (Optional)</label>
+                    <textarea id="recNoteInput" placeholder="Why should Silva watch/read this?" rows="4" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; resize: vertical; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="recNameInput">Your Name (Optional)</label>
-                    <input type="text" id="recNameInput" placeholder="Anonymous">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="recNameInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Your Name (Optional)</label>
+                    <input type="text" id="recNameInput" placeholder="Anonymous" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
-                    <button id="recBack3Btn" class="btn-secondary">Back</button>
-                    <button id="recSubmitBtn" class="btn-primary">Submit</button>
+                    <button id="recBack3Btn" class="btn-secondary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Back</button>
+                    <button id="recSubmitBtn" class="btn-primary" style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Submit Rec</button>
                 </div>
             </div>
         </div>

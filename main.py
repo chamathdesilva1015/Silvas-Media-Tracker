@@ -1094,6 +1094,25 @@ def search_multi(title: str, type: str, year: Optional[int] = None):
         return search_jikan_multi(title, "manga")
     return []
 
+@app.get("/api/recommendations/check")
+def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_session)):
+    """Checks if a media item already exists in the library or recommendations."""
+    # Check library
+    library_exists = session.exec(
+        select(MediaItem).where(MediaItem.tmdb_id == ext_id, MediaItem.type == type)
+    ).first() is not None
+    
+    # Check recommendations
+    rec_exists = session.exec(
+        select(Recommendation).where(Recommendation.ext_id == ext_id, Recommendation.type == type)
+    ).first() is not None
+    
+    return {
+        "exists": library_exists or rec_exists,
+        "in_library": library_exists,
+        "in_recommendations": rec_exists
+    }
+
 @app.post("/api/recommendations/submit")
 def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
     """Saves a recommendation."""
