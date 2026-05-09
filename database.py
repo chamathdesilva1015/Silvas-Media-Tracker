@@ -69,6 +69,16 @@ class Recommendation(SQLModel, table=True):
     note: Optional[str] = None
     recommender_name: Optional[str] = None
     date_added: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Metadata for rich profiles
+    cover_url: Optional[str] = None
+    genres: Optional[str] = None
+    director: Optional[str] = None
+    overview: Optional[str] = None
+    runtime: Optional[int] = None
+    content_rating: Optional[str] = None
+    backdrop_url: Optional[str] = None
+    status: str = Field(default="pending") # pending, accepted, rejected
 
 import os
 from dotenv import load_dotenv

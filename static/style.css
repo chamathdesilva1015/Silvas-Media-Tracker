@@ -5868,14 +5868,30 @@ body.modal-open .bottom-nav {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 12px;
-    padding: 1rem 1.2rem;
+    padding: 10px 14px;
     display: flex;
     align-items: center;
     gap: 1rem;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 .rec-mgr-card:hover {
     background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.15);
+}
+.rec-mgr-card-poster {
+    width: 44px;
+    height: 66px;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.05);
 }
 .rec-mgr-card-info {
     flex: 1;
@@ -5890,43 +5906,52 @@ body.modal-open .bottom-nav {
     text-overflow: ellipsis;
 }
 .rec-mgr-card-meta {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--theme-accent);
-    margin-top: 2px;
+    margin-top: 1px;
 }
 .rec-mgr-card-note {
     font-size: 0.78rem;
     color: var(--text-secondary);
     font-style: italic;
     margin-top: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 .rec-mgr-card-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.4rem;
     flex-shrink: 0;
 }
 .rec-mgr-btn {
-    padding: 0.4rem 0.8rem;
+    padding: 0.4rem 0.7rem;
     border-radius: 8px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     cursor: pointer;
     border: 1px solid transparent;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 .rec-mgr-btn-watch {
-    background: rgba(46, 204, 113, 0.15);
-    border-color: rgba(46, 204, 113, 0.4);
-    color: #2ecc71;
+    background: rgba(var(--theme-accent-rgb), 0.1);
+    border-color: rgba(var(--theme-accent-rgb), 0.3);
+    color: var(--theme-accent);
 }
 .rec-mgr-btn-watch:hover {
-    background: rgba(46, 204, 113, 0.3);
+    background: var(--theme-accent);
+    color: #000;
 }
 .rec-mgr-btn-delete {
-    background: rgba(231, 76, 60, 0.1);
-    border-color: rgba(231, 76, 60, 0.3);
+    background: rgba(231, 76, 60, 0.08);
+    border-color: rgba(231, 76, 60, 0.25);
     color: #e74c3c;
 }
 .rec-mgr-btn-delete:hover {
-    background: rgba(231, 76, 60, 0.25);
+    background: #e74c3c;
+    color: #fff;
 }

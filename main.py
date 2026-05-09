@@ -375,6 +375,8 @@ async def link_metadata_manually(payload: LinkPayload, session: Session = Depend
     if details.get("release_year"): item.release_year = details["release_year"]
     if details.get("genres"): item.genres = details["genres"]
     if details.get("poster_url"): item.cover_url = details["poster_url"]
+    if details.get("backdrop_url"): item.backdrop_url = details["backdrop_url"]
+    if details.get("overview"): item.overview = details["overview"]
     if details.get("director"): item.director = details["director"]
     if details.get("runtime"): item.runtime = details["runtime"]
     if details.get("content_rating"): item.content_rating = details["content_rating"]
@@ -1146,18 +1148,50 @@ def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_
     }
 
 @app.get("/api/recommendations/all")
-def get_all_recommendations(request: Request, type: Optional[str] = None, session: Session = Depends(get_session)):
+def get_all_recommendations(request: Request, type: Optional[str] = None, status: Optional[str] = None, session: Session = Depends(get_session)):
     """Returns all recommendations, optionally filtered by type."""
 
     query = select(Recommendation).order_by(Recommendation.date_added.desc())
     if type and type != "all":
         query = query.where(Recommendation.type == type)
+    if status and status != "all":
+        query = query.where(Recommendation.status == status)
     recs = session.exec(query).all()
     return recs
 
 @app.post("/api/recommendations/submit")
 def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
-    """Saves a recommendation."""
+    """Saves a recommendation with enriched metadata."""
+    # Fetch details synchronously so it has a profile immediately
+    details = {}
+    if rec.ext_id:
+        try:
+            if rec.type == "Anime":
+                from jikan_helper import get_anime_details
+                details = get_anime_details(rec.ext_id)
+            elif rec.type == "Manga":
+                from jikan_helper import get_manga_details
+                details = get_manga_details(rec.ext_id)
+            elif rec.type == "Movies":
+                from tmdb_helper import get_movie_details
+                details = get_movie_details(rec.ext_id)
+            elif rec.type == "TV Series":
+                from tmdb_helper import get_tv_details
+                details = get_tv_details(rec.ext_id)
+        except Exception as e:
+            print(f"Error enriching recommendation on submit: {e}")
+
+    if details:
+        rec.cover_url = details.get("poster_url")
+        rec.backdrop_url = details.get("backdrop_url")
+        rec.genres = details.get("genres")
+        rec.director = details.get("director")
+        rec.overview = details.get("overview")
+        rec.runtime = details.get("runtime")
+        rec.content_rating = details.get("content_rating")
+        if details.get("title"): rec.title = details["title"]
+        if details.get("release_year"): rec.year = details["release_year"]
+
     session.add(rec)
     session.commit()
     return {"status": "success"}
@@ -1190,83 +1224,24 @@ def delete_recommendation(rec_id: int, request: Request, session: Session = Depe
     session.commit()
     return {"ok": True}
 
-class MarkWatchedPayload(BaseModel):
-    rating: Optional[str] = None
-    is_liked: bool = False
+class RecommendationStatusPayload(BaseModel):
+    status: str # 'accepted' or 'rejected'
 
-@app.post("/api/recommendations/{rec_id}/mark-watched")
-def mark_recommendation_watched(rec_id: int, payload: MarkWatchedPayload, request: Request, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
-    """Converts a recommendation into an official MediaItem entry, then deletes the rec. Admin only."""
+@app.post("/api/recommendations/{rec_id}/status")
+def update_recommendation_status(rec_id: int, payload: RecommendationStatusPayload, request: Request, session: Session = Depends(get_session)):
+    """Updates the status of a recommendation. Admin only."""
     check_readonly(request)
     rec = session.get(Recommendation, rec_id)
     if not rec:
         raise HTTPException(status_code=404, detail="Recommendation not found.")
-
-    # Only check for duplicates when we have a valid external ID to match on
-    if rec.ext_id is not None:
-        existing = session.exec(
-            select(MediaItem).where(MediaItem.tmdb_id == rec.ext_id, MediaItem.type == rec.type)
-        ).first()
-        if existing:
-            raise HTTPException(status_code=409, detail=f"'{rec.title}' already exists in the database.")
-
-    # Format the rating properly
-    final_rating = payload.rating
-    numeric_rating = None
-    if payload.rating:
-        try:
-            val = float(payload.rating.replace("/10", "").strip())
-            if val <= 0.5 and val > 0:
-                val = 1.0
-            numeric_rating = str(int(val)) if val.is_integer() else str(val)
-            final_rating = f"{numeric_rating}/10"
-        except ValueError:
-            pass
-
-    # Fetch details synchronously so it's fully enriched immediately
-    details = {}
-    if rec.ext_id:
-        try:
-            if rec.type == "Anime":
-                from jikan_helper import get_anime_details
-                details = get_anime_details(rec.ext_id)
-            elif rec.type == "Manga":
-                from jikan_helper import get_manga_details
-                details = get_manga_details(rec.ext_id)
-            elif rec.type == "Movies":
-                from tmdb_helper import get_movie_details
-                details = get_movie_details(rec.ext_id)
-            elif rec.type == "TV Series":
-                from tmdb_helper import get_tv_details
-                details = get_tv_details(rec.ext_id)
-        except Exception as e:
-            print(f"Error fetching metadata during mark-watched: {e}")
-
-    new_item = MediaItem(
-        title=details.get("title") or rec.title,
-        release_year=details.get("release_year") or rec.year,
-        type=rec.type,
-        tmdb_id=rec.ext_id,
-        rating=final_rating,
-        numeric_rating=numeric_rating,
-        is_liked=payload.is_liked,
-        source="recommendation",
-        is_manual_rating=True,
-        genres=details.get("genres"),
-        director=details.get("director"),
-        cover_url=details.get("poster_url"),
-        backdrop_url=details.get("backdrop_url"),
-        runtime=details.get("runtime"),
-        content_rating=details.get("content_rating"),
-        overview=details.get("overview")
-    )
     
-    session.add(new_item)
-    session.delete(rec)
+    if payload.status not in ["pending", "accepted", "rejected"]:
+        raise HTTPException(status_code=400, detail="Invalid status.")
+        
+    rec.status = payload.status
+    session.add(rec)
     session.commit()
-    session.refresh(new_item)
-    
-    return {"ok": True, "item_id": new_item.id}
+    return {"ok": True}
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

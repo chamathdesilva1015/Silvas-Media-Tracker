@@ -1704,29 +1704,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (newYear) payload.release_year = newYear;
                 if (newTitle) payload.title = newTitle;
 
-                // If this is a recommendation profile, confirm watched before proceeding
-                if (item.isRecommendation && item._recId) {
-                    const confirmed = confirm(`Mark "${item.title}" as watched and add it to your finished database?`);
-                    if (!confirmed) return;
-                    const isLiked = confirm(`Did you like "${item.title}"?`);
-                    btn.disabled = true;
-                    btn.textContent = 'Saving...';
-                    try {
-                        const res = await fetch(`/api/recommendations/${item._recId}/mark-watched`, {
-                            method: 'POST',
-                            headers: getAuthHeaders(),
-                            body: JSON.stringify({ rating: payload.rating || null, is_liked: isLiked })
-                        });
-                        const data = await res.json();
-                        if (data.ok) {
-                            quickInfoModal.classList.remove('show');
-                            fetchMedia();
-                            fetchRecentRecommendations(currentCategory);
-                        } else {
-                            alert(data.detail || 'Error adding to database.');
-                        }
-                    } catch (e) { alert(e.message); }
-                    finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
+                // If this is a recommendation profile, we don't allow editing year/title/rating here
+                // as they are fetched from official sources or not applicable yet.
+                if (item.isRecommendation) {
+                    alert("Recommendation metadata is managed via the hub.");
                     return;
                 }
 
@@ -3401,15 +3382,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Take the first 3 groups to display at most 3 unique items
             const groups = Object.values(grouped).slice(0, 3);
             groups.forEach(recs => {
+                const rec1 = recs[0];
                 const div = document.createElement('div');
                 div.className = 'recent-rec-item';
                 div.style.background = 'rgba(255,255,255,0.02)';
-                div.style.padding = '1rem';
+                div.style.padding = '0.75rem';
                 div.style.borderRadius = '12px';
                 div.style.border = '1px solid rgba(255,255,255,0.05)';
                 div.style.cursor = 'pointer';
                 div.style.transition = 'all 0.2s ease';
-                div.style.textAlign = 'center';
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.gap = '12px';
+                div.style.textAlign = 'left';
+                div.style.marginBottom = '10px';
                 
                 div.addEventListener('mouseenter', () => {
                     div.style.background = 'rgba(255,255,255,0.05)';
@@ -3422,46 +3408,51 @@ document.addEventListener('DOMContentLoaded', () => {
                     div.style.boxShadow = 'none';
                 });
                 
-                div.addEventListener('click', async () => {
-                    try {
-                        const response = await fetch(`/api/media/fetch-metadata?type=${rec1.type}&ext_id=${rec1.ext_id}`);
-                        const data = await response.json();
-                        
-                        // Create an item object for openQuickInfo
-                        const item = {
-                            title: data.title,
-                            type: rec1.type,
-                            release_year: data.release_year,
-                            backdrop_url: data.backdrop_url,
-                            cover_url: data.cover_url,
-                            overview: data.overview,
-                            genres: data.genres,
-                            runtime: data.runtime,
-                            director: data.director,
-                            content_rating: data.content_rating,
-                            isRecommendation: true, // Flag to hide like button
-                            _recId: rec1.id // For mark-watched via Save Changes
-                        };
-                        
-                        window.openQuickInfo(item);
-                    } catch (error) {
-                        console.error('Error fetching metadata:', error);
-                    }
+                div.addEventListener('click', () => {
+                    const item = {
+                        ...rec1,
+                        release_year: rec1.year,
+                        isRecommendation: true,
+                        _recId: rec1.id
+                    };
+                    window.openQuickInfo(item);
                 });
                 
-                const rec1 = recs[0];
+                const poster = document.createElement('div');
+                poster.style.width = '40px';
+                poster.style.height = '60px';
+                poster.style.borderRadius = '6px';
+                poster.style.backgroundSize = 'cover';
+                poster.style.backgroundPosition = 'center';
+                poster.style.flexShrink = '0';
+                if (rec1.cover_url) {
+                    poster.style.backgroundImage = `url(${rec1.cover_url})`;
+                } else {
+                    poster.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    poster.innerHTML = '<i class="fas fa-image" style="opacity:0.2; font-size: 0.9rem;"></i>';
+                    poster.style.display = 'flex';
+                    poster.style.alignItems = 'center';
+                    poster.style.justifyContent = 'center';
+                }
                 
+                const content = document.createElement('div');
+                content.style.flex = '1';
+                content.style.minWidth = '0';
+
                 const title = document.createElement('div');
                 title.style.fontWeight = '700';
-                title.style.fontSize = '0.95rem';
+                title.style.fontSize = '0.9rem';
                 title.style.color = 'var(--text-primary)';
+                title.style.whiteSpace = 'nowrap';
+                title.style.overflow = 'hidden';
+                title.style.textOverflow = 'ellipsis';
                 title.textContent = rec1.title;
                 if (rec1.year) title.textContent += ` (${rec1.year})`;
                 
                 const byWho = document.createElement('div');
-                byWho.style.fontSize = '0.85rem';
+                byWho.style.fontSize = '0.75rem';
                 byWho.style.color = 'var(--theme-accent)';
-                byWho.style.marginTop = '4px';
+                byWho.style.marginTop = '2px';
                 
                 let dateStr = '';
                 if (rec1.date_added) {
@@ -3470,30 +3461,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (recs.length === 1) {
-                    byWho.textContent = `Recommendation By ${rec1.recommender_name || 'Anonymous'}${dateStr ? ' • ' + dateStr : ''}`;
+                    byWho.textContent = `By ${rec1.recommender_name || 'Anonymous'}${dateStr ? ' • ' + dateStr : ''}`;
                 } else {
-                    const names = recs.map(r => r.recommender_name || 'Anonymous');
-                    byWho.textContent = `Recommendation By ${names.join(' and ')}${dateStr ? ' • ' + dateStr : ''}`;
+                    const names = [...new Set(recs.map(r => r.recommender_name || 'Anonymous'))];
+                    byWho.textContent = `By ${names.join(' and ')}${dateStr ? ' • ' + dateStr : ''}`;
+                }
+
+                content.appendChild(title);
+                content.appendChild(byWho);
+
+                // Add note if available (from the first recommendation in the group)
+                if (rec1.note) {
+                    const note = document.createElement('div');
+                    note.style.fontSize = '0.75rem';
+                    note.style.color = 'var(--text-secondary)';
+                    note.style.marginTop = '4px';
+                    note.style.fontStyle = 'italic';
+                    note.style.display = '-webkit-box';
+                    note.style.webkitLineClamp = '1';
+                    note.style.webkitBoxOrient = 'vertical';
+                    note.style.overflow = 'hidden';
+                    note.textContent = `"${rec1.note}"`;
+                    content.appendChild(note);
                 }
                 
-                div.appendChild(title);
-                div.appendChild(byWho);
-                
-                recs.forEach(rec => {
-                    if (rec.note) {
-                        const note = document.createElement('div');
-                        note.style.fontSize = '0.8rem';
-                        note.style.color = 'var(--text-secondary)';
-                        note.style.marginTop = '6px';
-                        note.style.fontStyle = 'italic';
-                        note.textContent = `"${rec.note}"`;
-                        if (recs.length >= 2) {
-                            note.textContent += ` (by ${rec.recommender_name || 'Anonymous'})`;
-                        }
-                        div.appendChild(note);
-                    }
-                });
-                
+                div.appendChild(poster);
+                div.appendChild(content);
                 listContainer.appendChild(div);
             });
         } catch (error) {
@@ -3893,118 +3886,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentRecTab = 'pending'; // 'pending' or 'accepted'
     let allRecsData = [];
 
-    // Custom watch modal flow inside the main modal
-    const watchRecBackBtn = document.getElementById('watchRecBackBtn');
-    const watchRecRatingInput = document.getElementById('watchRecRatingInput');
-    const watchRecLikeBtn = document.getElementById('watchRecLikeBtn');
-    const watchRecDislikeBtn = document.getElementById('watchRecDislikeBtn');
-    const watchRecSubmitBtn = document.getElementById('watchRecSubmitBtn');
-    
-    let currentWatchRec = null;
-    let currentWatchCard = null;
-    let isWatchLiked = false;
-
-    if (watchRecBackBtn) watchRecBackBtn.onclick = () => {
-        recMgrWatchView.style.display = 'none';
-        recMgrListView.style.display = 'block';
-    };
-
-    if (watchRecLikeBtn) watchRecLikeBtn.onclick = () => {
-        isWatchLiked = true;
-        watchRecLikeBtn.classList.add('active');
-        watchRecDislikeBtn.classList.remove('active');
-    };
-    if (watchRecDislikeBtn) watchRecDislikeBtn.onclick = () => {
-        isWatchLiked = false;
-        watchRecDislikeBtn.classList.add('active');
-        watchRecLikeBtn.classList.remove('active');
-    };
-
-    function markRecWatched(rec, cardEl) {
-        currentWatchRec = rec;
-        currentWatchCard = cardEl;
-        watchRecRatingInput.value = '';
-        isWatchLiked = false;
-        watchRecDislikeBtn.classList.add('active');
-        watchRecLikeBtn.classList.remove('active');
-        
-        recMgrListView.style.display = 'none';
-        recMgrWatchView.style.display = 'flex';
-        recMgrWatchView.style.flexDirection = 'column';
-        watchRecRatingInput.focus();
-    }
-
-    if (watchRecSubmitBtn) {
-        watchRecSubmitBtn.onclick = async () => {
-            if (!currentWatchRec) return;
-            const ratingStr = watchRecRatingInput.value.trim();
-            if (!ratingStr) {
-                alert('Please enter a rating before adding.');
-                watchRecRatingInput.focus();
-                return;
-            }
-            
-            watchRecSubmitBtn.disabled = true;
-            watchRecSubmitBtn.textContent = 'Adding...';
-            try {
-                let finalRating = parseFloat(ratingStr);
-                if (isNaN(finalRating) || finalRating < 0 || finalRating > 10) {
-                    alert('Invalid rating. Please enter a number between 0 and 10.');
-                    watchRecSubmitBtn.disabled = false;
-                    watchRecSubmitBtn.textContent = 'Add to Database';
-                    return;
-                }
-                finalRating = Math.round(finalRating * 2) / 2;
-
-                const res = await fetch(`/api/recommendations/${currentWatchRec.id}/mark-watched`, {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({ rating: finalRating.toString(), is_liked: isWatchLiked })
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    recMgrWatchView.style.display = 'none';
-                    recMgrListView.style.display = 'block';
-                    if (currentWatchCard) {
-                        currentWatchCard.style.opacity = '0';
-                        currentWatchCard.style.transition = 'opacity 0.3s';
-                        setTimeout(() => currentWatchCard.remove(), 320);
-                    }
-                    allRecsData = allRecsData.filter(r => r.id !== currentWatchRec.id);
-                    fetchMedia();
-                    fetchRecentRecommendations(currentCategory);
-                } else {
-                    alert(data.detail || 'Error adding to database.');
-                }
-            } catch (e) {
-                alert('Error: ' + e.message);
-            } finally {
-                watchRecSubmitBtn.disabled = false;
-                watchRecSubmitBtn.textContent = 'Add to Database';
-            }
-        };
-    }
+    // Watch Flow (Obsolete - items are now Accepted/Rejected and manually added to library)
+    // Removed markRecWatched and related listeners
 
     async function fetchAllRecs() {
         allRecsList.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">Loading...</p>';
         try {
-            let url;
-            if (currentRecTab === 'pending') {
-                url = `/api/recommendations/all?type=${encodeURIComponent(currentRecFilter)}`;
-            } else {
-                url = '/api/media?source=recommendation';
-            }
-            
+            const url = `/api/recommendations/all?status=${currentRecTab}&type=${encodeURIComponent(currentRecFilter)}`;
             const res = await fetch(url, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed');
-            let data = await res.json();
-            
-            if (currentRecTab === 'accepted') {
-                // Filter by the current filter locally since the API endpoint didn't take a type filter directly in the updated schema
-                data = data.filter(r => r.type === currentRecFilter);
-            }
-            
-            allRecsData = data;
+            allRecsData = await res.json();
             renderAllRecs();
         } catch (e) {
             allRecsList.innerHTML = '<p style="text-align:center;color:#ff6b6b;padding:2rem;">Could not load list.</p>';
@@ -4022,12 +3913,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'rec-mgr-card';
 
+            // Poster Thumbnail
+            const poster = document.createElement('div');
+            poster.className = 'rec-mgr-card-poster';
+            if (rec.cover_url) {
+                poster.style.backgroundImage = `url(${rec.cover_url})`;
+            } else {
+                poster.innerHTML = '<i class="fas fa-image" style="opacity:0.2;"></i>';
+            }
+            card.appendChild(poster);
+
             const info = document.createElement('div');
             info.className = 'rec-mgr-card-info';
+            info.style.cursor = 'pointer';
+            info.onclick = () => {
+                // Pass a flag so openQuickInfo knows how to handle it
+                rec.isRecommendation = true;
+                rec._recId = rec.id;
+                rec.release_year = rec.year; // Align field names
+                window.openQuickInfo(rec);
+            };
 
             const titleEl = document.createElement('div');
             titleEl.className = 'rec-mgr-card-title';
-            titleEl.textContent = rec.title + (rec.release_year || rec.year ? ` (${rec.release_year || rec.year})` : '');
+            titleEl.textContent = rec.title + (rec.year ? ` (${rec.year})` : '');
 
             const meta = document.createElement('div');
             meta.className = 'rec-mgr-card-meta';
@@ -4039,65 +3948,81 @@ document.addEventListener('DOMContentLoaded', () => {
                 dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
             }
 
-            if (currentRecTab === 'pending') {
-                meta.textContent = `${rec.type} • By ${rec.recommender_name || 'Anonymous'}${dateStr ? ' • ' + dateStr : ''}`;
-            } else {
-                // For Accepted tab, rec is a MediaItem
-                meta.textContent = `${rec.type} • Added ${dateStr}`;
-            }
+            meta.textContent = `${rec.type} • By ${rec.recommender_name || 'Anonymous'}${dateStr ? ' • ' + dateStr : ''}`;
 
             info.appendChild(titleEl);
             info.appendChild(meta);
 
-            if (rec.note && currentRecTab === 'pending') {
+            if (rec.note) {
                 const noteEl = document.createElement('div');
                 noteEl.className = 'rec-mgr-card-note';
                 noteEl.textContent = `"${rec.note}"`;
                 info.appendChild(noteEl);
             }
             
-            // Allow opening profile if it's an accepted recommendation (MediaItem)
-            if (currentRecTab === 'accepted') {
-                info.style.cursor = 'pointer';
-                info.onclick = () => window.openQuickInfo(rec);
-            }
+            card.appendChild(info);
 
             const actions = document.createElement('div');
             actions.className = 'rec-mgr-card-actions';
 
             if (runtimeAdminKey) {
                 if (currentRecTab === 'pending') {
-                    const watchBtn = document.createElement('button');
-                    watchBtn.className = 'rec-mgr-btn rec-mgr-btn-watch';
-                    watchBtn.textContent = '✓ Watched';
-                    watchBtn.title = 'Mark as watched and add to database';
-                    watchBtn.addEventListener('click', () => markRecWatched(rec, card));
-                    actions.appendChild(watchBtn);
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'rec-mgr-btn rec-mgr-btn-watch';
+                    acceptBtn.innerHTML = '<i class="fas fa-check"></i> Accept';
+                    acceptBtn.title = 'Acknowledge and move to history';
+                    acceptBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        updateRecStatus(rec.id, 'accepted', card);
+                    });
+                    actions.appendChild(acceptBtn);
+                } else if (currentRecTab === 'accepted') {
+                    const unacceptBtn = document.createElement('button');
+                    unacceptBtn.className = 'rec-mgr-btn rec-mgr-btn-watch';
+                    unacceptBtn.innerHTML = '<i class="fas fa-undo"></i> Restore';
+                    unacceptBtn.title = 'Move back to pending';
+                    unacceptBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        updateRecStatus(rec.id, 'pending', card);
+                    });
+                    actions.appendChild(unacceptBtn);
                 }
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'rec-mgr-btn rec-mgr-btn-delete';
-                deleteBtn.textContent = '✕ Delete';
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete';
                 deleteBtn.addEventListener('click', (e) => {
-                    if (currentRecTab === 'pending') {
-                        deleteRec(rec.id, card);
-                    } else {
-                        deleteAcceptedRec(rec.id, card, e);
-                    }
+                    e.stopPropagation();
+                    deleteRec(rec.id, card);
                 });
                 actions.appendChild(deleteBtn);
             }
 
-            card.appendChild(info);
-            if (runtimeAdminKey || currentRecTab === 'pending') {
-                // we want actions to show up for admins on both tabs, but for public, it shouldn't show actions at all.
-                // Wait, if no actions are added, appending an empty div is harmless, but let's just conditionally append it.
-                if (actions.children.length > 0) {
-                    card.appendChild(actions);
-                }
+            if (runtimeAdminKey && actions.children.length > 0) {
+                card.appendChild(actions);
             }
             allRecsList.appendChild(card);
         });
+    }
+
+    async function updateRecStatus(recId, status, cardEl) {
+        try {
+            const res = await fetch(`/api/recommendations/${recId}/status`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ status: status })
+            });
+            if ((await res.json()).ok) {
+                cardEl.style.opacity = '0';
+                cardEl.style.transform = 'translateX(20px)';
+                cardEl.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    cardEl.remove();
+                    allRecsData = allRecsData.filter(r => r.id !== recId);
+                    if (!allRecsData.length) renderAllRecs();
+                }, 300);
+            }
+        } catch (e) { alert('Error updating status.'); }
     }
 
     async function deleteRec(recId, cardEl) {
@@ -4110,30 +4035,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if ((await res.json()).ok) {
                 cardEl.style.opacity = '0';
                 cardEl.style.transition = 'opacity 0.3s';
-                setTimeout(() => cardEl.remove(), 320);
-                allRecsData = allRecsData.filter(r => r.id !== recId);
+                setTimeout(() => {
+                    cardEl.remove();
+                    allRecsData = allRecsData.filter(r => r.id !== recId);
+                    if (!allRecsData.length) renderAllRecs();
+                }, 320);
             }
         } catch (e) { alert('Error deleting recommendation.'); }
-    }
-
-    async function deleteAcceptedRec(recId, cardEl, e) {
-        e.stopPropagation(); // prevent clicking the card from opening profile
-        if (!confirm('Delete this accepted recommendation from the database? This cannot be undone.')) return;
-        try {
-            const res = await fetch(`/api/media/delete/${recId}`, {
-                method: 'POST',
-                headers: getAuthHeaders()
-            });
-            if ((await res.json()).ok) {
-                cardEl.style.opacity = '0';
-                cardEl.style.transition = 'opacity 0.3s';
-                setTimeout(() => cardEl.remove(), 320);
-                allRecsData = allRecsData.filter(r => r.id !== recId);
-                fetchMedia(); // Refresh main library
-            } else {
-                alert('Failed to delete.');
-            }
-        } catch (e) { alert('Error deleting media.'); }
     }
 
     if (manageRecsBtn) manageRecsBtn.onclick = () => {

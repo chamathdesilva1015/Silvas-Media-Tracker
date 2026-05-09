@@ -741,36 +741,7 @@
                 </div>
             </div>
 
-            <!-- Page 2: Watch Flow View -->
-            <div id="recMgrWatchView" style="display: none; flex: 1; text-align: center; padding-top: 1rem;">
-                <button id="watchRecBackBtn" class="btn-text" style="position: absolute; left: 24px; top: 24px; color: var(--text-secondary); font-size: 0.9rem;"><i class="fas fa-arrow-left"></i> Back</button>
-                <h2 class="serif" id="watchRecTitle" style="margin-bottom: 0.4rem; font-size: 1.5rem; margin-top: 1rem;">Mark as Watched</h2>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem;">Rate this recommendation and confirm.</p>
 
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Your Rating *</label>
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
-                        <input type="number" id="watchRecRatingInput" step="0.5" min="0" max="10" placeholder="-" required style="width: 80px; text-align: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1.2rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-                        <span style="font-size: 1.2rem; color: var(--text-secondary);">/ 10</span>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 2rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Did you like it?</label>
-                    <div style="display: flex; gap: 1rem; justify-content: center;">
-                        <button id="watchRecLikeBtn" class="btn-secondary" style="flex: 1; padding: 0.8rem; border-radius: 12px; transition: all 0.2s;">
-                            <i class="far fa-heart" style="margin-right: 6px;"></i> Yes
-                        </button>
-                        <button id="watchRecDislikeBtn" class="btn-secondary active" style="flex: 1; padding: 0.8rem; border-radius: 12px; transition: all 0.2s;">
-                            <i class="fas fa-times" style="margin-right: 6px;"></i> No
-                        </button>
-                    </div>
-                </div>
-
-                <button id="watchRecSubmitBtn" class="btn-primary" style="width: 100%; padding: 1rem; border-radius: 12px; font-size: 1rem; font-weight: bold; background: var(--theme-accent); color: #000; border: none; cursor: pointer; margin-top: auto;">
-                    Add to Database
-                </button>
-            </div>
         </div>
     </div>
 
