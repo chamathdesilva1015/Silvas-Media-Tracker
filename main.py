@@ -1105,6 +1105,17 @@ def get_recent_recommendations(category: str, session: Session = Depends(get_ses
     ).all()
     return recs
 
+@app.get("/api/recommendations/debug")
+def debug_recommendations(session: Session = Depends(get_session)):
+    url = os.environ.get("DATABASE_URL")
+    recs = session.exec(select(Recommendation)).all()
+    return {
+        "connected_to": "Supabase" if url else "SQLite",
+        "url_present": url is not None,
+        "total_recommendations": len(recs),
+        "recs": recs
+    }
+
 @app.get("/api/recommendations/check")
 def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_session)):
     """Checks if a media item already exists in the library or recommendations."""
@@ -1122,7 +1133,7 @@ def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_
     return {
         "in_library": library_exists,
         "rec_count": rec_count,
-        "allow_recommendation": not library_exists and rec_count < 2
+        "allow_recommendation": rec_count < 2
     }
 
 @app.post("/api/recommendations/submit")
