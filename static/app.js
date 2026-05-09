@@ -235,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateGlobalTheme(category);
 
                 if (searchInput) {
+                    searchInput.value = '';
                     if (currentCategory === 'TV Series') {
                         searchInput.placeholder = "Search titles or creators...";
                     } else if (currentCategory === 'Movies') {
@@ -315,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateGlobalTheme(category);
 
             if (searchInput) {
+                searchInput.value = '';
                 if (currentCategory === 'TV Series') {
                     searchInput.placeholder = "Search titles or creators...";
                 } else if (currentCategory === 'Movies') {
@@ -431,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 navLinks.forEach(l => l.classList.remove('active'));
                 
                 currentSubTab = sub;
+                if (searchInput) searchInput.value = '';
 
                 // Sync desktop pills
                 pillTabs.forEach(t => {
