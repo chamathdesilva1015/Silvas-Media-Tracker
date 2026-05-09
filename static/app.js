@@ -1785,13 +1785,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dirSection.style.display = 'flex';
         } else { dirSection.style.display = 'none'; }
 
-        // --- Overview ---
-        const overviewSection = document.getElementById('quickInfoOverviewSection');
-        const overviewEl = document.getElementById('quickInfoOverview');
-        if (item.overview) {
-            overviewEl.textContent = item.overview;
-            overviewSection.style.display = 'block';
-        } else { overviewSection.style.display = 'none'; }
+
 
         // --- Review ---
         const reviewSection = document.getElementById('quickInfoReviewSection');
