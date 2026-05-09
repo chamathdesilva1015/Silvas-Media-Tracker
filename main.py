@@ -1223,24 +1223,48 @@ def mark_recommendation_watched(rec_id: int, payload: MarkWatchedPayload, reques
         except ValueError:
             pass
 
+    # Fetch details synchronously so it's fully enriched immediately
+    details = {}
+    if rec.ext_id:
+        try:
+            if rec.type == "Anime":
+                from jikan_helper import get_anime_details
+                details = get_anime_details(rec.ext_id)
+            elif rec.type == "Manga":
+                from jikan_helper import get_manga_details
+                details = get_manga_details(rec.ext_id)
+            elif rec.type == "Movies":
+                from tmdb_helper import get_movie_details
+                details = get_movie_details(rec.ext_id)
+            elif rec.type == "TV Series":
+                from tmdb_helper import get_tv_details
+                details = get_tv_details(rec.ext_id)
+        except Exception as e:
+            print(f"Error fetching metadata during mark-watched: {e}")
+
     new_item = MediaItem(
-        title=rec.title,
-        release_year=rec.year,
+        title=details.get("title") or rec.title,
+        release_year=details.get("release_year") or rec.year,
         type=rec.type,
         tmdb_id=rec.ext_id,
         rating=final_rating,
         numeric_rating=numeric_rating,
         is_liked=payload.is_liked,
         source="recommendation",
-        is_manual_rating=True
+        is_manual_rating=True,
+        genres=details.get("genres"),
+        director=details.get("director"),
+        cover_url=details.get("poster_url"),
+        backdrop_url=details.get("backdrop_url"),
+        runtime=details.get("runtime"),
+        content_rating=details.get("content_rating"),
+        overview=details.get("overview")
     )
+    
     session.add(new_item)
     session.delete(rec)
     session.commit()
     session.refresh(new_item)
-    
-    # Trigger background enrichment to pull poster/genres
-    background_tasks.add_task(run_enrichment)
     
     return {"ok": True, "item_id": new_item.id}
 
