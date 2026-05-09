@@ -3470,11 +3470,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 byWho.style.color = 'var(--theme-accent)';
                 byWho.style.marginTop = '4px';
                 
+                let dateStr = '';
+                if (rec1.date_added) {
+                    const dateObj = new Date(rec1.date_added + 'Z');
+                    dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                }
+                
                 if (recs.length === 1) {
-                    byWho.textContent = `Recommendation By ${rec1.recommender_name || 'Anonymous'}`;
+                    byWho.textContent = `Recommendation By ${rec1.recommender_name || 'Anonymous'}${dateStr ? ' • ' + dateStr : ''}`;
                 } else {
                     const names = recs.map(r => r.recommender_name || 'Anonymous');
-                    byWho.textContent = `Recommendation By ${names.join(' and ')}`;
+                    byWho.textContent = `Recommendation By ${names.join(' and ')}${dateStr ? ' • ' + dateStr : ''}`;
                 }
                 
                 div.appendChild(title);
