@@ -144,6 +144,18 @@
                     </button>
                 </div>
 
+                <!-- Detail Content View inline -->
+                <div id="infoDetail" style="display: none; text-align: left; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; margin-top: 1rem; margin-bottom: 2rem; position: relative;">
+                    <div style="position: absolute; top: 1rem; right: 1rem;">
+                        <button id="backToInfoBtn" class="btn-secondary" style="width: auto; padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 8px;">✕ Collapse</button>
+                    </div>
+                    <h2 id="infoSectionTitle" class="serif" style="font-size: 1.8rem; margin-bottom: 0.5rem; text-align: center; margin-top: 0.5rem;"></h2>
+                    <p id="infoSectionSubtitle" class="info-subtitle-sm" style="text-align: center; margin-bottom: 2rem;"></p>
+                    <div id="infoSectionBody" class="info-content-body">
+                        <!-- Placeholder content injected here -->
+                    </div>
+                </div>
+
                 <div class="suggestion-control-panel">
                         <button id="suggestMeBtn" class="premium-suggest-btn">
                             <i class="fas fa-magic"></i>
@@ -211,21 +223,7 @@
             </div>
 
 
-            <!-- Detail Content View -->
-            <div id="infoDetail" style="display: none; text-align: left;">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                    <button id="backToInfoBtn" class="btn-secondary" style="width: auto; padding: 0.5rem 1.5rem; font-size: 0.9rem;">← Back to Hub</button>
-                </div>
-                <h2 id="infoSectionTitle" class="serif" style="font-size: 2rem; margin-bottom: 0.5rem; text-align: center;"></h2>
-                <p id="infoSectionSubtitle" class="info-subtitle-sm" style="text-align: center; margin-bottom: 2rem;"></p>
-                <div id="infoSectionBody" class="info-content-body">
-                    <!-- Placeholder content injected here -->
-                </div>
-                <div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.7rem; opacity: 0.3; text-align: center;">
-                    System Version: 75.24.4 (Elite UI)
-                </div>
-            </div>
-        </div>
+
         </main><!-- /.container -->
         </div><!-- /.main-content -->
     </div><!-- /.app-layout -->

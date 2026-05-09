@@ -2681,10 +2681,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 iTitle.innerText = section;
                 iSubtitle.innerText = infoSubtitles[section] || 'Detailed methodology and project documentation.';
                 iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
-                iIntro.style.display = 'none';
                 iDetail.style.display = 'block';
                 
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Scroll specifically to the detail panel
+                iDetail.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         });
 
@@ -2759,7 +2759,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (iBack) {
             iBack.addEventListener('click', () => {
                 iDetail.style.display = 'none';
-                iIntro.style.display = 'block';
             });
         }
         
