@@ -3916,8 +3916,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            const activeTab = document.querySelector('.tab-btn.active');
-            const category = activeTab ? activeTab.dataset.category : 'Movies';
+            // Use the current hub category (movies/tv/etc)
+            const category = currentCategory || 'Movies';
             
             const payload = {
                 title: selectedRecItem.title,

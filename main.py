@@ -1061,22 +1061,6 @@ async def trigger_enrich(category: Optional[str] = None):
             
     return StreamingResponse(log_generator(), media_type="text/plain")
 
-@app.get("/api/recommendations/{item_id}")
-def get_item_recommendations(item_id: int, session: Session = Depends(get_session)):
-    """Fetches similar media recommendations for a specific library item."""
-    item = session.get(MediaItem, item_id)
-    if not item or not item.tmdb_id:
-        return []
-    
-    try:
-        if item.type in ["Anime", "Manga"]:
-            return get_jikan_recommendations(item.tmdb_id, "anime" if item.type == "Anime" else "manga", limit=6)
-        else:
-            return get_tmdb_recommendations(item.tmdb_id, "movie" if item.type == "Movies" else "tv", limit=6)
-    except Exception as e:
-        print(f"Error fetching recommendations for {item.title}: {e}")
-        return []
-
 @app.get("/api/search/multi")
 def search_multi(title: str, type: str, year: Optional[int] = None):
     """Searches for media items across APIs returning multiple results."""
@@ -1136,13 +1120,6 @@ def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_
         "allow_recommendation": rec_count < 2
     }
 
-@app.post("/api/recommendations/submit")
-def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
-    """Saves a recommendation."""
-    session.add(rec)
-    session.commit()
-    return {"status": "success"}
-
 @app.get("/api/recommendations/all")
 def get_all_recommendations(request: Request, type: Optional[str] = None, session: Session = Depends(get_session)):
     """Returns all recommendations, optionally filtered by type. Admin only."""
@@ -1152,6 +1129,30 @@ def get_all_recommendations(request: Request, type: Optional[str] = None, sessio
         query = query.where(Recommendation.type == type)
     recs = session.exec(query).all()
     return recs
+
+@app.post("/api/recommendations/submit")
+def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
+    """Saves a recommendation."""
+    session.add(rec)
+    session.commit()
+    return {"status": "success"}
+
+# NOTE: {item_id} wildcard route must remain AFTER all specific /recommendations/* paths
+@app.get("/api/recommendations/{item_id}")
+def get_item_recommendations(item_id: int, session: Session = Depends(get_session)):
+    """Fetches similar media recommendations for a specific library item."""
+    item = session.get(MediaItem, item_id)
+    if not item or not item.tmdb_id:
+        return []
+    
+    try:
+        if item.type in ["Anime", "Manga"]:
+            return get_jikan_recommendations(item.tmdb_id, "anime" if item.type == "Anime" else "manga", limit=6)
+        else:
+            return get_tmdb_recommendations(item.tmdb_id, "movie" if item.type == "Movies" else "tv", limit=6)
+    except Exception as e:
+        print(f"Error fetching recommendations for {item.title}: {e}")
+        return []
 
 @app.delete("/api/recommendations/{rec_id}")
 def delete_recommendation(rec_id: int, request: Request, session: Session = Depends(get_session)):
@@ -1176,12 +1177,13 @@ def mark_recommendation_watched(rec_id: int, payload: MarkWatchedPayload, reques
     if not rec:
         raise HTTPException(status_code=404, detail="Recommendation not found.")
 
-    # Check for duplicates
-    existing = session.exec(
-        select(MediaItem).where(MediaItem.tmdb_id == rec.ext_id, MediaItem.type == rec.type)
-    ).first()
-    if existing:
-        raise HTTPException(status_code=409, detail=f"'{rec.title}' already exists in the database.")
+    # Only check for duplicates when we have a valid external ID to match on
+    if rec.ext_id is not None:
+        existing = session.exec(
+            select(MediaItem).where(MediaItem.tmdb_id == rec.ext_id, MediaItem.type == rec.type)
+        ).first()
+        if existing:
+            raise HTTPException(status_code=409, detail=f"'{rec.title}' already exists in the database.")
 
     new_item = MediaItem(
         title=rec.title,
