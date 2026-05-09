@@ -3359,6 +3359,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedRecItem = null;
     
     if (leaveRecBtn && recModal) {
+        function updateRecSteps(activeStep) {
+            for (let i = 1; i <= 3; i++) {
+                const circle = document.getElementById(`recStepCircle${i}`);
+                if (circle) {
+                    if (i === activeStep) {
+                        circle.style.background = 'var(--theme-accent)';
+                        circle.style.color = '#000';
+                        circle.style.borderColor = 'var(--theme-accent)';
+                    } else if (i < activeStep) {
+                        circle.style.background = 'rgba(var(--theme-accent-rgb), 0.2)';
+                        circle.style.color = 'var(--theme-accent)';
+                        circle.style.borderColor = 'var(--theme-accent)';
+                    } else {
+                        circle.style.background = 'var(--bg-surface)';
+                        circle.style.color = 'var(--text-secondary)';
+                        circle.style.borderColor = 'rgba(255,255,255,0.1)';
+                    }
+                }
+            }
+        }
+
         leaveRecBtn.addEventListener('click', () => {
             recModal.classList.add('show');
             // Reset to page 1
@@ -3372,6 +3393,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recYearInput.value = '';
             recNoteInput.value = '';
             recNameInput.value = '';
+            updateRecSteps(1);
         });
         
         closeRecBtn.addEventListener('click', () => {
@@ -3395,6 +3417,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             recPage1.style.display = 'none';
             recPage2.style.display = 'block';
+            updateRecSteps(2);
             recSearchResults.innerHTML = '<p style="text-align: center; opacity: 0.5;">Searching...</p>';
             
             try {
@@ -3417,23 +3440,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 results.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'rec-search-item';
-                    div.style.cssText = 'display: flex; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; margin-bottom: 8px;';
+                    div.style.cssText = 'display: flex; gap: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; cursor: pointer; margin-bottom: 8px; transition: all 0.2s ease; border: 1px solid transparent;';
                     
                     if (item.cover_url) {
                         const img = document.createElement('img');
                         img.src = item.cover_url;
-                        img.style.cssText = 'width: 40px; height: 60px; object-fit: cover; border-radius: 4px;';
+                        img.style.cssText = 'width: 80px; height: 120px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0;';
                         div.appendChild(img);
                     }
                     
                     const details = document.createElement('div');
-                    details.innerHTML = `<div><b>${item.title}</b></div><div style="font-size: 0.8rem; opacity: 0.7;">${item.release_year || 'N/A'}</div>`;
+                    details.style.cssText = 'flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;';
+                    details.innerHTML = `
+                        <div style="font-weight: 700; color: #fff; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</div>
+                        <div style="font-size: 0.8rem; color: var(--theme-accent); opacity: 0.8; font-weight: 600; margin-bottom: 0.3rem;">${item.release_year || 'N/A'}</div>
+                        ${item.overview ? `<div style="font-size: 0.75rem; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; opacity: 0.7;">${item.overview}</div>` : ''}
+                    `;
                     div.appendChild(details);
+                    
+                    div.addEventListener('mouseenter', () => {
+                        if (selectedRecItem !== item) {
+                            div.style.background = 'rgba(255,255,255,0.07)';
+                            div.style.borderColor = 'rgba(255,255,255,0.1)';
+                        }
+                    });
+                    
+                    div.addEventListener('mouseleave', () => {
+                        if (selectedRecItem !== item) {
+                            div.style.background = 'rgba(255,255,255,0.03)';
+                            div.style.borderColor = 'transparent';
+                        }
+                    });
                     
                     div.addEventListener('click', () => {
                         // Deselect others
-                        document.querySelectorAll('.rec-search-item').forEach(el => el.style.background = 'rgba(255,255,255,0.05)');
-                        div.style.background = 'var(--theme-accent-muted)';
+                        document.querySelectorAll('.rec-search-item').forEach(el => {
+                            el.style.background = 'rgba(255,255,255,0.03)';
+                            el.style.borderColor = 'transparent';
+                        });
+                        div.style.background = 'rgba(var(--theme-accent-rgb), 0.15)';
+                        div.style.borderColor = 'var(--theme-accent)';
                         selectedRecItem = item;
                         recNext2Btn.disabled = false;
                     });
@@ -3449,16 +3495,19 @@ document.addEventListener('DOMContentLoaded', () => {
         recBack2Btn.addEventListener('click', () => {
             recPage2.style.display = 'none';
             recPage1.style.display = 'block';
+            updateRecSteps(1);
         });
         
         recNext2Btn.addEventListener('click', () => {
             recPage2.style.display = 'none';
             recPage3.style.display = 'block';
+            updateRecSteps(3);
         });
         
         recBack3Btn.addEventListener('click', () => {
             recPage3.style.display = 'none';
             recPage2.style.display = 'block';
+            updateRecSteps(2);
         });
         
         recSubmitBtn.addEventListener('click', async () => {
