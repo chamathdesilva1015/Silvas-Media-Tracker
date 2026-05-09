@@ -1182,7 +1182,7 @@ def submit_recommendation(rec: Recommendation, session: Session = Depends(get_se
             print(f"Error enriching recommendation on submit: {e}")
 
     if details:
-        rec.cover_url = details.get("poster_url")
+        rec.cover_url = details.get("cover_url")
         rec.backdrop_url = details.get("backdrop_url")
         rec.genres = details.get("genres")
         rec.director = details.get("director")
