@@ -111,8 +111,11 @@ def devtools_probe():
 
 
 @app.get("/api/media", response_model=List[MediaItem])
-def read_media(session: Session = Depends(get_session)):
-    media = session.exec(select(MediaItem).order_by(MediaItem.date_added.desc())).all()
+def read_media(source: Optional[str] = None, session: Session = Depends(get_session)):
+    query = select(MediaItem).order_by(MediaItem.date_added.desc())
+    if source:
+        query = query.where(MediaItem.source == source)
+    media = session.exec(query).all()
     return media
 
 @app.delete("/api/media/{item_id}")
@@ -1170,7 +1173,7 @@ class MarkWatchedPayload(BaseModel):
     is_liked: bool = False
 
 @app.post("/api/recommendations/{rec_id}/mark-watched")
-def mark_recommendation_watched(rec_id: int, payload: MarkWatchedPayload, request: Request, session: Session = Depends(get_session)):
+def mark_recommendation_watched(rec_id: int, payload: MarkWatchedPayload, request: Request, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
     """Converts a recommendation into an official MediaItem entry, then deletes the rec. Admin only."""
     check_readonly(request)
     rec = session.get(Recommendation, rec_id)
@@ -1198,6 +1201,10 @@ def mark_recommendation_watched(rec_id: int, payload: MarkWatchedPayload, reques
     session.delete(rec)
     session.commit()
     session.refresh(new_item)
+    
+    # Trigger background enrichment to pull poster/genres
+    background_tasks.add_task(run_enrichment)
+    
     return {"ok": True, "item_id": new_item.id}
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
