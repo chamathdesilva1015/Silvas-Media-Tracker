@@ -3685,25 +3685,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     recSearchResultsContainer.style.display = 'none';
                     recDuplicateMessage.style.display = 'block';
                     
-                    let msg = `"${selectedRecItem.title}" is already in the database.`;
                     const continueBtn = document.getElementById('recContinueDuplicateBtn');
+                    let msg = `"${selectedRecItem.title}" is already in the database.`;
                     
                     if (data.in_library) {
-                        msg = `"${selectedRecItem.title}" is already in your tracked list!`;
-                        if (continueBtn) continueBtn.style.display = 'block';
-                    }
-                    
-                    if (data.rec_count >= 2) {
-                        msg = `"${selectedRecItem.title}" has already been recommended twice, so all good!`;
+                        msg = `"${selectedRecItem.title}" is already in the finished database.`;
+                        if (continueBtn) continueBtn.style.display = 'none'; // Users must manually add if already finished
+                    } else if (!data.allow_recommendation) {
+                        msg = `"${selectedRecItem.title}" has already been recommended.`;
                         if (continueBtn) continueBtn.style.display = 'none';
                     }
                     
                     recDuplicateText.textContent = msg;
-                    
-                    if (!data.allow_recommendation) {
-                        return;
-                    }
-                    return; // Wait for user to click Continue or Recommend Another
+                    return; // Wait for user to click Close or Recommend Another
                 }
             } catch (error) {
                 console.error('Check error:', error);

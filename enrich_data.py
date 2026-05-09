@@ -126,8 +126,8 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     item.genres = details["genres"]
                     item.tmdb_id = tmdb_id
                 
-                if details.get("poster_url") and (not item.cover_url or "discordapp" in item.cover_url):
-                    item.cover_url = details["poster_url"]
+                if details.get("cover_url") and (not item.cover_url or "discordapp" in item.cover_url):
+                    item.cover_url = details["cover_url"]
                 if details.get("backdrop_url"):
                     item.backdrop_url = details["backdrop_url"]
 
