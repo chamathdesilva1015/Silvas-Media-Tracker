@@ -2470,8 +2470,9 @@ delete-btn {
 .rec-entry-item {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 1.2rem 1.5rem;
+    justify-content: center;
+    gap: 25px;
+    padding: 1.5rem 2rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     transition: background 0.2s;
 }
@@ -2495,8 +2496,9 @@ delete-btn {
 }
 
 .rec-entry-info {
-    flex: 1;
+    flex: 0 1 320px;
     min-width: 0;
+    text-align: left;
 }
 
 .rec-entry-title {
