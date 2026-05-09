@@ -672,11 +672,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="stat-card-label">Total Entries</div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-star" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
-                    <div class="stat-card-value">${data.avg_score || '—'}<span style="font-size: 0.5em; opacity: 0.5; margin-left: 2px;">/10</span></div>
-                    <div class="stat-card-label">Average Score</div>
-                </div>
-                <div class="stat-card">
                     <i class="fas fa-heart" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
                     <div class="stat-card-value">1 in ${data.like_ratio || '—'}</div>
                     <div class="stat-card-label">Like Ratio <span style="font-size:0.6em;opacity:0.6">(Exclusivity)</span></div>
@@ -685,10 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer;">
-                    <img src="${data.most_recent?.item?.cover_url || ''}" class="discovery-poster" />
                     <div class="discovery-details">
                         <div class="discovery-label">Recently Discovered</div>
-                        <div class="discovery-title">${data.most_recent?.item?.title || 'Unknown'}</div>
+                        <div class="discovery-title">${data.most_recent?.item?.title || 'Unknown'} (${data.most_recent?.item?.release_year || 'N/A'})</div>
                         <div class="discovery-date">Added on ${data.most_recent?.display_date || 'N/A'}</div>
                     </div>
                 </div>
@@ -700,14 +694,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
-                        <br><br>
-                        1. <b>The Floor (4.5):</b> Ratings below 4.5 contribute 0 points. This mathematically filters out genres that are only watched occasionally or disliked.
-                        <br><br>
-                        2. <b>Cubic Growth (³):</b> High ratings carry exponential weight. A 10/10 ${category.toLowerCase().includes('movie') ? 'movie' : 'item'} is worth 216x more than a 5/0 item. <b>Masterpieces marked with a Heart receive a 25% "Passion Bonus,"</b> and <b>entries with a Review receive a 10% "Review Bonus,"</b> ensuring personal involvement defines the top list.
-                        <br><br>
-                        3. <b>The Confidence Filter:</b> A genre needs a track record. A single 10/10 entry results in 0 points, while 10 entries retain 90% of their score. This eliminates "one-hit wonder" categories.</span>
-                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1 - 1/Count)</span>
+                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1.25 if Heart) × (1.10 if Review) × (1 - 1/Count)</b></span>
+                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1.25 if Heart) × (1.10 if Review) × (1 - 1/Count)</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
@@ -733,14 +721,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="directorsHeader">
                     <div class="hof-accordion-title">
                         ${category === 'Movies' ? 'Top Directors' : (category === 'Manga' ? 'Top Authors' : 'Top Creators')}
-                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1 - 1/Count)</b>
-                        <br><br>
-                        1. <b>Quality Threshold:</b> Only movies rated above 4.5 contribute points. This mathematically filters out directors whose work you found mediocre or disliked.
-                        <br><br>
-                        2. <b>Cubic Weighting (³):</b> Near-perfect scores carry exponential weight. Masterpieces marked with a <b>Heart (25% bonus)</b> or a <b>Review (10% bonus)</b> significantly increase a director's standing.
-                        <br><br>
-                        3. <b>The Confidence Multiplier:</b> A director's score is scaled by their filmography's depth. A single high-rated movie results in 0 points; a director needs a consistent track record to reach the top.</span>
-                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1 - 1/Count)</span>
+                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1.25 if Heart) × (1.10 if Review) × (1 - 1/Count)</b></span>
+                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1.25 if Heart) × (1.10 if Review) × (1 - 1/Count)</span>
                     </div>
                     <span class="hof-chevron" id="directorsChevron">▼</span>
                 </div>
@@ -767,18 +749,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="stats-dist-card">
                     <div class="stats-dist-title">Score Distribution</div>
                     ${distBars || '<p style="opacity:0.4;font-size:0.85rem">No scored entries yet.</p>'}
-                    <div class="dist-card-footer">
-                        <span class="dist-footer-label">Average Score</span>
-                        <span class="dist-footer-value">${data.avg_score}/10</span>
-                    </div>
                 </div>
                 <div class="stats-dist-card">
                     <div class="stats-dist-title">Decade Breakdown</div>
                     ${decBars || '<p style="opacity:0.4;font-size:0.85rem">No release years on record.</p>'}
-                    <div class="dist-card-footer">
-                        <span class="dist-footer-label">Average Release Year</span>
-                        <span class="dist-footer-value">${data.avg_year}</span>
-                    </div>
                 </div>
             </div>`;
 
