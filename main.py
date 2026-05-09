@@ -1101,7 +1101,7 @@ def get_recent_recommendations(category: str, session: Session = Depends(get_ses
         select(Recommendation)
         .where(Recommendation.type == category)
         .order_by(Recommendation.date_added.desc())
-        .limit(3)
+        .limit(10)
     ).all()
     return recs
 
@@ -1113,15 +1113,16 @@ def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_
         select(MediaItem).where(MediaItem.tmdb_id == ext_id, MediaItem.type == type)
     ).first() is not None
     
-    # Check recommendations
-    rec_exists = session.exec(
+    # Check recommendations count
+    recs = session.exec(
         select(Recommendation).where(Recommendation.ext_id == ext_id, Recommendation.type == type)
-    ).first() is not None
+    ).all()
+    rec_count = len(recs)
     
     return {
-        "exists": library_exists or rec_exists,
         "in_library": library_exists,
-        "in_recommendations": rec_exists
+        "rec_count": rec_count,
+        "allow_recommendation": not library_exists and rec_count < 2
     }
 
 @app.post("/api/recommendations/submit")

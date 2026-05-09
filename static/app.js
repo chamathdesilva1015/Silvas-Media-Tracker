@@ -3353,7 +3353,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            // Group by ext_id or title
+            const grouped = {};
             data.forEach(rec => {
+                const key = rec.ext_id || rec.title;
+                if (!grouped[key]) {
+                    grouped[key] = [];
+                }
+                grouped[key].push(rec);
+            });
+            
+            // Take the first 3 groups to display at most 3 unique items
+            const groups = Object.values(grouped).slice(0, 3);
+            groups.forEach(recs => {
                 const div = document.createElement('div');
                 div.className = 'recent-rec-item';
                 div.style.background = 'rgba(255,255,255,0.02)';
@@ -3361,31 +3373,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 div.style.borderRadius = '12px';
                 div.style.border = '1px solid rgba(255,255,255,0.05)';
                 
+                const rec1 = recs[0];
+                
                 const title = document.createElement('div');
                 title.style.fontWeight = '700';
                 title.style.fontSize = '0.95rem';
                 title.style.color = 'var(--text-primary)';
-                title.textContent = rec.title;
-                if (rec.year) title.textContent += ` (${rec.year})`;
+                title.textContent = rec1.title;
+                if (rec1.year) title.textContent += ` (${rec1.year})`;
                 
                 const byWho = document.createElement('div');
                 byWho.style.fontSize = '0.85rem';
                 byWho.style.color = 'var(--theme-accent)';
                 byWho.style.marginTop = '4px';
-                byWho.textContent = `Recommended by ${rec.recommender_name || 'Anonymous'}`;
+                
+                if (recs.length === 1) {
+                    byWho.textContent = `Recommendation By ${rec1.recommender_name || 'Anonymous'}`;
+                } else {
+                    const names = recs.map(r => r.recommender_name || 'Anonymous');
+                    byWho.textContent = `Recommendation By ${names.join(' and ')}`;
+                }
                 
                 div.appendChild(title);
                 div.appendChild(byWho);
                 
-                if (rec.note) {
-                    const note = document.createElement('div');
-                    note.style.fontSize = '0.8rem';
-                    note.style.color = 'var(--text-secondary)';
-                    note.style.marginTop = '6px';
-                    note.style.fontStyle = 'italic';
-                    note.textContent = `"${rec.note}"`;
-                    div.appendChild(note);
-                }
+                recs.forEach(rec => {
+                    if (rec.note) {
+                        const note = document.createElement('div');
+                        note.style.fontSize = '0.8rem';
+                        note.style.color = 'var(--text-secondary)';
+                        note.style.marginTop = '6px';
+                        note.style.fontStyle = 'italic';
+                        note.textContent = `"${rec.note}"`;
+                        if (recs.length >= 2) {
+                            note.textContent += ` (by ${rec.recommender_name || 'Anonymous'})`;
+                        }
+                        div.appendChild(note);
+                    }
+                });
                 
                 listContainer.appendChild(div);
             });
@@ -3579,7 +3604,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(`/api/recommendations/check?ext_id=${selectedRecItem.tmdb_id}&type=${category}`);
                 const data = await response.json();
                 
-                if (data.exists) {
+                if (!data.allow_recommendation) {
                     // Show duplicate message
                     recPage2Instructions.style.display = 'none';
                     recSearchResultsContainer.style.display = 'none';
@@ -3588,8 +3613,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     let msg = `"${selectedRecItem.title}" is already in the database.`;
                     if (data.in_library) {
                         msg = `"${selectedRecItem.title}" is already in your tracked list!`;
-                    } else if (data.in_recommendations) {
-                        msg = `"${selectedRecItem.title}" has already been recommended!`;
+                    } else if (data.rec_count >= 2) {
+                        msg = `"${selectedRecItem.title}" has already been recommended twice, so all good!`;
                     }
                     recDuplicateText.textContent = msg;
                     return;
