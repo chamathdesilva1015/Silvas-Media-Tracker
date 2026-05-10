@@ -998,7 +998,9 @@ document.addEventListener('DOMContentLoaded', () => {
         typeInput.value = currentCategory;
         
         const modalTitle = document.getElementById('modalTitle');
-        const displayType = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.slice(0, -1);
+        let displayType = currentCategory;
+        if (currentCategory === 'TV Series') displayType = 'TV Show';
+        else if (currentCategory === 'Movies') displayType = 'Movie';
         modalTitle.innerText = 'Add ' + displayType;
 
         formInputsContainer.style.display = 'block';
@@ -1171,8 +1173,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     previewPoster.src = data.cover_url || '';
                     previewPoster.style.display = data.cover_url ? 'inline-block' : 'none';
                     
-                    document.getElementById('previewTitle').innerText = data.title || 'Unknown Title';
-                    document.getElementById('previewYear').innerText = data.release_year || '';
+                    document.getElementById('previewTitle').innerText = data.title || titleInput || 'Unknown Title';
+                    document.getElementById('previewYear').innerText = data.release_year || releaseYear || '';
                     
                     // Dynamic Director/Creator Label
                     let label = 'Created by';

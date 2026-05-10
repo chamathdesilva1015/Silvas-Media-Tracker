@@ -97,6 +97,7 @@ def search_tmdb(title: str, year: Optional[int] = None, media_type: str = "movie
 def search_tmdb_multi(title: str, year: Optional[int] = None, media_type: str = "movie") -> List[dict]:
     """
     Searches for media items and returns a list of results.
+    Refined with fuzzy matching for better relevance.
     """
     if not TMDB_API_KEY:
         return []
@@ -123,16 +124,40 @@ def search_tmdb_multi(title: str, year: Optional[int] = None, media_type: str = 
         data = response.json()
         
         results = data.get("results", [])
+        from thefuzz import fuzz
+
         formatted_results = []
-        for r in results[:10]: # Return top 10
+        for r in results:
+            r_title = r.get("name" if media_type == "tv" else "title", "")
+            r_year = (r.get("first_air_date" if media_type == "tv" else "release_date", ""))[:4]
+            
+            score = fuzz.token_sort_ratio(title.lower(), r_title.lower())
+            
+            # Boost exact matches
+            if title.lower() == r_title.lower():
+                score += 100
+                
+            # Boost year matches if year was provided
+            if year and r_year == str(year):
+                score += 50
+
             formatted_results.append({
                 "tmdb_id": r.get("id"),
-                "title": r.get("name" if media_type == "tv" else "title"),
-                "release_year": (r.get("first_air_date" if media_type == "tv" else "release_date", ""))[:4],
-                "cover_url": f"https://image.tmdb.org/t/p/w500{r.get('poster_path')}" if r.get("poster_path") else None,
-                "overview": r.get("overview")
+                "title": r_title,
+                "release_year": r_year,
+                "cover_url": f"https://image.tmdb.org/t/p/w500{r.get('poster_path')}" if r.get('poster_path') else None,
+                "overview": r.get("overview"),
+                "fuzz_score": score
             })
-        return formatted_results
+            
+        # Sort by fuzzy score descending
+        formatted_results.sort(key=lambda x: x["fuzz_score"], reverse=True)
+        
+        # Clean up
+        for fr in formatted_results:
+            del fr["fuzz_score"]
+            
+        return formatted_results[:10]
     except Exception as e:
         print(f"TMDB Multi Search Error for '{title}' ({media_type}): {e}")
         return []

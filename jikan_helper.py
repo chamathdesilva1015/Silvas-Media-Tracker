@@ -229,9 +229,10 @@ def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int
 def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
     """
     Searches for media items and returns a list of results.
+    Refined with fuzzy matching for better relevance.
     """
     url = f"{BASE_URL}/{media_type}"
-    params = {"q": title, "limit": 10}
+    params = {"q": title, "limit": 15}
     
     try:
         response = requests.get(url, params=params, timeout=5)
@@ -243,22 +244,46 @@ def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
         data = response.json()
         
         results = data.get("data", [])
+        from thefuzz import fuzz
+        
         formatted_results = []
         for r in results:
+            # Determine Year
             year = ""
             if media_type == "manga":
                 year = str(r.get("published", {}).get("prop", {}).get("from", {}).get("year", "") or "")
             else:
                 year = str(r.get("aired", {}).get("prop", {}).get("from", {}).get("year", "") or "")
                 
+            # Title Matching
+            eng_title = r.get("title_english") or ""
+            jap_title = r.get("title") or ""
+            
+            score_eng = fuzz.token_sort_ratio(title.lower(), eng_title.lower()) if eng_title else 0
+            score_jap = fuzz.token_sort_ratio(title.lower(), jap_title.lower()) if jap_title else 0
+            best_score = max(score_eng, score_jap)
+
+            # Boost exact matches
+            if title.lower() == eng_title.lower() or title.lower() == jap_title.lower():
+                best_score += 100
+
             formatted_results.append({
                 "tmdb_id": r.get("mal_id"),
                 "title": r.get("title_english") or r.get("title"),
                 "release_year": year,
                 "cover_url": r.get("images", {}).get("webp", {}).get("large_image_url"),
-                "overview": r.get("synopsis")
+                "overview": r.get("synopsis"),
+                "fuzz_score": best_score
             })
-        return formatted_results
+        
+        # Sort by fuzzy score descending
+        formatted_results.sort(key=lambda x: x["fuzz_score"], reverse=True)
+        
+        # Remove score from output
+        for fr in formatted_results:
+            del fr["fuzz_score"]
+            
+        return formatted_results[:10]
     except Exception as e:
         print(f"Jikan Multi Search Error for '{title}' ({media_type}): {e}")
         return []
