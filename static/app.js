@@ -1211,7 +1211,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         director: data.director,
                         genres: data.genres,
                         runtime: data.runtime,
-                        content_rating: data.content_rating
+                        content_rating: data.content_rating,
+                        total_seasons: data.total_seasons,
+                        total_episodes: data.total_episodes,
+                        manga_status: data.manga_status,
+                        total_chapters: data.total_chapters
                     };
 
                     isPreviewPhase = false;
@@ -1839,18 +1843,76 @@ document.addEventListener('DOMContentLoaded', () => {
             ).join('');
         } else { genresEl.innerHTML = ''; }
 
-        // --- Metadata Row (Runtime, Rating) ---
+        // --- Metadata Row (Runtime, Rating, Seasons, Episodes, Status, Chapters) ---
         const rtEl = document.getElementById('quickInfoRuntime');
+        const sepRt = document.getElementById('sepQuickInfoRuntime');
+        const seasonsEl = document.getElementById('quickInfoSeasons');
+        const sepSeasons = document.getElementById('sepQuickInfoSeasons');
+        const episodesEl = document.getElementById('quickInfoEpisodes');
+        const sepEpisodes = document.getElementById('sepQuickInfoEpisodes');
+        const statusEl = document.getElementById('quickInfoStatus');
+        const sepStatus = document.getElementById('sepQuickInfoStatus');
+        const chaptersEl = document.getElementById('quickInfoChapters');
+        const sepChapters = document.getElementById('sepQuickInfoChapters');
+        const crEl = document.getElementById('quickInfoContentRating');
+        const sepRating = document.getElementById('sepQuickInfoRating');
+
+        // Reset visibility
+        [rtEl, sepRt, seasonsEl, sepSeasons, episodesEl, sepEpisodes, statusEl, sepStatus, chaptersEl, sepChapters, crEl, sepRating].forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+
+        let prevVisible = true; // Year is always visible
+
+        // Runtime
         if (item.runtime) {
             const h = Math.floor(item.runtime / 60);
             const m = item.runtime % 60;
             rtEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
             rtEl.style.display = 'inline';
-        } else { rtEl.style.display = 'none'; }
+            if (prevVisible && sepRt) sepRt.style.display = 'inline';
+            prevVisible = true;
+        }
 
-        const crEl = document.getElementById('quickInfoContentRating');
-        crEl.textContent = item.content_rating || '';
-        crEl.style.display = item.content_rating ? 'inline-block' : 'none';
+        // Seasons (TV)
+        if (item.total_seasons && item.type === 'TV Series') {
+            seasonsEl.textContent = `${item.total_seasons} Season${item.total_seasons > 1 ? 's' : ''}`;
+            seasonsEl.style.display = 'inline';
+            if (prevVisible && sepSeasons) sepSeasons.style.display = 'inline';
+            prevVisible = true;
+        }
+
+        // Episodes (TV)
+        if (item.total_episodes && item.type === 'TV Series') {
+            episodesEl.textContent = `${item.total_episodes} Episode${item.total_episodes > 1 ? 's' : ''}`;
+            episodesEl.style.display = 'inline';
+            if (prevVisible && sepEpisodes) sepEpisodes.style.display = 'inline';
+            prevVisible = true;
+        }
+
+        // Status (Manga)
+        if (item.manga_status && item.type === 'Manga') {
+            statusEl.textContent = item.manga_status;
+            statusEl.style.display = 'inline';
+            if (prevVisible && sepStatus) sepStatus.style.display = 'inline';
+            prevVisible = true;
+        }
+
+        // Chapters (Manga)
+        if (item.total_chapters && item.type === 'Manga') {
+            chaptersEl.textContent = `${item.total_chapters} Chapter${item.total_chapters > 1 ? 's' : ''}`;
+            chaptersEl.style.display = 'inline';
+            if (prevVisible && sepChapters) sepChapters.style.display = 'inline';
+            prevVisible = true;
+        }
+
+        // Content Rating
+        if (item.content_rating) {
+            crEl.textContent = item.content_rating;
+            crEl.style.display = 'inline-block';
+            if (prevVisible && sepRating) sepRating.style.display = 'inline';
+            prevVisible = true;
+        }
 
         // --- Director / Creator ---
         const dirSection = document.getElementById('quickInfoDirectorSection');

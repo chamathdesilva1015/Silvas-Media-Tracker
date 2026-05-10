@@ -30,7 +30,8 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
             (MediaItem.genres == "") | 
             (MediaItem.genres == "documentary") | 
             (MediaItem.genres.contains("Imported")) |
-            (MediaItem.director == None)
+            (MediaItem.director == None) |
+            ((MediaItem.type == "Manga") & (MediaItem.manga_status != "Finished"))
         )
         
         items = session.exec(statement).all()
@@ -140,6 +141,16 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     item.content_rating = details["content_rating"]
                 if details.get("overview"):
                     item.overview = details["overview"]
+                    
+                # Save Custom Metadata
+                if details.get("total_seasons"):
+                    item.total_seasons = details["total_seasons"]
+                if details.get("total_episodes"):
+                    item.total_episodes = details["total_episodes"]
+                if details.get("manga_status"):
+                    item.manga_status = details["manga_status"]
+                if details.get("total_chapters"):
+                    item.total_chapters = details["total_chapters"]
                     
                 try:
                     session.add(item)

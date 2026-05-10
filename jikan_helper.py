@@ -138,7 +138,9 @@ def get_manga_details(mal_id: int) -> Dict:
             "director": author, # Store in director field for consistency
             "tmdb_id": mal_id,   # Use mal_id as tmdb_id for internal tracking
             "content_rating": data.get("status"), # Use status as a pseudo-rating (e.g. "Finished")
-            "overview": data.get("synopsis")
+            "overview": data.get("synopsis"),
+            "manga_status": data.get("status"),
+            "total_chapters": data.get("chapters")
         }
     except Exception as e:
         print(f"Jikan Details Error for ID {mal_id}: {e}")

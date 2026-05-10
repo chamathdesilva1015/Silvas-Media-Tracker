@@ -29,6 +29,12 @@ class MediaItem(SQLModel, table=True):
     content_rating: Optional[str] = None   # e.g. "PG-13", "R"
     backdrop_url: Optional[str] = None     # High-res backdrop image
     overview: Optional[str] = None         # Plot summary / synopsis
+    
+    # Custom Metadata for TV and Manga
+    total_seasons: Optional[int] = Field(default=None)
+    total_episodes: Optional[int] = Field(default=None)
+    manga_status: Optional[str] = Field(default=None)
+    total_chapters: Optional[int] = Field(default=None)
 
 
 class SyncState(SQLModel, table=True):
@@ -105,3 +111,25 @@ engine = create_engine(engine_url, echo=False, connect_args=connect_args)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
+    apply_migrations()
+
+def apply_migrations():
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        columns = [
+            ("total_seasons", "INTEGER"),
+            ("total_episodes", "INTEGER"),
+            ("manga_status", "VARCHAR"),
+            ("total_chapters", "INTEGER")
+        ]
+        for col_name, col_type in columns:
+            try:
+                conn.execute(text(f"ALTER TABLE mediaitem ADD COLUMN {col_name} {col_type}"))
+                print(f"[*] Added column {col_name} to mediaitem table.")
+            except Exception as e:
+                # Ignore error if column already exists
+                if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                    pass
+                else:
+                    print(f"[!] Error adding column {col_name}: {e}")
+        conn.commit()
