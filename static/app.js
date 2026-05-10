@@ -982,6 +982,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const formInputsContainer = document.getElementById('formInputsContainer');
+    const selectionContainer = document.getElementById('selectionContainer');
+    const selectionResults = document.getElementById('selectionResults');
     const previewContainer = document.getElementById('previewContainer');
     const previewSubmitBtn = document.getElementById('previewSubmitBtn');
     const previewBackBtn = document.getElementById('previewBackBtn');
@@ -1000,8 +1002,10 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTitle.innerText = 'Add ' + displayType;
 
         formInputsContainer.style.display = 'block';
+        selectionContainer.style.display = 'none';
         previewContainer.style.display = 'none';
         previewBackBtn.style.display = 'none';
+        previewSubmitBtn.style.display = 'block';
         previewSubmitBtn.innerText = 'Preview Match';
         previewSubmitBtn.disabled = false;
         document.getElementById('previewDuplicateWarning').style.display = 'none';
@@ -1012,8 +1016,10 @@ document.addEventListener('DOMContentLoaded', () => {
     previewBackBtn.addEventListener('click', () => {
         isPreviewPhase = true;
         formInputsContainer.style.display = 'block';
+        selectionContainer.style.display = 'none';
         previewContainer.style.display = 'none';
         previewBackBtn.style.display = 'none';
+        previewSubmitBtn.style.display = 'block';
         previewSubmitBtn.innerText = 'Preview Match';
         resetPreviewLike();
     });
@@ -1038,28 +1044,112 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawYear = document.getElementById('releaseYearInput').value;
         const releaseYear = rawYear ? parseInt(rawYear, 10) : null;
         
-        if (!releaseYear) {
-            alert('Please enter a valid Release Year.');
-            return;
-        }
-        
         const manualId = document.getElementById('manualIdInput').value.trim();
         const titleInput = document.getElementById('titleInput').value.trim();
 
         const previewLoading = document.getElementById('previewLoading');
 
         if (isPreviewPhase) {
-            // PHASE 1: Fetch Preview
+            // PHASE 1: Fetch Preview or Search Selection
             if (!manualId && !titleInput) {
                 alert("Please provide either a Title or an ID Code.");
                 return;
             }
 
+            // NEW FEATURE: If year is missing and no ID provided, do a multi-search
+            if (!releaseYear && !manualId && titleInput) {
+                formInputsContainer.style.display = 'none';
+                previewLoading.style.display = 'block';
+                previewSubmitBtn.disabled = true;
+                previewSubmitBtn.innerText = 'Searching...';
+
+                try {
+                    const url = `/api/search/multi?title=${encodeURIComponent(titleInput)}&type=${encodeURIComponent(type)}`;
+                    const response = await fetch(url);
+                    const results = await response.json();
+
+                    if (!results || results.length === 0) {
+                        alert("No matches found for that title. Please try again with a year.");
+                        previewLoading.style.display = 'none';
+                        formInputsContainer.style.display = 'block';
+                        previewSubmitBtn.disabled = false;
+                        previewSubmitBtn.innerText = 'Preview Match';
+                        return;
+                    }
+
+                    // If exactly one match, skip selection
+                    if (results.length === 1) {
+                        document.getElementById('releaseYearInput').value = results[0].release_year;
+                        // Continue to preview with the now-filled year
+                        const retryEvent = new Event('submit');
+                        form.dispatchEvent(retryEvent);
+                        return;
+                    }
+
+                    // Render Selection List
+                    selectionResults.innerHTML = '';
+                    results.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'rec-search-item';
+                        div.style.cssText = 'display: flex; gap: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; cursor: pointer; margin-bottom: 8px; transition: all 0.2s ease; border: 1px solid transparent;';
+                        
+                        if (item.cover_url) {
+                            const img = document.createElement('img');
+                            img.src = item.cover_url;
+                            img.style.cssText = 'width: 60px; height: 90px; object-fit: cover; border-radius: 6px; flex-shrink: 0;';
+                            div.appendChild(img);
+                        }
+
+                        const info = document.createElement('div');
+                        info.style.cssText = 'flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;';
+                        info.innerHTML = `
+                            <div style="font-weight: 700; color: #fff; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</div>
+                            <div style="font-size: 0.8rem; color: var(--theme-accent); opacity: 0.8; font-weight: 600;">${item.release_year || 'N/A'}</div>
+                        `;
+                        div.appendChild(info);
+
+                        div.onclick = () => {
+                            document.getElementById('releaseYearInput').value = item.release_year;
+                            if (item.tmdb_id) document.getElementById('manualIdInput').value = item.tmdb_id;
+                            
+                            selectionContainer.style.display = 'none';
+                            // Re-submit to trigger standard preview phase
+                            const retryEvent = new Event('submit');
+                            form.dispatchEvent(retryEvent);
+                        };
+                        selectionResults.appendChild(div);
+                    });
+
+                    previewLoading.style.display = 'none';
+                    selectionContainer.style.display = 'block';
+                    previewBackBtn.style.display = 'block';
+                    previewSubmitBtn.style.display = 'none'; // Hide button during selection
+                    return;
+
+                } catch (err) {
+                    console.error("Multi-Search Error:", err);
+                    alert("Error searching for matches.");
+                    previewLoading.style.display = 'none';
+                    formInputsContainer.style.display = 'block';
+                    previewSubmitBtn.disabled = false;
+                    previewSubmitBtn.innerText = 'Preview Match';
+                    return;
+                }
+            }
+
+            // Normal Phase 1: Fetch Preview (with Year or ID)
+            if (!releaseYear && !manualId) {
+                alert('Please enter a Release Year or an ID Code.');
+                return;
+            }
+
             // Expert transition to loading state
             formInputsContainer.style.display = 'none';
+            selectionContainer.style.display = 'none';
             previewLoading.style.display = 'block';
             previewSubmitBtn.disabled = true;
             previewSubmitBtn.innerText = 'Searching...';
+            previewSubmitBtn.style.display = 'block';
 
             try {
                 const query = new URLSearchParams({
