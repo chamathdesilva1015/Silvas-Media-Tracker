@@ -31,7 +31,9 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
             (MediaItem.genres == "documentary") | 
             (MediaItem.genres.contains("Imported")) |
             (MediaItem.director == None) |
-            ((MediaItem.type == "Manga") & (MediaItem.manga_status != "Finished"))
+            ((MediaItem.type == "Manga") & (MediaItem.manga_status != "Finished")) |
+            ((MediaItem.type == "TV Series") & (MediaItem.total_seasons == None)) |
+            ((MediaItem.type == "Manga") & (MediaItem.manga_status == None))
         )
         
         items = session.exec(statement).all()
