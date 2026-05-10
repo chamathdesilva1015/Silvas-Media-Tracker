@@ -1883,7 +1883,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Chapters (Manga)
-        if (item.total_chapters && item.type === 'Manga') {
+        if (item.total_chapters && item.type === 'Manga' && item.manga_status !== 'Publishing') {
             chaptersEl.textContent = `${item.total_chapters} Chapter${item.total_chapters > 1 ? 's' : ''}`;
             chaptersEl.style.display = 'inline-block';
         }
