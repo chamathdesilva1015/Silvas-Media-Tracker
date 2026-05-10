@@ -56,51 +56,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.on_event("startup")
 async def on_startup():
     create_db_and_tables()
-    
-    # Self-healing migration for all potential missing columns
-    with Session(engine) as session:
-        for table_name in ["mediaitem", "media_item"]:
-            # Check if table exists
-            try:
-                session.exec(text(f"SELECT id FROM {table_name} LIMIT 1"))
-            except Exception:
-                continue # Table doesn't exist under this name
-                
-            # Attempt to add all potential new columns
-            new_columns = [
-                ("backdrop_url", "VARCHAR"),
-                ("director", "VARCHAR"),
-                ("runtime", "INTEGER"),
-                ("content_rating", "VARCHAR"),
-                ("genres", "VARCHAR"),
-                ("tmdb_id", "INTEGER"),
-                ("enrichment_attempts", "INTEGER DEFAULT 0"),
-                ("is_manual_rating", "BOOLEAN DEFAULT FALSE"),
-                ("numeric_rating", "VARCHAR"),
-                ("overview", "TEXT")
-            ]
-            
-            for col_name, col_type in new_columns:
-                try:
-                    # Check if column exists first to avoid unnecessary errors
-                    session.exec(text(f"SELECT {col_name} FROM {table_name} LIMIT 1"))
-                except Exception:
-                    # After an error, the transaction is often poisoned in Postgres.
-                    # We should rollback to ensure the next ALTER TABLE can run.
-                    session.rollback()
-                    print(f"[!] {col_name} missing in {table_name}. Attempting migration...")
-                    try:
-                        session.exec(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
-                        session.commit()
-                        print(f"[+] Successfully added {col_name} to {table_name}")
-                    except Exception as e:
-                        print(f"[!] Migration failed for {col_name} in {table_name}: {e}")
-                        session.rollback()
-
-
-
-    # Launch enrichment in the background — site is immediately usable
-    asyncio.create_task(run_enrichment())
+    print("[*] Startup complete. Migrations and auto-enrichment disabled for performance.")
 
 
 

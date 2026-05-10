@@ -111,7 +111,7 @@ engine = create_engine(engine_url, echo=False, connect_args=connect_args)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
-    apply_migrations()
+    # apply_migrations() # Disabled to prevent slow cold starts on Vercel
 
 def apply_migrations():
     from sqlalchemy import text
