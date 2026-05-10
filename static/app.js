@@ -1889,7 +1889,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Content Rating
-        if (item.content_rating && item.content_rating !== item.manga_status) {
+        if (item.content_rating && (!item.manga_status || item.content_rating !== item.manga_status)) {
             crEl.textContent = item.content_rating;
             crEl.style.display = 'inline-block';
         }
