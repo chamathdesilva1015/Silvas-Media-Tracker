@@ -2120,7 +2120,7 @@ delete-btn {
 /* Hero stats row */
 .stats-hero-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -4643,9 +4643,9 @@ body.modal-open .bottom-nav {
         font-size: 0.75rem !important;
     }
     
-    /* Top "Total Entries" Card Row - Forced to ONE row */
+    /* Top "Total Entries" Card Row - Forced to TWO columns */
     .stats-hero-row {
-        grid-template-columns: repeat(3, 1fr) !important;
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.4rem !important;
         margin-bottom: 0.8rem !important;
     }

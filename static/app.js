@@ -685,6 +685,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         I like 1 in every ${data.like_ratio || 'X'} ${currentCategory.toLowerCase()} I ${currentCategory.toLowerCase() === 'manga' ? 'read' : 'watch'}
                     </div>
                 </div>
+                <div class="stat-card">
+                    <i class="fas fa-star" style="position:absolute; top: 1rem; right: 1rem; opacity: 0.1; font-size: 2rem;"></i>
+                    <div class="stat-card-value">${data.avg_score || '—'}</div>
+                    <div class="stat-card-label">Average Score</div>
+                    <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 0.4rem; color: var(--text-primary);">
+                        Across all rated entries
+                    </div>
+                </div>
                 <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer;">
                     <div class="discovery-details">
                         <div class="discovery-label">Recently Discovered</div>
