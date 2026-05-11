@@ -3448,7 +3448,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             `;
                             
                             const passBtn = card.querySelector('.suggestion-pass-btn');
-                            if (!localStorage.getItem('admin_key')) {
+                            if (!isAdminUnlocked) {
                                 passBtn.style.display = 'none';
                             } else {
                                 passBtn.addEventListener('click', async () => {
