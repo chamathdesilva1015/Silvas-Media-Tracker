@@ -929,9 +929,9 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 "prelim_score": score
             })
             
-        # Sort by prelim score and take top 40 for rich detail scoring
+        # Sort by prelim score and take top 60 for rich detail scoring
         pool_list.sort(key=lambda x: x["prelim_score"], reverse=True)
-        top_pool = pool_list[:40]
+        top_pool = pool_list[:60]
         
         # 5. Fetch Rich Details & Calculate Refined Score
         scored_candidates = []
@@ -1000,14 +1000,14 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 "broad_score": broad_score
             })
             
-        # 6. Pick 8 Familiar, 4 Balanced, 4 Broad
+        # 6. Pick 10 Familiar, 4 Balanced, 4 Broad
         final_picks = []
         picked_ids = set()
         
         # Sort by Familiar Score
         scored_candidates.sort(key=lambda x: x["familiar_score"], reverse=True)
         for c in scored_candidates:
-            if len(final_picks) < 8:
+            if len(final_picks) < 10:
                 final_picks.append(c)
                 picked_ids.add((c["type"], int(c["tmdb_id"])))
             else:
@@ -1016,16 +1016,16 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
         # Sort by Balanced Score
         scored_candidates.sort(key=lambda x: x["balanced_score"], reverse=True)
         for c in scored_candidates:
-            if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 12:
+            if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 14:
                 final_picks.append(c)
                 picked_ids.add((c["type"], int(c["tmdb_id"])))
-            elif len(final_picks) >= 12:
+            elif len(final_picks) >= 14:
                 break
                 
         # Sort by Broad Score
         scored_candidates.sort(key=lambda x: x["broad_score"], reverse=True)
         for c in scored_candidates:
-            if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 16:
+            if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 18:
                 final_picks.append(c)
                 picked_ids.add((c["type"], int(c["tmdb_id"])))
             elif len(final_picks) >= 16:
