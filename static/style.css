@@ -6136,3 +6136,43 @@ body.modal-open .bottom-nav {
     background: #e74c3c;
     color: #fff;
 }
+
+/* --- Suggestion Retry Button Redesign --- */
+#retrySuggestionBtn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+    padding: 0.8rem 1.8rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#retrySuggestionBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb), 0.2);
+}
+
+#retrySuggestionBtn:active {
+    transform: translateY(0);
+}
+
+#retrySuggestionBtn i {
+    transition: transform 0.3s ease;
+}
+
+#retrySuggestionBtn:hover i {
+    transform: rotate(180deg);
+}
+
