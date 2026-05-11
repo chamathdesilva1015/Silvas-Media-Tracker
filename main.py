@@ -825,9 +825,14 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
 
         for item in all_items:
             score = parse_score(item)
+            
+            # Refinement: Only use liked items as seeds if they are unrated (0) or rated >= 7.0
             if item.is_liked:
-                liked_seeds.append(item)
-            elif score >= 8.5:
+                if score == 0 or score >= 7.0:
+                    liked_seeds.append(item)
+                    
+            # Allow liked items to also be categorized as top/good seeds if they qualify
+            if score >= 8.5:
                 top_seeds.append(item)
             elif score >= 7.0:
                 good_seeds.append(item)
