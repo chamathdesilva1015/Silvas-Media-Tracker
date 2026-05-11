@@ -1405,8 +1405,9 @@ header p {
     left: 24px;
     width: 32px;
     height: 6px;
-    background: var(--theme-accent);
+    background: linear-gradient(to right, var(--theme-accent), #00d2ff);
     border-radius: 0 0 4px 4px;
+    box-shadow: 0 0 8px rgba(0, 210, 255, 0.6), 0 0 4px var(--theme-accent);
 }
 
 .media-card:hover {
