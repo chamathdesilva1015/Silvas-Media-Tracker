@@ -813,13 +813,13 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
         good_seeds = []
         
         tracked_titles = {normalize_title(i.title) for i in all_items}
-        tracked_ids = {(i.type, i.tmdb_id) for i in all_items if i.tmdb_id}
+        tracked_ids = {(i.type, int(i.tmdb_id)) for i in all_items if i.tmdb_id}
         
         # Also fetch passed suggestions
         try:
             passed_items = session.exec(select(PassedSuggestion)).all()
             for p in passed_items:
-                tracked_ids.add((p.type, p.tmdb_id))
+                tracked_ids.add((p.type, int(p.tmdb_id)))
         except Exception as pe:
             print(f"Error fetching passed list: {pe}")
 
@@ -901,10 +901,10 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                     
                 for r in recs:
                     norm_title = normalize_title(r.get("title", ""))
-                    if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
+                    if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], int(r["tmdb_id"])) in tracked_ids:
                         continue
                         
-                    pool_key = (r["type"], r["tmdb_id"])
+                    pool_key = (r["type"], int(r["tmdb_id"]))
                     if pool_key not in pool:
                         pool[pool_key] = {"item": r, "seeds": set()}
                     pool[pool_key]["seeds"].add((seed.title, seed.rating or "N/A"))
