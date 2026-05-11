@@ -28,6 +28,7 @@
 [data-theme="movies"] {
     --theme-accent: #3498db; /* Blue */
     --theme-accent-rgb: 52, 152, 219;
+    --theme-accent-vibrant: #00d2ff;
     --theme-secondary: #9b59b6; /* Purple */
     --theme-accent-muted: rgba(52, 152, 219, 0.15);
     --theme-accent-glow: rgba(52, 152, 219, 0.4);
@@ -44,6 +45,7 @@
 [data-theme="tv-series"] {
     --theme-accent: #e74c3c; /* Red */
     --theme-accent-rgb: 231, 76, 60;
+    --theme-accent-vibrant: #ff4757;
     --theme-secondary: #e67e22; /* Orange */
     --theme-accent-muted: rgba(231, 76, 60, 0.15);
     --theme-accent-glow: rgba(231, 76, 60, 0.4);
@@ -65,6 +67,7 @@
 [data-theme="manga"] {
     --theme-accent: #2ecc71; /* Green */
     --theme-accent-rgb: 46, 204, 113;
+    --theme-accent-vibrant: #2ed573;
     --theme-secondary: #f1c40f; /* Yellow */
     --theme-accent-muted: rgba(46, 204, 113, 0.15);
     --theme-accent-glow: rgba(46, 204, 113, 0.4);
@@ -81,6 +84,7 @@
 [data-theme="anime"] {
     --theme-accent: #f1c40f; /* Yellow */
     --theme-accent-rgb: 241, 196, 15;
+    --theme-accent-vibrant: #fffa65;
     --theme-secondary: #2ecc71; /* Green */
     --theme-accent-muted: rgba(241, 196, 15, 0.15);
     --theme-accent-glow: rgba(241, 196, 15, 0.5);
@@ -1405,9 +1409,9 @@ header p {
     left: 24px;
     width: 32px;
     height: 6px;
-    background: linear-gradient(to right, var(--theme-accent), #00d2ff);
+    background: linear-gradient(to right, var(--theme-accent), var(--theme-accent-vibrant, var(--theme-accent)));
     border-radius: 0 0 4px 4px;
-    box-shadow: 0 0 8px rgba(0, 210, 255, 0.6), 0 0 4px var(--theme-accent);
+    box-shadow: 0 0 8px var(--theme-accent-vibrant, var(--theme-accent)), 0 0 4px var(--theme-accent);
 }
 
 .media-card:hover {
