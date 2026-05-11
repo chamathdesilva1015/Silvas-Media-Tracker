@@ -250,15 +250,31 @@ def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
     params = {"q": title, "limit": 15}
     
     try:
-        response = requests.get(url, params=params, timeout=5)
+        response = requests.get(url, params=params, timeout=10)
         if response.status_code == 429:
             time.sleep(1)
-            response = requests.get(url, params=params, timeout=5)
+            response = requests.get(url, params=params, timeout=10)
             
         response.raise_for_status()
         data = response.json()
         
         results = data.get("data", [])
+        
+        # FALLBACK: If no results, try a laxer search with a shorter query
+        if not results and " " in title:
+            words = title.split()
+            # Use the first 2 words if title is long, otherwise just the first word
+            shorter_title = " ".join(words[:2]) if len(words) > 2 else words[0]
+            if shorter_title and shorter_title.lower() != title.lower():
+                print(f"Laxing search: No results for '{title}', trying '{shorter_title}'")
+                params["q"] = shorter_title
+                response = requests.get(url, params=params, timeout=10)
+                if response.status_code == 429:
+                    time.sleep(1)
+                    response = requests.get(url, params=params, timeout=10)
+                response.raise_for_status()
+                data = response.json()
+                results = data.get("data", [])
         from thefuzz import fuzz
         
         formatted_results = []
