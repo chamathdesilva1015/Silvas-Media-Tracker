@@ -837,6 +837,18 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
             elif score >= 7.0:
                 good_seeds.append(item)
                 
+        # --- Calculate User Profile for Refined Scoring ---
+        user_genres = {}
+        user_directors = {}
+        for item in all_items:
+            score = parse_score(item)
+            if score >= 7.5 or item.is_liked:
+                if item.genres:
+                    for g in [x.strip() for x in item.genres.split(",")]:
+                        user_genres[g] = user_genres.get(g, 0) + 1
+                if item.director:
+                    user_directors[item.director] = user_directors.get(item.director, 0) + 1
+                
         # --- Tuning Logic: Seed Selection ---
         if mode == "safe":
             # Focus exclusively on absolute favorites
@@ -849,18 +861,16 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 
         if not seeds:
             return []
-            
-        # 3. Pick distinct seeds and fetch in a loop until we have up to 6 picks
+           # 3. Gather Recommendations in a Pool
         unique_seeds_dict = {s.id: s for s in seeds}
         unique_seeds_list = list(unique_seeds_dict.values())
         
-        final_picks = []
-        picked_keys = set() # Track (type, tmdb_id) to prevent duplicates
+        pool = {}
         major_attempts = 0
         used_seeds = set()
         
-        # Aim for 6 suggestions, try hard up to 6 times
-        while len(final_picks) < 6 and major_attempts < 6:
+        # Aim to gather a good pool, try up to 3 times to get enough candidates
+        while len(pool) < 20 and major_attempts < 3:
             major_attempts += 1
             
             available_seeds = [s for s in seeds if s.id not in used_seeds]
@@ -869,7 +879,7 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 
             chosen_seeds = []
             attempts = 0
-            batch_size = min(20, len(unique_seeds_list))
+            batch_size = min(15, len(unique_seeds_list))
             
             while len(chosen_seeds) < batch_size and attempts < 100:
                 pick = random.choice(available_seeds)
@@ -877,16 +887,14 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                     chosen_seeds.append(pick)
                     used_seeds.add(pick.id)
                 attempts += 1
-            
-            # 4. Pool recommendations
-            pool = {}
+                
             for seed in chosen_seeds:
                 recs = []
                 try:
                     if seed.type in ["Anime", "Manga"]:
-                        recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=40)
+                        recs = get_jikan_recommendations(seed.tmdb_id, "anime" if seed.type == "Anime" else "manga", limit=20)
                     elif seed.type in ["Movies", "TV Series"]:
-                        recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=40)
+                        recs = get_tmdb_recommendations(seed.tmdb_id, "movie" if seed.type == "Movies" else "tv", limit=20)
                 except Exception as e:
                     print(f"Error fetching recs for seed {seed.title}: {e}")
                     continue
@@ -896,59 +904,39 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                     if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], r["tmdb_id"]) in tracked_ids:
                         continue
                         
-                    # Skip if already picked in a previous loop iteration or current pool
                     pool_key = (r["type"], r["tmdb_id"])
-                    if pool_key in picked_keys:
-                        continue
-                        
                     if pool_key not in pool:
                         pool[pool_key] = {"item": r, "seeds": set()}
                     pool[pool_key]["seeds"].add((seed.title, seed.rating or "N/A"))
                     
-            if not pool:
-                continue
-                
-            # 5. Sort by overlaps or popularity
-            needed = 6 - len(final_picks)
-            groups = {}
-            for data in pool.values():
-                count = len(data["seeds"])
-                if count not in groups: groups[count] = []
-                groups[count].append(data)
-                
-            sorted_counts = sorted(groups.keys(), reverse=True)
-            for count in sorted_counts:
-                group_items = groups[count]
-                random.shuffle(group_items)
-                for data in group_items:
-                    if (data["item"]["type"], data["item"]["tmdb_id"]) not in picked_keys:
-                        final_picks.append(data)
-                        picked_keys.add((data["item"]["type"], data["item"]["tmdb_id"]))
-                        if len(final_picks) >= 6: break
-                if len(final_picks) >= 6: break
-                    
-        # Ensure we have at least 4 if possible, but no more than 6
-        if len(final_picks) > 6:
-            final_picks = final_picks[:6]
-        
-        # (The user wants minimum 4, if we have less than 4 here, we just return what we have as we tried our best)
-
-                
-        # 6. Fetch rich details
-        results = []
-        def format_seed(s): return f"{s[0]} ({s[1]})"
-
-        for data in final_picks:
+        if not pool:
+            return []
+            
+        # 4. Score and Rank the Pool
+        pool_list = []
+        for data in pool.values():
             item = data["item"]
             seeds_info = list(data["seeds"])
             
-            if len(seeds_info) == 1:
-                reason = f"Because you liked {format_seed(seeds_info[0])}"
-            elif len(seeds_info) == 2:
-                reason = f"Because you liked {format_seed(seeds_info[0])} and {format_seed(seeds_info[1])}"
-            else:
-                reason = f"Because you liked {format_seed(seeds_info[0])}, {format_seed(seeds_info[1])}, and {len(seeds_info)-2} more"
-                
+            # Base score from overlaps
+            score = len(seeds_info) * 10
+            # Add popularity factor if available
+            score += min(item.get("popularity", 0) / 100, 5)
+            
+            pool_list.append({
+                "item": item,
+                "seeds": seeds_info,
+                "prelim_score": score
+            })
+            
+        # Sort by prelim score and take top 15 for rich detail scoring
+        pool_list.sort(key=lambda x: x["prelim_score"], reverse=True)
+        top_pool = pool_list[:15]
+        
+        # 5. Fetch Rich Details & Calculate Refined Score
+        scored_candidates = []
+        for candidate in top_pool:
+            item = candidate["item"]
             details = {}
             try:
                 if item["type"] == "Anime":
@@ -960,9 +948,48 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 elif item["type"] == "TV Series":
                     details = get_tv_details(item["tmdb_id"])
             except Exception as e:
-                print(f"Error fetching details for suggestion {item.get('title')}: {e}")
+                print(f"Error fetching details for {item.get('title')}: {e}")
+                continue
                 
-            results.append({
+            # Calculate Refined Score
+            refined_score = candidate["prelim_score"]
+            match_reasons = []
+            
+            # Genre Match
+            if details.get("genres"):
+                item_genres = [g.strip() for g in details["genres"].split(",")]
+                for g in item_genres:
+                    if g in user_genres:
+                        weight = user_genres[g]
+                        refined_score += weight * 2
+                        if weight >= 3: # If it's a strong favorite genre
+                            match_reasons.append(f"you love {g}")
+                            
+            # Director Match
+            if details.get("director") and details["director"] in user_directors:
+                weight = user_directors[details["director"]]
+                refined_score += weight * 15
+                match_reasons.append(f"it's directed by {details['director']}")
+                
+            # Mode specific adjustments
+            if mode == "safe":
+                # Boost items that match genres or directors heavily
+                if match_reasons:
+                    refined_score += 30
+            elif mode == "adventure":
+                # Reduce boost or add random factor to make it more broad
+                refined_score += random.uniform(0, 15)
+                
+            # Construct Reason
+            seeds_str = " and ".join([f"{s[0]}" for s in candidate["seeds"][:2]])
+            if candidate["seeds"]:
+                reason = f"Because you liked {seeds_str}"
+                if match_reasons:
+                    reason += f" and {', '.join(match_reasons[:2])}"
+            else:
+                reason = "Recommended based on your taste"
+                
+            scored_candidates.append({
                 "title": details.get("title") or item["title"],
                 "release_year": details.get("release_year") or item["release_year"],
                 "cover_url": details.get("cover_url") or item["cover_url"],
@@ -971,10 +998,29 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 "reason": reason,
                 "director": details.get("director"),
                 "genres": details.get("genres"),
-                "overview": details.get("overview")
+                "overview": details.get("overview"),
+                "score": refined_score
             })
             
-        return results
+        # Sort by refined score
+        scored_candidates.sort(key=lambda x: x["score"], reverse=True)
+        
+        # Return top 6
+        final_results = []
+        for c in scored_candidates[:6]:
+            final_results.append({
+                "title": c["title"],
+                "release_year": c["release_year"],
+                "cover_url": c["cover_url"],
+                "type": c["type"],
+                "tmdb_id": c["tmdb_id"],
+                "reason": c["reason"],
+                "director": c["director"],
+                "genres": c["genres"],
+                "overview": c["overview"]
+            })
+            
+        return final_results
     except Exception as e:
         print("--- SUGGESTION ENGINE ERROR ---")
         traceback.print_exc()
