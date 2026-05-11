@@ -1409,9 +1409,9 @@ header p {
     left: 24px;
     width: 32px;
     height: 6px;
-    background: linear-gradient(to right, var(--theme-accent), var(--theme-accent-vibrant, var(--theme-accent)));
+    background: var(--theme-accent-vibrant, var(--theme-accent));
     border-radius: 0 0 4px 4px;
-    box-shadow: 0 0 8px var(--theme-accent-vibrant, var(--theme-accent)), 0 0 4px var(--theme-accent);
+    box-shadow: 0 0 8px var(--theme-accent-vibrant, var(--theme-accent));
 }
 
 .media-card:hover {
