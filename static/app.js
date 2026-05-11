@@ -3233,6 +3233,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const suggestionError = document.getElementById('suggestionError');
 
     const suggestionControls = document.getElementById('suggestionControls');
+    
+    let lastSuggestionIds = [];
     const retrySuggestionBtn = document.getElementById('retrySuggestionBtn');
 
 
@@ -3357,7 +3359,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let suggestionsData = null;
 
         try {
-            const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}`, {
+            let url = `/api/suggestions?category=${encodeURIComponent(currentCategory)}`;
+            if (lastSuggestionIds.length > 0) {
+                url += `&exclude=${lastSuggestionIds.join(',')}`;
+            }
+            
+            const res = await fetch(url, {
                 headers: getAuthHeaders(false), // Guests can use this too
                 signal: abortController.signal
             });
@@ -3403,6 +3410,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         suggestionError.style.display = 'block';
                         suggestionError.textContent = "We don't have enough highly-rated data in your tracker to make good suggestions yet!";
                     } else {
+                        lastSuggestionIds = suggestionsData.map(item => item.tmdb_id);
+                        
                         suggestionsData.forEach(item => {
                             const card = document.createElement('div');
                             card.className = 'suggestion-card';

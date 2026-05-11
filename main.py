@@ -784,7 +784,7 @@ from tmdb_helper import get_tmdb_recommendations, get_movie_details, get_tv_deta
 from jikan_helper import get_jikan_recommendations, get_anime_details, get_manga_details
 
 @app.get("/api/suggestions")
-def get_suggestions(category: Optional[str] = None, mode: str = "balanced", session: Session = Depends(get_session)):
+def get_suggestions(category: Optional[str] = None, mode: str = "balanced", exclude: Optional[str] = None, session: Session = Depends(get_session)):
     """
     Generates 3 rich media suggestions based on the user's high-rated and liked items.
     Tuning modes: balanced, safe, adventure, hidden
@@ -822,6 +822,10 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 tracked_ids.add((p.type, int(p.tmdb_id)))
         except Exception as pe:
             print(f"Error fetching passed list: {pe}")
+
+        exclude_ids = set()
+        if exclude:
+            exclude_ids = {int(x) for x in exclude.split(",") if x.strip().isdigit()}
 
         for item in all_items:
             score = parse_score(item)
@@ -901,7 +905,7 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                     
                 for r in recs:
                     norm_title = normalize_title(r.get("title", ""))
-                    if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], int(r["tmdb_id"])) in tracked_ids:
+                    if not r.get("tmdb_id") or norm_title in tracked_titles or (r["type"], int(r["tmdb_id"])) in tracked_ids or int(r["tmdb_id"]) in exclude_ids:
                         continue
                         
                     pool_key = (r["type"], int(r["tmdb_id"]))
