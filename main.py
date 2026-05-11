@@ -929,9 +929,9 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 "prelim_score": score
             })
             
-        # Sort by prelim score and take top 15 for rich detail scoring
+        # Sort by prelim score and take top 40 for rich detail scoring
         pool_list.sort(key=lambda x: x["prelim_score"], reverse=True)
-        top_pool = pool_list[:15]
+        top_pool = pool_list[:40]
         
         # 5. Fetch Rich Details & Calculate Refined Score
         scored_candidates = []
@@ -971,14 +971,10 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 refined_score += weight * 15
                 match_reasons.append(f"it's directed by {details['director']}")
                 
-            # Mode specific adjustments
-            if mode == "safe":
-                # Boost items that match genres or directors heavily
-                if match_reasons:
-                    refined_score += 30
-            elif mode == "adventure":
-                # Reduce boost or add random factor to make it more broad
-                refined_score += random.uniform(0, 15)
+            # Calculate scores for all 3 modes!
+            familiar_score = refined_score + (30 if match_reasons else 0)
+            balanced_score = refined_score
+            broad_score = refined_score + random.uniform(0, 15)
                 
             # Construct Reason
             seeds_str = " and ".join([f"{s[0]}" for s in candidate["seeds"][:2]])
@@ -999,15 +995,52 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", sess
                 "director": details.get("director"),
                 "genres": details.get("genres"),
                 "overview": details.get("overview"),
-                "score": refined_score
+                "familiar_score": familiar_score,
+                "balanced_score": balanced_score,
+                "broad_score": broad_score
             })
             
-        # Sort by refined score
-        scored_candidates.sort(key=lambda x: x["score"], reverse=True)
+        # 6. Pick 8 Familiar, 4 Balanced, 4 Broad
+        final_picks = []
+        picked_ids = set()
         
-        # Return top 6
+        # Sort by Familiar Score
+        scored_candidates.sort(key=lambda x: x["familiar_score"], reverse=True)
+        for c in scored_candidates:
+            if len(final_picks) < 8:
+                final_picks.append(c)
+                picked_ids.add((c["type"], int(c["tmdb_id"])))
+            else:
+                break
+                
+        # Sort by Balanced Score
+        scored_candidates.sort(key=lambda x: x["balanced_score"], reverse=True)
+        for c in scored_candidates:
+            if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 12:
+                final_picks.append(c)
+                picked_ids.add((c["type"], int(c["tmdb_id"])))
+            elif len(final_picks) >= 12:
+                break
+                
+        # Sort by Broad Score
+        scored_candidates.sort(key=lambda x: x["broad_score"], reverse=True)
+        for c in scored_candidates:
+            if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 16:
+                final_picks.append(c)
+                picked_ids.add((c["type"], int(c["tmdb_id"])))
+            elif len(final_picks) >= 16:
+                break
+                
+        # Fallback: If we don't have 16, just fill with whatever is left
+        if len(final_picks) < 16:
+            for c in scored_candidates:
+                if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 16:
+                    final_picks.append(c)
+                    picked_ids.add((c["type"], int(c["tmdb_id"])))
+                    
+        # Return final results
         final_results = []
-        for c in scored_candidates[:6]:
+        for c in final_picks:
             final_results.append({
                 "title": c["title"],
                 "release_year": c["release_year"],

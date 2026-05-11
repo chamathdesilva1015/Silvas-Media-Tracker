@@ -3235,29 +3235,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const suggestionControls = document.getElementById('suggestionControls');
     const retrySuggestionBtn = document.getElementById('retrySuggestionBtn');
 
-    let suggestionMode = localStorage.getItem('suggestion_mode') || 'balanced';
-
-    // Update active UI state for tuning buttons
-    const updateTuningUI = () => {
-        document.querySelectorAll('.tuning-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('data-mode') === suggestionMode);
-        });
-    };
-
-    // Add event listeners for tuning buttons
-    document.querySelectorAll('.tuning-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const newMode = btn.getAttribute('data-mode');
-            if (newMode !== suggestionMode) {
-                suggestionMode = newMode;
-                localStorage.setItem('suggestion_mode', suggestionMode);
-                updateTuningUI();
-                fetchSuggestions(); // Refresh suggestions with new mode
-            }
-        });
-    });
-
-    updateTuningUI();
 
     let progressInterval;
 
@@ -3380,7 +3357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let suggestionsData = null;
 
         try {
-            const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}&mode=${suggestionMode}`, {
+            const res = await fetch(`/api/suggestions?category=${encodeURIComponent(currentCategory)}`, {
                 headers: getAuthHeaders(false), // Guests can use this too
                 signal: abortController.signal
             });

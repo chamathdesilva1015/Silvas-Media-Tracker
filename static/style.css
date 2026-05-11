@@ -402,15 +402,7 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 .suggestion-control-panel {
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
-}
-.premium-suggest-btn {
-    flex: 1;
-    max-width: 250px;
-}
-.premium-segmented-control {
-    flex: 2;
-    max-width: 550px;
+    justify-content: center;
 }
 
 /* Hub Buttons with White Glowing Outlines */
