@@ -3360,9 +3360,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Abort if the request takes longer than 60 seconds (Jikan can be very slow with multiple seeds)
+        // Abort if the request takes longer than 120 seconds (Jikan can be very slow with multiple seeds)
         const abortController = new AbortController();
-        const abortTimeout = setTimeout(() => abortController.abort(), 60000);
+        const abortTimeout = setTimeout(() => abortController.abort(), 120000);
 
         let suggestionsData = null;
 

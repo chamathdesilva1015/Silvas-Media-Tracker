@@ -4,6 +4,9 @@ from typing import Optional, Dict, List
 
 BASE_URL = "https://api.jikan.moe/v4"
 
+ANIME_CACHE = {}
+MANGA_CACHE = {}
+
 def search_manga(title: str) -> Optional[int]:
     """
     Searches for a manga and returns its MyAnimeList (MAL) ID.
@@ -104,6 +107,9 @@ def get_manga_details(mal_id: int) -> Dict:
     """
     Fetches genres, poster, and author for a manga.
     """
+    if mal_id in MANGA_CACHE:
+        return MANGA_CACHE[mal_id]
+        
     url = f"{BASE_URL}/manga/{mal_id}/full"
     
     try:
@@ -130,7 +136,7 @@ def get_manga_details(mal_id: int) -> Dict:
             parts = author.split(",")
             author = f"{parts[1].strip()} {parts[0].strip()}"
             
-        return {
+        result = {
             "title": data.get("title_english") or data.get("title"),
             "release_year": str(data.get("published", {}).get("prop", {}).get("from", {}).get("year", "")) or None,
             "genres": genres,
@@ -142,6 +148,8 @@ def get_manga_details(mal_id: int) -> Dict:
             "manga_status": data.get("status"),
             "total_chapters": data.get("chapters")
         }
+        MANGA_CACHE[mal_id] = result
+        return result
     except Exception as e:
         print(f"Jikan Details Error for ID {mal_id}: {e}")
     return {}
@@ -150,6 +158,9 @@ def get_anime_details(mal_id: int) -> dict:
     """
     Fetches genres, poster, director, and year for an anime using Jikan (MAL).
     """
+    if mal_id in ANIME_CACHE:
+        return ANIME_CACHE[mal_id]
+        
     url = f"{BASE_URL}/anime/{mal_id}/full"
     
     try:
@@ -178,7 +189,7 @@ def get_anime_details(mal_id: int) -> dict:
         if aired.get("year"):
             release_year = str(aired["year"])
         
-        return {
+        result = {
             "title": data.get("title_english") or data.get("title"),
             "release_year": release_year,
             "genres": genres,
@@ -188,6 +199,8 @@ def get_anime_details(mal_id: int) -> dict:
             "content_rating": data.get("rating"),
             "overview": data.get("synopsis")
         }
+        ANIME_CACHE[mal_id] = result
+        return result
     except Exception as e:
         print(f"Jikan Anime Details Error for ID {mal_id}: {e}")
     return {}
