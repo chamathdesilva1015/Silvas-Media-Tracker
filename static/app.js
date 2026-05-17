@@ -1031,6 +1031,14 @@ document.addEventListener('DOMContentLoaded', () => {
         previewBackBtn.style.display = 'none';
         previewSubmitBtn.style.display = 'block';
         previewSubmitBtn.innerText = 'Preview Match';
+        previewSubmitBtn.disabled = false;
+        
+        // Hide loading and duplicate warning elements
+        const previewLoading = document.getElementById('previewLoading');
+        if (previewLoading) previewLoading.style.display = 'none';
+        const dupWarning = document.getElementById('previewDuplicateWarning');
+        if (dupWarning) dupWarning.style.display = 'none';
+        
         resetPreviewLike();
     });
 
