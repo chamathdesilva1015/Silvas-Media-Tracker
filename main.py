@@ -692,11 +692,11 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             for s, i in items_list:
                 weight = max(0, (s - 4.5)) ** 3
                 if i.is_liked:
-                    weight *= 1.25 # 25% Bonus for personal favorites
+                    weight *= 1.35 # 35% Bonus for personal favorites
                 total_passion += weight
             
-            # 2. Confidence Filter: (1 - 1/v)
-            confidence = (1.0 - (1.0 / v))
+            # 2. Bayesian Confidence Smoothing: v / (v + 1.5)
+            confidence = float(v) / (v + 1.5)
             
             final_score = total_passion * confidence
             # Get top 10 items for this genre as examples
@@ -730,10 +730,12 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             for s, i in items_list:
                 weight = max(0, (s - 4.5)) ** 3
                 if i.is_liked:
-                    weight *= 1.25
+                    weight *= 1.35 # 35% Bonus for personal favorites
                 total_passion += weight
             
-            confidence = (1.0 - (1.0 / v))
+            # 2. Bayesian Confidence Smoothing: v / (v + 1.5)
+            confidence = float(v) / (v + 1.5)
+            
             final_score = total_passion * confidence
             dir_scores.append((d_name, final_score, items_list))
             

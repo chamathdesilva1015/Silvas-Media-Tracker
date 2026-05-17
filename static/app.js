@@ -708,8 +708,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1.25 if Heart) × (1 - 1/Count)</b></span>
-                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1.25 if Heart) × (1 - 1/Count)</span>
+                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1.35 if Heart) × [Count / (Count + 1.5)]</b></span>
+                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1.35 if Heart) × [Count / (Count + 1.5)]</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
@@ -735,8 +735,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="directorsHeader">
                     <div class="hof-accordion-title">
                         ${category === 'Movies' ? 'Top Directors' : (category === 'Manga' ? 'Top Authors' : 'Top Creators')}
-                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1.25 if Heart) × (1 - 1/Count)</b></span>
-                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1.25 if Heart) × (1 - 1/Count)</span>
+                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1.35 if Heart) × [Count / (Count + 1.5)]</b></span>
+                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1.35 if Heart) × [Count / (Count + 1.5)]</span>
                     </div>
                     <span class="hof-chevron" id="directorsChevron">▼</span>
                 </div>
