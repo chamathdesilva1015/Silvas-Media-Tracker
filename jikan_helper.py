@@ -95,6 +95,8 @@ def search_anime(title: str) -> Optional[int]:
         highest_score = 0
         
         for r in results:
+            if r.get("type") == "Movie":
+                continue
             api_title = r.get("title", "")
             # Check primary title and English title
             titles_to_check = [api_title]
@@ -202,7 +204,8 @@ def get_anime_details(mal_id: int) -> dict:
             "director": studio,
             "tmdb_id": mal_id,
             "content_rating": data.get("rating"),
-            "overview": data.get("synopsis")
+            "overview": data.get("synopsis"),
+            "anime_type": data.get("type")
         }
         ANIME_CACHE[mal_id] = result
         return result
@@ -244,6 +247,7 @@ def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int
                 print(f"Jikan enrichment error for ID {rec_id}: {e}")
                 
             # Fallback to TMDB if Jikan details failed for Anime
+            is_tmdb_movie = False
             if not details and media_type == "anime" and romaji_title:
                 try:
                     from tmdb_helper import search_tmdb, get_tv_details, get_tmdb_details
@@ -254,8 +258,14 @@ def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int
                         tmdb_id = search_tmdb(romaji_title, media_type="movie")
                         if tmdb_id:
                             details = get_tmdb_details(tmdb_id, media_type="movie")
+                            is_tmdb_movie = True
                 except Exception as tmdb_e:
                     print(f"TMDB fallback error in enrichment for '{romaji_title}': {tmdb_e}")
+            
+            # Filter out Anime Movies (as requested: anime movies belong in Movies, not Anime category)
+            if media_type == "anime" and details:
+                if details.get("anime_type") == "Movie" or is_tmdb_movie:
+                    return None
             
             english_title = details.get("title") if details else None
             return {
@@ -305,6 +315,11 @@ def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
                 response.raise_for_status()
                 data = response.json()
                 results = data.get("data", [])
+                
+        # Filter out movies for Anime (anime movies belong under 'Movies' category)
+        if media_type == "anime":
+            results = [r for r in results if r.get("type") != "Movie"]
+            
         from thefuzz import fuzz
         
         formatted_results = []

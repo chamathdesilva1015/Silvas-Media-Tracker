@@ -219,6 +219,10 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
             except Exception as jikan_err:
                 print(f"[!] Jikan Anime preview failed: {jikan_err}. Trying TMDB fallback...")
             
+            # Guardrail: Enforce that Anime Movies are added under "Movies" category instead
+            if data and data.get("anime_type") == "Movie":
+                raise HTTPException(status_code=400, detail="This is an Anime Movie. Please add it under the 'Movies' category instead!")
+            
             # Fallback to TMDB if Jikan failed or returned nothing
             if not data and title:
                 print(f"[*] Jikan returned no data for Anime '{title}'. Trying TMDB fallback...")
@@ -244,18 +248,7 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
                     tmdb_id = search_tmdb(title, media_type="movie")
                     if tmdb_id:
                         print(f"[*] Found TMDB Anime Movie Match: ID {tmdb_id}")
-                        tmdb_data = get_tmdb_details(tmdb_id, media_type="movie")
-                        if tmdb_data:
-                            data = {
-                                "title": tmdb_data.get("title"),
-                                "release_year": tmdb_data.get("release_year"),
-                                "genres": tmdb_data.get("genres"),
-                                "cover_url": tmdb_data.get("cover_url"),
-                                "director": tmdb_data.get("director") or "Unknown Director",
-                                "tmdb_id": tmdb_data.get("tmdb_id"),
-                                "content_rating": tmdb_data.get("content_rating"),
-                                "overview": tmdb_data.get("overview")
-                            }
+                        raise HTTPException(status_code=400, detail="This is an Anime Movie. Please add it under the 'Movies' category instead!")
         elif type == "Manga":
             from jikan_helper import search_manga, get_manga_details
             if not target_ext_id and title:
