@@ -211,10 +211,51 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
 
         if type == "Anime":
             from jikan_helper import search_anime, get_anime_details
-            if not target_ext_id and title:
-                target_ext_id = search_anime(title)
-            if target_ext_id:
-                data = get_anime_details(target_ext_id)
+            try:
+                if not target_ext_id and title:
+                    target_ext_id = search_anime(title)
+                if target_ext_id:
+                    data = get_anime_details(target_ext_id)
+            except Exception as jikan_err:
+                print(f"[!] Jikan Anime preview failed: {jikan_err}. Trying TMDB fallback...")
+            
+            # Fallback to TMDB if Jikan failed or returned nothing
+            if not data and title:
+                print(f"[*] Jikan returned no data for Anime '{title}'. Trying TMDB fallback...")
+                from tmdb_helper import search_tmdb, get_tv_details, get_tmdb_details
+                # First try TV series (most anime series are TV shows in TMDB)
+                tmdb_id = search_tmdb(title, media_type="tv")
+                if tmdb_id:
+                    print(f"[*] Found TMDB Anime TV Match: ID {tmdb_id}")
+                    tmdb_data = get_tv_details(tmdb_id)
+                    if tmdb_data:
+                        data = {
+                            "title": tmdb_data.get("title"),
+                            "release_year": tmdb_data.get("release_year"),
+                            "genres": tmdb_data.get("genres"),
+                            "cover_url": tmdb_data.get("cover_url"),
+                            "director": tmdb_data.get("director") or "Unknown Studio",
+                            "tmdb_id": tmdb_data.get("tmdb_id"),
+                            "content_rating": tmdb_data.get("content_rating"),
+                            "overview": tmdb_data.get("overview")
+                        }
+                # Second try movie fallback (for anime films)
+                if not data:
+                    tmdb_id = search_tmdb(title, media_type="movie")
+                    if tmdb_id:
+                        print(f"[*] Found TMDB Anime Movie Match: ID {tmdb_id}")
+                        tmdb_data = get_tmdb_details(tmdb_id, media_type="movie")
+                        if tmdb_data:
+                            data = {
+                                "title": tmdb_data.get("title"),
+                                "release_year": tmdb_data.get("release_year"),
+                                "genres": tmdb_data.get("genres"),
+                                "cover_url": tmdb_data.get("cover_url"),
+                                "director": tmdb_data.get("director") or "Unknown Director",
+                                "tmdb_id": tmdb_data.get("tmdb_id"),
+                                "content_rating": tmdb_data.get("content_rating"),
+                                "overview": tmdb_data.get("overview")
+                            }
         elif type == "Manga":
             from jikan_helper import search_manga, get_manga_details
             if not target_ext_id and title:
@@ -1188,7 +1229,23 @@ def search_multi(title: str, type: str, year: Optional[int] = None):
         return search_tmdb_multi(title, year, "tv")
     elif type == "Anime":
         from jikan_helper import search_jikan_multi
-        return search_jikan_multi(title, "anime")
+        try:
+            results = search_jikan_multi(title, "anime")
+            if results:
+                return results
+        except Exception as e:
+            print(f"[!] Jikan Anime multi search failed: {e}. Trying TMDB fallback...")
+        
+        # TMDB Fallback
+        from tmdb_helper import search_tmdb_multi
+        print(f"[*] Jikan failed for Anime search. Falling back to TMDB TV Series search...")
+        tv_results = search_tmdb_multi(title, year, "tv")
+        if tv_results:
+            return tv_results
+        
+        # Final movie fallback
+        print(f"[*] TMDB TV Series fallback empty. Trying TMDB Movie search...")
+        return search_tmdb_multi(title, year, "movie")
     elif type == "Manga":
         from jikan_helper import search_jikan_multi
         return search_jikan_multi(title, "manga")

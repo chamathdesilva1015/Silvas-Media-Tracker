@@ -7,6 +7,26 @@ BASE_URL = "https://api.jikan.moe/v4"
 ANIME_CACHE = {}
 MANGA_CACHE = {}
 
+def _jikan_get(url: str, params: Optional[Dict] = None) -> requests.Response:
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json"
+    }
+    # Jikan's public API is rate limited. Retry on 429 with exponential backoff
+    for attempt in range(3):
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=8)
+            if response.status_code == 429:
+                time.sleep(2 * (attempt + 1))
+                continue
+            return response
+        except requests.exceptions.RequestException as e:
+            if attempt == 2:
+                raise e
+            time.sleep(1)
+    return requests.get(url, params=params, headers=headers, timeout=8)
+
+
 def search_manga(title: str) -> Optional[int]:
     """
     Searches for a manga and returns its MyAnimeList (MAL) ID.
@@ -15,11 +35,7 @@ def search_manga(title: str) -> Optional[int]:
     params = {"q": title, "limit": 5}
     
     try:
-        response = requests.get(url, params=params, timeout=5)
-        if response.status_code == 429:
-            time.sleep(1) # Rate limit hit
-            response = requests.get(url, params=params, timeout=5)
-            
+        response = _jikan_get(url, params=params)
         response.raise_for_status()
         data = response.json()
         
@@ -63,11 +79,7 @@ def search_anime(title: str) -> Optional[int]:
     params = {"q": title, "limit": 5}
     
     try:
-        response = requests.get(url, params=params, timeout=5)
-        if response.status_code == 429:
-            time.sleep(1) # Rate limit hit
-            response = requests.get(url, params=params, timeout=5)
-            
+        response = _jikan_get(url, params=params)
         response.raise_for_status()
         data = response.json()
         
@@ -113,11 +125,7 @@ def get_manga_details(mal_id: int) -> Dict:
     url = f"{BASE_URL}/manga/{mal_id}/full"
     
     try:
-        response = requests.get(url, timeout=5)
-        if response.status_code == 429:
-            time.sleep(1)
-            response = requests.get(url, timeout=5)
-            
+        response = _jikan_get(url)
         response.raise_for_status()
         data = response.json().get("data", {})
         
@@ -164,11 +172,7 @@ def get_anime_details(mal_id: int) -> dict:
     url = f"{BASE_URL}/anime/{mal_id}/full"
     
     try:
-        response = requests.get(url, timeout=5)
-        if response.status_code == 429:
-            time.sleep(1)
-            response = requests.get(url, timeout=5)
-            
+        response = _jikan_get(url)
         response.raise_for_status()
         data = response.json().get("data", {})
         
@@ -214,11 +218,7 @@ def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int
     url = f"{BASE_URL}/{endpoint}/{mal_id}/recommendations"
     
     try:
-        response = requests.get(url, timeout=5)
-        if response.status_code == 429:
-            time.sleep(1)
-            response = requests.get(url, timeout=5)
-            
+        response = _jikan_get(url)
         response.raise_for_status()
         data = response.json()
         
@@ -250,11 +250,7 @@ def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
     params = {"q": title, "limit": 15}
     
     try:
-        response = requests.get(url, params=params, timeout=10)
-        if response.status_code == 429:
-            time.sleep(1)
-            response = requests.get(url, params=params, timeout=10)
-            
+        response = _jikan_get(url, params=params)
         response.raise_for_status()
         data = response.json()
         
@@ -268,10 +264,7 @@ def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
             if shorter_title and shorter_title.lower() != title.lower():
                 print(f"Laxing search: No results for '{title}', trying '{shorter_title}'")
                 params["q"] = shorter_title
-                response = requests.get(url, params=params, timeout=10)
-                if response.status_code == 429:
-                    time.sleep(1)
-                    response = requests.get(url, params=params, timeout=10)
+                response = _jikan_get(url, params=params)
                 response.raise_for_status()
                 data = response.json()
                 results = data.get("data", [])
