@@ -867,6 +867,19 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
         except Exception as pe:
             print(f"Error fetching passed list: {pe}")
 
+        # Also fetch active recommendations (pending or accepted) to exclude them
+        try:
+            active_recs = session.exec(
+                select(Recommendation).where(Recommendation.status != "rejected")
+            ).all()
+            for r in active_recs:
+                if r.ext_id:
+                    tracked_ids.add((r.type, int(r.ext_id)))
+                if r.title:
+                    tracked_titles.add(normalize_title(r.title))
+        except Exception as re:
+            print(f"Error fetching recommendations list: {re}")
+
         exclude_ids = set()
         if exclude:
             exclude_ids = {int(x) for x in exclude.split(",") if x.strip().isdigit()}
