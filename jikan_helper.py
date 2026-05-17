@@ -1,6 +1,7 @@
 import requests
 import time
 from typing import Optional, Dict, List
+from concurrent.futures import ThreadPoolExecutor
 
 BASE_URL = "https://api.jikan.moe/v4"
 
@@ -212,7 +213,7 @@ def get_anime_details(mal_id: int) -> dict:
 def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int = 5) -> List[dict]:
     """
     Fetches recommendations for a specific anime or manga.
-    Jikan returns a list of recommendations from users, we just take the top ones.
+    Enriches with details to provide English translated titles, release years, and other rich metadata.
     """
     endpoint = "anime" if media_type == "anime" else "manga"
     url = f"{BASE_URL}/{endpoint}/{mal_id}/recommendations"
@@ -222,21 +223,57 @@ def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int
         response.raise_for_status()
         data = response.json()
         
-        results = []
-        for r in data.get("data", [])[:limit]:
+        candidates = data.get("data", [])[:limit]
+        
+        def enrich_entry(r):
             entry = r.get("entry", {})
-            title = entry.get("title")
+            rec_id = entry.get("mal_id")
+            romaji_title = entry.get("title")
             poster_url = entry.get("images", {}).get("webp", {}).get("large_image_url")
             
-            if title and poster_url:
-                results.append({
-                    "title": title,
-                    "release_year": None, # Jikan recommendations don't usually include year
-                    "cover_url": poster_url,
-                    "tmdb_id": entry.get("mal_id"),
-                    "type": "Anime" if media_type == "anime" else "Manga"
-                })
-        return results
+            if not rec_id:
+                return None
+                
+            details = {}
+            try:
+                if media_type == "anime":
+                    details = get_anime_details(rec_id)
+                else:
+                    details = get_manga_details(rec_id)
+            except Exception as e:
+                print(f"Jikan enrichment error for ID {rec_id}: {e}")
+                
+            # Fallback to TMDB if Jikan details failed for Anime
+            if not details and media_type == "anime" and romaji_title:
+                try:
+                    from tmdb_helper import search_tmdb, get_tv_details, get_tmdb_details
+                    tmdb_id = search_tmdb(romaji_title, media_type="tv")
+                    if tmdb_id:
+                        details = get_tv_details(tmdb_id)
+                    if not details:
+                        tmdb_id = search_tmdb(romaji_title, media_type="movie")
+                        if tmdb_id:
+                            details = get_tmdb_details(tmdb_id, media_type="movie")
+                except Exception as tmdb_e:
+                    print(f"TMDB fallback error in enrichment for '{romaji_title}': {tmdb_e}")
+            
+            english_title = details.get("title") if details else None
+            return {
+                "title": english_title or romaji_title,
+                "release_year": details.get("release_year") if details else None,
+                "cover_url": details.get("cover_url") if (details and details.get("cover_url")) else poster_url,
+                "tmdb_id": rec_id,
+                "type": "Anime" if media_type == "anime" else "Manga",
+                "genres": details.get("genres") if details else None,
+                "director": details.get("director") if details else None,
+                "overview": details.get("overview") if details else None
+            }
+
+        # Enrich in parallel using a ThreadPool to stay efficient and respect rate limits
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            enriched_results = list(executor.map(enrich_entry, candidates))
+            
+        return [er for er in enriched_results if er is not None]
     except Exception as e:
         print(f"Jikan Recommendations Error for {media_type} ID {mal_id}: {e}")
         return []
