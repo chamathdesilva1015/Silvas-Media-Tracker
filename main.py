@@ -778,6 +778,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
 
 
+import math
 import random
 import traceback
 from tmdb_helper import get_tmdb_recommendations, get_movie_details, get_tv_details
@@ -786,7 +787,7 @@ from jikan_helper import get_jikan_recommendations, get_anime_details, get_manga
 @app.get("/api/suggestions")
 def get_suggestions(category: Optional[str] = None, mode: str = "balanced", exclude: Optional[str] = None, session: Session = Depends(get_session)):
     """
-    Generates 3 rich media suggestions based on the user's high-rated and liked items.
+    Generates rich media suggestions based on the user's high-rated and liked items.
     Tuning modes: balanced, safe, adventure, hidden
     """
     try:
@@ -805,7 +806,16 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
                 if "/10" in field:
                     try: return float(field.split("/")[0].strip())
                     except ValueError: pass
-            return 0
+            return None
+
+        # --- Calculate Global Average ---
+        all_valid_scores = []
+        for item in all_items:
+            s = parse_score(item)
+            if s is not None:
+                all_valid_scores.append(s)
+        
+        mu_global = sum(all_valid_scores) / len(all_valid_scores) if all_valid_scores else 0.0
 
         # 2. Identify potential seeds
         liked_seeds = []
@@ -830,42 +840,61 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
         for item in all_items:
             score = parse_score(item)
             
-            # Refinement: Only use liked items as seeds if they are unrated (0) or rated >= 7.0
-            if item.is_liked:
-                if score == 0 or score >= 7.0:
+            if score is None:
+                if item.is_liked:
                     liked_seeds.append(item)
+                continue
+                
+            # Refinement: Only use liked items as seeds if they are unrated (None) or rated >= 7.0
+            if item.is_liked and score >= 7.0:
+                liked_seeds.append(item)
                     
-            # Allow liked items to also be categorized as top/good seeds if they qualify
+            # Allow items to be categorized as top/good seeds if they qualify
             if score >= 8.5:
                 top_seeds.append(item)
             elif score >= 7.0:
                 good_seeds.append(item)
                 
-        # --- Calculate User Profile for Refined Scoring ---
-        user_genres = {}
-        user_directors = {}
+        # --- Build Affinity Profiles (Anti-Bias Model) ---
+        genre_item_sets = {}
+        director_item_sets = {}
+        
         for item in all_items:
             score = parse_score(item)
-            if score >= 7.5 or item.is_liked:
+            if score is not None:
                 if item.genres:
                     for g in [x.strip() for x in item.genres.split(",")]:
-                        user_genres[g] = user_genres.get(g, 0) + 1
+                        if g not in genre_item_sets: genre_item_sets[g] = []
+                        genre_item_sets[g].append(score)
                 if item.director:
-                    user_directors[item.director] = user_directors.get(item.director, 0) + 1
+                    d = item.director.strip()
+                    if d not in director_item_sets: director_item_sets[d] = []
+                    director_item_sets[d].append(score)
+                    
+        # Calculate Affinity Scores: Ag = Sum(Ri - mu_global) / (|Ig| + 3)
+        affinity_genres = {}
+        for g, scores in genre_item_sets.items():
+            affinity_genres[g] = sum(s - mu_global for s in scores) / (len(scores) + 3.0)
+            
+        affinity_directors = {}
+        for d, scores in director_item_sets.items():
+            affinity_directors[d] = sum(s - mu_global for s in scores) / (len(scores) + 3.0)
+
+        # Identify explicitly disliked genres (Ag <= -1.5)
+        disliked_genres = {g for g, a in affinity_genres.items() if a <= -1.5}
                 
         # --- Tuning Logic: Seed Selection ---
         if mode == "safe":
-            # Focus exclusively on absolute favorites
             seeds = liked_seeds * 5 + top_seeds * 2
         elif mode == "adventure":
-            # Broaden the horizon, including more "good" but not necessarily "best" items
             seeds = liked_seeds + top_seeds + good_seeds * 3
         else: # balanced & hidden
             seeds = liked_seeds * 3 + top_seeds * 2 + good_seeds
                 
         if not seeds:
             return []
-           # 3. Gather Recommendations in a Pool
+            
+        # 3. Gather Recommendations in a Pool
         unique_seeds_dict = {s.id: s for s in seeds}
         unique_seeds_list = list(unique_seeds_dict.values())
         
@@ -924,8 +953,9 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
             
             # Base score from overlaps
             score = len(seeds_info) * 10
-            # Add popularity factor if available
-            score += min(item.get("popularity", 0) / 100, 5)
+            # Logarithmic Popularity Decay
+            pop = item.get("popularity", 0)
+            score += min(2.5 * math.log10(pop + 1), 5) if pop > 0 else 0
             
             pool_list.append({
                 "item": item,
@@ -955,25 +985,38 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
                 print(f"Error fetching details for {item.get('title')}: {e}")
                 continue
                 
+            # --- Hard Low-Sentiment Filter ---
+            has_disliked_genre = False
+            item_genres = []
+            if details.get("genres"):
+                item_genres = [g.strip() for g in details["genres"].split(",")]
+                if any(g in disliked_genres for g in item_genres):
+                    has_disliked_genre = True
+                    
+            item_director = details.get("director", "").strip() if details.get("director") else ""
+            director_affinity = affinity_directors.get(item_director, 0)
+            
+            # Drop candidate if it has a disliked genre UNLESS director affinity is extremely high
+            if has_disliked_genre and director_affinity < 2.0:
+                continue
+                
             # Calculate Refined Score
             refined_score = candidate["prelim_score"]
             match_reasons = []
             
-            # Genre Match
-            if details.get("genres"):
-                item_genres = [g.strip() for g in details["genres"].split(",")]
-                for g in item_genres:
-                    if g in user_genres:
-                        weight = user_genres[g]
-                        refined_score += weight * 2
-                        if weight >= 3: # If it's a strong favorite genre
-                            match_reasons.append(f"you love {g}")
+            # Genre Match (Affinity Model)
+            for g in item_genres:
+                ag = affinity_genres.get(g, 0)
+                refined_score += ag * 15
+                if ag >= 1.0: # Threshold to flag as a strong reason
+                    match_reasons.append(f"you love {g}")
                             
-            # Director Match
-            if details.get("director") and details["director"] in user_directors:
-                weight = user_directors[details["director"]]
-                refined_score += weight * 15
-                match_reasons.append(f"it's directed by {details['director']}")
+            # Director Match (Affinity Model)
+            if item_director and item_director in affinity_directors:
+                ad = affinity_directors[item_director]
+                refined_score += ad * 25
+                if ad >= 1.0:
+                    match_reasons.append(f"it's directed by {item_director}")
                 
             # Calculate scores for all 3 modes!
             familiar_score = refined_score + (30 if match_reasons else 0)
@@ -985,7 +1028,9 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
             if candidate["seeds"]:
                 reason = f"Because you liked {seeds_str}"
                 if match_reasons:
-                    reason += f" and {', '.join(match_reasons[:2])}"
+                    # Deduplicate and limit to 2
+                    unique_reasons = list(dict.fromkeys(match_reasons))
+                    reason += f" and {', '.join(unique_reasons[:2])}"
             else:
                 reason = "Recommended based on your taste"
                 
