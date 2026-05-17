@@ -1111,13 +1111,13 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
             if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 18:
                 final_picks.append(c)
                 picked_ids.add((c["type"], int(c["tmdb_id"])))
-            elif len(final_picks) >= 16:
+            elif len(final_picks) >= 18:
                 break
                 
-        # Fallback: If we don't have 16, just fill with whatever is left
-        if len(final_picks) < 16:
+        # Fallback: If we don't have 18, just fill with whatever is left
+        if len(final_picks) < 18:
             for c in scored_candidates:
-                if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 16:
+                if (c["type"], int(c["tmdb_id"])) not in picked_ids and len(final_picks) < 18:
                     final_picks.append(c)
                     picked_ids.add((c["type"], int(c["tmdb_id"])))
                     
