@@ -612,7 +612,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     total = len(items)
 
     # Average score
-    avg_score = round(sum(scores) / len(scores), 1) if scores else None
+    # We now format it strictly to 2 decimal places further down.
+    # We remove the duplicate dist assignment here.
 
     # Score distribution — buckets from 0 to 10 in 0.5 increments
     dist = {str(i/2.0) if i/2.0 != int(i/2.0) else str(int(i/2.0)): 0 for i in range(21)}
@@ -632,7 +633,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
     scored_items = [(parse_score(i), i) for i in items if parse_score(i) is not None]
     highest = max(scored_items, key=lambda x: x[0]) if scored_items else None
     lowest  = min(scored_items, key=lambda x: x[0]) if scored_items else None
-    avg_score = round(sum(s for s, i in scored_items) / len(scored_items), 1) if scored_items else 0
+    avg_score_raw = sum(s for s, i in scored_items) / len(scored_items) if scored_items else 0.0
+    avg_score_formatted = f"{avg_score_raw:.2f}"
     
     # Average Release Year
     years = [i.release_year for i in items if i.release_year]
@@ -654,7 +656,9 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
     # Total likes & Like Ratio
     total_likes = sum(1 for i in items if i.is_liked)
-    like_ratio = int(round(total / total_likes)) if total_likes > 0 else 0
+    like_ratio_raw = (float(total) / total_likes) if total_likes > 0 else 0.0
+    like_ratio_formatted = f"{like_ratio_raw:.2f}"
+    total_formatted = f"{float(total):.2f}"
     
     hof_items = sorted(
         [(parse_score(i), i) for i in items if parse_score(i) is not None and parse_score(i) >= 9.0],
@@ -755,8 +759,8 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
                 })
 
     return {
-        "total": total,
-        "avg_score": avg_score,
+        "total": total_formatted,
+        "avg_score": avg_score_formatted,
         "avg_year": avg_year,
         "score_distribution": dist,
         "decade_breakdown": decades,
@@ -764,7 +768,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
         "lowest_rated":  {"title": lowest[1].title,  "score": lowest[1].numeric_rating or lowest[1].rating}  if lowest  else None,
         "with_reviews": with_reviews,
         "total_likes": total_likes,
-        "like_ratio": like_ratio,
+        "like_ratio": like_ratio_formatted,
         "hall_of_fame": hall_of_fame,
         "hall_of_fame_items": hall_of_fame_items,
         "in_rankings": in_rankings,
