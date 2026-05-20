@@ -3439,7 +3439,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             const overview = item.overview ? `<div class="suggestion-overview">${item.overview}</div>` : '';
                             
                             card.innerHTML = `
-                                <div class="suggestion-pass-btn" title="Pass (Never show again)"><i class="fas fa-times"></i></div>
                                 <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
                                 <div class="suggestion-title">${item.title}</div>
                                 <div class="suggestion-meta">${item.type} ${year}</div>
@@ -3447,11 +3446,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${genres}
                                 ${overview}
                                 <div class="suggestion-reason">${item.reason}</div>
+                                <div class="suggestion-admin-actions">
+                                    <button class="suggestion-action-btn pass" title="Pass (Never show again)"><i class="fas fa-times"></i> Pass</button>
+                                    <button class="suggestion-action-btn add" title="Add to Recommendations"><i class="fas fa-plus"></i> Add Rec</button>
+                                </div>
                             `;
                             
-                            const passBtn = card.querySelector('.suggestion-pass-btn');
+                            const adminActions = card.querySelector('.suggestion-admin-actions');
+                            const passBtn = card.querySelector('.suggestion-action-btn.pass');
+                            const addBtn = card.querySelector('.suggestion-action-btn.add');
+
                             if (!isAdminUnlocked) {
-                                passBtn.style.display = 'none';
+                                adminActions.style.display = 'none';
                             } else {
                                 passBtn.addEventListener('click', async () => {
                                     passBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -3468,13 +3474,40 @@ document.addEventListener('DOMContentLoaded', () => {
                                         if (pRes.ok) {
                                             card.style.opacity = '0.3';
                                             card.style.pointerEvents = 'none';
-                                            passBtn.innerHTML = '<i class="fas fa-check" style="color:#2ed573;"></i>';
+                                            passBtn.innerHTML = '<i class="fas fa-check" style="color:#2ed573;"></i> Passed';
                                         } else {
                                             throw new Error('Failed to pass');
                                         }
                                     } catch (e) {
                                         console.error("Pass error:", e);
-                                        passBtn.innerHTML = '<i class="fas fa-times"></i>';
+                                        passBtn.innerHTML = '<i class="fas fa-times"></i> Error';
+                                    }
+                                });
+
+                                addBtn.addEventListener('click', async () => {
+                                    addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                                    try {
+                                        const addRes = await fetch('/api/recommendations/submit', {
+                                            method: 'POST',
+                                            headers: getAuthHeaders(true),
+                                            body: JSON.stringify({
+                                                title: item.title,
+                                                year: item.release_year ? parseInt(item.release_year) : null,
+                                                ext_id: item.tmdb_id,
+                                                type: item.type,
+                                                recommender_name: "Recommendation"
+                                            })
+                                        });
+                                        if (addRes.ok) {
+                                            card.style.opacity = '0.3';
+                                            card.style.pointerEvents = 'none';
+                                            addBtn.innerHTML = '<i class="fas fa-check"></i> Added';
+                                        } else {
+                                            throw new Error('Failed to add recommendation');
+                                        }
+                                    } catch (e) {
+                                        console.error("Add rec error:", e);
+                                        addBtn.innerHTML = '<i class="fas fa-times"></i> Error';
                                     }
                                 });
                             }
