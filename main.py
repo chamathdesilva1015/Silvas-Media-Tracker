@@ -1035,7 +1035,7 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
             # Fallback to TMDB if Jikan details failed for Anime
             if not details and item["type"] == "Anime" and item.get("title"):
                 try:
-                    from tmdb_helper import search_tmdb, get_tv_details, get_tmdb_details
+                    from tmdb_helper import search_tmdb, get_tmdb_details
                     tmdb_id = search_tmdb(item["title"], media_type="tv")
                     if tmdb_id:
                         details = get_tv_details(tmdb_id)
