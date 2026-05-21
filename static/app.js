@@ -3725,7 +3725,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recSearchResults.innerHTML = '';
             recTitleInput.value = '';
             recYearInput.value = '';
-            recNoteInput.value = '';
+            if (recNoteInput) recNoteInput.value = '';
             recNameInput.value = '';
             
             // Reset Page 2 display
@@ -3911,7 +3911,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 recSearchResults.innerHTML = '';
                 recTitleInput.value = '';
                 recYearInput.value = '';
-                recNoteInput.value = '';
+                if (recNoteInput) recNoteInput.value = '';
                 recNameInput.value = '';
                 
                 // Reset Page 2 display for next time
