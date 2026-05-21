@@ -51,13 +51,19 @@ def search_manga(title: str) -> Optional[int]:
         highest_score = 0
         
         for r in results:
-            api_title = r.get("title", "")
-            # Check primary title and English title
-            titles_to_check = [api_title]
-            if r.get("title_english"):
-                titles_to_check.append(r["title_english"])
+            titles_to_check = []
+            for title_obj in r.get("titles", []):
+                titles_to_check.append(title_obj.get("title", ""))
+                
+            if not titles_to_check:
+                titles_to_check.append(r.get("title", ""))
+                if r.get("title_english"):
+                    titles_to_check.append(r.get("title_english"))
+                if r.get("title_japanese"):
+                    titles_to_check.append(r.get("title_japanese"))
             
             for t in titles_to_check:
+                if not t: continue
                 score = fuzz.token_sort_ratio(t.lower(), title.lower())
                 if score > highest_score:
                     highest_score = score
@@ -97,13 +103,20 @@ def search_anime(title: str) -> Optional[int]:
         for r in results:
             if r.get("type") == "Movie":
                 continue
-            api_title = r.get("title", "")
-            # Check primary title and English title
-            titles_to_check = [api_title]
-            if r.get("title_english"):
-                titles_to_check.append(r["title_english"])
+                
+            titles_to_check = []
+            for title_obj in r.get("titles", []):
+                titles_to_check.append(title_obj.get("title", ""))
+                
+            if not titles_to_check:
+                titles_to_check.append(r.get("title", ""))
+                if r.get("title_english"):
+                    titles_to_check.append(r.get("title_english"))
+                if r.get("title_japanese"):
+                    titles_to_check.append(r.get("title_japanese"))
             
             for t in titles_to_check:
+                if not t: continue
                 score = fuzz.token_sort_ratio(t.lower(), title.lower())
                 if score > highest_score:
                     highest_score = score
@@ -228,62 +241,25 @@ def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int
         
         candidates = data.get("data", [])[:limit]
         
-        def enrich_entry(r):
+        results = []
+        for r in candidates:
             entry = r.get("entry", {})
             rec_id = entry.get("mal_id")
-            romaji_title = entry.get("title")
-            poster_url = entry.get("images", {}).get("webp", {}).get("large_image_url")
-            
             if not rec_id:
-                return None
+                continue
                 
-            details = {}
-            try:
-                if media_type == "anime":
-                    details = get_anime_details(rec_id)
-                else:
-                    details = get_manga_details(rec_id)
-            except Exception as e:
-                print(f"Jikan enrichment error for ID {rec_id}: {e}")
-                
-            # Fallback to TMDB if Jikan details failed for Anime
-            is_tmdb_movie = False
-            if not details and media_type == "anime" and romaji_title:
-                try:
-                    from tmdb_helper import search_tmdb, get_tv_details, get_tmdb_details
-                    tmdb_id = search_tmdb(romaji_title, media_type="tv")
-                    if tmdb_id:
-                        details = get_tv_details(tmdb_id)
-                    if not details:
-                        tmdb_id = search_tmdb(romaji_title, media_type="movie")
-                        if tmdb_id:
-                            details = get_tmdb_details(tmdb_id, media_type="movie")
-                            is_tmdb_movie = True
-                except Exception as tmdb_e:
-                    print(f"TMDB fallback error in enrichment for '{romaji_title}': {tmdb_e}")
-            
-            # Filter out Anime Movies (as requested: anime movies belong in Movies, not Anime category)
-            if media_type == "anime" and details:
-                if details.get("anime_type") == "Movie" or is_tmdb_movie:
-                    return None
-            
-            english_title = details.get("title") if details else None
-            return {
-                "title": english_title or romaji_title,
-                "release_year": details.get("release_year") if details else None,
-                "cover_url": details.get("cover_url") if (details and details.get("cover_url")) else poster_url,
+            # Keep it basic to avoid heavy API load during recommendation gathering
+            # Rich details will be fetched later for top candidates
+            results.append({
+                "title": entry.get("title", ""),
+                "cover_url": entry.get("images", {}).get("webp", {}).get("large_image_url"),
                 "tmdb_id": rec_id,
                 "type": "Anime" if media_type == "anime" else "Manga",
-                "genres": details.get("genres") if details else None,
-                "director": details.get("director") if details else None,
-                "overview": details.get("overview") if details else None
-            }
-
-        # Enrich in parallel using a ThreadPool to stay efficient and respect rate limits
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            enriched_results = list(executor.map(enrich_entry, candidates))
+                # The votes count returned by Jikan can act as popularity
+                "popularity": r.get("votes", 0)
+            })
             
-        return [er for er in enriched_results if er is not None]
+        return results
     except Exception as e:
         print(f"Jikan Recommendations Error for {media_type} ID {mal_id}: {e}")
         return []
@@ -332,16 +308,26 @@ def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
                 year = str(r.get("aired", {}).get("prop", {}).get("from", {}).get("year", "") or "")
                 
             # Title Matching
-            eng_title = r.get("title_english") or ""
-            jap_title = r.get("title") or ""
+            titles_to_check = []
+            for title_obj in r.get("titles", []):
+                titles_to_check.append(title_obj.get("title", ""))
+                
+            if not titles_to_check:
+                titles_to_check.append(r.get("title", ""))
+                if r.get("title_english"):
+                    titles_to_check.append(r.get("title_english"))
+                if r.get("title_japanese"):
+                    titles_to_check.append(r.get("title_japanese"))
             
-            score_eng = fuzz.token_sort_ratio(title.lower(), eng_title.lower()) if eng_title else 0
-            score_jap = fuzz.token_sort_ratio(title.lower(), jap_title.lower()) if jap_title else 0
-            best_score = max(score_eng, score_jap)
-
-            # Boost exact matches
-            if title.lower() == eng_title.lower() or title.lower() == jap_title.lower():
-                best_score += 100
+            best_score = 0
+            for t in titles_to_check:
+                if not t: continue
+                score = fuzz.token_sort_ratio(title.lower(), t.lower())
+                # Boost exact matches
+                if title.lower() == t.lower():
+                    score += 100
+                if score > best_score:
+                    best_score = score
 
             formatted_results.append({
                 "tmdb_id": r.get("mal_id"),

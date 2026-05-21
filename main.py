@@ -1030,8 +1030,31 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
                     details = get_tv_details(item["tmdb_id"])
             except Exception as e:
                 print(f"Error fetching details for {item.get('title')}: {e}")
+                
+            is_tmdb_movie = False
+            # Fallback to TMDB if Jikan details failed for Anime
+            if not details and item["type"] == "Anime" and item.get("title"):
+                try:
+                    from tmdb_helper import search_tmdb, get_tv_details, get_tmdb_details
+                    tmdb_id = search_tmdb(item["title"], media_type="tv")
+                    if tmdb_id:
+                        details = get_tv_details(tmdb_id)
+                    if not details:
+                        tmdb_id = search_tmdb(item["title"], media_type="movie")
+                        if tmdb_id:
+                            details = get_tmdb_details(tmdb_id, media_type="movie")
+                            is_tmdb_movie = True
+                except Exception as tmdb_e:
+                    print(f"TMDB fallback error in enrichment for '{item.get('title')}': {tmdb_e}")
+                    
+            if not details:
                 continue
                 
+            # Filter out Anime Movies (as requested: anime movies belong in Movies, not Anime category)
+            if item["type"] == "Anime":
+                if details.get("anime_type") == "Movie" or is_tmdb_movie:
+                    continue
+
             # --- Hard Low-Sentiment Filter ---
             has_disliked_genre = False
             item_genres = []
