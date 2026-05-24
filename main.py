@@ -1257,27 +1257,22 @@ def search_multi(title: str, type: str, year: Optional[int] = None):
         from tmdb_helper import search_tmdb_multi
         return search_tmdb_multi(title, year, "tv")
     elif type == "Anime":
+        # Anime must only use Jikan (MyAnimeList). A TMDB fallback would return
+        # unrelated TV shows or films, breaking the recommendation wizard.
         from jikan_helper import search_jikan_multi
         try:
-            results = search_jikan_multi(title, "anime")
-            if results:
-                return results
+            return search_jikan_multi(title, "anime")
         except Exception as e:
-            print(f"[!] Jikan Anime multi search failed: {e}. Trying TMDB fallback...")
-        
-        # TMDB Fallback
-        from tmdb_helper import search_tmdb_multi
-        print(f"[*] Jikan failed for Anime search. Falling back to TMDB TV Series search...")
-        tv_results = search_tmdb_multi(title, year, "tv")
-        if tv_results:
-            return tv_results
-        
-        # Final movie fallback
-        print(f"[*] TMDB TV Series fallback empty. Trying TMDB Movie search...")
-        return search_tmdb_multi(title, year, "movie")
+            print(f"[!] Jikan Anime multi search failed: {e}")
+            return []
     elif type == "Manga":
+        # Manga must only use Jikan. No TMDB equivalent exists.
         from jikan_helper import search_jikan_multi
-        return search_jikan_multi(title, "manga")
+        try:
+            return search_jikan_multi(title, "manga")
+        except Exception as e:
+            print(f"[!] Jikan Manga multi search failed: {e}")
+            return []
     return []
 
 @app.get("/api/recommendations/recent/{category}")
@@ -1291,16 +1286,6 @@ def get_recent_recommendations(category: str, session: Session = Depends(get_ses
     ).all()
     return recs
 
-@app.get("/api/recommendations/debug")
-def debug_recommendations(session: Session = Depends(get_session)):
-    url = os.environ.get("DATABASE_URL")
-    recs = session.exec(select(Recommendation)).all()
-    return {
-        "connected_to": "Supabase" if url else "SQLite",
-        "url_present": url is not None,
-        "total_recommendations": len(recs),
-        "recs": recs
-    }
 
 @app.get("/api/recommendations/check")
 def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_session)):

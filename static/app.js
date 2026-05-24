@@ -2798,33 +2798,56 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchMedia();
     };
 
-    if (iIntro && iDetail) {
-        // Delegate rating item clicks
-        iBody.addEventListener('click', (e) => {
+    const infoAccordionsContainer = document.getElementById('infoAccordionsContainer');
+    if (infoAccordionsContainer) {
+        Object.keys(infoData).forEach(section => {
+            const subtitle = infoSubtitles[section] || '';
+            const content = infoData[section] || '';
+            const acc = document.createElement('div');
+            acc.className = 'hub-accordion';
+            acc.innerHTML = `
+                <div class="hub-accordion-header">
+                    <span class="hub-accordion-title">${section}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="hub-accordion-body">
+                    <p class="info-subtitle-sm" style="text-align: center; margin-bottom: 2rem;">${subtitle}</p>
+                    ${content}
+                </div>
+            `;
+            infoAccordionsContainer.appendChild(acc);
+        });
+        
+        infoAccordionsContainer.querySelectorAll('.hub-accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const body = header.nextElementSibling;
+                const icon = header.querySelector('i');
+                const isOpen = body.classList.contains('show');
+                
+                if (!isOpen) {
+                    body.classList.add('show');
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    body.classList.remove('show');
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+        
+        infoAccordionsContainer.addEventListener('click', (e) => {
             const header = e.target.closest('.rating-header-click');
             if (header) {
                 const item = header.closest('.rating-item');
-                // Close other items for clean accordion behavior
-                document.querySelectorAll('.rating-item').forEach(other => {
-                    if (other !== item) other.classList.remove('open');
-                });
+                const parentAccordion = header.closest('.rating-accordion');
+                if (parentAccordion) {
+                    parentAccordion.querySelectorAll('.rating-item').forEach(other => {
+                        if (other !== item) other.classList.remove('open');
+                    });
+                }
                 item.classList.toggle('open');
             }
         });
-
-        document.querySelectorAll('.info-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const section = btn.getAttribute('data-section');
-                if (!section) return; // Ignore buttons without a data-section (e.g. dev console)
-                iTitle.innerText = section;
-                iSubtitle.innerText = infoSubtitles[section] || 'Detailed methodology and project documentation.';
-                iBody.innerHTML = infoData[section] || '<p>Information regarding this section is currently being finalized.</p>';
-                iDetail.style.display = 'block';
-                
-                // Scroll specifically to the detail panel
-                iDetail.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-        });
+    }
 
         function setupDevConsole() {
 
@@ -4135,7 +4158,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     acceptBtn.title = 'Acknowledge and move to history';
                     acceptBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        updateRecStatus(rec.id, 'accepted', card);
+                        updateRecStatus(rec.id, 'accepted');
                     });
                     actions.appendChild(acceptBtn);
                 } else if (currentRecTab === 'accepted') {
@@ -4145,7 +4168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     unacceptBtn.title = 'Move back to pending';
                     unacceptBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        updateRecStatus(rec.id, 'pending', card);
+                        updateRecStatus(rec.id, 'pending');
                     });
                     actions.appendChild(unacceptBtn);
                 }
