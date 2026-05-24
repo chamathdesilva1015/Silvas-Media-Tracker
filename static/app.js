@@ -2849,83 +2849,76 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-        function setupDevConsole() {
+    function setupDevConsole() {
 
-            // Magic Auto-Fill removed as requested
+        // Magic Auto-Fill removed as requested
 
-            // --- Manage Passed Suggestions ---
-            const managePassedBtn = document.getElementById('managePassedBtn');
-            const passedModal = document.getElementById('passedEntriesModal');
-            const closePassedBtn = document.getElementById('closePassedEntriesBtn');
-            const passedList = document.getElementById('passedEntriesList');
+        // --- Manage Passed Suggestions ---
+        const managePassedBtn = document.getElementById('managePassedBtn');
+        const passedModal = document.getElementById('passedEntriesModal');
+        const closePassedBtn = document.getElementById('closePassedEntriesBtn');
+        const passedList = document.getElementById('passedEntriesList');
 
-            if (managePassedBtn) managePassedBtn.onclick = () => {
-                passedModal.classList.add('show');
-                fetchPassed();
-            };
+        if (managePassedBtn) managePassedBtn.onclick = () => {
+            passedModal.classList.add('show');
+            fetchPassed();
+        };
 
-            if (closePassedBtn) closePassedBtn.onclick = () => {
-                passedModal.classList.remove('show');
-            };
+        if (closePassedBtn) closePassedBtn.onclick = () => {
+            passedModal.classList.remove('show');
+        };
 
-            async function fetchPassed() {
-                passedList.innerHTML = '<p style="text-align: center; opacity: 0.5; padding: 2rem;">Loading passed list...</p>';
-                try {
-                    const res = await fetch('/api/suggestions/passed', { headers: getAuthHeaders() });
-                    if (!res.ok) throw new Error("Failed to fetch passed list");
-                    const data = await res.json();
-                    
-                    if (data.length === 0) {
-                        passedList.innerHTML = '<p style="text-align: center; opacity: 0.5; padding: 2rem;">No passed entries yet.</p>';
-                        return;
-                    }
+        async function fetchPassed() {
+            passedList.innerHTML = '<p style="text-align: center; opacity: 0.5; padding: 2rem;">Loading passed list...</p>';
+            try {
+                const res = await fetch('/api/suggestions/passed', { headers: getAuthHeaders() });
+                if (!res.ok) throw new Error("Failed to fetch passed list");
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    passedList.innerHTML = '<p style="text-align: center; opacity: 0.5; padding: 2rem;">No passed entries yet.</p>';
+                    return;
+                }
 
-                    passedList.innerHTML = data.map(p => `
-                        <div style="background: var(--bg-card); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
-                            <div>
-                                <strong style="display: block; color: var(--text-primary);">${p.title || 'Unknown Title'}</strong>
-                                <span style="font-size: 0.75rem; opacity: 0.6;">${p.type} • ID: ${p.tmdb_id}</span>
-                            </div>
-                            <button onclick="unpassEntry(${p.id}, this)" class="btn-text" style="color: #ff6b6b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Remove</button>
+                passedList.innerHTML = data.map(p => `
+                    <div style="background: var(--bg-card); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                        <div>
+                            <strong style="display: block; color: var(--text-primary);">${p.title || 'Unknown Title'}</strong>
+                            <span style="font-size: 0.75rem; opacity: 0.6;">${p.type} • ID: ${p.tmdb_id}</span>
                         </div>
-                    `).join('');
-                } catch (err) {
-                    passedList.innerHTML = `<p style="text-align: center; color: #ff6b6b; padding: 2rem;">Error: ${err.message}</p>`;
-                }
+                        <button onclick="unpassEntry(${p.id}, this)" class="btn-text" style="color: #ff6b6b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Remove</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                passedList.innerHTML = `<p style="text-align: center; color: #ff6b6b; padding: 2rem;">Error: ${err.message}</p>`;
             }
+        }
 
-            window.unpassEntry = async (id, btn) => {
-                if (!confirm("Allow this entry to be suggested again?")) return;
-                btn.disabled = true;
-                btn.innerText = '...';
-                try {
-                    const res = await fetch(`/api/suggestions/passed/${id}`, {
-                        method: 'DELETE',
-                        headers: getAuthHeaders(true)
-                    });
-                    if (res.ok) {
-                        btn.closest('div').remove();
-                        if (passedList.children.length === 0) {
-                            passedList.innerHTML = '<p style="text-align: center; opacity: 0.5; padding: 2rem;">No passed entries yet.</p>';
-                        }
+        window.unpassEntry = async (id, btn) => {
+            if (!confirm("Allow this entry to be suggested again?")) return;
+            btn.disabled = true;
+            btn.innerText = '...';
+            try {
+                const res = await fetch(`/api/suggestions/passed/${id}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders(true)
+                });
+                if (res.ok) {
+                    btn.closest('div').remove();
+                    if (passedList.children.length === 0) {
+                        passedList.innerHTML = '<p style="text-align: center; opacity: 0.5; padding: 2rem;">No passed entries yet.</p>';
                     }
-                } catch (err) {
-                    console.error("Error unpassing:", err);
-                    btn.disabled = false;
-                    btn.innerText = 'Remove';
                 }
-            };
-        }
-
-        if (iBack) {
-            iBack.addEventListener('click', () => {
-                iDetail.style.display = 'none';
-            });
-        }
-        
-        // Initialize Dev Console immediately
-        setupDevConsole();
+            } catch (err) {
+                console.error("Error unpassing:", err);
+                btn.disabled = false;
+                btn.innerText = 'Remove';
+            }
+        };
     }
+
+    // Initialize Dev Console immediately
+    setupDevConsole();
 
     // Initialization
     updateCategoryTitleCount();
