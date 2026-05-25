@@ -3778,8 +3778,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 // Determine current category
-                const activeTab = document.querySelector('.tab-btn.active');
-                const category = activeTab ? activeTab.dataset.category : 'Movies';
+                const category = currentCategory || 'Movies';
                 
                 let url = `/api/search/multi?title=${encodeURIComponent(title)}&type=${encodeURIComponent(category)}`;
                 if (year) url += `&year=${year}`;
@@ -3857,8 +3856,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recNext2Btn.addEventListener('click', async () => {
             if (!selectedRecItem) return;
             
-            const activeTab = document.querySelector('.tab-btn.active');
-            const category = activeTab ? activeTab.dataset.category : 'Movies';
+            const category = currentCategory || 'Movies';
             
             try {
                 const response = await fetch(`/api/recommendations/check?ext_id=${selectedRecItem.tmdb_id}&type=${category}`);

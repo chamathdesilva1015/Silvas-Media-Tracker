@@ -211,44 +211,14 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
 
         if type == "Anime":
             from jikan_helper import search_anime, get_anime_details
-            try:
-                if not target_ext_id and title:
-                    target_ext_id = search_anime(title)
-                if target_ext_id:
-                    data = get_anime_details(target_ext_id)
-            except Exception as jikan_err:
-                print(f"[!] Jikan Anime preview failed: {jikan_err}. Trying TMDB fallback...")
+            if not target_ext_id and title:
+                target_ext_id = search_anime(title)
+            if target_ext_id:
+                data = get_anime_details(target_ext_id)
             
             # Guardrail: Enforce that Anime Movies are added under "Movies" category instead
             if data and data.get("anime_type") == "Movie":
                 raise HTTPException(status_code=400, detail="This is an Anime Movie. Please add it under the 'Movies' category instead!")
-            
-            # Fallback to TMDB if Jikan failed or returned nothing
-            if not data and title:
-                print(f"[*] Jikan returned no data for Anime '{title}'. Trying TMDB fallback...")
-                from tmdb_helper import search_tmdb, get_tv_details, get_tmdb_details
-                # First try TV series (most anime series are TV shows in TMDB)
-                tmdb_id = search_tmdb(title, media_type="tv")
-                if tmdb_id:
-                    print(f"[*] Found TMDB Anime TV Match: ID {tmdb_id}")
-                    tmdb_data = get_tv_details(tmdb_id)
-                    if tmdb_data:
-                        data = {
-                            "title": tmdb_data.get("title"),
-                            "release_year": tmdb_data.get("release_year"),
-                            "genres": tmdb_data.get("genres"),
-                            "cover_url": tmdb_data.get("cover_url"),
-                            "director": tmdb_data.get("director") or "Unknown Studio",
-                            "tmdb_id": tmdb_data.get("tmdb_id"),
-                            "content_rating": tmdb_data.get("content_rating"),
-                            "overview": tmdb_data.get("overview")
-                        }
-                # Second try movie fallback (for anime films)
-                if not data:
-                    tmdb_id = search_tmdb(title, media_type="movie")
-                    if tmdb_id:
-                        print(f"[*] Found TMDB Anime Movie Match: ID {tmdb_id}")
-                        raise HTTPException(status_code=400, detail="This is an Anime Movie. Please add it under the 'Movies' category instead!")
         elif type == "Manga":
             from jikan_helper import search_manga, get_manga_details
             if not target_ext_id and title:
@@ -1032,21 +1002,6 @@ def get_suggestions(category: Optional[str] = None, mode: str = "balanced", excl
                 print(f"Error fetching details for {item.get('title')}: {e}")
                 
             is_tmdb_movie = False
-            # Fallback to TMDB if Jikan details failed for Anime
-            if not details and item["type"] == "Anime" and item.get("title"):
-                try:
-                    from tmdb_helper import search_tmdb, get_tmdb_details
-                    tmdb_id = search_tmdb(item["title"], media_type="tv")
-                    if tmdb_id:
-                        details = get_tv_details(tmdb_id)
-                    if not details:
-                        tmdb_id = search_tmdb(item["title"], media_type="movie")
-                        if tmdb_id:
-                            details = get_tmdb_details(tmdb_id, media_type="movie")
-                            is_tmdb_movie = True
-                except Exception as tmdb_e:
-                    print(f"TMDB fallback error in enrichment for '{item.get('title')}': {tmdb_e}")
-                    
             if not details:
                 continue
                 
