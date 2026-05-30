@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const canEdit = computeCanEdit();
         const guestActions = document.getElementById('guestConsoleActions');
         const devActions = document.getElementById('devConsoleActions');
+        const rankingsAdminConsole = document.getElementById('rankingsAdminConsole');
 
         if (canEdit) {
             document.body.classList.remove('read-only-mode');
@@ -125,6 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Hide global add button
             const globalAddBtn = document.getElementById('addMediaBtn');
             if (globalAddBtn) globalAddBtn.style.display = 'none';
+        }
+
+        if (rankingsAdminConsole) {
+            if (isAdminUnlocked && currentSubTab === 'Rankings') {
+                rankingsAdminConsole.style.display = 'flex';
+            } else {
+                rankingsAdminConsole.style.display = 'none';
+            }
         }
     };
 
@@ -811,8 +820,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+        const rankingsAdminConsole = document.getElementById('rankingsAdminConsole');
         if (currentSubTab === 'Info') {
             grid.style.display = 'none';
+            if (rankingsAdminConsole) rankingsAdminConsole.style.display = 'none';
             if (infoPage) {
                 infoPage.style.display = 'block';
                 
@@ -840,6 +851,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         } else {
             grid.style.display = (currentSubTab === 'Rankings') ? 'block' : 'grid';
+            if (rankingsAdminConsole) {
+                if (isAdminUnlocked && currentSubTab === 'Rankings') {
+                    rankingsAdminConsole.style.display = 'flex';
+                } else {
+                    rankingsAdminConsole.style.display = 'none';
+                }
+            }
             if (infoPage) infoPage.style.display = 'none';
             if (controls) controls.style.display = 'flex';
             if (isAdminUnlocked && addBtn) addBtn.style.display = 'flex';
@@ -3566,8 +3584,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const watchedVerb = isManga ? 'Read' : 'Watched';
         const watchedVerbLower = isManga ? 'read' : 'watched';
         
+        // Immediately clear recommendations lists and show loading spinner to prevent old category items from lingering
+        activeList.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;"><i class="fas fa-circle-notch fa-spin fa-fw"></i> Loading...</div>`;
+        watchedList.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;"><i class="fas fa-circle-notch fa-spin fa-fw"></i> Loading...</div>`;
+        if (activeTitle) activeTitle.textContent = `Active Recommendations`;
+        if (watchedTitle) watchedTitle.textContent = `${watchedVerb} Recommendations`;
+
         try {
-            const response = await fetch(`/api/recommendations/recent/${category}`);
+            const response = await fetch(`/api/recommendations/recent/${category}?t=${Date.now()}`);
             const data = await response.json();
             
             const activeData = data.filter(r => r.status === 'pending');
@@ -3859,7 +3883,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = currentCategory || 'Movies';
             
             try {
-                const response = await fetch(`/api/recommendations/check?ext_id=${selectedRecItem.tmdb_id}&type=${category}`);
+                const response = await fetch(`/api/recommendations/check?ext_id=${selectedRecItem.tmdb_id}&type=${category}&t=${Date.now()}`);
                 const data = await response.json();
                 
                 if (!data.allow_recommendation || data.in_library) {
@@ -4068,7 +4092,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAllRecs() {
         allRecsList.innerHTML = '<p style="text-align:center;opacity:0.5;padding:2rem;">Loading...</p>';
         try {
-            const url = `/api/recommendations/all?status=${currentRecTab}&type=${encodeURIComponent(currentRecFilter)}`;
+            const url = `/api/recommendations/all?status=${currentRecTab}&type=${encodeURIComponent(currentRecFilter)}&t=${Date.now()}`;
             const res = await fetch(url, { headers: getAuthHeaders() });
             if (!res.ok) throw new Error('Failed');
             allRecsData = await res.json();

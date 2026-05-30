@@ -96,6 +96,14 @@
             <!-- Cards will be populated here via Javascript -->
         </div>
 
+        <!-- Rankings Admin Console (Hidden by default, shown at the bottom of rankings page for admins) -->
+        <div id="rankingsAdminConsole" style="display: none; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; justify-content: center; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto;">
+            <button id="manageRankingsBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; width: 100%; max-width: 320px;">
+                <strong>Manage Rankings</strong>
+                <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;" id="rankingBtnDesc">Edit Top 20 Leaderboards</span>
+            </button>
+        </div>
+
         <!-- Info Page (Now default) -->
         <div id="infoPage" class="info-page" style="padding: 2rem 1.5rem; color: var(--text-primary); text-align: center; max-width: 800px; margin: 0 auto;">
             <!-- Main Grid View -->
@@ -165,10 +173,6 @@
                         <button id="logoutAdminBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.2); color: #e74c3c;">
                             <strong>Logout</strong>
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Revoke Admin Access</span>
-                        </button>
-                        <button id="manageRankingsBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
-                            <strong>Manage Rankings</strong>
-                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;" id="rankingBtnDesc">Edit Top 20 Leaderboards</span>
                         </button>
                         <button id="managePassedBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
                             <strong>Manage Passed</strong>

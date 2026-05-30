@@ -1231,8 +1231,9 @@ def search_multi(title: str, type: str, year: Optional[int] = None):
     return []
 
 @app.get("/api/recommendations/recent/{category}")
-def get_recent_recommendations(category: str, session: Session = Depends(get_session)):
+def get_recent_recommendations(category: str, response: Response, session: Session = Depends(get_session)):
     """Fetches the last 3 recommendations for a category."""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     recs = session.exec(
         select(Recommendation)
         .where(Recommendation.type == category)
@@ -1243,8 +1244,9 @@ def get_recent_recommendations(category: str, session: Session = Depends(get_ses
 
 
 @app.get("/api/recommendations/check")
-def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_session)):
+def check_recommendation(ext_id: int, type: str, response: Response, session: Session = Depends(get_session)):
     """Checks if a media item already exists in the library or recommendations."""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     # Check library
     library_exists = session.exec(
         select(MediaItem).where(MediaItem.tmdb_id == ext_id, MediaItem.type == type)
@@ -1267,9 +1269,9 @@ def check_recommendation(ext_id: int, type: str, session: Session = Depends(get_
     }
 
 @app.get("/api/recommendations/all")
-def get_all_recommendations(request: Request, type: Optional[str] = None, status: Optional[str] = None, session: Session = Depends(get_session)):
+def get_all_recommendations(request: Request, response: Response, type: Optional[str] = None, status: Optional[str] = None, session: Session = Depends(get_session)):
     """Returns all recommendations, optionally filtered by type."""
-
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     query = select(Recommendation).order_by(Recommendation.date_added.desc())
     if type and type != "all":
         query = query.where(Recommendation.type == type)
