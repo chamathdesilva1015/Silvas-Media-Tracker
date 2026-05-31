@@ -94,6 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return headers;
     };
 
+    let allMedia = [];
+    let rankMap = {}; // title|type -> rank number; populated in renderMedia, read by openQuickInfo
+    let currentCategory = 'Movies'; // Default page
+    let currentSubTab = 'Info'; // Land on The Hub
+
     const loginAdminBtns = [document.getElementById('loginAdminBtn')];
     const logoutAdminBtns = [document.getElementById('logoutAdminBtn')];
 
@@ -201,10 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run initial boot visually
     window.updateAuthUI();
 
-    let allMedia = [];
-    let rankMap = {}; // title|type -> rank number; populated in renderMedia, read by openQuickInfo
-    let currentCategory = 'Movies'; // Default page
-    let currentSubTab = 'Info'; // Land on The Hub
 
     const searchInput = document.getElementById('searchInput');
     console.log("Media Tracker App v240 Initializing...");
