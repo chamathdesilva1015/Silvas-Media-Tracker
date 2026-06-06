@@ -169,7 +169,7 @@
                 <!-- Admin-Only Actions Container -->
                 <div id="devConsoleActions" style="display: none; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
                     <h3 class="serif" style="margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--theme-accent);">Developer Console</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                         <button id="logoutAdminBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.2); color: #e74c3c;">
                             <strong>Logout</strong>
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Revoke Admin Access</span>
@@ -179,8 +179,15 @@
                             <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Suggestions History</span>
                         </button>
                     </div>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 2rem;">
+                        <button id="exportDataBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); color: var(--text-primary); cursor: pointer; transition: all 0.2s ease;">
+                            <strong style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-file-csv"></i> Export Data</strong>
+                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Download finished entries as CSV</span>
+                        </button>
+                    </div>
 
                 </div>
+
 
                 <div id="guestConsoleActions" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
                     <button id="loginAdminBtn" class="btn-secondary" style="width: 100%; padding: 1.2rem; border-radius: 12px; font-size: 0.9rem; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); color: #fff; cursor: pointer;">
@@ -542,6 +549,33 @@
             <div class="form-actions" style="display: flex; gap: 10px; margin-top: 2rem;">
                 <button id="cancelDeleteBtn" class="btn-secondary" style="flex:1; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer; padding: 10px;">Cancel</button>
                 <button id="confirmDeleteBtn" class="btn-primary" style="flex:1; background: #e74c3c;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Data Confirmation Modal -->
+    <div id="exportConfirmModal" class="modal">
+        <div class="modal-content review-modal-content" style="max-width: 440px; text-align: center; border-top: 3px solid var(--theme-accent); padding-top: 2rem;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 0 24px var(--theme-accent-glow);">
+                <i class="fas fa-file-csv" style="font-size: 1.5rem; color: var(--theme-accent);"></i>
+            </div>
+            <h2 class="serif" style="margin-bottom: 0.5rem; font-size: 1.6rem;">Export <span id="exportCategoryLabel" style="color: var(--theme-accent);">Data</span></h2>
+            <p style="color: var(--text-secondary); margin: 0.75rem 0 0.5rem; font-size: 0.9rem; line-height: 1.6;">
+                This will download a <strong style="color: var(--text-primary);">CSV file</strong> of all your finished <span id="exportCategoryLabel2" style="color: var(--theme-accent); font-weight: 700;"></span> entries.
+            </p>
+            <p style="color: var(--text-secondary); font-size: 0.8rem; opacity: 0.7; margin-bottom: 1.25rem; line-height: 1.5;">
+                Includes: <strong style="color: var(--text-primary);">title, year, director, genres, liked status, rating</strong>.<br>
+                Formatted for AI tools like Gemini or ChatGPT.
+            </p>
+            <div style="background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--text-secondary); text-align: left; line-height: 1.6; opacity: 0.85;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;"><i class="fas fa-info-circle" style="color: var(--theme-accent); flex-shrink: 0;"></i><span>Rankings are excluded — finished entries only.</span></div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-shield-alt" style="color: var(--theme-accent); flex-shrink: 0;"></i><span>Admin access required to download.</span></div>
+            </div>
+            <div class="form-actions" style="display: flex; gap: 10px; margin-top: 0.5rem;">
+                <button id="cancelExportBtn" class="btn-secondary" style="flex:1; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer; padding: 10px;">Cancel</button>
+                <button id="confirmExportBtn" class="btn-primary" style="flex:2; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <i class="fas fa-download"></i> Download CSV
+                </button>
             </div>
         </div>
     </div>

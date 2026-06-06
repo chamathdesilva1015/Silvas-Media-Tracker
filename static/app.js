@@ -2934,6 +2934,90 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.innerText = 'Remove';
             }
         };
+
+        // --- Export Data ---
+        const exportDataBtn = document.getElementById('exportDataBtn');
+        const exportConfirmModal = document.getElementById('exportConfirmModal');
+        const cancelExportBtn = document.getElementById('cancelExportBtn');
+        const confirmExportBtn = document.getElementById('confirmExportBtn');
+        const exportCategoryLabel = document.getElementById('exportCategoryLabel');
+        const exportCategoryLabel2 = document.getElementById('exportCategoryLabel2');
+
+        if (exportDataBtn) {
+            exportDataBtn.onclick = () => {
+                // Update modal labels to match current category theme
+                const label = currentCategory;
+                if (exportCategoryLabel) exportCategoryLabel.textContent = label;
+                if (exportCategoryLabel2) exportCategoryLabel2.textContent = label;
+
+                // Show modal
+                if (exportConfirmModal) exportConfirmModal.classList.add('show');
+            };
+        }
+
+        if (cancelExportBtn) {
+            cancelExportBtn.onclick = () => {
+                if (exportConfirmModal) exportConfirmModal.classList.remove('show');
+            };
+        }
+
+        // Close on backdrop click
+        if (exportConfirmModal) {
+            exportConfirmModal.addEventListener('click', (e) => {
+                if (e.target === exportConfirmModal) exportConfirmModal.classList.remove('show');
+            });
+        }
+
+        if (confirmExportBtn) {
+            confirmExportBtn.onclick = async () => {
+                const category = currentCategory;
+                const originalContent = confirmExportBtn.innerHTML;
+
+                confirmExportBtn.disabled = true;
+                confirmExportBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Preparing...`;
+
+                try {
+                    // URL-encode category name (handles "TV Series" → "TV%20Series")
+                    const res = await fetch(`/api/export/${encodeURIComponent(category)}`, {
+                        headers: getAuthHeaders(false) // No JSON content-type needed for GET
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+                        alert(`Export failed: ${err.detail || res.statusText}`);
+                        return;
+                    }
+
+                    // Trigger file download from blob
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    const safeCategory = category.replace(/\s+/g, '_').toLowerCase();
+                    a.href = url;
+                    a.download = `silva_media_${safeCategory}_export.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    // Success feedback then close
+                    confirmExportBtn.innerHTML = `<i class="fas fa-check"></i> Downloaded!`;
+                    confirmExportBtn.style.background = '#2ecc71';
+                    setTimeout(() => {
+                        exportConfirmModal.classList.remove('show');
+                        confirmExportBtn.innerHTML = originalContent;
+                        confirmExportBtn.style.background = '';
+                        confirmExportBtn.disabled = false;
+                    }, 1500);
+
+                } catch (err) {
+                    console.error('Export error:', err);
+                    alert(`Export failed: ${err.message}`);
+                    confirmExportBtn.innerHTML = originalContent;
+                    confirmExportBtn.disabled = false;
+                }
+            };
+        }
     }
 
     // Initialize Dev Console immediately

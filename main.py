@@ -1334,6 +1334,82 @@ def get_item_recommendations(item_id: int, session: Session = Depends(get_sessio
         print(f"Error fetching recommendations for {item.title}: {e}")
         return []
 
+@app.get("/api/export/{category}")
+def export_category_csv(category: str, request: Request, session: Session = Depends(get_session)):
+    """Export all finished (non-ranking) entries for a category as a machine-readable CSV. Admin only."""
+    check_readonly(request)
+
+    import csv
+    import io
+
+    # Validate category
+    valid_categories = ["Movies", "TV Series", "Manga", "Anime"]
+    if category not in valid_categories:
+        raise HTTPException(status_code=400, detail=f"Invalid category. Must be one of: {', '.join(valid_categories)}")
+
+    # Fetch all finished (non-ranking) items for this category
+    items = session.exec(
+        select(MediaItem)
+        .where(MediaItem.type == category)
+        .where(MediaItem.is_ranking == False)
+        .order_by(MediaItem.title)
+    ).all()
+
+    # Deduplicate by normalized title+year (keep highest-rated or first found)
+    seen_keys = set()
+    unique_items = []
+    for item in items:
+        key = f"{item.title.lower().strip()}|{item.release_year or ''}"
+        if key not in seen_keys:
+            seen_keys.add(key)
+            unique_items.append(item)
+
+    # Helper to parse numeric rating
+    def get_numeric_rating(item):
+        for field in [item.numeric_rating, item.rating]:
+            if not field:
+                continue
+            try:
+                return float(field)
+            except ValueError:
+                pass
+            if "/10" in field:
+                try:
+                    return float(field.split("/")[0].strip())
+                except ValueError:
+                    pass
+        return None
+
+    # Build CSV in memory
+    output = io.StringIO()
+    fieldnames = ["title", "year", "director", "genres", "liked", "rating"]
+    writer = csv.DictWriter(output, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+    writer.writeheader()
+
+    for item in unique_items:
+        numeric_rating = get_numeric_rating(item)
+        writer.writerow({
+            "title": item.title or "",
+            "year": item.release_year or "",
+            "director": item.director or "",
+            "genres": item.genres or "",
+            "liked": "yes" if item.is_liked else "no",
+            "rating": f"{numeric_rating}/10" if numeric_rating is not None else "",
+        })
+
+    csv_content = output.getvalue()
+    output.close()
+
+    # Clean filename (replace spaces with underscores)
+    safe_category = category.replace(" ", "_").lower()
+    filename = f"silva_media_{safe_category}_export.csv"
+
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
 @app.delete("/api/recommendations/{rec_id}")
 def delete_recommendation(rec_id: int, request: Request, session: Session = Depends(get_session)):
     """Deletes a recommendation by ID. Admin only."""
