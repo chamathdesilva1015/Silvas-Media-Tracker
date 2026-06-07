@@ -1380,10 +1380,10 @@ def export_category_csv(category: str, request: Request, session: Session = Depe
                     pass
         return None
 
-    # Build CSV in memory
+    # Build TSV in memory
     output = io.StringIO()
     fieldnames = ["title", "year", "director", "genres", "liked", "rating"]
-    writer = csv.DictWriter(output, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+    writer = csv.DictWriter(output, fieldnames=fieldnames, delimiter="\t", quoting=csv.QUOTE_MINIMAL)
     writer.writeheader()
 
     for item in unique_items:
@@ -1397,16 +1397,16 @@ def export_category_csv(category: str, request: Request, session: Session = Depe
             "rating": f"{numeric_rating}/10" if numeric_rating is not None else "",
         })
 
-    csv_content = output.getvalue()
+    tsv_content = output.getvalue()
     output.close()
 
     # Clean filename (replace spaces with underscores)
     safe_category = category.replace(" ", "_").lower()
-    filename = f"silva_media_{safe_category}_export.csv"
+    filename = f"silva_media_{safe_category}_export.txt"
 
     return Response(
-        content=csv_content,
-        media_type="text/csv",
+        content=tsv_content,
+        media_type="text/plain",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 

@@ -2994,7 +2994,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const a = document.createElement('a');
                     const safeCategory = category.replace(/\s+/g, '_').toLowerCase();
                     a.href = url;
-                    a.download = `silva_media_${safeCategory}_export.csv`;
+                    a.download = `silva_media_${safeCategory}_export.txt`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
