@@ -1380,10 +1380,10 @@ def export_category_csv(category: str, request: Request, session: Session = Depe
                     pass
         return None
 
-    # Build CSV in memory
+    # Build TSV (tab-separated) in memory but keep .txt extension
     output = io.StringIO()
     fieldnames = ["title", "year", "director", "genres", "liked", "rating"]
-    writer = csv.DictWriter(output, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+    writer = csv.DictWriter(output, fieldnames=fieldnames, quoting=csv.QUOTE_MINIMAL, delimiter='\t')
     writer.writeheader()
 
     for item in unique_items:
