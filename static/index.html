@@ -707,6 +707,22 @@
                     <div class="search-container" style="margin-bottom: 1.5rem;">
                         <input type="text" id="rankingSearchInput" class="search-bar" placeholder="Find in collection..." style="width: 100%;">
                     </div>
+                    <div class="ranking-scout-filters" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+                        <select id="scoutFilterLiked" style="padding: 0.5rem; border-radius: 6px; font-size: 0.85rem; height: auto;">
+                            <option value="all">All (Liked/Unliked)</option>
+                            <option value="liked">Liked ♥</option>
+                            <option value="unliked">Unliked</option>
+                        </select>
+                        <select id="scoutFilterRating" style="padding: 0.5rem; border-radius: 6px; font-size: 0.85rem; height: auto;">
+                            <option value="all">All Ratings</option>
+                            <option value="9">9+ Rating</option>
+                            <option value="8">8+ Rating</option>
+                            <option value="7">7+ Rating</option>
+                            <option value="6">6+ Rating</option>
+                            <option value="5">5+ Rating</option>
+                            <option value="unrated">Unrated</option>
+                        </select>
+                    </div>
                     <div id="rankingSearchResults" class="ranking-search-results">
                         <!-- Populated via JS -->
                     </div>

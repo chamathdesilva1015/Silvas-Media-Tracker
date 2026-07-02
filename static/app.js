@@ -3065,6 +3065,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeRankingManagerBtn = document.getElementById('closeRankingManagerBtn');
     const rankingList = document.getElementById('rankingList');
     const rankingSearchInput = document.getElementById('rankingSearchInput');
+    const scoutFilterLiked = document.getElementById('scoutFilterLiked');
+    const scoutFilterRating = document.getElementById('scoutFilterRating');
     const rankingSearchResults = document.getElementById('rankingSearchResults');
     const saveRankingsBtn = document.getElementById('saveRankingsBtn');
 
@@ -3104,10 +3106,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderScoutingPool = () => {
         // Build pool: all items in this category not already ranked
         const rankedTitles = new Set(currentRankedItems.map(it => it.title.toLowerCase().trim()));
-        const raw = allMedia.filter(it =>
+        let raw = allMedia.filter(it =>
             it.type.toLowerCase() === currentCategory.toLowerCase() &&
             !rankedTitles.has(it.title.toLowerCase().trim())
         );
+
+        // Apply filters
+        const filterLiked = scoutFilterLiked ? scoutFilterLiked.value : 'all';
+        const filterRating = scoutFilterRating ? scoutFilterRating.value : 'all';
+
+        if (filterLiked === 'liked') {
+            raw = raw.filter(it => it.is_liked);
+        } else if (filterLiked === 'unliked') {
+            raw = raw.filter(it => !it.is_liked);
+        }
+
+        if (filterRating === 'unrated') {
+            raw = raw.filter(it => {
+                const s = String(it.numeric_rating || it.rating || '');
+                return !s || s.startsWith('#');
+            });
+        } else if (filterRating !== 'all') {
+            const minRating = parseFloat(filterRating);
+            raw = raw.filter(it => {
+                const s = String(it.numeric_rating || it.rating || '');
+                if (!s || s.startsWith('#')) return false;
+                const score = parseFloat(s.replace('/10', '').trim());
+                return !isNaN(score) && score >= minRating;
+            });
+        }
+
         // Fisher-Yates shuffle
         scoutPool = [...raw];
         for (let i = scoutPool.length - 1; i > 0; i--) {
@@ -3221,6 +3249,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRankingList();
         rankingManagerModal.classList.add('show');
         rankingSearchInput.value = '';
+        if (scoutFilterLiked) scoutFilterLiked.value = 'all';
+        if (scoutFilterRating) scoutFilterRating.value = 'all';
         
         // Pre-populate scouting panel using infinite-scroll helper
         renderScoutingPool();
@@ -3287,14 +3317,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            const matches = allMedia
+            let matches = allMedia
                 .filter(it => 
                     it.type.toLowerCase() === currentCategory.toLowerCase() &&
                     it.title.toLowerCase().includes(query) &&
                     !rankedTitles.has(it.title.toLowerCase().trim())
-                )
-                .slice(0, 10);
+                );
+
+            // Apply filters
+            const filterLiked = scoutFilterLiked ? scoutFilterLiked.value : 'all';
+            const filterRating = scoutFilterRating ? scoutFilterRating.value : 'all';
+
+            if (filterLiked === 'liked') {
+                matches = matches.filter(it => it.is_liked);
+            } else if (filterLiked === 'unliked') {
+                matches = matches.filter(it => !it.is_liked);
+            }
+
+            if (filterRating === 'unrated') {
+                matches = matches.filter(it => {
+                    const s = String(it.numeric_rating || it.rating || '');
+                    return !s || s.startsWith('#');
+                });
+            } else if (filterRating !== 'all') {
+                const minRating = parseFloat(filterRating);
+                matches = matches.filter(it => {
+                    const s = String(it.numeric_rating || it.rating || '');
+                    if (!s || s.startsWith('#')) return false;
+                    const score = parseFloat(s.replace('/10', '').trim());
+                    return !isNaN(score) && score >= minRating;
+                });
+            }
                 
+            matches = matches.slice(0, 10);
             rankingSearchResults.innerHTML = matches.length > 0
                 ? matches.map(it => {
                     const safeTitle = it.title.replace(/'/g, "\\'");
@@ -3317,6 +3372,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '<p style="opacity:0.4;font-size:0.85rem;padding:0.5rem;">No results found.</p>';
         });
     }
+
+    const handleScoutFilterChange = () => {
+        const query = rankingSearchInput ? rankingSearchInput.value.toLowerCase().trim() : '';
+        if (query.length >= 2) {
+            rankingSearchInput.dispatchEvent(new Event('input'));
+        } else {
+            renderScoutingPool();
+        }
+    };
+    if (scoutFilterLiked) scoutFilterLiked.addEventListener('change', handleScoutFilterChange);
+    if (scoutFilterRating) scoutFilterRating.addEventListener('change', handleScoutFilterChange);
 
     if (saveRankingsBtn) {
         saveRankingsBtn.onclick = async () => {

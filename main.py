@@ -1265,7 +1265,7 @@ def check_recommendation(ext_id: int, type: str, response: Response, session: Se
     return {
         "in_library": library_exists,
         "rec_count": rec_count,
-        "allow_recommendation": rec_count < 2
+        "allow_recommendation": rec_count < 1
     }
 
 @app.get("/api/recommendations/all")
@@ -1283,6 +1283,25 @@ def get_all_recommendations(request: Request, response: Response, type: Optional
 @app.post("/api/recommendations/submit")
 def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
     """Saves a recommendation with enriched metadata."""
+    if rec.ext_id:
+        # Check library
+        library_exists = session.exec(
+            select(MediaItem).where(MediaItem.tmdb_id == rec.ext_id, MediaItem.type == rec.type)
+        ).first() is not None
+        if library_exists:
+            raise HTTPException(status_code=400, detail="This item is already in the finished/completed list.")
+
+        # Check if already recommended (ignore rejected ones)
+        existing_rec = session.exec(
+            select(Recommendation).where(
+                Recommendation.ext_id == rec.ext_id,
+                Recommendation.type == rec.type,
+                Recommendation.status != "rejected"
+            )
+        ).first()
+        if existing_rec:
+            raise HTTPException(status_code=400, detail="This item has already been recommended.")
+
     # Fetch details synchronously so it has a profile immediately
     details = {}
     if rec.ext_id:
