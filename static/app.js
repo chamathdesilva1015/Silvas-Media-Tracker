@@ -2620,147 +2620,128 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const infoData = {
-        'Rating 1-10 Explained': `
-            <div class="rating-accordion">
-                ${[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(num => {
-                    const titles = {
-                        10: 'Peak',
-                        9: 'Amazing',
-                        8: 'Great',
-                        7: 'Good',
-                        6: 'Okay',
-                        5: 'Mid',
-                        4: 'Not Good',
-                        3: 'Bad',
-                        2: 'Awful',
-                        1: 'Slop'
-                    };
-                    const details = {
-                        10: [
-                            '10/10 movies are generally considered <span class="diff-highlight h-10">perfect</span>',
-                            'Personally liked <span class="diff-highlight h-10">most or everything</span> about this movie',
-                            'Would consider this an <span class="diff-highlight h-10">objectively perfect</span> movie and <span class="diff-highlight h-10">one of my top movies</span>',
-                            '<span class="diff-highlight h-10">Little to no</span> critiques for the movie',
-                            '<span class="diff-highlight h-10">Without hesitation</span>, would recommend this to <span class="diff-highlight h-10">anyone</span>',
-                            '<span class="diff-highlight h-10">Everything</span> personally resonated with me and <span class="diff-highlight h-10">I care about the movie</span>',
-                            'Will remember this movie, <span class="diff-highlight h-10">many</span> memorable moments'
-                        ],
-                        9: [
-                            '9/10 movies are generally considered <span class="diff-highlight h-9">almost perfect</span>',
-                            'Personally liked <span class="diff-highlight h-9">some or most things</span> about this movie',
-                            'Would consider this <span class="diff-highlight h-9">almost a perfect</span> movie and <span class="diff-highlight h-9">close to a top movie</span>',
-                            '<span class="diff-highlight h-9">Small</span> critiques for the movie, <span class="diff-highlight h-9">nothing major</span>',
-                            'Would recommend this to <span class="diff-highlight h-9">anyone</span>',
-                            '<span class="diff-highlight h-9">Almost everything</span> personally resonated with me',
-                            'Will probably remember this movie, <span class="diff-highlight h-9">memorable moments</span>'
-                        ],
-                        8: [
-                            '8/10 movies are <span class="diff-highlight h-8">almost amazing</span> but have <span class="diff-highlight h-8">a few flaws</span>',
-                            'Personally liked <span class="diff-highlight h-8">some things</span> about this movie',
-                            'Would <span class="diff-highlight h-8">understand if someone else gave this a 10/10</span>',
-                            '<span class="diff-highlight h-8">A few</span> critiques for the movie, <span class="diff-highlight h-8">might overlook</span>',
-                            'Would recommend this to <span class="diff-highlight h-8">some</span>',
-                            'Personally <span class="diff-highlight h-8">enjoyed the idea</span> of the movie',
-                            'Will probably remember this movie, <span class="diff-highlight h-8">a few</span> memorable moments'
-                        ],
-                        7: [
-                            '7/10 movies are <span class="diff-highlight h-7">solid</span> movies, <span class="diff-highlight h-7">not bad but nothing too special</span>',
-                            'Personally liked <span class="diff-highlight h-7">a few things</span> about this movie',
-                            'Would <span class="diff-highlight h-7">understand the appeal, wouldn\'t agree</span>',
-                            '<span class="diff-highlight h-7">Many small</span> critiques for the movie',
-                            'Would recommend this to <span class="diff-highlight h-7">a few</span>',
-                            'Personally thought the idea <span class="diff-highlight h-7">wasn\'t communicated well</span>',
-                            'Will probably remember <span class="diff-highlight h-7">a few moments</span> of this movie'
-                        ],
-                        6: [
-                            '6/10 movies are <span class="diff-highlight h-6">alright</span> movies, <span class="diff-highlight h-6">not bad but not good</span>',
-                            '<span class="diff-highlight h-6">One or two things</span> that I liked about this',
-                            'Personally <span class="diff-highlight h-6">don\'t see the appeal</span>',
-                            '<span class="diff-highlight h-6">Many</span> critiques for the movie, <span class="diff-highlight h-6">may be major</span>',
-                            '<span class="diff-highlight h-6">Might</span> recommend this to <span class="diff-highlight h-6">a few</span>',
-                            'Personally thought the idea <span class="diff-highlight h-6">wasn\'t communicated</span>',
-                            '<span class="diff-highlight h-6">Not too memorable</span>, but <span class="diff-highlight h-6">will recognize</span>'
-                        ],
-                        5: [
-                            '5/10 movies are <span class="diff-highlight h-5">almost bad</span> movies',
-                            '<span class="diff-highlight h-5">Didn\'t like anything, didn\'t dislike too much</span>',
-                            '<span class="diff-highlight h-5">Does not see the appeal</span>',
-                            '<span class="diff-highlight h-5">Many</span> critiques for the movie, <span class="diff-highlight h-5">some major</span>',
-                            '<span class="diff-highlight h-5">Might</span> recommend this to <span class="diff-highlight h-5">a specific people</span>',
-                            'There was <span class="diff-highlight h-5">no strong reason or idea</span> in the movie',
-                            '<span class="diff-highlight h-5">Not memorable</span>'
-                        ],
-                        4: [
-                            '4/10 movies are <span class="diff-highlight h-4">bad</span> movies with <span class="diff-highlight h-4">a few redeeming</span>',
-                            'Didn\'t like anything, <span class="diff-highlight h-4">disliked some aspects</span>',
-                            'Does not see the appeal, <span class="diff-highlight h-4">may not defend it</span>',
-                            '<span class="diff-highlight h-4">Many major</span> critiques for the movie',
-                            '<span class="diff-highlight h-4">Probably won\'t</span> recommend',
-                            'Reasons or ideas <span class="diff-highlight h-4">missing or barely noticeable</span>',
-                            '<span class="diff-highlight h-4">Not memorable, might forget</span>'
-                        ],
-                        3: [
-                            '3/10 movies are <span class="diff-highlight h-3">bad</span> movies',
-                            'Didn\'t like anything, <span class="diff-highlight h-3">disliked most aspects</span>',
-                            'Does not see the appeal, <span class="diff-highlight h-3">may actively dislike</span>',
-                            '<span class="diff-highlight h-3">All major</span> critiques, <span class="diff-highlight h-3">no pros</span>',
-                            '<span class="diff-highlight h-3">Won\'t</span> recommend',
-                            'Reasons or ideas <span class="diff-highlight h-3">mostly missing or very weak</span>',
-                            '<span class="diff-highlight h-3">Might forget</span>'
-                        ],
-                        2: [
-                            '2/10 movies are <span class="diff-highlight h-2">very bad</span> movies',
-                            'Didn\'t like anything, <span class="diff-highlight h-2">disliked everything</span>',
-                            'Does not see the appeal, <span class="diff-highlight h-2">actively will dislike</span>',
-                            '<span class="diff-highlight h-2">Nothing good</span> about it',
-                            '<span class="diff-highlight h-2">Won\'t</span> recommend',
-                            '<span class="diff-highlight h-2">No point</span> to the movie, messages or ideas <span class="diff-highlight h-2">weak</span>',
-                            '<span class="diff-highlight h-2">Will forget</span>'
-                        ],
-                        1: [
-                            '1/10 movies are <span class="diff-highlight h-1">very bad</span> movies, <span class="diff-highlight h-1">may not have finished</span>',
-                            'Didn\'t like anything, <span class="diff-highlight h-1">couldn\'t watch</span>',
-                            '<span class="diff-highlight h-1">Actively will dislike</span>',
-                            '<span class="diff-highlight h-1">Nothing good</span> about it',
-                            '<span class="diff-highlight h-1">Won\'t</span> recommend',
-                            '<span class="diff-highlight h-1">No point</span> to the movie, <span class="diff-highlight h-1">no message or ideas</span>',
-                            '<span class="diff-highlight h-1">Want to forget</span>'
-                        ]
-                    };
-                    const icons = [
-                        '🎬', // General
-                        '❤️', // Likes
-                        '👁️', // Appeal/Objectivity
-                        '⚠️', // Critiques
-                        '📢', // Recommend
-                        '💡', // Idea/Resonance
-                        '🧠'  // Memory
-                    ];
+        'Rating 1-10 Explained': (() => {
+            const titles = {
+                10: 'Peak', 9: 'Amazing', 8: 'Great', 7: 'Good', 6: 'Okay',
+                5: 'Mid', 4: 'Not Good', 3: 'Bad', 2: 'Awful', 1: 'Slop'
+            };
+            const details = {
+                10: [
+                    '10/10 movies are generally considered <span class="diff-highlight h-10">perfect</span>',
+                    'Personally liked <span class="diff-highlight h-10">most or everything</span> about this movie',
+                    'Would consider this an <span class="diff-highlight h-10">objectively perfect</span> movie and <span class="diff-highlight h-10">one of my top movies</span>',
+                    '<span class="diff-highlight h-10">Little to no</span> critiques for the movie',
+                    '<span class="diff-highlight h-10">Without hesitation</span>, would recommend this to <span class="diff-highlight h-10">anyone</span>',
+                    '<span class="diff-highlight h-10">Everything</span> personally resonated with me and <span class="diff-highlight h-10">I care about the movie</span>',
+                    'Will remember this movie, <span class="diff-highlight h-10">many</span> memorable moments'
+                ],
+                9: [
+                    '9/10 movies are generally considered <span class="diff-highlight h-9">almost perfect</span>',
+                    'Personally liked <span class="diff-highlight h-9">some or most things</span> about this movie',
+                    'Would consider this <span class="diff-highlight h-9">almost a perfect</span> movie and <span class="diff-highlight h-9">close to a top movie</span>',
+                    '<span class="diff-highlight h-9">Small</span> critiques for the movie, <span class="diff-highlight h-9">nothing major</span>',
+                    'Would recommend this to <span class="diff-highlight h-9">anyone</span>',
+                    '<span class="diff-highlight h-9">Almost everything</span> personally resonated with me',
+                    'Will probably remember this movie, <span class="diff-highlight h-9">memorable moments</span>'
+                ],
+                8: [
+                    '8/10 movies are <span class="diff-highlight h-8">almost amazing</span> but have <span class="diff-highlight h-8">a few flaws</span>',
+                    'Personally liked <span class="diff-highlight h-8">some things</span> about this movie',
+                    'Would <span class="diff-highlight h-8">understand if someone else gave this a 10/10</span>',
+                    '<span class="diff-highlight h-8">A few</span> critiques for the movie, <span class="diff-highlight h-8">might overlook</span>',
+                    'Would recommend this to <span class="diff-highlight h-8">some</span>',
+                    'Personally <span class="diff-highlight h-8">enjoyed the idea</span> of the movie',
+                    'Will probably remember this movie, <span class="diff-highlight h-8">a few</span> memorable moments'
+                ],
+                7: [
+                    '7/10 movies are <span class="diff-highlight h-7">solid</span> movies, <span class="diff-highlight h-7">not bad but nothing too special</span>',
+                    'Personally liked <span class="diff-highlight h-7">a few things</span> about this movie',
+                    'Would <span class="diff-highlight h-7">understand the appeal, wouldn\'t agree</span>',
+                    '<span class="diff-highlight h-7">Many small</span> critiques for the movie',
+                    'Would recommend this to <span class="diff-highlight h-7">a few</span>',
+                    'Personally thought the idea <span class="diff-highlight h-7">wasn\'t communicated well</span>',
+                    'Will probably remember <span class="diff-highlight h-7">a few moments</span> of this movie'
+                ],
+                6: [
+                    '6/10 movies are <span class="diff-highlight h-6">alright</span> movies, <span class="diff-highlight h-6">not bad but not good</span>',
+                    '<span class="diff-highlight h-6">One or two things</span> that I liked about this',
+                    'Personally <span class="diff-highlight h-6">don\'t see the appeal</span>',
+                    '<span class="diff-highlight h-6">Many</span> critiques for the movie, <span class="diff-highlight h-6">may be major</span>',
+                    '<span class="diff-highlight h-6">Might</span> recommend this to <span class="diff-highlight h-6">a few</span>',
+                    'Personally thought the idea <span class="diff-highlight h-6">wasn\'t communicated</span>',
+                    '<span class="diff-highlight h-6">Not too memorable</span>, but <span class="diff-highlight h-6">will recognize</span>'
+                ],
+                5: [
+                    '5/10 movies are <span class="diff-highlight h-5">almost bad</span> movies',
+                    '<span class="diff-highlight h-5">Didn\'t like anything, didn\'t dislike too much</span>',
+                    '<span class="diff-highlight h-5">Does not see the appeal</span>',
+                    '<span class="diff-highlight h-5">Many</span> critiques for the movie, <span class="diff-highlight h-5">some major</span>',
+                    '<span class="diff-highlight h-5">Might</span> recommend this to <span class="diff-highlight h-5">specific people</span>',
+                    'There was <span class="diff-highlight h-5">no strong reason or idea</span> in the movie',
+                    '<span class="diff-highlight h-5">Not memorable</span>'
+                ],
+                4: [
+                    '4/10 movies are <span class="diff-highlight h-4">bad</span> movies with <span class="diff-highlight h-4">a few redeeming qualities</span>',
+                    'Didn\'t like anything, <span class="diff-highlight h-4">disliked some aspects</span>',
+                    'Does not see the appeal, <span class="diff-highlight h-4">may not defend it</span>',
+                    '<span class="diff-highlight h-4">Many major</span> critiques for the movie',
+                    '<span class="diff-highlight h-4">Probably won\'t</span> recommend',
+                    'Reasons or ideas <span class="diff-highlight h-4">missing or barely noticeable</span>',
+                    '<span class="diff-highlight h-4">Not memorable, might forget</span>'
+                ],
+                3: [
+                    '3/10 movies are <span class="diff-highlight h-3">bad</span> movies',
+                    'Didn\'t like anything, <span class="diff-highlight h-3">disliked most aspects</span>',
+                    'Does not see the appeal, <span class="diff-highlight h-3">may actively dislike</span>',
+                    '<span class="diff-highlight h-3">All major</span> critiques, <span class="diff-highlight h-3">no pros</span>',
+                    '<span class="diff-highlight h-3">Won\'t</span> recommend',
+                    'Reasons or ideas <span class="diff-highlight h-3">mostly missing or very weak</span>',
+                    '<span class="diff-highlight h-3">Might forget</span>'
+                ],
+                2: [
+                    '2/10 movies are <span class="diff-highlight h-2">very bad</span> movies',
+                    'Didn\'t like anything, <span class="diff-highlight h-2">disliked everything</span>',
+                    'Does not see the appeal, <span class="diff-highlight h-2">actively will dislike</span>',
+                    '<span class="diff-highlight h-2">Nothing good</span> about it',
+                    '<span class="diff-highlight h-2">Won\'t</span> recommend',
+                    '<span class="diff-highlight h-2">No point</span> to the movie, messages or ideas <span class="diff-highlight h-2">weak</span>',
+                    '<span class="diff-highlight h-2">Will forget</span>'
+                ],
+                1: [
+                    '1/10 movies are <span class="diff-highlight h-1">very bad</span> movies, <span class="diff-highlight h-1">may not have finished</span>',
+                    'Didn\'t like anything, <span class="diff-highlight h-1">couldn\'t watch</span>',
+                    '<span class="diff-highlight h-1">Actively will dislike</span>',
+                    '<span class="diff-highlight h-1">Nothing good</span> about it',
+                    '<span class="diff-highlight h-1">Won\'t</span> recommend',
+                    '<span class="diff-highlight h-1">No point</span> to the movie, <span class="diff-highlight h-1">no message or ideas</span>',
+                    '<span class="diff-highlight h-1">Want to forget</span>'
+                ]
+            };
 
-                    return `
-                        <div class="rating-item rating-color-${num}">
-                            <div class="rating-header-click">
-                                <div class="rating-score-label">
-                                    <span class="score-num">${num}</span>
-                                    <span class="score-title">${titles[num]}</span>
-                                </div>
-                                <span class="chevron-icon">▼</span>
-                            </div>
-                            <div class="rating-content-pane">
-                                <ul class="rating-detail-list" style="list-style: none; padding-left: 0;">
-                                    ${details[num].map((d, index) => `
-                                        <li style="display: flex; align-items: flex-start; gap: 0.8rem; margin-bottom: 0.6rem; line-height: 1.5;">
-                                            <span style="font-size: 1.1rem; opacity: 0.85; width: 20px; text-align: center;">${icons[index]}</span>
-                                            <span style="flex: 1;">- ${d}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `,
+            const pillsHtml = [10,9,8,7,6,5,4,3,2,1].map(n => `
+                <button class="rating-pill rating-pill-${n}" data-num="${n}" title="${titles[n]}">${n}</button>
+            `).join('');
+
+            const panelsHtml = [10,9,8,7,6,5,4,3,2,1].map(n => `
+                <div class="rating-panel" data-panel="${n}">
+                    <div class="rating-panel-header">
+                        <span class="rating-panel-num rating-pill-${n}">${n}</span>
+                        <span class="rating-panel-title">${titles[n]}</span>
+                    </div>
+                    <ul class="rating-detail-list">
+                        ${details[n].map(d => `<li>${d}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+
+            return `
+                <div class="rating-pill-selector">
+                    <div class="rating-pills-row">${pillsHtml}</div>
+                    <div class="rating-panels">${panelsHtml}</div>
+                </div>
+            `;
+        })(),
+
         'Criteria Breakdown': `
             <div class="rating-accordion criteria-accordion">
                 ${[
@@ -2952,6 +2933,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (infoAccordionsContainer) {
         infoAccordionsContainer.addEventListener('click', (e) => {
+            // Old accordion items (Criteria Breakdown, Ranking Rules, Bias & Effects)
             const header = e.target.closest('.rating-header-click');
             if (header) {
                 const item = header.closest('.rating-item');
@@ -2963,9 +2945,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 item.classList.toggle('open');
             }
+
+            // New pill selector (Rating 1-10 Explained)
+            const pill = e.target.closest('.rating-pill');
+            if (pill) {
+                const num = pill.dataset.num;
+                const selector = pill.closest('.rating-pill-selector');
+                if (!selector) return;
+                selector.querySelectorAll('.rating-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                selector.querySelectorAll('.rating-panel').forEach(panel => {
+                    panel.classList.toggle('active', panel.dataset.panel === num);
+                });
+            }
         });
         renderInfoAccordions();
     }
+
 
     function setupDevConsole() {
 
