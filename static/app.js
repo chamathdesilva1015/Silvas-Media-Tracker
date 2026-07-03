@@ -2944,17 +2944,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         infoAccordionsContainer.querySelectorAll('.hub-accordion-header').forEach(header => {
             header.addEventListener('click', () => {
-                const body = header.nextElementSibling;
-                const icon = header.querySelector('i');
-                const isOpen = body.classList.contains('show');
-                
-                if (!isOpen) {
-                    body.classList.add('show');
-                    icon.style.transform = 'rotate(180deg)';
-                } else {
-                    body.classList.remove('show');
-                    icon.style.transform = 'rotate(0deg)';
-                }
+                const accordion = header.parentElement;
+                accordion.classList.toggle('open');
             });
         });
     };
