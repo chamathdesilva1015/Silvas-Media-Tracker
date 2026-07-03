@@ -4541,37 +4541,149 @@ body.modal-open .bottom-nav {
     color: #000;
 }
 
-/* Tier Color Coding */
-.rating-item:nth-child(1) .score-num {
-    border-color: #f1c40f;
-    color: #f1c40f;
+/* ============================================
+   Movie Rating Scale - Tier Color System
+   Each tier has a distinct color for clear visual differentiation
+   ============================================ */
+
+/* Rating Scale Section Header */
+.rating-scale-header {
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-/* 10 */
-.rating-item:nth-child(2) .score-num {
-    border-color: #f39c12;
-    color: #f39c12;
+.rating-scale-heading {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.02em;
 }
 
-/* 9 */
-.rating-item:nth-child(3) .score-num {
-    border-color: #3498db;
-    color: #3498db;
+.rating-scale-subheading {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.5;
 }
 
-/* 8 */
-.rating-item:nth-child(4) .score-num {
-    border-color: #2ecc71;
-    color: #2ecc71;
+/* Score label group (title + badge stacked) */
+.score-label-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
 }
 
-/* 7 */
-.rating-item:last-child .score-num {
-    border-color: #e74c3c;
-    color: #e74c3c;
+/* Tier badge chip */
+.tier-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    width: fit-content;
+    opacity: 0.85;
 }
 
-/* 1 */
+/* Tier-specific accent colors */
+/* 10 - Gold / Peak */
+.movie-tier-10 { border-left: 4px solid #f1c40f; }
+.movie-tier-10 .score-num { border-color: #f1c40f; color: #f1c40f; }
+.movie-tier-10.rating-item.open { border-color: #f1c40f; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(241,196,15,0.15); }
+.movie-tier-10.rating-item.open .score-num { background: #f1c40f; color: #000; }
+.movie-tier-10 .rating-detail-list li::before { color: #f1c40f; }
+.tier-badge-10 { background: rgba(241,196,15,0.15); color: #f1c40f; border: 1px solid rgba(241,196,15,0.3); }
+
+/* 9 - Amber / Amazing */
+.movie-tier-9 { border-left: 4px solid #f39c12; }
+.movie-tier-9 .score-num { border-color: #f39c12; color: #f39c12; }
+.movie-tier-9.rating-item.open { border-color: #f39c12; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(243,156,18,0.15); }
+.movie-tier-9.rating-item.open .score-num { background: #f39c12; color: #000; }
+.movie-tier-9 .rating-detail-list li::before { color: #f39c12; }
+.tier-badge-9 { background: rgba(243,156,18,0.15); color: #f39c12; border: 1px solid rgba(243,156,18,0.3); }
+
+/* 8 - Blue / Great */
+.movie-tier-8 { border-left: 4px solid #3498db; }
+.movie-tier-8 .score-num { border-color: #3498db; color: #3498db; }
+.movie-tier-8.rating-item.open { border-color: #3498db; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(52,152,219,0.15); }
+.movie-tier-8.rating-item.open .score-num { background: #3498db; color: #fff; }
+.movie-tier-8 .rating-detail-list li::before { color: #3498db; }
+.tier-badge-8 { background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }
+
+/* 7 - Green / Good */
+.movie-tier-7 { border-left: 4px solid #2ecc71; }
+.movie-tier-7 .score-num { border-color: #2ecc71; color: #2ecc71; }
+.movie-tier-7.rating-item.open { border-color: #2ecc71; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(46,204,113,0.15); }
+.movie-tier-7.rating-item.open .score-num { background: #2ecc71; color: #000; }
+.movie-tier-7 .rating-detail-list li::before { color: #2ecc71; }
+.tier-badge-7 { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+
+/* 6 - Teal / Okay */
+.movie-tier-6 { border-left: 4px solid #1abc9c; }
+.movie-tier-6 .score-num { border-color: #1abc9c; color: #1abc9c; }
+.movie-tier-6.rating-item.open { border-color: #1abc9c; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(26,188,156,0.15); }
+.movie-tier-6.rating-item.open .score-num { background: #1abc9c; color: #000; }
+.movie-tier-6 .rating-detail-list li::before { color: #1abc9c; }
+.tier-badge-6 { background: rgba(26,188,156,0.15); color: #1abc9c; border: 1px solid rgba(26,188,156,0.3); }
+
+/* 5 - Gray / Mid */
+.movie-tier-5 { border-left: 4px solid #95a5a6; }
+.movie-tier-5 .score-num { border-color: #95a5a6; color: #95a5a6; }
+.movie-tier-5.rating-item.open { border-color: #95a5a6; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(149,165,166,0.15); }
+.movie-tier-5.rating-item.open .score-num { background: #95a5a6; color: #000; }
+.movie-tier-5 .rating-detail-list li::before { color: #95a5a6; }
+.tier-badge-5 { background: rgba(149,165,166,0.15); color: #95a5a6; border: 1px solid rgba(149,165,166,0.3); }
+
+/* 4 - Orange-red / Not Good */
+.movie-tier-4 { border-left: 4px solid #e67e22; }
+.movie-tier-4 .score-num { border-color: #e67e22; color: #e67e22; }
+.movie-tier-4.rating-item.open { border-color: #e67e22; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(230,126,34,0.15); }
+.movie-tier-4.rating-item.open .score-num { background: #e67e22; color: #000; }
+.movie-tier-4 .rating-detail-list li::before { color: #e67e22; }
+.tier-badge-4 { background: rgba(230,126,34,0.15); color: #e67e22; border: 1px solid rgba(230,126,34,0.3); }
+
+/* 3 - Red / Bad */
+.movie-tier-3 { border-left: 4px solid #e74c3c; }
+.movie-tier-3 .score-num { border-color: #e74c3c; color: #e74c3c; }
+.movie-tier-3.rating-item.open { border-color: #e74c3c; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(231,76,60,0.15); }
+.movie-tier-3.rating-item.open .score-num { background: #e74c3c; color: #fff; }
+.movie-tier-3 .rating-detail-list li::before { color: #e74c3c; }
+.tier-badge-3 { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+
+/* 2 - Dark red / Awful */
+.movie-tier-2 { border-left: 4px solid #c0392b; }
+.movie-tier-2 .score-num { border-color: #c0392b; color: #c0392b; }
+.movie-tier-2.rating-item.open { border-color: #c0392b; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(192,57,43,0.15); }
+.movie-tier-2.rating-item.open .score-num { background: #c0392b; color: #fff; }
+.movie-tier-2 .rating-detail-list li::before { color: #c0392b; }
+.tier-badge-2 { background: rgba(192,57,43,0.15); color: #c0392b; border: 1px solid rgba(192,57,43,0.3); }
+
+/* 1 - Near-black purple / Slop */
+.movie-tier-1 { border-left: 4px solid #8e44ad; }
+.movie-tier-1 .score-num { border-color: #8e44ad; color: #8e44ad; }
+.movie-tier-1.rating-item.open { border-color: #8e44ad; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(142,68,173,0.15); }
+.movie-tier-1.rating-item.open .score-num { background: #8e44ad; color: #fff; }
+.movie-tier-1 .rating-detail-list li::before { color: #8e44ad; }
+.tier-badge-1 { background: rgba(142,68,173,0.15); color: #8e44ad; border: 1px solid rgba(142,68,173,0.3); }
+
+/* Override transform scale on open for tier items (keep left border visible) */
+.movie-rating-accordion .rating-item.open {
+    transform: none;
+}
+
+@media (max-width: 800px) {
+    .rating-scale-heading { font-size: 1.2rem; }
+    .rating-scale-subheading { font-size: 0.8rem; }
+    .tier-badge { font-size: 0.58rem; padding: 0.15rem 0.5rem; }
+    .score-label-group { gap: 0.2rem; }
+}
+
+
 
 @media (max-width: 800px) {
     .info-main-title {
