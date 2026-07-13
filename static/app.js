@@ -2613,14 +2613,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const iBack = document.getElementById('backToInfoBtn');
 
     const infoSubtitles = {
-        'Rating 1-10 Explained': 'A movie-specific 1-10 numerical reference guide. Highlights show the key differences between adjacent rating tiers.',
+        'Rating Rubric': "Movie specific guide for rating. Highlights show the key differences between adjacent rating tiers. Note: A specific entry may meet all but doesn't need to meet all in order to satisfy the given rating",
         'Criteria Breakdown': 'This methodology isolates 8 core dimensions of craft to ensure structural consistency and reduce evaluation overlap. By separating technical cause from emotional effect, we maintain a measurable scoring framework. Click a category to view metrics.',
         'Ranking Rules': 'The logic behind my personal Top 20 list. This section explains the relationship between Favorites and Scores, as well as the rules governing rank stability and fluidity.',
         'Bias & Effects': 'These are my own personal biases and the common "shortcuts" my brain uses when I review media. I’m not trying to fix these—they’re just here to help you understand the perspective behind my scores and why I value certain things more than others.'
     };
 
     const infoData = {
-        'Rating 1-10 Explained': (() => {
+        'Rating Rubric': (() => {
             const titles = {
                 10: 'Peak', 9: 'Amazing', 8: 'Great', 7: 'Good', 6: 'Okay',
                 5: 'Mid', 4: 'Not Good', 3: 'Bad', 2: 'Awful', 1: 'Slop'
@@ -2729,11 +2729,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const pillsHtml = [10,9,8,7,6,5,4,3,2,1].map(n => `
-                <button class="rating-pill rating-pill-${n}" data-num="${n}" title="${titles[n]}">${n}</button>
+                <button class="rating-pill rating-pill-${n} ${n === 10 ? 'active' : ''}" data-num="${n}" title="${titles[n]}">${n}</button>
             `).join('');
 
             const panelsHtml = [10,9,8,7,6,5,4,3,2,1].map(n => `
-                <div class="rating-panel" data-panel="${n}">
+                <div class="rating-panel ${n === 10 ? 'active' : ''}" data-panel="${n}">
                     <div class="rating-panel-header">
                         <span class="rating-panel-num rating-pill-${n}">${n}</span>
                         <span class="rating-panel-title">${titles[n]}</span>
@@ -2911,7 +2911,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let sectionsToRender = [];
         if (currentCategory === 'Movies') {
-            sectionsToRender.push('Rating 1-10 Explained');
+            sectionsToRender.push('Rating Rubric');
         }
         sectionsToRender.push('Criteria Breakdown', 'Ranking Rules', 'Bias & Effects');
 
