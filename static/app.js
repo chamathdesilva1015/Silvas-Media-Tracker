@@ -2623,7 +2623,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Rating Rubric': (() => {
             const titles = {
                 10: 'Peak', 9: 'Amazing', 8: 'Great', 7: 'Good', 6: 'Okay',
-                5: 'Mid', 4: 'Not Good', 3: 'Bad', 2: 'Awful', 1: 'Slop'
+                5: 'Mid', 4: 'Not Good', 3: 'Bad', 2: 'Terrible', 1: 'Awful'
             };
             const details = {
                 10: [
