@@ -2634,7 +2634,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     '<span class="diff-highlight h-10">Everything</span> personally resonated with me and <span class="diff-highlight h-10">I care about the movie</span>',
                     'Will remember this movie, <span class="diff-highlight h-10">many</span> memorable moments',
                     'Loved the themes and messages conveyed, a lot to learn. <span class="diff-highlight h-10">Delivered perfectly</span>',
-                    '<span class="diff-highlight h-10">Always rewatchable</span>/have rewatched many times'
+                    '<span class="diff-highlight h-10">Always rewatchable</span>/have rewatched many times',
+                    '<span class="diff-highlight h-10">Fully engaging</span> start/middle/ending',
+                    'Kept my <span class="diff-highlight h-10">full attention</span> for the entire film',
+                    'Ending was <span class="diff-highlight h-10">perfect, very satisfying, personally liked it</span>'
                 ],
                 9: [
                     '9/10 movies are generally considered <span class="diff-highlight h-9">almost perfect</span>',
@@ -2644,7 +2647,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     '<span class="diff-highlight h-9">Almost everything</span> personally resonated with me',
                     'Will probably remember this movie, <span class="diff-highlight h-9">memorable moments</span>',
                     'Loved the themes and messages, could learn some things. <span class="diff-highlight h-9">Delivered almost perfectly</span>',
-                    '<span class="diff-highlight h-9">Always rewatchable</span>/have rewatched many times'
+                    '<span class="diff-highlight h-9">Always rewatchable</span>/have rewatched many times',
+                    '<span class="diff-highlight h-9">Almost fully engaging</span> start/middle/ending',
+                    'Kept my <span class="diff-highlight h-9">attention</span> for the entire film',
+                    'Ending was <span class="diff-highlight h-9">perfect, satisfying, liked it</span>'
                 ],
                 8: [
                     '8/10 movies are <span class="diff-highlight h-8">almost amazing</span> but have <span class="diff-highlight h-8">a few flaws</span>',
@@ -2654,7 +2660,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Personally <span class="diff-highlight h-8">enjoyed the idea</span> of the movie',
                     'Will probably remember this movie, <span class="diff-highlight h-8">a few</span> memorable moments',
                     'Liked the themes and messages. <span class="diff-highlight h-8">Delivered well</span>',
-                    '<span class="diff-highlight h-8">Rewatchable</span>/have rewatched a few times'
+                    '<span class="diff-highlight h-8">Rewatchable</span>/have rewatched a few times',
+                    '<span class="diff-highlight h-8">Engaging</span> start/middle/ending',
+                    'Kept my <span class="diff-highlight h-8">attention</span> for the entire film',
+                    'Ending was <span class="diff-highlight h-8">great, satisfying</span>'
                 ],
                 7: [
                     '7/10 movies are <span class="diff-highlight h-7">solid</span> movies, <span class="diff-highlight h-7">not bad but nothing too special</span>',
@@ -2664,7 +2673,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Personally thought the idea <span class="diff-highlight h-7">wasn\'t communicated well</span>',
                     'Will probably remember <span class="diff-highlight h-7">a few moments</span> of this movie',
                     'Good themes and messages. <span class="diff-highlight h-7">Delivered somewhat well</span>',
-                    '<span class="diff-highlight h-7">Rewatchable</span>/have rewatched a few times'
+                    '<span class="diff-highlight h-7">Rewatchable</span>/have rewatched a few times',
+                    '<span class="diff-highlight h-7">Engaging</span> start/middle/ending, might have dragged a bit',
+                    'Kept my attention for <span class="diff-highlight h-7">most</span> of the film',
+                    'Ending was <span class="diff-highlight h-7">good, somewhat satisfying</span>'
                 ],
                 6: [
                     '6/10 movies are <span class="diff-highlight h-6">alright</span> movies, <span class="diff-highlight h-6">not bad but not good</span>',
@@ -2674,7 +2686,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Personally thought the idea <span class="diff-highlight h-6">wasn\'t communicated</span>',
                     '<span class="diff-highlight h-6">Not too memorable</span>, but <span class="diff-highlight h-6">will recognize</span>',
                     'Themes and messages <span class="diff-highlight h-6">somewhat hard to grasp</span>, delivered to an extent',
-                    '<span class="diff-highlight h-6">Somewhat rewatchable</span>/may have rewatched'
+                    '<span class="diff-highlight h-6">Somewhat rewatchable</span>/may have rewatched',
+                    '<span class="diff-highlight h-6">Somewhat engaging</span> start/middle/ending, dragged at parts',
+                    'Kept my attention for <span class="diff-highlight h-6">most</span> of the film',
+                    'Ending was <span class="diff-highlight h-6">okay, somewhat satisfying</span>'
                 ],
                 5: [
                     '5/10 movies are <span class="diff-highlight h-5">almost bad</span> movies',
@@ -2684,7 +2699,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     'There was <span class="diff-highlight h-5">no strong reason or idea</span> in the movie',
                     '<span class="diff-highlight h-5">Not memorable</span>',
                     'Themes and messages <span class="diff-highlight h-5">hard to grasp</span>, <span class="diff-highlight h-5">delivered poorly</span>',
-                    '<span class="diff-highlight h-5">Not really rewatchable</span>/may or may not rewatch'
+                    '<span class="diff-highlight h-5">Not really rewatchable</span>/may or may not rewatch',
+                    '<span class="diff-highlight h-5">Somewhat engaging</span> start/middle/ending, dragged a lot',
+                    'Kept my attention for <span class="diff-highlight h-5">some/most</span> of the film',
+                    'Ending was <span class="diff-highlight h-5">okay, not fully satisfying</span>'
                 ],
                 4: [
                     '4/10 movies are <span class="diff-highlight h-4">bad</span> movies with <span class="diff-highlight h-4">a few redeeming qualities</span>',
@@ -2694,7 +2712,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Reasons or ideas <span class="diff-highlight h-4">missing or barely noticeable</span>',
                     '<span class="diff-highlight h-4">Not memorable, might forget</span>',
                     'Themes and messages <span class="diff-highlight h-4">may be missing</span>, <span class="diff-highlight h-4">delivered poorly</span>',
-                    '<span class="diff-highlight h-4">Not really rewatchable</span>/may not have rewatched'
+                    '<span class="diff-highlight h-4">Not really rewatchable</span>/may not have rewatched',
+                    '<span class="diff-highlight h-4">Barely engaging</span> start/middle/ending, dragged a lot',
+                    'Kept my attention for <span class="diff-highlight h-4">some</span> of the film',
+                    'Ending was <span class="diff-highlight h-4">not good, not satisfying</span>'
                 ],
                 3: [
                     '3/10 movies are <span class="diff-highlight h-3">bad</span> movies',
@@ -2704,17 +2725,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Reasons or ideas <span class="diff-highlight h-3">mostly missing or very weak</span>',
                     '<span class="diff-highlight h-3">Might forget</span>',
                     'Themes and messages <span class="diff-highlight h-3">missing</span>, <span class="diff-highlight h-3">not delivered well</span>',
-                    '<span class="diff-highlight h-3">Not rewatchable</span>/may not have rewatched'
+                    '<span class="diff-highlight h-3">Not rewatchable</span>/may not have rewatched',
+                    '<span class="diff-highlight h-3">Not engaging</span> start/middle/ending, boring',
+                    'Kept my attention for <span class="diff-highlight h-3">some/little</span> of the film',
+                    'Ending was <span class="diff-highlight h-3">bad, not satisfying</span>'
                 ],
                 2: [
                     '2/10 movies are <span class="diff-highlight h-2">very bad</span> movies',
                     'Didn\'t like anything, <span class="diff-highlight h-2">disliked everything</span>',
                     'Does not see the appeal, <span class="diff-highlight h-2">actively will dislike</span>',
                     '<span class="diff-highlight h-2">Nothing good</span> about it',
-                    '<span class="diff-highlight h-2">No point</span> to the movie, messages or ideas <span class="diff-highlight h-2">weak</span>',
+                    'No point to the movie, messages or ideas <span class="diff-highlight h-2">weak</span>',
                     '<span class="diff-highlight h-2">Will forget</span>',
                     'Themes and messages <span class="diff-highlight h-2">missing</span>, <span class="diff-highlight h-2">not delivered at all</span>',
-                    '<span class="diff-highlight h-2">Not rewatchable</span>/will not rewatch'
+                    '<span class="diff-highlight h-2">Not rewatchable</span>/will not rewatch',
+                    '<span class="diff-highlight h-2">Not engaging</span> start/middle/ending, very boring',
+                    'Kept my attention for <span class="diff-highlight h-2">little/none</span> of the film',
+                    'Ending was <span class="diff-highlight h-2">bad, not satisfying</span>'
                 ],
                 1: [
                     '1/10 movies are <span class="diff-highlight h-1">very bad</span> movies, <span class="diff-highlight h-1">may not have finished</span>',
@@ -2724,7 +2751,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     '<span class="diff-highlight h-1">No point</span> to the movie, <span class="diff-highlight h-1">no message or ideas</span>',
                     '<span class="diff-highlight h-1">Want to forget</span>',
                     'Themes and messages <span class="diff-highlight h-1">missing</span>, <span class="diff-highlight h-1">not delivered at all</span>',
-                    '<span class="diff-highlight h-1">Not rewatchable</span>/will not rewatch'
+                    '<span class="diff-highlight h-1">Not rewatchable</span>/will not rewatch',
+                    '<span class="diff-highlight h-1">Not engaging</span> for any parts of the film',
+                    'Kept my attention for <span class="diff-highlight h-1">none</span> of the film',
+                    'Ending was <span class="diff-highlight h-1">terrible, not satisfying</span>'
                 ]
             };
 
