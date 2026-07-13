@@ -6227,6 +6227,8 @@ body.modal-open .bottom-nav {
     padding: 1px 5px;
     border-radius: 4px;
     font-weight: 700;
+    white-space: nowrap;
+    display: inline-block;
 }
 .diff-highlight.h-10 { background: rgba(212, 175, 55, 0.18); color: #d4af37; }
 .diff-highlight.h-9  { background: rgba(99, 179, 237, 0.18); color: #63b3ed; }
