@@ -390,6 +390,55 @@ def toggle_like(item_id: str, session: Session = Depends(get_session), _: None =
 
     return {"ok": True, "is_liked": new_liked, "updated_count": len(related)}
 
+@app.get("/api/synopsis/{item_id}")
+def get_synopsis(item_id: int, session: Session = Depends(get_session)):
+    """Returns the overview/synopsis for an item. If not stored, fetches from TMDB or Jikan and saves it."""
+    item = session.get(MediaItem, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    # Already have it — return immediately
+    if item.overview and item.overview.strip():
+        return {"overview": item.overview}
+
+    # Need to fetch it — use tmdb_id if available
+    overview = None
+    try:
+        if item.type in ("Movies", "TV Series"):
+            from tmdb_helper import get_tmdb_details, search_tmdb
+            media_type = "movie" if item.type == "Movies" else "tv"
+            tmdb_id = item.tmdb_id
+            if not tmdb_id:
+                tmdb_id = search_tmdb(item.title, item.release_year, media_type)
+                if tmdb_id:
+                    item.tmdb_id = tmdb_id
+            if tmdb_id:
+                details = get_tmdb_details(tmdb_id, media_type)
+                overview = details.get("overview")
+        elif item.type in ("Anime", "Manga"):
+            from jikan_helper import get_anime_details, get_manga_details, search_anime, search_manga
+            mal_id = item.tmdb_id  # stored in tmdb_id field
+            if not mal_id:
+                if item.type == "Anime":
+                    mal_id = search_anime(item.title)
+                else:
+                    mal_id = search_manga(item.title)
+                if mal_id:
+                    item.tmdb_id = mal_id
+            if mal_id:
+                details = get_anime_details(mal_id) if item.type == "Anime" else get_manga_details(mal_id)
+                overview = details.get("overview")
+    except Exception as e:
+        print(f"[Synopsis] Fetch error for item {item_id}: {e}")
+
+    if overview:
+        item.overview = overview
+        session.add(item)
+        session.commit()
+
+    return {"overview": overview or ""}
+
+
 @app.post("/api/media/update/{item_id}")
 async def update_media_item(item_id: int, payload: dict, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     """Unified update for Rating, Title, or Year. Triggers re-enrichment if Title/Year changes."""

@@ -2035,6 +2035,37 @@ document.addEventListener('DOMContentLoaded', () => {
             posterImg.src = item.cover_url;
         } else { posterImg.src = ''; }
 
+        // --- Synopsis ---
+        const synopsisEl = document.getElementById('quickInfoSynopsis');
+        const synopsisWrap = document.getElementById('quickInfoSynopsisWrap');
+        if (synopsisEl && synopsisWrap) {
+            if (item.overview && item.overview.trim()) {
+                // Already stored — display immediately
+                synopsisEl.textContent = item.overview.trim();
+                synopsisWrap.style.display = 'block';
+            } else if (item.id) {
+                // Not stored — fetch on demand
+                synopsisEl.innerHTML = '<span class="synopsis-loading">Loading...</span>';
+                synopsisWrap.style.display = 'block';
+                fetch(`/api/synopsis/${item.id}`)
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.overview && d.overview.trim()) {
+                            synopsisEl.textContent = d.overview.trim();
+                            // Cache on item so re-opens don't re-fetch
+                            item.overview = d.overview;
+                        } else {
+                            synopsisWrap.style.display = 'none';
+                        }
+                    })
+                    .catch(() => { synopsisWrap.style.display = 'none'; });
+            } else {
+                // Recommendation with no id — hide synopsis
+                synopsisWrap.style.display = item.overview ? 'block' : 'none';
+                if (item.overview) synopsisEl.textContent = item.overview.trim();
+            }
+        }
+
         quickInfoModal.style.zIndex = '10001';
         quickInfoModal.classList.add('show');
         document.body.classList.add('modal-open');

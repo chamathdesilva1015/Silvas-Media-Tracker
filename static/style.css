@@ -5203,16 +5203,13 @@ body.modal-open .bottom-nav {
 /* Poster column: fixed width, shrinks to image height — no black box */
 .quick-info-poster-wrap {
     flex-shrink: 0;
-    width: 300px; /* Enlarged poster */
     position: relative;
-    background: transparent;         /* no dark background since image fills it */
-    border-top-left-radius: 16px;
-    border-bottom-left-radius: 16px;
+    background: transparent;
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    align-self: flex-start;          /* KEY: shrink to image height, no extra space below */
     overflow: hidden;
+    width: 100%;
 }
 
 /* Image: fill the column, height auto = no crop, no bars */
@@ -5227,6 +5224,61 @@ body.modal-open .bottom-nav {
 
 .quick-info-poster.loaded {
     display: block;
+}
+
+/* Left column: poster stacked above synopsis */
+.quick-info-left-col {
+    flex-shrink: 0;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+    overflow: hidden;
+}
+
+/* Synopsis box sits below the poster in the left column */
+.quick-info-synopsis-wrap {
+    padding: 0.9rem 1rem 1rem;
+    background: rgba(0,0,0,0.25);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+}
+
+.quick-info-synopsis-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--theme-accent);
+    margin-bottom: 0.5rem;
+    opacity: 0.85;
+}
+
+.quick-info-synopsis-text {
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.65);
+    max-height: 130px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.15) transparent;
+    padding-right: 4px;
+}
+
+.quick-info-synopsis-text::-webkit-scrollbar {
+    width: 4px;
+}
+.quick-info-synopsis-text::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+}
+
+.synopsis-loading {
+    opacity: 0.4;
+    font-style: italic;
+    font-size: 0.75rem;
 }
 
 /* Details pane scrolls */
@@ -5416,6 +5468,21 @@ body.modal-open .bottom-nav {
         left: 0;
     }
 
+    /* Left column: on mobile becomes the background container */
+    .quick-info-left-col {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: -1;
+        opacity: 0.3;
+        border-radius: 0;
+        background: #000;
+    }
+
     /* Poster: Now the background for the whole profile on mobile */
     .quick-info-poster-wrap {
         position: absolute;
@@ -5425,10 +5492,13 @@ body.modal-open .bottom-nav {
         bottom: 0;
         width: 100% !important;
         height: 100% !important;
-        z-index: -1;
-        opacity: 0.3; /* Increased slightly for visibility */
         border-radius: 0;
         background: #000;
+    }
+
+    /* Hide synopsis on mobile — not enough space */
+    .quick-info-synopsis-wrap {
+        display: none;
     }
 
     .quick-info-poster {
