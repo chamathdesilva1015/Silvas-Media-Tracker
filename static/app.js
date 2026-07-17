@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let rankMap = {}; // title|type -> rank number; populated in renderMedia, read by openQuickInfo
     let currentCategory = 'Movies'; // Default page
     let currentSubTab = 'Info'; // Land on The Hub
+    let latestRecentAdditions = []; // Safety: always holds the most recently fetched history for the active category
 
     const loginAdminBtns = [document.getElementById('loginAdminBtn')];
     const logoutAdminBtns = [document.getElementById('logoutAdminBtn')];
@@ -782,14 +783,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>`;
 
+        // Safety: always update the shared variable so the modal uses fresh data
+        // even if the user switches categories quickly while the async load is in progress
+        latestRecentAdditions = data.recent_additions || [];
+
         // Wire up interactions
         const recentCard = statsPage.querySelector('#recentDiscoveryCard');
-        if (recentCard && data.recent_additions && data.recent_additions.length > 0) {
+        if (recentCard && latestRecentAdditions.length > 0) {
             recentCard.onclick = () => {
+                // Always read from the shared variable — never from a stale closure
+                const additions = latestRecentAdditions;
                 const historyModal = document.getElementById('recentHistoryModal');
                 const historyList = document.getElementById('recentHistoryList');
-                if (historyModal && historyList) {
-                    historyList.innerHTML = data.recent_additions.map(add => {
+                if (historyModal && historyList && additions.length > 0) {
+                    historyList.innerHTML = additions.map(add => {
                         const item = add.item;
                         return `
                             <div class="history-item-row" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
@@ -809,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     historyList.querySelectorAll('.history-item-row').forEach((row, idx) => {
                         row.onclick = () => {
                             historyModal.classList.remove('show');
-                            window.openQuickInfo(data.recent_additions[idx].item);
+                            window.openQuickInfo(additions[idx].item);
                         };
                         // hover effects
                         row.onmouseenter = () => {
