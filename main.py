@@ -674,6 +674,15 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
+    sorted_recent = sorted(items, key=lambda i: i.date_added, reverse=True)[:10]
+    recent_additions = [
+        {
+            "item": item,
+            "display_date": item.date_added.strftime("%b %d, %Y"),
+            "display_time": item.date_added.strftime("%I:%M %p")
+        }
+        for item in sorted_recent
+    ]
 
     # Favorite Genre (Movies, TV Series, Anime, Manga) - "Volume-Weighted Passion" Model (v120/v204/v215/v217)
     favorite_genre = None
@@ -776,6 +785,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
             "item": most_recent,
             "display_date": most_recent.date_added.strftime("%b %d, %Y")
         },
+        "recent_additions": recent_additions,
         "favorite_genres": favorite_genre,
         "favorite_directors": favorite_directors
     }

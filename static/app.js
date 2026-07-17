@@ -784,8 +784,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Wire up interactions
         const recentCard = statsPage.querySelector('#recentDiscoveryCard');
-        if (recentCard && data.most_recent?.item) {
-            recentCard.onclick = () => window.openQuickInfo(data.most_recent.item);
+        if (recentCard && data.recent_additions && data.recent_additions.length > 0) {
+            recentCard.onclick = () => {
+                const historyModal = document.getElementById('recentHistoryModal');
+                const historyList = document.getElementById('recentHistoryList');
+                if (historyModal && historyList) {
+                    historyList.innerHTML = data.recent_additions.map(add => {
+                        const item = add.item;
+                        return `
+                            <div class="history-item-row" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+                                <div style="display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; flex: 1; padding-right: 1rem;">
+                                    <span style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</span>
+                                    <span style="font-size: 0.75rem; opacity: 0.6; color: var(--text-secondary);">${item.release_year ? `${item.release_year} • ` : ''}${item.director || ''}</span>
+                                </div>
+                                <div style="text-align: right; flex-shrink: 0;">
+                                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--theme-accent);">${add.display_date}</div>
+                                    <div style="font-size: 0.7rem; opacity: 0.5; color: var(--text-secondary); margin-top: 0.1rem;">${add.display_time}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Add click listeners to history rows to open quick info card
+                    historyList.querySelectorAll('.history-item-row').forEach((row, idx) => {
+                        row.onclick = () => {
+                            historyModal.classList.remove('show');
+                            window.openQuickInfo(data.recent_additions[idx].item);
+                        };
+                        // hover effects
+                        row.onmouseenter = () => {
+                            row.style.background = 'rgba(var(--theme-accent-rgb), 0.06)';
+                            row.style.borderColor = 'rgba(var(--theme-accent-rgb), 0.2)';
+                        };
+                        row.onmouseleave = () => {
+                            row.style.background = 'rgba(255,255,255,0.02)';
+                            row.style.borderColor = 'rgba(255,255,255,0.05)';
+                        };
+                    });
+
+                    historyModal.classList.add('show');
+                }
+            };
         }
 
         // Wire up accordion toggle AFTER innerHTML is set
@@ -1650,6 +1689,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.addEventListener('dblclick', (e) => {
         if (e.target === ratingHistoryModal) ratingHistoryModal.classList.remove('show');
+    });
+
+    // ── Recently Discovered History Modal ──────────────────────────────────────
+    const recentHistoryModal = document.getElementById('recentHistoryModal');
+    const closeRecentHistoryBtn = document.getElementById('closeRecentHistoryBtn');
+    if (closeRecentHistoryBtn) {
+        closeRecentHistoryBtn.onclick = () => recentHistoryModal.classList.remove('show');
+    }
+    window.addEventListener('dblclick', (e) => {
+        if (e.target === recentHistoryModal) recentHistoryModal.classList.remove('show');
     });
 
     // ── Quick Info Modal ──────────────────────────────────────────────────────
