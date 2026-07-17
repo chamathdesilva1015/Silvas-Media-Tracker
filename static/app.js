@@ -552,7 +552,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (matchesSubTab && item.genres) {
                 item.genres.split(',').forEach(g => {
                     const clean = g.trim();
-                    if (clean) genres.add(clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase());
+                    // Keep original casing from the database so filter matching works correctly
+                    if (clean) genres.add(clean);
                 });
             }
         });
@@ -963,8 +964,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filterState.genres.size > 0) {
             filtered = filtered.filter(item => {
                 if (!item.genres) return false;
-                const itemGenres = item.genres.split(',').map(g => g.trim());
-                return Array.from(filterState.genres).some(g => itemGenres.includes(g));
+                // Case-insensitive comparison to handle any DB casing variation
+                const itemGenres = item.genres.split(',').map(g => g.trim().toLowerCase());
+                return Array.from(filterState.genres).some(g => itemGenres.includes(g.toLowerCase()));
             });
         }
 
@@ -988,6 +990,13 @@ document.addEventListener('DOMContentLoaded', () => {
             filtered.sort((a, b) => a.title.localeCompare(b.title));
         } else if (sortVal === 'title-desc') {
             filtered.sort((a, b) => b.title.localeCompare(a.title));
+        } else if (sortVal === 'date-added-desc') {
+            // Newest additions first — parse date_added string for reliable comparison
+            filtered.sort((a, b) => {
+                const da = a.date_added ? new Date(a.date_added) : new Date(0);
+                const db = b.date_added ? new Date(b.date_added) : new Date(0);
+                return db - da;
+            });
         }
 
         renderMedia(filtered, isRankingRequired);
