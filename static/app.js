@@ -2039,30 +2039,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const synopsisEl = document.getElementById('quickInfoSynopsis');
         const synopsisWrap = document.getElementById('quickInfoSynopsisWrap');
         if (synopsisEl && synopsisWrap) {
+            // Always show the wrap — start with loading state
+            synopsisWrap.style.display = 'block';
             if (item.overview && item.overview.trim()) {
                 // Already stored — display immediately
                 synopsisEl.textContent = item.overview.trim();
-                synopsisWrap.style.display = 'block';
             } else if (item.id) {
                 // Not stored — fetch on demand
-                synopsisEl.innerHTML = '<span class="synopsis-loading">Loading...</span>';
-                synopsisWrap.style.display = 'block';
+                synopsisEl.innerHTML = '<span class="synopsis-loading">Fetching synopsis...</span>';
                 fetch(`/api/synopsis/${item.id}`)
                     .then(r => r.json())
                     .then(d => {
                         if (d.overview && d.overview.trim()) {
                             synopsisEl.textContent = d.overview.trim();
-                            // Cache on item so re-opens don't re-fetch
-                            item.overview = d.overview;
+                            item.overview = d.overview; // cache for re-opens
                         } else {
-                            synopsisWrap.style.display = 'none';
+                            synopsisEl.innerHTML = '<span class="synopsis-loading">No synopsis available.</span>';
                         }
                     })
-                    .catch(() => { synopsisWrap.style.display = 'none'; });
+                    .catch(() => {
+                        synopsisEl.innerHTML = '<span class="synopsis-loading">Could not load synopsis.</span>';
+                    });
             } else {
-                // Recommendation with no id — hide synopsis
-                synopsisWrap.style.display = item.overview ? 'block' : 'none';
-                if (item.overview) synopsisEl.textContent = item.overview.trim();
+                // Recommendation card — show if available, else note
+                if (item.overview && item.overview.trim()) {
+                    synopsisEl.textContent = item.overview.trim();
+                } else {
+                    synopsisEl.innerHTML = '<span class="synopsis-loading">No synopsis available.</span>';
+                }
             }
         }
 
