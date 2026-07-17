@@ -13,19 +13,28 @@ def _jikan_get(url: str, params: Optional[Dict] = None) -> requests.Response:
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         "Accept": "application/json"
     }
-    # Jikan's public API is rate limited. Retry on 429 with exponential backoff
-    for attempt in range(3):
+    # Retry on 429 (rate limit) and 504 (gateway timeout) with backoff
+    for attempt in range(4):
         try:
-            response = requests.get(url, params=params, headers=headers, timeout=8)
+            response = requests.get(url, params=params, headers=headers, timeout=15)
             if response.status_code == 429:
-                time.sleep(2 * (attempt + 1))
+                wait = 3 * (attempt + 1)
+                time.sleep(wait)
+                continue
+            if response.status_code == 504:
+                wait = 2 * (attempt + 1)
+                time.sleep(wait)
                 continue
             return response
+        except requests.exceptions.Timeout:
+            if attempt == 3:
+                raise
+            time.sleep(2)
         except requests.exceptions.RequestException as e:
-            if attempt == 2:
+            if attempt == 3:
                 raise e
             time.sleep(1)
-    return requests.get(url, params=params, headers=headers, timeout=8)
+    return requests.get(url, params=params, headers=headers, timeout=15)
 
 
 def search_manga(title: str) -> Optional[int]:
@@ -131,99 +140,100 @@ def search_anime(title: str) -> Optional[int]:
         print(f"Jikan Anime Search Error for '{title}': {e}")
     return None
 
+def _parse_manga_data(data: dict, mal_id: int) -> dict:
+    """Parses a Jikan manga data dict into our internal format."""
+    genres_list = data.get("genres", []) + data.get("explicit_genres", []) + data.get("themes", []) + data.get("demographics", [])
+    genres = ", ".join([g["name"] for g in genres_list]) if genres_list else None
+    poster_url = data.get("images", {}).get("webp", {}).get("large_image_url")
+    authors_list = data.get("authors", [])
+    author = authors_list[0]["name"] if authors_list else None
+    if author and "," in author:
+        parts = author.split(",")
+        author = f"{parts[1].strip()} {parts[0].strip()}"
+    return {
+        "title": data.get("title_english") or data.get("title"),
+        "release_year": str(data.get("published", {}).get("prop", {}).get("from", {}).get("year", "")) or None,
+        "genres": genres,
+        "cover_url": poster_url,
+        "director": author,
+        "tmdb_id": mal_id,
+        "content_rating": None,
+        "overview": data.get("synopsis"),
+        "manga_status": data.get("status"),
+        "total_chapters": data.get("chapters")
+    }
+
+
 def get_manga_details(mal_id: int) -> Dict:
     """
     Fetches genres, poster, and author for a manga.
+    Falls back from /full to base endpoint on 504.
     """
     if mal_id in MANGA_CACHE:
         return MANGA_CACHE[mal_id]
-        
-    url = f"{BASE_URL}/manga/{mal_id}/full"
-    
-    try:
-        response = _jikan_get(url)
-        response.raise_for_status()
-        data = response.json().get("data", {})
-        
-        # --- Genres ---
-        genres_list = data.get("genres", []) + data.get("explicit_genres", []) + data.get("themes", []) + data.get("demographics", [])
-        genres = ", ".join([g["name"] for g in genres_list]) if genres_list else None
-        
-        # --- Poster ---
-        poster_url = data.get("images", {}).get("webp", {}).get("large_image_url")
-        
-        # --- Author ---
-        authors_list = data.get("authors", [])
-        author = authors_list[0]["name"] if authors_list else None
-        # Jikan often returns "Lastname, Firstname", let's flip it if comma exists
-        if author and "," in author:
-            parts = author.split(",")
-            author = f"{parts[1].strip()} {parts[0].strip()}"
-            
-        result = {
-            "title": data.get("title_english") or data.get("title"),
-            "release_year": str(data.get("published", {}).get("prop", {}).get("from", {}).get("year", "")) or None,
-            "genres": genres,
-            "cover_url": poster_url,
-            "director": author, # Store in director field for consistency
-            "tmdb_id": mal_id,   # Use mal_id as tmdb_id for internal tracking
-            "content_rating": None,
-            "overview": data.get("synopsis"),
-            "manga_status": data.get("status"),
-            "total_chapters": data.get("chapters")
-        }
-        MANGA_CACHE[mal_id] = result
-        return result
-    except Exception as e:
-        print(f"Jikan Details Error for ID {mal_id}: {e}")
+
+    for endpoint_suffix in ("/full", ""):
+        url = f"{BASE_URL}/manga/{mal_id}{endpoint_suffix}"
+        try:
+            response = _jikan_get(url)
+            response.raise_for_status()
+            data = response.json().get("data", {})
+            result = _parse_manga_data(data, mal_id)
+            MANGA_CACHE[mal_id] = result
+            return result
+        except Exception as e:
+            print(f"Jikan Manga Details Error for ID {mal_id} ({endpoint_suffix or 'base'}): {e}")
+            if endpoint_suffix == "":
+                break  # Both endpoints failed
+            time.sleep(1)  # Brief pause before fallback
     return {}
+
+def _parse_anime_data(data: dict, mal_id: int) -> dict:
+    """Parses a Jikan anime data dict into our internal format."""
+    genres_list = data.get("genres", []) + data.get("explicit_genres", []) + data.get("themes", []) + data.get("demographics", [])
+    genres = ", ".join([g["name"] for g in genres_list]) if genres_list else None
+    poster_url = data.get("images", {}).get("webp", {}).get("large_image_url")
+    studios = data.get("studios", [])
+    studio = studios[0]["name"] if studios else None
+    release_year = None
+    aired = data.get("aired", {}).get("prop", {}).get("from", {})
+    if aired.get("year"):
+        release_year = str(aired["year"])
+    return {
+        "title": data.get("title_english") or data.get("title"),
+        "release_year": release_year,
+        "genres": genres,
+        "cover_url": poster_url,
+        "director": studio,
+        "tmdb_id": mal_id,
+        "content_rating": data.get("rating"),
+        "overview": data.get("synopsis"),
+        "anime_type": data.get("type")
+    }
+
 
 def get_anime_details(mal_id: int) -> dict:
     """
     Fetches genres, poster, director, and year for an anime using Jikan (MAL).
+    Falls back from /full to base endpoint on failure.
     """
     if mal_id in ANIME_CACHE:
         return ANIME_CACHE[mal_id]
-        
-    url = f"{BASE_URL}/anime/{mal_id}/full"
-    
-    try:
-        response = _jikan_get(url)
-        response.raise_for_status()
-        data = response.json().get("data", {})
-        
-        # --- Genres ---
-        genres_list = data.get("genres", []) + data.get("explicit_genres", []) + data.get("themes", []) + data.get("demographics", [])
-        genres = ", ".join([g["name"] for g in genres_list]) if genres_list else None
-        
-        # --- Poster ---
-        poster_url = data.get("images", {}).get("webp", {}).get("large_image_url")
-        
-        # --- Studio / Director (use studio name as director field) ---
-        studios = data.get("studios", [])
-        studio = studios[0]["name"] if studios else None
-        
-        # --- Year ---
-        release_year = None
-        aired = data.get("aired", {}).get("prop", {}).get("from", {})
-        if aired.get("year"):
-            release_year = str(aired["year"])
-        
-        result = {
-            "title": data.get("title_english") or data.get("title"),
-            "release_year": release_year,
-            "genres": genres,
-            "cover_url": poster_url,
-            "director": studio,
-            "tmdb_id": mal_id,
-            "content_rating": data.get("rating"),
-            "overview": data.get("synopsis"),
-            "anime_type": data.get("type")
-        }
-        ANIME_CACHE[mal_id] = result
-        return result
-    except Exception as e:
-        print(f"Jikan Anime Details Error for ID {mal_id}: {e}")
+
+    for endpoint_suffix in ("/full", ""):
+        url = f"{BASE_URL}/anime/{mal_id}{endpoint_suffix}"
+        try:
+            response = _jikan_get(url)
+            response.raise_for_status()
+            data = response.json().get("data", {})
+            result = _parse_anime_data(data, mal_id)
+            ANIME_CACHE[mal_id] = result
+            return result
+        except Exception as e:
+            print(f"Jikan Anime Details Error for ID {mal_id} ({endpoint_suffix or 'base'}): {e}")
+            if endpoint_suffix == "":
+                break  # Both endpoints failed
+            time.sleep(1)  # Brief pause before trying fallback
     return {}
 
 def get_jikan_recommendations(mal_id: int, media_type: str = "anime", limit: int = 5) -> List[dict]:
