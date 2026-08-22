@@ -970,6 +970,25 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Helper to extract a numeric score from a MediaItem (checking numeric_rating and rating, handling decimals and ignoring #rankings)
+        const getItemScore = (item) => {
+            if (!item) return 0;
+            const fields = [item.numeric_rating, item.rating];
+            for (const f of fields) {
+                if (f === null || f === undefined || f === '') continue;
+                if (typeof f === 'number') return f;
+                const str = String(f).trim();
+                if (str.startsWith('#')) continue; // Skip ranking positions like #1
+                if (str.includes('/')) {
+                    const parsed = parseFloat(str.split('/')[0].trim());
+                    if (!isNaN(parsed)) return parsed;
+                }
+                const parsed = parseFloat(str);
+                if (!isNaN(parsed)) return parsed;
+            }
+            return 0;
+        };
+
         // 5. Sorting (Using unified filter state)
         const sortVal = filterState.sort;
         if (sortVal === 'shuffle') {
@@ -979,9 +998,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
             }
         } else if (sortVal === 'rating-desc') {
-            filtered.sort((a, b) => (parseRating(b.numeric_rating || b.rating) || 0) - (parseRating(a.numeric_rating || a.rating) || 0));
+            filtered.sort((a, b) => getItemScore(b) - getItemScore(a));
         } else if (sortVal === 'rating-asc') {
-            filtered.sort((a, b) => (parseRating(a.numeric_rating || a.rating) || 0) - (parseRating(b.numeric_rating || b.rating) || 0));
+            filtered.sort((a, b) => getItemScore(a) - getItemScore(b));
         } else if (sortVal === 'year-desc') {
             filtered.sort((a, b) => (b.release_year || 0) - (a.release_year || 0));
         } else if (sortVal === 'year-asc') {
@@ -1003,10 +1022,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const parseRating = (r) => {
-        if (!r) return 0;
+        if (r === null || r === undefined || r === '') return 0;
         if (typeof r === 'number') return r;
-        if (r.includes('/')) return parseFloat(r.split('/')[0]);
-        return parseFloat(r) || 0;
+        const str = String(r).trim();
+        if (str.startsWith('#')) return 0;
+        if (str.includes('/')) {
+            const parsed = parseFloat(str.split('/')[0].trim());
+            return isNaN(parsed) ? 0 : parsed;
+        }
+        const parsed = parseFloat(str);
+        return isNaN(parsed) ? 0 : parsed;
+    };
+
+    const formatScore = (val) => {
+        if (val === null || val === undefined || val === '') return '';
+        const str = String(val).trim();
+        if (str.startsWith('#')) return str;
+        const clean = str.replace('/10', '').trim();
+        const num = parseFloat(clean);
+        if (isNaN(num)) return clean;
+        return Number.isInteger(num) ? String(num) : String(num);
     };
 
 
@@ -1860,9 +1895,11 @@ document.addEventListener('DOMContentLoaded', () => {
             m.numeric_rating && 
             !m.numeric_rating.toString().startsWith('#')
         );
-        let rawScore = bestEntry ? bestEntry.numeric_rating.toString().replace('/10','').trim() : '';
+        let rawScore = bestEntry ? formatScore(bestEntry.numeric_rating) : '';
         if (!rawScore && item.numeric_rating && !item.numeric_rating.toString().startsWith('#')) {
-            rawScore = item.numeric_rating.toString().replace('/10','').trim();
+            rawScore = formatScore(item.numeric_rating);
+        } else if (!rawScore && item.rating && !item.rating.toString().startsWith('#')) {
+            rawScore = formatScore(item.rating);
         }
         document.getElementById('quickInfoRating').textContent = rawScore ? `${rawScore}/10` : '—';
 
@@ -3317,7 +3354,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemJson = JSON.stringify({id: it.id, title: it.title.replace(/'/g, "\\'"), release_year: it.release_year});
         const scoreStr = (() => {
             const s = String(it.numeric_rating || it.rating || '');
-            if (s && !s.startsWith('#')) return s.replace('/10', '').trim();
+            if (s && !s.startsWith('#')) return formatScore(s);
             return null;
         })();
         return `
@@ -3591,7 +3628,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const itemJson = JSON.stringify({id: it.id, title: safeTitle, release_year: it.release_year});
                     const scoreStr = (() => {
                         const s = String(it.numeric_rating || it.rating || '');
-                        if (s && !s.startsWith('#')) return s.replace('/10','').trim();
+                        if (s && !s.startsWith('#')) return formatScore(s);
                         return null;
                     })();
                     return `
@@ -4269,7 +4306,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = currentCategory || 'Movies';
             
             try {
-                const response = await fetch(`/api/recommendations/check?ext_id=${selectedRecItem.tmdb_id}&type=${category}&t=${Date.now()}`);
+                const checkUrl = `/api/recommendations/check?ext_id=${selectedRecItem.tmdb_id || ''}&title=${encodeURIComponent(selectedRecItem.title || '')}&type=${encodeURIComponent(category)}&t=${Date.now()}`;
+                const response = await fetch(checkUrl);
                 const data = await response.json();
                 
                 if (!data.allow_recommendation || data.in_library) {
@@ -4282,8 +4320,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     let msg = `"${selectedRecItem.title}" is already in the database.`;
                     
                     if (data.in_library) {
-                        msg = `"${selectedRecItem.title}" is already in the finished database.`;
-                        if (continueBtn) continueBtn.style.display = 'none'; // Users must manually add if already finished
+                        msg = `"${selectedRecItem.title}" is already in your finished library.`;
+                        if (continueBtn) continueBtn.style.display = 'none';
                     } else if (!data.allow_recommendation) {
                         msg = `"${selectedRecItem.title}" has already been recommended.`;
                         if (continueBtn) continueBtn.style.display = 'none';
@@ -4311,16 +4349,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const recContinueDuplicateBtn = document.getElementById('recContinueDuplicateBtn');
         if (recContinueDuplicateBtn) {
             recContinueDuplicateBtn.addEventListener('click', () => {
-                // Go to page 3
-                recPage2.style.display = 'none';
-                recPage3.style.display = 'block';
-                updateRecSteps(3);
-                
-                // Reset Page 2 display for next time
+                recDuplicateMessage.style.display = 'none';
                 recPage2Instructions.style.display = 'block';
                 recSearchResultsContainer.style.display = 'block';
-                recDuplicateMessage.style.display = 'none';
-                recContinueDuplicateBtn.style.display = 'none';
             });
         }
         
@@ -4358,7 +4389,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = recNameInput.value.trim();
             
             if (!selectedRecItem) {
-                alert('Please select an item.');
+                alert('Please select a piece of media.');
                 return;
             }
             
@@ -4370,7 +4401,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 year: selectedRecItem.release_year ? parseInt(selectedRecItem.release_year) : null,
                 ext_id: selectedRecItem.tmdb_id,
                 type: category,
-                note: null,
+                note: recNoteInput ? recNoteInput.value : null,
                 recommender_name: name || 'Anonymous'
             };
             
@@ -4384,13 +4415,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 const result = await response.json();
-                if (result.status === 'success') {
+                if (response.ok && result.status === 'success') {
                     alert('Recommendation submitted successfully!');
                     recModal.classList.remove('show');
                     // Refresh recent recommendations
                     fetchHubRecommendations(category);
                 } else {
-                    alert('Error submitting recommendation.');
+                    alert(result.detail || 'Error submitting recommendation: duplicate or invalid entry.');
                 }
             } catch (error) {
                 console.error('Submit error:', error);

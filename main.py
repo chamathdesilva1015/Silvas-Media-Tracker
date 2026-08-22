@@ -1303,28 +1303,42 @@ def get_recent_recommendations(category: str, response: Response, session: Sessi
 
 
 @app.get("/api/recommendations/check")
-def check_recommendation(ext_id: int, type: str, response: Response, session: Session = Depends(get_session)):
+def check_recommendation(ext_id: Optional[int] = None, title: Optional[str] = None, type: str = "Movies", response: Response = None, session: Session = Depends(get_session)):
     """Checks if a media item already exists in the library or recommendations."""
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    # Check library
-    library_exists = session.exec(
-        select(MediaItem).where(MediaItem.tmdb_id == ext_id, MediaItem.type == type)
-    ).first() is not None
+    if response:
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        
+    norm_title = normalize_title(title) if title else None
     
-    # Check recommendations count (ignore rejected ones)
-    recs = session.exec(
-        select(Recommendation).where(
-            Recommendation.ext_id == ext_id, 
-            Recommendation.type == type,
-            Recommendation.status != "rejected"
-        )
-    ).all()
-    rec_count = len(recs)
+    # 1. Check Library
+    library_exists = False
+    if ext_id:
+        library_exists = session.exec(
+            select(MediaItem).where(MediaItem.tmdb_id == ext_id, MediaItem.type.ilike(type))
+        ).first() is not None
+    if not library_exists and norm_title:
+        all_lib = session.exec(select(MediaItem).where(MediaItem.type.ilike(type))).all()
+        library_exists = any(normalize_title(item.title) == norm_title for item in all_lib)
+    
+    # 2. Check Recommendations (reject duplicates)
+    rec_matches = []
+    if ext_id:
+        rec_matches = session.exec(
+            select(Recommendation).where(
+                Recommendation.ext_id == ext_id, 
+                Recommendation.type.ilike(type)
+            )
+        ).all()
+    if not rec_matches and norm_title:
+        all_recs = session.exec(select(Recommendation).where(Recommendation.type.ilike(type))).all()
+        rec_matches = [r for r in all_recs if normalize_title(r.title) == norm_title]
+        
+    rec_count = len(rec_matches)
     
     return {
         "in_library": library_exists,
         "rec_count": rec_count,
-        "allow_recommendation": rec_count < 1
+        "allow_recommendation": (not library_exists) and (rec_count == 0)
     }
 
 @app.get("/api/recommendations/all")
@@ -1341,25 +1355,40 @@ def get_all_recommendations(request: Request, response: Response, type: Optional
 
 @app.post("/api/recommendations/submit")
 def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
-    """Saves a recommendation with enriched metadata."""
-    if rec.ext_id:
-        # Check library
-        library_exists = session.exec(
-            select(MediaItem).where(MediaItem.tmdb_id == rec.ext_id, MediaItem.type == rec.type)
-        ).first() is not None
-        if library_exists:
-            raise HTTPException(status_code=400, detail="This item is already in the finished/completed list.")
+    """Saves a recommendation with enriched metadata, preventing duplicate submissions."""
+    norm_title = normalize_title(rec.title) if rec.title else None
 
-        # Check if already recommended (ignore rejected ones)
+    # 1. Check Library (by ext_id or normalized title)
+    library_exists = False
+    if rec.ext_id:
+        library_exists = session.exec(
+            select(MediaItem).where(MediaItem.tmdb_id == rec.ext_id, MediaItem.type.ilike(rec.type))
+        ).first() is not None
+    if not library_exists and norm_title:
+        all_lib = session.exec(select(MediaItem).where(MediaItem.type.ilike(rec.type))).all()
+        library_exists = any(normalize_title(item.title) == norm_title for item in all_lib)
+
+    if library_exists:
+        raise HTTPException(status_code=400, detail="This item is already in your finished/completed list.")
+
+    # 2. Check existing recommendations (by ext_id or normalized title)
+    existing_rec = None
+    if rec.ext_id:
         existing_rec = session.exec(
             select(Recommendation).where(
                 Recommendation.ext_id == rec.ext_id,
-                Recommendation.type == rec.type,
-                Recommendation.status != "rejected"
+                Recommendation.type.ilike(rec.type)
             )
         ).first()
-        if existing_rec:
-            raise HTTPException(status_code=400, detail="This item has already been recommended.")
+    if not existing_rec and norm_title:
+        all_recs = session.exec(select(Recommendation).where(Recommendation.type.ilike(rec.type))).all()
+        for r in all_recs:
+            if normalize_title(r.title) == norm_title:
+                existing_rec = r
+                break
+
+    if existing_rec:
+        raise HTTPException(status_code=400, detail="This item has already been recommended.")
 
     # Fetch details synchronously so it has a profile immediately
     details = {}
