@@ -400,11 +400,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateHubGatewayUI = () => {
         const finishedTitle = document.getElementById('hubGatewayFinishedTitle');
         const rankingsTitle = document.getElementById('hubGatewayRankingsTitle');
+        const collectionsTitle = document.getElementById('hubGatewayCollectionsTitle');
+        const watchlistTitle = document.getElementById('hubGatewayWatchlistTitle');
         const categoryIcon = document.getElementById('hubGatewayCategoryIcon');
         const displayLabel = currentCategory === 'TV Series' ? 'TV Shows' : currentCategory;
         
         if (finishedTitle) finishedTitle.innerText = `Finished ${displayLabel}`;
         if (rankingsTitle) rankingsTitle.innerText = `Top 20 ${displayLabel}`;
+        if (collectionsTitle) collectionsTitle.innerText = `${displayLabel} Collections`;
+        if (watchlistTitle) watchlistTitle.innerText = `${displayLabel} Watchlist`;
         if (categoryIcon) {
             if (currentCategory === 'Movies') categoryIcon.className = 'fas fa-film';
             else if (currentCategory === 'TV Series') categoryIcon.className = 'fas fa-tv';

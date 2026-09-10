@@ -207,7 +207,19 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
         from tmdb_helper import TMDB_API_KEY
         print(f"[*] TMDB_API_KEY loaded: {'Yes (Length: ' + str(len(TMDB_API_KEY)) + ')' if TMDB_API_KEY else 'No'}")
         data = {}
-        target_ext_id = int(ext_id) if ext_id else None
+        target_ext_id = None
+        if ext_id and ext_id.strip():
+            try:
+                target_ext_id = int(ext_id.strip())
+            except (ValueError, TypeError):
+                target_ext_id = None
+
+        target_year = None
+        if year and year.strip():
+            try:
+                target_year = int(year.strip())
+            except (ValueError, TypeError):
+                target_year = None
 
         if type == "Anime":
             from jikan_helper import search_anime, get_anime_details
@@ -227,16 +239,14 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
                 data = get_manga_details(target_ext_id)
         elif type == "Movies":
             from tmdb_helper import search_movie, get_movie_details
-            y = int(year) if year else None
             if not target_ext_id and title:
-                target_ext_id = search_movie(title, y)
+                target_ext_id = search_movie(title, target_year)
             if target_ext_id:
                 data = get_movie_details(target_ext_id)
         elif type == "TV Series":
             from tmdb_helper import search_tmdb, get_tv_details
-            y = int(year) if year else None
             if not target_ext_id and title:
-                target_ext_id = search_tmdb(title, y, media_type="tv")
+                target_ext_id = search_tmdb(title, target_year, media_type="tv")
             if target_ext_id:
                 data = get_tv_details(target_ext_id)
         else:
