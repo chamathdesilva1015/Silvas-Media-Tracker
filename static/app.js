@@ -685,6 +685,78 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(`silva_collections_${category.toLowerCase()}`, JSON.stringify(existing));
     };
 
+    const deleteCustomCollection = (category, colId) => {
+        const existing = getStoredCollections(category);
+        const updated = existing.filter(c => c.id !== colId);
+        localStorage.setItem(`silva_collections_${category.toLowerCase()}`, JSON.stringify(updated));
+        renderCollections(category);
+    };
+
+    // Collection Detail Modal Logic
+    const collectionDetailModal = document.getElementById('collectionDetailModal');
+    const closeColDetailBtn = document.getElementById('closeColDetailBtn');
+    const colDetailTitle = document.getElementById('colDetailTitle');
+    const colDetailBadge = document.getElementById('colDetailBadge');
+    const colDetailCount = document.getElementById('colDetailCount');
+    const colDetailDesc = document.getElementById('colDetailDesc');
+    const colDetailEntriesList = document.getElementById('colDetailEntriesList');
+
+    const openCollectionDetail = (col) => {
+        if (!collectionDetailModal) return;
+        if (colDetailTitle) colDetailTitle.innerText = col.title;
+        if (colDetailBadge) colDetailBadge.innerText = col.badge || 'Curated';
+        if (colDetailDesc) colDetailDesc.innerText = col.desc || '';
+        
+        const items = col.matchedItems || [];
+        if (colDetailCount) {
+            colDetailCount.innerText = `${items.length} ${items.length === 1 ? 'entry' : 'entries'}`;
+        }
+
+        if (colDetailEntriesList) {
+            if (items.length === 0) {
+                colDetailEntriesList.innerHTML = `<p style="text-align: center; color: var(--text-secondary); opacity: 0.6; padding: 2rem;">No entries found in this collection.</p>`;
+            } else {
+                colDetailEntriesList.innerHTML = items.map(item => {
+                    const cover = item.cover_url || item.cover_image_url || item.poster_url || '/static/movies_header.png';
+                    const yearStr = item.release_year ? `${item.release_year}` : '';
+                    const directorStr = item.director ? ` • ${item.director}` : '';
+                    const score = item.numeric_rating ? `${item.numeric_rating}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
+                    
+                    return `
+                        <div class="col-detail-entry-row" data-id="${item.id}">
+                            <img src="${cover}" class="col-detail-thumb" alt="${item.title}" loading="lazy">
+                            <div class="col-detail-info">
+                                <span class="col-detail-title">${item.title}</span>
+                                <span class="col-detail-meta">${yearStr}${directorStr}</span>
+                            </div>
+                            ${score ? `<span class="col-detail-rating-pill">${score}</span>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                colDetailEntriesList.querySelectorAll('.col-detail-entry-row').forEach((row, idx) => {
+                    row.onclick = () => {
+                        window.openQuickInfo(items[idx]);
+                    };
+                });
+            }
+        }
+
+        collectionDetailModal.classList.add('show');
+    };
+
+    if (closeColDetailBtn) {
+        closeColDetailBtn.onclick = () => {
+            if (collectionDetailModal) collectionDetailModal.classList.remove('show');
+        };
+    }
+
+    window.addEventListener('dblclick', (e) => {
+        if (e.target === collectionDetailModal) {
+            collectionDetailModal.classList.remove('show');
+        }
+    });
+
     const renderCollections = (category) => {
         if (!collectionsGrid) return;
         const displayLabel = category === 'TV Series' ? 'TV Shows' : category;
@@ -819,7 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         collectionsGrid.innerHTML = allCollectionsToRender.map(col => {
             const matches = col.matchedItems || [];
-            const sampleCovers = matches.map(m => m.cover_image_url || m.poster_url || m.cover_url).filter(Boolean);
+            const sampleCovers = matches.map(m => m.cover_url || m.cover_image_url || m.poster_url).filter(Boolean);
             const gridCovers = sampleCovers.slice(0, 4);
             
             // Build 4-thumbnail cropped grid
@@ -832,8 +904,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 gridHtml = `<div class="collection-cover-grid count-1"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);opacity:0.4;"><i class="fas fa-layer-group" style="font-size:2.5rem;"></i></div></div>`;
             }
 
+            const deleteBtnHtml = (col.isCustom && isAdminUnlocked)
+                ? `<button class="collection-delete-btn" title="Delete Collection" data-col-id="${col.id}" onclick="event.stopPropagation();"><i class="fas fa-trash-alt"></i></button>`
+                : '';
+
             return `
-                <div class="collection-card" role="button" tabindex="0">
+                <div class="collection-card" role="button" tabindex="0" data-col-id="${col.id}" style="position: relative; cursor: pointer;">
+                    ${deleteBtnHtml}
                     ${gridHtml}
                     <div class="collection-info">
                         <span class="collection-badge">${col.badge || 'Curated'}</span>
@@ -847,6 +924,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         }).join('');
+
+        // Wire click events on collection cards to open details modal
+        collectionsGrid.querySelectorAll('.collection-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const colId = card.getAttribute('data-col-id');
+                const found = allCollectionsToRender.find(c => String(c.id) === String(colId));
+                if (found) {
+                    openCollectionDetail(found);
+                }
+            });
+
+            const delBtn = card.querySelector('.collection-delete-btn');
+            if (delBtn) {
+                delBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const colId = delBtn.getAttribute('data-col-id');
+                    const found = allCollectionsToRender.find(c => String(c.id) === String(colId));
+                    const title = found ? found.title : 'this collection';
+                    if (confirm(`Are you sure you want to delete "${title}"?`)) {
+                        deleteCustomCollection(category, colId);
+                    }
+                });
+            }
+        });
     };
 
     // ==========================================
@@ -866,6 +967,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const colStep2BackBtn = document.getElementById('colStep2BackBtn');
     const colCreateSubmitBtn = document.getElementById('colCreateSubmitBtn');
     const colSearchInput = document.getElementById('colSearchInput');
+    const colFilterLiked = document.getElementById('colFilterLiked');
+    const colFilterRating = document.getElementById('colFilterRating');
     const colEntriesList = document.getElementById('colEntriesList');
     const colSelectedCountBadge = document.getElementById('colSelectedCountBadge');
     const colStep1Badge = document.getElementById('colStep1Badge');
@@ -880,6 +983,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (colTitleInput) colTitleInput.value = '';
         if (colDescInput) colDescInput.value = '';
         if (colSearchInput) colSearchInput.value = '';
+        if (colFilterLiked) colFilterLiked.value = 'all';
+        if (colFilterRating) colFilterRating.value = 'all';
         selectedColEntryIds.clear();
         updateColStep1Validation();
         goToColStep(1);
@@ -923,34 +1028,79 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderColEntriesPicker = () => {
         if (!colEntriesList) return;
         const query = (colSearchInput ? colSearchInput.value : '').toLowerCase().trim();
-        const categoryItems = allMedia.filter(i => (i.type || '').toLowerCase() === currentCategory.toLowerCase());
         
-        let filtered = categoryItems;
+        // Match the active finished collection (all items for active category)
+        let pool = allMedia.filter(i => (i.type || '').toLowerCase() === currentCategory.toLowerCase());
+        
+        // Deduplicate duplicate keys
+        const seen = new Set();
+        pool = pool.filter(i => {
+            const key = `${(i.title || '').toLowerCase().trim()}|${i.release_year || 'any'}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        // 1. Text Query Filter (Search by title, director, genres like Top 20)
         if (query) {
-            filtered = categoryItems.filter(i => 
+            pool = pool.filter(i => 
                 (i.title || '').toLowerCase().includes(query) ||
                 (i.director || '').toLowerCase().includes(query) ||
                 (i.genres || '').toLowerCase().includes(query)
             );
         }
 
-        if (filtered.length === 0) {
+        // 2. Scouting Filters (Liked / Rating)
+        const filterLiked = colFilterLiked ? colFilterLiked.value : 'all';
+        const filterRating = colFilterRating ? colFilterRating.value : 'all';
+
+        if (filterLiked === 'liked') {
+            pool = pool.filter(it => it.is_liked);
+        } else if (filterLiked === 'unliked') {
+            pool = pool.filter(it => !it.is_liked);
+        }
+
+        if (filterRating === 'unrated') {
+            pool = pool.filter(it => {
+                const s = String(it.numeric_rating || it.rating || '');
+                return !s || s.startsWith('#');
+            });
+        } else if (filterRating !== 'all') {
+            const minRating = parseFloat(filterRating);
+            pool = pool.filter(it => {
+                const s = String(it.numeric_rating || it.rating || '');
+                if (!s || s.startsWith('#')) return false;
+                const score = parseFloat(s.replace('/10', '').trim());
+                return !isNaN(score) && score >= minRating;
+            });
+        }
+
+        // Sort: Selected items first, then alphabetical by title
+        pool.sort((a, b) => {
+            const aSelected = selectedColEntryIds.has(a.id) ? 1 : 0;
+            const bSelected = selectedColEntryIds.has(b.id) ? 1 : 0;
+            if (aSelected !== bSelected) return bSelected - aSelected;
+            return (a.title || '').localeCompare(b.title || '');
+        });
+
+        if (pool.length === 0) {
             colEntriesList.innerHTML = `<div style="text-align:center; padding: 2rem; color: var(--text-secondary); opacity: 0.6; font-size: 0.9rem;">No matching finished entries found.</div>`;
             return;
         }
 
-        colEntriesList.innerHTML = filtered.map(item => {
+        colEntriesList.innerHTML = pool.map(item => {
             const isSelected = selectedColEntryIds.has(item.id);
-            const cover = item.cover_image_url || item.poster_url || item.cover_url || '/static/movies_header.png';
+            const cover = item.cover_url || item.cover_image_url || item.poster_url || '/static/movies_header.png';
             const yearStr = item.release_year ? item.release_year : '';
-            const ratingStr = item.numeric_rating ? `${item.numeric_rating}/10` : (item.rating || '');
+            const ratingStr = item.numeric_rating ? `${item.numeric_rating}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
+            const directorStr = item.director ? ` • ${item.director}` : '';
 
             return `
                 <div class="col-entry-item ${isSelected ? 'selected' : ''}" data-id="${item.id}" role="checkbox" aria-checked="${isSelected}">
                     <img src="${cover}" class="col-entry-thumb" alt="${item.title}" loading="lazy">
                     <div class="col-entry-info">
                         <span class="col-entry-title">${item.title}</span>
-                        <span class="col-entry-meta">${yearStr}${yearStr && ratingStr ? ' • ' : ''}${ratingStr}</span>
+                        <span class="col-entry-meta">${yearStr}${directorStr}${ratingStr ? ' • ' + ratingStr : ''}</span>
                     </div>
                     <div class="col-entry-check">
                         <i class="fas fa-check"></i>
@@ -1043,6 +1193,18 @@ document.addEventListener('DOMContentLoaded', () => {
         colSearchInput.addEventListener('input', debounce(() => {
             renderColEntriesPicker();
         }, 100));
+    }
+
+    if (colFilterLiked) {
+        colFilterLiked.addEventListener('change', () => {
+            renderColEntriesPicker();
+        });
+    }
+
+    if (colFilterRating) {
+        colFilterRating.addEventListener('change', () => {
+            renderColEntriesPicker();
+        });
     }
 
     if (colCreateSubmitBtn) {

@@ -981,10 +981,28 @@
                 </div>
                 <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.2rem; text-align: left; opacity: 0.8;">Choose entries from your finished library to include in this collection.</p>
 
-                <!-- Search Bar & Filters -->
-                <div style="position: relative; margin-bottom: 1rem;">
+                <!-- Search Bar & Scouting Filters -->
+                <div style="position: relative; margin-bottom: 0.75rem;">
                     <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); opacity: 0.6;"></i>
-                    <input type="text" id="colSearchInput" placeholder="Search finished library..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.6rem; color: #fff; font-size: 0.95rem;">
+                    <input type="text" id="colSearchInput" placeholder="Search by title, director, or genre..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.6rem; color: #fff; font-size: 0.95rem;">
+                </div>
+
+                <!-- Scouting Filter Selects like Top 20 -->
+                <div class="col-scout-filters" style="display: flex; gap: 0.6rem; margin-bottom: 1rem;">
+                    <select id="colFilterLiked" style="flex: 1; padding: 0.55rem 0.8rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 8px; font-size: 0.82rem;">
+                        <option value="all" style="background:#18181f; color:#fff;">All (Liked/Unliked)</option>
+                        <option value="liked" style="background:#18181f; color:#fff;">Liked ♥</option>
+                        <option value="unliked" style="background:#18181f; color:#fff;">Unliked</option>
+                    </select>
+                    <select id="colFilterRating" style="flex: 1; padding: 0.55rem 0.8rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 8px; font-size: 0.82rem;">
+                        <option value="all" style="background:#18181f; color:#fff;">All Ratings</option>
+                        <option value="9" style="background:#18181f; color:#fff;">9+ Rating</option>
+                        <option value="8" style="background:#18181f; color:#fff;">8+ Rating</option>
+                        <option value="7" style="background:#18181f; color:#fff;">7+ Rating</option>
+                        <option value="6" style="background:#18181f; color:#fff;">6+ Rating</option>
+                        <option value="5" style="background:#18181f; color:#fff;">5+ Rating</option>
+                        <option value="unrated" style="background:#18181f; color:#fff;">Unrated</option>
+                    </select>
                 </div>
 
                 <!-- Available Entries List -->
@@ -1006,9 +1024,32 @@
         </div>
     </div>
 
+    <!-- Collection Detail Modal (View Entries Inside Collection) -->
+    <div id="collectionDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 820px; max-height: 88vh; display: flex; flex-direction: column; padding: 2rem; background: rgba(18, 18, 24, 0.96); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <span id="colDetailBadge" class="collection-badge" style="font-size: 0.75rem;">Atmosphere</span>
+                        <span id="colDetailCount" class="collection-count-tag">0 entries</span>
+                    </div>
+                    <h2 id="colDetailTitle" class="serif" style="font-size: 1.8rem; color: #fff; margin: 0;">Collection Title</h2>
+                </div>
+                <span class="close-btn" id="closeColDetailBtn" style="margin: 0; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</span>
+            </div>
+
+            <p id="colDetailDesc" style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; margin: 0 0 1.5rem 0; opacity: 0.85; text-align: left;"></p>
+
+            <!-- Entries List / Grid Container -->
+            <div id="colDetailEntriesList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 8px; margin-bottom: 0.5rem; text-align: left;">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+    </div>
+
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=433"></script>
+    <script src="app.js?v=435"></script>
 
 
 
