@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Perform the actual switch
                 currentCategory = category;
+                currentSubTab = 'Info';
                 updateGlobalTheme(category);
 
                 if (searchInput) {
@@ -326,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // Fallback if no animation needed or container missing
             currentCategory = category;
+            currentSubTab = 'Info';
             updateGlobalTheme(category);
 
             if (searchInput) {
