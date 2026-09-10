@@ -409,7 +409,9 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     justify-content: center;
 }
 
-/* Hub Buttons with White Glowing Outlines */
+/* Hub & Banner Buttons with Glowing Outlines */
+.header-category-nav .pill-tab,
+.hub-section-switcher .hub-section-btn,
 .hub-category-switcher .pill-tab, 
 .info-btn, 
 .premium-suggest-btn, 
@@ -419,6 +421,8 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.header-category-nav .pill-tab:hover,
+.hub-section-switcher .hub-section-btn:hover,
 .hub-category-switcher .pill-tab:hover, 
 .info-btn:hover, 
 .premium-suggest-btn:hover, 
@@ -427,6 +431,8 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
 }
 
+.header-category-nav .pill-tab.active,
+.hub-section-switcher .hub-section-btn.active,
 .hub-category-switcher .pill-tab.active,
 .premium-segmented-control .tuning-btn.active {
     border-color: var(--theme-accent) !important;
@@ -467,20 +473,70 @@ header::before {
 .header-main {
     display: flex;
     justify-content: center;
-    gap: 3rem;
     align-items: center;
+    position: relative;
     width: 100%;
+    min-height: 52px;
+}
+
+.header-main #addMediaBtn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.header-category-nav {
+    display: inline-flex;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 0.45rem 0.65rem;
+    background: rgba(15, 15, 20, 0.65);
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.header-category-nav .pill-tab {
+    padding: 0.75rem 1.8rem;
+    border-radius: 100px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.header-category-nav .pill-tab:hover {
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+}
+
+.header-category-nav .pill-tab.active {
+    background: var(--theme-accent) !important;
+    color: #000 !important;
+    font-weight: 800 !important;
+    border-color: var(--theme-accent) !important;
+    box-shadow: 0 0 25px var(--theme-accent-glow), 0 0 50px rgba(var(--theme-accent-rgb), 0.3) !important;
+    transform: scale(1.05);
 }
 
 .header-sub {
     display: flex;
-    justify-content: center;
-    gap: 2rem;
+    justify-content: space-between;
     align-items: center;
+    gap: 1.5rem;
     width: 100%;
     padding-top: 0.5rem;
 }
-
 
 .header-right {
     display: flex;
@@ -491,11 +547,8 @@ header::before {
 .header-filter-actions {
     display: flex;
     align-items: center;
+    gap: 1rem;
 }
-
-
-
-
 
 .header-hidden {
     transform: translateY(-100%);
@@ -505,14 +558,11 @@ header::before {
     transform: translateY(120%);
 }
 
-/* Category Banners removed - combined with header */
-
 .header-left {
     display: flex;
     align-items: center;
     gap: 2rem;
 }
-
 
 .icon-btn {
     background: none;
@@ -538,35 +588,8 @@ header .header-content {
 }
 
 header h1 {
-    display: none !important; /* Hide the anime text as requested */
+    display: none !important;
 }
-
-.category-nav-desktop {
-    display: flex;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 4px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-}
-
-.category-nav-desktop .pill-tab {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-
-.category-nav-desktop .pill-tab.active {
-    background: var(--theme-accent);
-    color: #000;
-}
-
 
 header p {
     color: var(--text-secondary);
@@ -579,45 +602,39 @@ header p {
 
 .page-tabs {
     display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.hub-back-pill {
+    display: inline-flex;
+    align-items: center;
     gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: var(--theme-accent) !important;
+    font-weight: 700;
+}
+
+.hub-back-pill:hover {
+    background: var(--theme-accent-muted) !important;
+    border-color: var(--theme-accent) !important;
+    color: #fff !important;
 }
 
 .pill-tab {
     background: transparent;
-    border: 1px solid #ffffff; /* Thinner outline with a pure white line */
+    border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 0.75rem 1.8rem;
     border-radius: 24px;
     font-family: 'Nunito', sans-serif;
-    color: #ffffff; /* Make text white */
+    color: #ffffff;
     font-weight: 700;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Softened black shadow */
-}
-
-.category-nav-desktop {
-    display: flex;
-    gap: 0.8rem;
-    padding: 0.4rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-}
-
-.category-nav-desktop .pill-tab {
-    border: none;
-    background: transparent;
-    opacity: 0.6;
-}
-
-.category-nav-desktop .pill-tab.active {
-    background: var(--theme-accent);
-    color: #000;
-    opacity: 1;
-    box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb), 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .pill-tab:hover {
@@ -1225,32 +1242,60 @@ header p {
 
 
 
-.hub-category-switcher {
+.hub-section-switcher {
     display: inline-flex;
     justify-content: center;
-    gap: 1.2rem;
-    margin: 3rem 0 2rem;
-    padding: 0.8rem;
+    gap: 1.25rem;
+    margin: 2.2rem auto 2.5rem;
+    padding: 0.6rem 0.8rem;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 100px;
-    border: 1px solid var(--border-color);
-    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.pill-tab {
-    padding: 1rem 2.2rem;
+.hub-section-switcher .hub-section-btn {
+    flex: 1;
+    padding: 1.1rem 1.8rem;
     border-radius: 100px;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    letter-spacing: 0.02em;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
-.hub-category-switcher .pill-tab.active {
-    background: var(--theme-accent);
-    color: #000;
-    box-shadow: 0 0 40px var(--theme-accent-glow), 0 15px 40px rgba(0,0,0,0.5);
-    transform: scale(1.08);
-    font-weight: 800;
+.hub-section-switcher .hub-section-btn i {
+    font-size: 1.2rem;
+    color: var(--theme-accent);
+    transition: transform 0.3s ease;
+}
+
+.hub-section-switcher .hub-section-btn:hover {
+    border-color: var(--theme-accent) !important;
+    background: var(--theme-accent-muted) !important;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--theme-accent-rgb), 0.25) !important;
+}
+
+.hub-section-switcher .hub-section-btn:hover i {
+    transform: scale(1.15);
+}
+
+.hub-category-switcher {
+    display: none;
 }
 
 
@@ -5982,52 +6027,58 @@ body.modal-open .bottom-nav {
         display: block !important;
     }
 
-    /* 1. Media Type Switcher: PRIMARY - Large Cards */
-    .hub-category-switcher {
+    /* Header Category Switcher Mobile */
+    .header-category-nav {
+        display: flex !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 0.35rem !important;
+        padding: 0.25rem 0.4rem !important;
+        background: rgba(15, 15, 20, 0.75) !important;
+        border-radius: 50px !important;
+        width: 100% !important;
+        max-width: 380px !important;
+        margin: 0 auto !important;
+    }
+
+    .header-category-nav .pill-tab {
+        padding: 0.45rem 0.75rem !important;
+        font-size: 0.78rem !important;
+        border-radius: 50px !important;
+        font-weight: 700 !important;
+    }
+
+    .header-category-nav .pill-tab.active {
+        transform: scale(1.03) !important;
+    }
+
+    /* Hub Section Switcher: Finished & Top 20 Cards */
+    .hub-section-switcher {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 0.8rem !important;
         margin: 0 0 2rem 0 !important;
+        width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
     }
 
-    .hub-category-switcher .pill-tab {
-        padding: 1.6rem 0.5rem !important; /* Very tall cards */
+    .hub-section-switcher .hub-section-btn {
+        padding: 1.4rem 0.5rem !important;
         font-size: 0.95rem !important;
         font-weight: 800 !important;
         border-radius: 16px !important;
         background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         height: auto !important;
         width: 100% !important;
         text-transform: uppercase !important;
         letter-spacing: 0.08em !important;
-    }
-
-    /* Media Specific Active Glows - Intense for Primary */
-    .hub-category-switcher .pill-tab[data-filter="Movies"].active {
-        border-color: #3498db !important;
-        box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4) !important;
-        background: rgba(52, 152, 219, 0.2) !important;
-        transform: translateY(-2px) !important;
-    }
-    .hub-category-switcher .pill-tab[data-filter="TV Series"].active {
-        border-color: #e74c3c !important;
-        box-shadow: 0 10px 30px rgba(231, 76, 60, 0.4) !important;
-        background: rgba(231, 76, 60, 0.2) !important;
-        transform: translateY(-2px) !important;
-    }
-    .hub-category-switcher .pill-tab[data-filter="Manga"].active {
-        border-color: #2ecc71 !important;
-        box-shadow: 0 10px 30px rgba(46, 204, 113, 0.4) !important;
-        background: rgba(46, 204, 113, 0.2) !important;
-        transform: translateY(-2px) !important;
-    }
-    .hub-category-switcher .pill-tab[data-filter="Anime"].active {
-        border-color: #f1c40f !important;
-        box-shadow: 0 10px 30px rgba(241, 196, 15, 0.4) !important;
-        background: rgba(241, 196, 15, 0.2) !important;
-        transform: translateY(-2px) !important;
+        flex-direction: column !important;
+        gap: 0.4rem !important;
     }
 
     /* 2. Info Buttons: SECONDARY - Compact Buttons */

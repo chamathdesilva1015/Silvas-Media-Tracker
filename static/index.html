@@ -17,7 +17,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=422">
+    <link rel="stylesheet" href="style.css?v=423">
 </head>
 
 <body class="read-only-mode">
@@ -46,31 +46,32 @@
         <div class="main-content">
             <header>
                 <div class="header-main">
-                    <div class="header-left">
-                        <h1 id="pageTitle" class="serif">Movies</h1>
-                        <button id="addMediaBtn" class="btn-primary" style="display: none; height: 42px; border-radius: 12px; font-weight: 700; padding: 0 1.2rem; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;">
-                            <i class="fas fa-plus"></i>
-                            <span class="desktop-text">Add Entry</span>
-                            <span class="mobile-text">Add</span>
-                        </button>
-                    </div>
+                    <button id="addMediaBtn" class="btn-primary header-add-btn" style="display: none; height: 42px; border-radius: 12px; font-weight: 700; padding: 0 1.2rem; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;">
+                        <i class="fas fa-plus"></i>
+                        <span class="desktop-text">Add Entry</span>
+                        <span class="mobile-text">Add</span>
+                    </button>
                     
-                    <div class="header-right">
+                    <div class="header-category-nav" id="headerCategoryNav">
+                        <button class="pill-tab active" data-filter="Movies">Movies</button>
+                        <button class="pill-tab" data-filter="TV Series">TV Shows</button>
+                        <button class="pill-tab" data-filter="Manga">Manga</button>
+                        <button class="pill-tab" data-filter="Anime">Anime</button>
+                    </div>
+                </div>
+
+                <div class="header-sub" id="headerSubControls" style="display: none;">
+                    <div class="page-tabs" id="pageTabs">
+                        <button class="pill-tab hub-back-pill" data-sub="Info"><i class="fas fa-arrow-left"></i> The Hub</button>
+                        <button class="pill-tab" data-sub="Completed">Finished</button>
+                        <button class="pill-tab" data-sub="Rankings">Top 20</button>
+                    </div>
+
+                    <div class="header-filter-actions">
                         <div class="search-container">
                             <i class="fas fa-search search-icon"></i>
                             <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
                         </div>
-                    </div>
-                </div>
-
-                <div class="header-sub">
-                    <div class="page-tabs" id="pageTabs">
-                        <button class="pill-tab" data-sub="Completed">Finished</button>
-                        <button class="pill-tab" data-sub="Rankings">Top 20</button>
-                        <button class="pill-tab active" data-sub="Info">The Hub</button>
-                    </div>
-
-                    <div class="header-filter-actions">
                         <div class="unified-filter-dropdown" id="unifiedFilter">
                             <button class="filter-trigger" id="filterTrigger">
                                 <i class="fas fa-sliders-h"></i>
@@ -108,13 +109,17 @@
         <div id="infoPage" class="info-page" style="padding: 2rem 1.5rem; color: var(--text-primary); text-align: center; max-width: 800px; margin: 0 auto;">
             <!-- Main Grid View -->
             <div id="infoIntro">
-                <h2 class="serif info-main-title">Information Hub</h2>
+                <h2 class="serif info-main-title">Movies Hub</h2>
                 
-                <div class="hub-category-switcher" id="desktopCategoryNav">
-                    <button class="pill-tab active" data-filter="Movies">Movies</button>
-                    <button class="pill-tab" data-filter="TV Series">TV Shows</button>
-                    <button class="pill-tab" data-filter="Manga">Manga</button>
-                    <button class="pill-tab" data-filter="Anime">Anime</button>
+                <div class="hub-section-switcher" id="hubSectionSwitcher">
+                    <button class="pill-tab hub-section-btn" data-sub="Completed" id="hubFinishedBtn">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Finished</span>
+                    </button>
+                    <button class="pill-tab hub-section-btn" data-sub="Rankings" id="hubRankingsBtn">
+                        <i class="fas fa-trophy"></i>
+                        <span>Top 20</span>
+                    </button>
                 </div>
                 <!-- Large Pill Container for Recommendations -->
                 <div class="recommendation-pill-box" style="background: rgba(255,255,255,0.03); border-radius: 32px; padding: 1rem 3rem 3rem 3rem; margin: 3rem auto; border: 1px solid rgba(255,255,255,0.05); max-width: 750px; backdrop-filter: blur(10px);">
@@ -877,7 +882,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=421"></script>
+    <script src="app.js?v=423"></script>
 
 
 

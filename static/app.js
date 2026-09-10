@@ -859,6 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterAndRenderMedia = () => {
         const infoPage = document.getElementById('infoPage');
         const controls = document.querySelector('.top-controls');
+        const headerSubControls = document.getElementById('headerSubControls');
 
         // --- Search/Filter Visibility Sync (Global) ---
         const searchContainer = document.querySelector('.search-container');
@@ -867,6 +868,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const shouldShow = (currentSubTab === 'Completed');
             searchContainer.style.display = shouldShow ? 'flex' : 'none';
             filterActions.style.display = shouldShow ? 'flex' : 'none';
+        }
+
+        if (headerSubControls) {
+            headerSubControls.style.display = (currentSubTab === 'Info') ? 'none' : 'flex';
         }
 
 
