@@ -17,7 +17,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=425">
+    <link rel="stylesheet" href="style.css?v=426">
 </head>
 
 <body class="read-only-mode">
@@ -46,12 +46,6 @@
         <div class="main-content">
             <header>
                 <div class="header-main">
-                    <button id="addMediaBtn" class="btn-primary header-add-btn" style="display: none; height: 42px; border-radius: 12px; font-weight: 700; padding: 0 1.2rem; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;">
-                        <i class="fas fa-plus"></i>
-                        <span class="desktop-text">Add Entry</span>
-                        <span class="mobile-text">Add</span>
-                    </button>
-                    
                     <div class="header-category-nav" id="headerCategoryNav">
                         <button class="pill-tab active" data-filter="Movies">Movies</button>
                         <button class="pill-tab" data-filter="TV Series">TV Shows</button>
@@ -114,6 +108,9 @@
                 <!-- Hub Gateway Navigation Showcase -->
                 <div class="hub-nav-showcase" id="hubNavShowcase">
                     <div class="hub-gateway-card" data-sub="Completed" id="hubGatewayFinished" role="button" tabindex="0">
+                        <button id="addMediaBtn" class="gateway-add-btn" title="Add Entry" style="display: none;">
+                            <i class="fas fa-plus"></i>
+                        </button>
                         <div class="hub-gateway-icon">
                             <i class="fas fa-film" id="hubGatewayCategoryIcon"></i>
                         </div>

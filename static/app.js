@@ -262,10 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const displayLabel = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.replace(/s$/, '');
                 
                 if (addBtn) {
-                    const desktopLabel = addBtn.querySelector('.desktop-text');
-                    if (desktopLabel) {
-                        desktopLabel.innerText = `+ Add ${displayLabel}`;
-                    }
+                    addBtn.title = `Add ${displayLabel}`;
                 }
                 if (modalTitle) {
                     modalTitle.innerText = `Add ${displayLabel}`;
@@ -346,10 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const displayLabel = currentCategory === 'TV Series' ? 'TV Show' : currentCategory.replace(/s$/, '');
             
             if (addBtn) {
-                const desktopLabel = addBtn.querySelector('.desktop-text');
-                if (desktopLabel) {
-                    desktopLabel.innerText = `+ Add ${displayLabel}`;
-                }
+                addBtn.title = `Add ${displayLabel}`;
             }
             if (modalTitle) {
                 modalTitle.innerText = `Add ${displayLabel}`;
@@ -1119,7 +1113,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('mediaForm');
 
     // Modal behavior
-    addBtn.onclick = () => {
+    addBtn.onclick = (e) => {
+        if (e) e.stopPropagation();
         // Pre-select current category and trigger logic
         const typeInput = document.getElementById('typeInput');
         typeInput.value = currentCategory;
@@ -1155,8 +1150,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewBackBtn = document.getElementById('previewBackBtn');
 
     // Reset modal state when it's closed or opened
-    document.getElementById('addMediaBtn').addEventListener('click', () => {
-
+    document.getElementById('addMediaBtn').addEventListener('click', (e) => {
+        if (e) e.stopPropagation();
         isPreviewPhase = true;
         
         // Sync modal type and title with current category

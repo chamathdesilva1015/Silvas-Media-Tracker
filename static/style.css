@@ -478,13 +478,6 @@ header::before {
     min-height: 48px;
 }
 
-.header-main #addMediaBtn {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
 .header-category-nav {
     display: inline-flex;
     justify-content: center;
@@ -1395,6 +1388,35 @@ header p {
     background: #f1c40f;
     color: #000;
     transform: translateX(3px);
+}
+
+/* Gateway Single '+' Add Button */
+.gateway-add-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    z-index: 10;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.gateway-add-btn:hover {
+    background: var(--theme-accent);
+    border-color: #fff;
+    color: #000;
+    transform: scale(1.18) rotate(90deg);
+    box-shadow: 0 0 16px var(--theme-accent-glow);
 }
 
 .hub-category-switcher,
