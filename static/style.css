@@ -1288,37 +1288,41 @@ header p {
 }
 
 .hub-gateway-icon {
-    width: 54px;
-    height: 54px;
+    width: 52px;
+    height: 52px;
     border-radius: 16px;
-    background: var(--theme-accent-muted);
-    border: 1px solid var(--theme-accent);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid var(--theme-accent);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     color: var(--theme-accent);
     flex-shrink: 0;
-    transition: all 0.35s ease;
-    box-shadow: 0 4px 15px var(--theme-accent-glow);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 16px var(--theme-accent-glow), inset 0 0 12px var(--theme-accent-muted);
 }
 
 .hub-gateway-card:hover .hub-gateway-icon {
     transform: scale(1.1) rotate(5deg);
     background: var(--theme-accent);
+    border-color: #fff;
     color: #000;
+    box-shadow: 0 0 24px var(--theme-accent-glow);
 }
 
 .hub-gateway-icon.trophy {
-    background: rgba(241, 196, 15, 0.15);
+    background: rgba(255, 255, 255, 0.04);
     border-color: #f1c40f;
     color: #f1c40f;
-    box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3);
+    box-shadow: 0 0 16px rgba(241, 196, 15, 0.35), inset 0 0 12px rgba(241, 196, 15, 0.12);
 }
 
 .hub-gateway-card:hover .hub-gateway-icon.trophy {
     background: #f1c40f;
+    border-color: #fff;
     color: #000;
+    box-shadow: 0 0 24px rgba(241, 196, 15, 0.6);
 }
 
 .hub-gateway-content {
