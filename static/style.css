@@ -441,7 +441,8 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 
 
 header {
-    padding: 1.5rem 4% 0.9rem;
+    padding: 2.2rem 4% 1.6rem;
+    min-height: 120px;
     background: rgba(10, 10, 10, 0.85);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
@@ -452,6 +453,7 @@ header {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 0.6rem;
     overflow: hidden;
 }
@@ -1311,48 +1313,6 @@ header p {
     box-shadow: 0 0 24px var(--theme-accent-glow);
 }
 
-.hub-gateway-icon.trophy {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: #f1c40f;
-    color: #f1c40f;
-    box-shadow: 0 0 16px rgba(241, 196, 15, 0.35), inset 0 0 12px rgba(241, 196, 15, 0.12);
-}
-
-.hub-gateway-card:hover .hub-gateway-icon.trophy {
-    background: #f1c40f;
-    border-color: #fff;
-    color: #000;
-    box-shadow: 0 0 24px rgba(241, 196, 15, 0.6);
-}
-
-.hub-gateway-icon.collections {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: #9b59b6;
-    color: #c084fc;
-    box-shadow: 0 0 16px rgba(155, 89, 182, 0.35), inset 0 0 12px rgba(155, 89, 182, 0.12);
-}
-
-.hub-gateway-card:hover .hub-gateway-icon.collections {
-    background: #a855f7;
-    border-color: #fff;
-    color: #000;
-    box-shadow: 0 0 24px rgba(168, 85, 247, 0.6);
-}
-
-.hub-gateway-icon.watchlist {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: #2ecc71;
-    color: #2ed573;
-    box-shadow: 0 0 16px rgba(46, 204, 113, 0.35), inset 0 0 12px rgba(46, 204, 113, 0.12);
-}
-
-.hub-gateway-card:hover .hub-gateway-icon.watchlist {
-    background: #2ecc71;
-    border-color: #fff;
-    color: #000;
-    box-shadow: 0 0 24px rgba(46, 204, 113, 0.6);
-}
-
 .hub-gateway-content {
     flex: 1;
     min-width: 0;
@@ -1366,18 +1326,6 @@ header p {
     color: var(--theme-accent);
     display: inline-block;
     margin-bottom: 0.2rem;
-}
-
-.hub-gateway-badge.trophy {
-    color: #f1c40f;
-}
-
-.hub-gateway-badge.collections {
-    color: #c084fc;
-}
-
-.hub-gateway-badge.watchlist {
-    color: #2ed573;
 }
 
 .hub-gateway-title {
@@ -1412,44 +1360,8 @@ header p {
     flex-shrink: 0;
 }
 
-.hub-gateway-action.trophy {
-    color: #f1c40f;
-    background: rgba(241, 196, 15, 0.12);
-    border-color: rgba(241, 196, 15, 0.4);
-}
-
-.hub-gateway-action.collections {
-    color: #c084fc;
-    background: rgba(155, 89, 182, 0.12);
-    border-color: rgba(155, 89, 182, 0.4);
-}
-
-.hub-gateway-action.watchlist {
-    color: #2ed573;
-    background: rgba(46, 204, 113, 0.12);
-    border-color: rgba(46, 204, 113, 0.4);
-}
-
 .hub-gateway-card:hover .hub-gateway-action {
     background: var(--theme-accent);
-    color: #000;
-    transform: translateX(3px);
-}
-
-.hub-gateway-card:hover .hub-gateway-action.trophy {
-    background: #f1c40f;
-    color: #000;
-    transform: translateX(3px);
-}
-
-.hub-gateway-card:hover .hub-gateway-action.collections {
-    background: #a855f7;
-    color: #000;
-    transform: translateX(3px);
-}
-
-.hub-gateway-card:hover .hub-gateway-action.watchlist {
-    background: #2ecc71;
     color: #000;
     transform: translateX(3px);
 }
