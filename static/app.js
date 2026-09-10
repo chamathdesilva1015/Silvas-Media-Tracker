@@ -314,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 updateCategoryTitleCount();
+                updateHubGatewayUI();
                 updateTheme();
                 filterAndRenderMedia();
                 if (typeof renderInfoAccordions === 'function') renderInfoAccordions();
@@ -393,9 +394,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             updateCategoryTitleCount();
+            updateHubGatewayUI();
             updateTheme();
             filterAndRenderMedia();
             if (typeof renderInfoAccordions === 'function') renderInfoAccordions();
+        }
+    };
+
+    const updateHubGatewayUI = () => {
+        const finishedTitle = document.getElementById('hubGatewayFinishedTitle');
+        const rankingsTitle = document.getElementById('hubGatewayRankingsTitle');
+        const categoryIcon = document.getElementById('hubGatewayCategoryIcon');
+        const displayLabel = currentCategory === 'TV Series' ? 'TV Shows' : currentCategory;
+        
+        if (finishedTitle) finishedTitle.innerText = `Finished ${displayLabel}`;
+        if (rankingsTitle) rankingsTitle.innerText = `Top 20 ${displayLabel}`;
+        if (categoryIcon) {
+            if (currentCategory === 'Movies') categoryIcon.className = 'fas fa-film';
+            else if (currentCategory === 'TV Series') categoryIcon.className = 'fas fa-tv';
+            else if (currentCategory === 'Manga') categoryIcon.className = 'fas fa-book-open';
+            else if (currentCategory === 'Anime') categoryIcon.className = 'fas fa-play-circle';
         }
     };
 
@@ -418,6 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.classList.add('active');
                 
                 updateCategoryTitleCount();
+                updateHubGatewayUI();
                 updateTheme();
                 populateGenreFilters();
                 filterAndRenderMedia();
@@ -456,6 +475,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 populateGenreFilters();
                 filterAndRenderMedia();
+            }
+        });
+    });
+
+    // Hub Gateway Navigation Cards (Finished Library & Top 20)
+    document.querySelectorAll('.hub-gateway-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            const sub = card.getAttribute('data-sub');
+            if (sub) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                currentSubTab = sub;
+                if (searchInput) searchInput.value = '';
+
+                document.querySelectorAll('.pill-tab').forEach(t => {
+                    if (t.getAttribute('data-sub')) t.classList.remove('active');
+                    if (t.getAttribute('data-sub') === currentSubTab) t.classList.add('active');
+                });
+
+                populateGenreFilters();
+                filterAndRenderMedia();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
     });

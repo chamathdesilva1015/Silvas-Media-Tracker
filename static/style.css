@@ -441,7 +441,7 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 
 
 header {
-    padding: 3rem 5% 1rem; /* Increased top padding to act as banner */
+    padding: 1.5rem 4% 0.9rem;
     background: rgba(10, 10, 10, 0.85);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
@@ -452,9 +452,8 @@ header {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    overflow: hidden; /* Ensure pseudo-element doesn't spill */
-    min-height: 180px; /* Ensure enough height to show image content */
+    gap: 0.6rem;
+    overflow: hidden;
 }
 
 header::before {
@@ -465,7 +464,7 @@ header::before {
     background-size: cover;
     background-position: right top;
     background-repeat: no-repeat;
-    opacity: 0.6; /* Less dark */
+    opacity: 0.6;
     z-index: -1;
     transition: opacity 0.5s ease;
 }
@@ -476,7 +475,7 @@ header::before {
     align-items: center;
     position: relative;
     width: 100%;
-    min-height: 52px;
+    min-height: 48px;
 }
 
 .header-main #addMediaBtn {
@@ -531,11 +530,20 @@ header::before {
 
 .header-sub {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    gap: 1.5rem;
     width: 100%;
     padding-top: 0.5rem;
+}
+
+.header-sub-inner {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin: 0 auto;
+    max-width: 1000px;
 }
 
 .header-right {
@@ -545,9 +553,9 @@ header::before {
 }
 
 .header-filter-actions {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.8rem;
 }
 
 .header-hidden {
@@ -1153,8 +1161,7 @@ header p {
 .container {
     width: 100%;
     margin: 0 auto 4rem auto;
-    padding: 0 1.5rem;
-    /* Expanded width to fit cards comfortably */
+    padding: 2.5rem 1.5rem 5rem;
 }
 
 /* Stats page must be full-width block so margin:0 auto centering works inside flex parent */
@@ -1169,26 +1176,28 @@ header p {
 
 .media-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Moved to 4 columns */
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
+    padding-top: 1.2rem;
+    scroll-margin-top: 200px;
 }
 
 .media-card {
-    background: rgba(15, 15, 20, 0.4) !important; /* Slightly darker base for background poster contrast */
+    background: rgba(15, 15, 20, 0.4) !important;
     backdrop-filter: blur(15px) saturate(160%) !important;
     -webkit-backdrop-filter: blur(15px) saturate(160%) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 20px !important;
-    padding: 1.6rem !important; /* Slightly larger padding */
+    padding: 1.6rem !important;
     position: relative;
-    /* Spring physics! Specific targeting to prevent Safari glassmorphism flicker */
     transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.3s ease, background-color 0.3s ease !important;
     display: flex;
     flex-direction: column;
-    min-height: 260px !important; /* Enlarge each tile size */
+    min-height: 260px !important;
     overflow: hidden;
     opacity: 0;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    scroll-margin-top: 200px;
 }
 
 .card-poster-bg {
@@ -1220,18 +1229,14 @@ header p {
     filter: blur(5px) brightness(0.9);
 }
 
-
-
 .media-card:hover {
-    transform: translateY(-8px) scale(1.04) !important; /* Increased scale for extra pop */
+    transform: translateY(-8px) scale(1.04) !important;
     box-shadow: 
         0 35px 80px rgba(0,0,0,0.8), 
-        0 0 80px rgba(var(--theme-accent-rgb), 0.6) !important; /* Massive intensified glow */
+        0 0 80px rgba(var(--theme-accent-rgb), 0.6) !important;
     border-color: rgba(var(--theme-accent-rgb), 0.7) !important;
     z-index: 2001 !important; 
 }
-
-
 
 /* Ensure all card content stays above the poster background */
 .card-header, .genre-container, .director-container, .card-badges {
@@ -1239,62 +1244,161 @@ header p {
     z-index: 2;
 }
 
-
-
-
-.hub-section-switcher {
-    display: inline-flex;
-    justify-content: center;
-    gap: 1.25rem;
-    margin: 2.2rem auto 2.5rem;
-    padding: 0.6rem 0.8rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 100px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    max-width: 480px;
+/* --- Hub Gateway Navigation Showcase --- */
+.hub-nav-showcase {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    max-width: 750px;
+    margin: 2.2rem auto 2.8rem;
     width: 100%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.hub-section-switcher .hub-section-btn {
-    flex: 1;
-    padding: 1.1rem 1.8rem;
-    border-radius: 100px;
-    font-size: 1.15rem;
-    font-weight: 700;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    color: #fff;
+.hub-gateway-card {
     background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 1.5rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    cursor: pointer;
+    text-align: left;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    user-select: none;
+}
+
+.hub-gateway-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 10% 50%, var(--theme-accent-muted) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+
+.hub-gateway-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: var(--theme-accent);
+    box-shadow: 0 15px 40px var(--theme-accent-glow), 0 0 30px rgba(var(--theme-accent-rgb), 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hub-gateway-card:hover::before {
+    opacity: 1;
+}
+
+.hub-gateway-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: var(--theme-accent-muted);
+    border: 1px solid var(--theme-accent);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-}
-
-.hub-section-switcher .hub-section-btn i {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     color: var(--theme-accent);
-    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    transition: all 0.35s ease;
+    box-shadow: 0 4px 15px var(--theme-accent-glow);
 }
 
-.hub-section-switcher .hub-section-btn:hover {
-    border-color: var(--theme-accent) !important;
-    background: var(--theme-accent-muted) !important;
+.hub-gateway-card:hover .hub-gateway-icon {
+    transform: scale(1.1) rotate(5deg);
+    background: var(--theme-accent);
+    color: #000;
+}
+
+.hub-gateway-icon.trophy {
+    background: rgba(241, 196, 15, 0.15);
+    border-color: #f1c40f;
+    color: #f1c40f;
+    box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3);
+}
+
+.hub-gateway-card:hover .hub-gateway-icon.trophy {
+    background: #f1c40f;
+    color: #000;
+}
+
+.hub-gateway-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.hub-gateway-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--theme-accent);
+    display: inline-block;
+    margin-bottom: 0.2rem;
+}
+
+.hub-gateway-badge.trophy {
+    color: #f1c40f;
+}
+
+.hub-gateway-title {
+    font-size: 1.25rem;
+    font-weight: 800;
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(var(--theme-accent-rgb), 0.25) !important;
+    margin: 0 0 0.25rem 0;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.01em;
 }
 
-.hub-section-switcher .hub-section-btn:hover i {
-    transform: scale(1.15);
+.hub-gateway-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.75;
+    margin: 0;
+    line-height: 1.35;
 }
 
-.hub-category-switcher {
+.hub-gateway-action {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--theme-accent);
+    padding: 0.4rem 0.8rem;
+    border-radius: 100px;
+    background: var(--theme-accent-muted);
+    border: 1px solid var(--theme-accent);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.hub-gateway-action.trophy {
+    color: #f1c40f;
+    background: rgba(241, 196, 15, 0.12);
+    border-color: rgba(241, 196, 15, 0.4);
+}
+
+.hub-gateway-card:hover .hub-gateway-action {
+    background: var(--theme-accent);
+    color: #000;
+    transform: translateX(3px);
+}
+
+.hub-gateway-card:hover .hub-gateway-action.trophy {
+    background: #f1c40f;
+    color: #000;
+    transform: translateX(3px);
+}
+
+.hub-category-switcher,
+.hub-section-switcher {
     display: none;
 }
 
@@ -6052,33 +6156,31 @@ body.modal-open .bottom-nav {
         transform: scale(1.03) !important;
     }
 
-    /* Hub Section Switcher: Finished & Top 20 Cards */
-    .hub-section-switcher {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 0.8rem !important;
-        margin: 0 0 2rem 0 !important;
-        width: 100% !important;
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        box-shadow: none !important;
+    /* Hub Gateway Showcase Mobile */
+    .hub-nav-showcase {
+        grid-template-columns: 1fr !important;
+        gap: 0.9rem !important;
+        margin: 1.5rem 0 2rem 0 !important;
     }
 
-    .hub-section-switcher .hub-section-btn {
-        padding: 1.4rem 0.5rem !important;
-        font-size: 0.95rem !important;
-        font-weight: 800 !important;
-        border-radius: 16px !important;
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        height: auto !important;
-        width: 100% !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.08em !important;
-        flex-direction: column !important;
-        gap: 0.4rem !important;
+    .hub-gateway-card {
+        padding: 1.2rem 1.3rem !important;
+        border-radius: 20px !important;
+    }
+
+    .hub-gateway-icon {
+        width: 46px !important;
+        height: 46px !important;
+        font-size: 1.2rem !important;
+        border-radius: 14px !important;
+    }
+
+    .hub-gateway-title {
+        font-size: 1.1rem !important;
+    }
+
+    .hub-gateway-desc {
+        font-size: 0.75rem !important;
     }
 
     /* 2. Info Buttons: SECONDARY - Compact Buttons */

@@ -17,7 +17,7 @@
 
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=423">
+    <link rel="stylesheet" href="style.css?v=424">
 </head>
 
 <body class="read-only-mode">
@@ -61,23 +61,25 @@
                 </div>
 
                 <div class="header-sub" id="headerSubControls" style="display: none;">
-                    <div class="page-tabs" id="pageTabs">
-                        <button class="pill-tab hub-back-pill" data-sub="Info"><i class="fas fa-arrow-left"></i> The Hub</button>
-                        <button class="pill-tab" data-sub="Completed">Finished</button>
-                        <button class="pill-tab" data-sub="Rankings">Top 20</button>
-                    </div>
-
-                    <div class="header-filter-actions">
-                        <div class="search-container">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
+                    <div class="header-sub-inner">
+                        <div class="page-tabs" id="pageTabs">
+                            <button class="pill-tab hub-back-pill" data-sub="Info" title="Return to Hub"><i class="fas fa-arrow-left"></i> The Hub</button>
+                            <button class="pill-tab" data-sub="Completed">Finished</button>
+                            <button class="pill-tab" data-sub="Rankings">Top 20</button>
                         </div>
-                        <div class="unified-filter-dropdown" id="unifiedFilter">
-                            <button class="filter-trigger" id="filterTrigger">
-                                <i class="fas fa-sliders-h"></i>
-                                <span>Sort & Filter</span>
-                                <span class="filter-count" id="activeFilterCount" style="display: none;">0</span>
-                            </button>
+
+                        <div class="header-filter-actions">
+                            <div class="search-container">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="searchInput" class="search-bar" placeholder="Search titles...">
+                            </div>
+                            <div class="unified-filter-dropdown" id="unifiedFilter">
+                                <button class="filter-trigger" id="filterTrigger">
+                                    <i class="fas fa-sliders-h"></i>
+                                    <span>Sort & Filter</span>
+                                    <span class="filter-count" id="activeFilterCount" style="display: none;">0</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,15 +113,37 @@
             <div id="infoIntro">
                 <h2 class="serif info-main-title">Movies Hub</h2>
                 
-                <div class="hub-section-switcher" id="hubSectionSwitcher">
-                    <button class="pill-tab hub-section-btn" data-sub="Completed" id="hubFinishedBtn">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Finished</span>
-                    </button>
-                    <button class="pill-tab hub-section-btn" data-sub="Rankings" id="hubRankingsBtn">
-                        <i class="fas fa-trophy"></i>
-                        <span>Top 20</span>
-                    </button>
+                <!-- Hub Gateway Navigation Showcase -->
+                <div class="hub-nav-showcase" id="hubNavShowcase">
+                    <div class="hub-gateway-card" data-sub="Completed" id="hubGatewayFinished" role="button" tabindex="0">
+                        <div class="hub-gateway-icon">
+                            <i class="fas fa-film" id="hubGatewayCategoryIcon"></i>
+                        </div>
+                        <div class="hub-gateway-content">
+                            <span class="hub-gateway-badge">Library</span>
+                            <h3 class="hub-gateway-title" id="hubGatewayFinishedTitle">Finished Movies</h3>
+                            <p class="hub-gateway-desc">Ratings, genres, directors & dates</p>
+                        </div>
+                        <div class="hub-gateway-action">
+                            <span>Browse</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+
+                    <div class="hub-gateway-card" data-sub="Rankings" id="hubGatewayRankings" role="button" tabindex="0">
+                        <div class="hub-gateway-icon trophy">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="hub-gateway-content">
+                            <span class="hub-gateway-badge trophy">Leaderboard</span>
+                            <h3 class="hub-gateway-title" id="hubGatewayRankingsTitle">Top 20 Rankings</h3>
+                            <p class="hub-gateway-desc">Silva's official tiered hall of fame</p>
+                        </div>
+                        <div class="hub-gateway-action trophy">
+                            <span>View</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
                 </div>
                 <!-- Large Pill Container for Recommendations -->
                 <div class="recommendation-pill-box" style="background: rgba(255,255,255,0.03); border-radius: 32px; padding: 1rem 3rem 3rem 3rem; margin: 3rem auto; border: 1px solid rgba(255,255,255,0.05); max-width: 750px; backdrop-filter: blur(10px);">
@@ -882,7 +906,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=423"></script>
+    <script src="app.js?v=424"></script>
 
 
 
