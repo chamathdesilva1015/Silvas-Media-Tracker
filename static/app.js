@@ -401,14 +401,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const finishedTitle = document.getElementById('hubGatewayFinishedTitle');
         const rankingsTitle = document.getElementById('hubGatewayRankingsTitle');
         const collectionsTitle = document.getElementById('hubGatewayCollectionsTitle');
-        const watchlistTitle = document.getElementById('hubGatewayWatchlistTitle');
+        const suggestionsTitle = document.getElementById('hubGatewaySuggestionsTitle');
         const categoryIcon = document.getElementById('hubGatewayCategoryIcon');
         const displayLabel = currentCategory === 'TV Series' ? 'TV Shows' : currentCategory;
         
         if (finishedTitle) finishedTitle.innerText = `Finished ${displayLabel}`;
         if (rankingsTitle) rankingsTitle.innerText = `Top 20 ${displayLabel}`;
         if (collectionsTitle) collectionsTitle.innerText = `${displayLabel} Collections`;
-        if (watchlistTitle) watchlistTitle.innerText = `${displayLabel} Watchlist`;
+        if (suggestionsTitle) suggestionsTitle.innerText = `${displayLabel} Suggestions`;
         if (categoryIcon) {
             if (currentCategory === 'Movies') categoryIcon.className = 'fas fa-film';
             else if (currentCategory === 'TV Series') categoryIcon.className = 'fas fa-tv';
@@ -479,10 +479,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Hub Gateway Navigation Cards (Finished Library & Top 20)
+    // Hub Gateway Navigation Cards (Finished Library, Top 20, Collections, Suggestions)
     document.querySelectorAll('.hub-gateway-card').forEach(card => {
         card.addEventListener('click', (e) => {
             const sub = card.getAttribute('data-sub');
+            if (sub === 'Suggestions') {
+                // Trigger the Suggestions modal and algorithm
+                if (suggestionModal) {
+                    suggestionModal.classList.add('show');
+                    if (typeof fetchSuggestions === 'function') fetchSuggestions();
+                }
+                return;
+            }
+
             if (sub) {
                 navLinks.forEach(l => l.classList.remove('active'));
                 currentSubTab = sub;
@@ -650,6 +659,163 @@ document.addEventListener('DOMContentLoaded', () => {
             filterAndRenderMedia();
         });
     }
+
+    const collectionsGrid = document.getElementById('collectionsGrid');
+    const collectionsMainTitle = document.getElementById('collectionsMainTitle');
+
+    const renderCollections = (category) => {
+        if (!collectionsGrid) return;
+        const displayLabel = category === 'TV Series' ? 'TV Shows' : category;
+        if (collectionsMainTitle) {
+            collectionsMainTitle.innerText = `${displayLabel} Collections`;
+        }
+
+        const categoryItems = allMedia.filter(i => (i.type || '').toLowerCase() === category.toLowerCase());
+
+        // Dynamic sample collections based on category
+        let collectionsData = [];
+        if (category === 'Movies') {
+            collectionsData = [
+                {
+                    title: "Actually Scary Horror",
+                    badge: "Atmosphere",
+                    desc: "Films that genuinely unsettled or terrified me rather than relying on cheap jumpscares.",
+                    filter: item => (item.genres || '').toLowerCase().includes('horror') || (item.genres || '').toLowerCase().includes('thriller'),
+                    fallbackImages: ['/static/movies_header.png']
+                },
+                {
+                    title: "Animated Masterpieces",
+                    badge: "Visuals & Heart",
+                    desc: "Animation that transcends age — storytelling, art direction, and emotional weight.",
+                    filter: item => (item.genres || '').toLowerCase().includes('animation'),
+                    fallbackImages: ['/static/movies_header.png']
+                },
+                {
+                    title: "Mind-Bending Sci-Fi",
+                    badge: "High Concept",
+                    desc: "Space odysseys, time loops, and philosophical thought experiments.",
+                    filter: item => (item.genres || '').toLowerCase().includes('science fiction') || (item.genres || '').toLowerCase().includes('sci-fi'),
+                    fallbackImages: ['/static/movies_header.png']
+                },
+                {
+                    title: "Silva's Personal Tier 10s",
+                    badge: "Pinnacle",
+                    desc: "The absolute highest rated cinematic experiences in the vault.",
+                    filter: item => (item.numeric_rating >= 9 || (typeof item.rating === 'string' && item.rating.includes('10'))),
+                    fallbackImages: ['/static/movies_header.png']
+                }
+            ];
+        } else if (category === 'TV Series') {
+            collectionsData = [
+                {
+                    title: "Peak Prestige Drama",
+                    badge: "Elite Writing",
+                    desc: "Gripping serialized narratives, stellar character arcs, and unforgettable climaxes.",
+                    filter: item => (item.genres || '').toLowerCase().includes('drama'),
+                    fallbackImages: ['/static/tv_shows_header.png']
+                },
+                {
+                    title: "Comfort Rewatches",
+                    badge: "Binge-Worthy",
+                    desc: "Shows with infectious chemistry that can be put on at any time.",
+                    filter: item => (item.genres || '').toLowerCase().includes('comedy') || (item.genres || '').toLowerCase().includes('animation'),
+                    fallbackImages: ['/static/tv_shows_header.png']
+                },
+                {
+                    title: "Dark Thrillers & Mystery",
+                    badge: "Edge of Seat",
+                    desc: "Intricate puzzles, conspiracies, and gripping crime procedurals.",
+                    filter: item => (item.genres || '').toLowerCase().includes('mystery') || (item.genres || '').toLowerCase().includes('crime'),
+                    fallbackImages: ['/static/tv_shows_header.png']
+                }
+            ];
+        } else if (category === 'Manga') {
+            collectionsData = [
+                {
+                    title: "Unrivaled Art & Panels",
+                    badge: "Visual Spectacle",
+                    desc: "Mangas with god-tier double spreads and line-work that stops you in your tracks.",
+                    filter: item => item.is_liked || (item.numeric_rating >= 8.5),
+                    fallbackImages: ['/static/manga_header.png']
+                },
+                {
+                    title: "Psychological & Seinen",
+                    badge: "Complex",
+                    desc: "Mature narratives tackling moral ambiguity, dread, and identity.",
+                    filter: item => (item.genres || '').toLowerCase().includes('psychological') || (item.genres || '').toLowerCase().includes('drama'),
+                    fallbackImages: ['/static/manga_header.png']
+                },
+                {
+                    title: "Peak Battle Shonen",
+                    badge: "Hype & Progression",
+                    desc: "Iconic power systems, high stakes tournaments, and tear-jerking resolutions.",
+                    filter: item => (item.genres || '').toLowerCase().includes('action') || (item.genres || '').toLowerCase().includes('shounen'),
+                    fallbackImages: ['/static/manga_header.png']
+                }
+            ];
+        } else {
+            // Anime
+            collectionsData = [
+                {
+                    title: "Sakuga & High Octane",
+                    badge: "Animation Flex",
+                    desc: "Shows with jaw-dropping choreography and fluid frame-by-frame masterclasses.",
+                    filter: item => (item.genres || '').toLowerCase().includes('action') || item.is_liked,
+                    fallbackImages: ['/static/anime_header.png']
+                },
+                {
+                    title: "Existential & Philosophical",
+                    badge: "Mind Expansion",
+                    desc: "Classic and modern masterpieces that leave you staring at the ceiling at 3 AM.",
+                    filter: item => (item.genres || '').toLowerCase().includes('psychological') || (item.genres || '').toLowerCase().includes('sci-fi'),
+                    fallbackImages: ['/static/anime_header.png']
+                },
+                {
+                    title: "Emotional Gut-Punches",
+                    badge: "Tearjerkers",
+                    desc: "Bittersweet dramas and romance stories guaranteed to leave an impact.",
+                    filter: item => (item.genres || '').toLowerCase().includes('drama') || (item.genres || '').toLowerCase().includes('romance'),
+                    fallbackImages: ['/static/anime_header.png']
+                }
+            ];
+        }
+
+        collectionsGrid.innerHTML = collectionsData.map(col => {
+            const matches = categoryItems.filter(col.filter);
+            const sampleCovers = matches.slice(0, 3).map(m => m.cover_image_url || m.poster_url).filter(Boolean);
+            
+            // Build stack of images
+            let stackHtml = '';
+            if (sampleCovers.length >= 3) {
+                stackHtml = `
+                    <img src="${sampleCovers[1]}" alt="cover" loading="lazy">
+                    <img src="${sampleCovers[2]}" alt="cover" loading="lazy">
+                    <img src="${sampleCovers[0]}" alt="cover" loading="lazy">
+                `;
+            } else if (sampleCovers.length > 0) {
+                stackHtml = sampleCovers.map((c, i) => `<img src="${c}" alt="cover" style="position:relative; transform:none; opacity:1;" loading="lazy">`).join('');
+            } else {
+                stackHtml = `<div style="color:var(--text-secondary); opacity:0.4; font-size:0.85rem;"><i class="fas fa-layer-group" style="font-size:2rem; margin-bottom:0.5rem; display:block;"></i>Draft Collection</div>`;
+            }
+
+            return `
+                <div class="collection-card" role="button" tabindex="0">
+                    <div class="collection-cover-stack">
+                        ${stackHtml}
+                    </div>
+                    <div class="collection-info">
+                        <span class="collection-badge">${col.badge}</span>
+                        <h3 class="collection-title">${col.title}</h3>
+                        <p class="collection-desc">${col.desc}</p>
+                        <div class="collection-footer">
+                            <span>Curated by Silva</span>
+                            <span class="collection-count-tag">${matches.length > 0 ? `${matches.length} entries` : 'Curating...'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
 
     const statsPage = document.getElementById('hubStatsContainer');
 
@@ -916,8 +1082,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         const rankingsAdminConsole = document.getElementById('rankingsAdminConsole');
+        const collectionsContainer = document.getElementById('collectionsContainer');
+
         if (currentSubTab === 'Info') {
             grid.style.display = 'none';
+            if (collectionsContainer) collectionsContainer.style.display = 'none';
             if (rankingsAdminConsole) rankingsAdminConsole.style.display = 'none';
             if (infoPage) {
                 infoPage.style.display = 'block';
@@ -944,7 +1113,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // KEEP the add button visible even in Info/Stats if admin is unlocked
             if (isAdminUnlocked && addBtn) addBtn.style.display = 'flex';
             return;
+        } else if (currentSubTab === 'Collections') {
+            grid.style.display = 'none';
+            if (infoPage) infoPage.style.display = 'none';
+            if (rankingsAdminConsole) rankingsAdminConsole.style.display = 'none';
+            if (controls) controls.style.display = 'flex';
+            if (collectionsContainer) {
+                collectionsContainer.style.display = 'block';
+                renderCollections(currentCategory);
+            }
+            if (isAdminUnlocked && addBtn) addBtn.style.display = 'flex';
+            return;
         } else {
+            if (collectionsContainer) collectionsContainer.style.display = 'none';
             grid.style.display = (currentSubTab === 'Rankings') ? 'block' : 'grid';
             if (rankingsAdminConsole) {
                 if (isAdminUnlocked && currentSubTab === 'Rankings') {

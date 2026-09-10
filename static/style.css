@@ -6567,3 +6567,135 @@ body.modal-open .bottom-nav {
 }
 
 /* Reuse existing .rating-detail-list styles for the list items */
+
+/* --- Collections Page (Rough Draft) --- */
+.collections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.8rem;
+    width: 100%;
+}
+
+.collection-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.collection-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--theme-accent);
+    box-shadow: 0 15px 35px var(--theme-accent-glow), 0 0 25px rgba(var(--theme-accent-rgb), 0.2);
+}
+
+.collection-cover-stack {
+    position: relative;
+    height: 180px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.5));
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.collection-cover-stack img {
+    position: absolute;
+    width: 90px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: transform 0.35s ease;
+}
+
+.collection-cover-stack img:nth-child(1) {
+    transform: translateX(-35px) rotate(-8deg) scale(0.9);
+    z-index: 1;
+    opacity: 0.7;
+}
+
+.collection-cover-stack img:nth-child(2) {
+    transform: translateX(35px) rotate(8deg) scale(0.9);
+    z-index: 1;
+    opacity: 0.7;
+}
+
+.collection-cover-stack img:nth-child(3) {
+    transform: translateX(0) scale(1);
+    z-index: 2;
+}
+
+.collection-card:hover .collection-cover-stack img:nth-child(1) {
+    transform: translateX(-48px) rotate(-14deg) scale(0.92);
+}
+
+.collection-card:hover .collection-cover-stack img:nth-child(2) {
+    transform: translateX(48px) rotate(14deg) scale(0.92);
+}
+
+.collection-card:hover .collection-cover-stack img:nth-child(3) {
+    transform: translateY(-5px) scale(1.05);
+}
+
+.collection-info {
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    flex: 1;
+}
+
+.collection-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--theme-accent);
+}
+
+.collection-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.collection-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.collection-footer {
+    margin-top: auto;
+    padding-top: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.collection-count-tag {
+    background: var(--theme-accent-muted);
+    color: var(--theme-accent);
+    padding: 0.2rem 0.6rem;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    border: 1px solid var(--theme-accent);
+}
