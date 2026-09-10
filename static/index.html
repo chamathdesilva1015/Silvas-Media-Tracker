@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=432">
+    <link rel="stylesheet" href="style.css?v=433">
 </head>
 
 <body class="read-only-mode">
@@ -146,6 +146,9 @@
                     </div>
 
                     <div class="hub-gateway-card" data-sub="Collections" id="hubGatewayCollections" role="button" tabindex="0">
+                        <button id="addCollectionBtn" class="gateway-add-btn" title="Add Collection" style="display: none;">
+                            <i class="fas fa-plus"></i>
+                        </button>
                         <div class="hub-gateway-icon">
                             <i class="fas fa-layer-group" id="hubGatewayCollectionsIcon"></i>
                         </div>
@@ -922,9 +925,90 @@
         </div>
     </div>
 
+    <!-- Collection Creator Modal (2-Step Wizard) -->
+    <div id="collectionCreatorModal" class="modal">
+        <div class="modal-content" style="max-width: 650px; background: rgba(18, 18, 22, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 25px 50px rgba(0,0,0,0.6); border-radius: 24px; padding: 2rem 2.2rem;">
+            <span class="close-btn" id="closeCollectionCreatorBtn">&times;</span>
+            
+            <!-- Step Indicators -->
+            <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+                <div id="colStep1Badge" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--theme-accent);">
+                    <span style="width: 26px; height: 26px; border-radius: 50%; background: var(--theme-accent); color: #000; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800;">1</span>
+                    Details
+                </div>
+                <div style="width: 40px; height: 2px; background: rgba(255,255,255,0.15);" id="colStepLine"></div>
+                <div id="colStep2Badge" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); opacity: 0.5;">
+                    <span style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800;">2</span>
+                    Select Entries
+                </div>
+            </div>
+
+            <!-- STEP 1: Title & Description -->
+            <div id="colStep1View" style="display: block;">
+                <h2 class="serif" id="colModalTitle" style="font-size: 1.6rem; color: #fff; margin-bottom: 0.3rem;">Create New Collection</h2>
+                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.8rem; opacity: 0.85;">Give your curated showcase a distinctive title and hook.</p>
+
+                <div class="form-group" style="margin-bottom: 1.5rem; text-align: left;">
+                    <label for="colTitleInput" style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                        <span>Collection Title</span>
+                        <span id="colTitleCharCount" style="font-size: 0.75rem; opacity: 0.6;">0/3 min</span>
+                    </label>
+                    <input type="text" id="colTitleInput" placeholder="e.g. Actually Scary Horror, Comfort Rewatches..." style="width: 100%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1.1rem; color: #fff; font-size: 1.05rem; font-family: 'Outfit', sans-serif; transition: all 0.25s;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2rem; text-align: left;">
+                    <label for="colDescInput" style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                        <span>Collection Description</span>
+                        <span id="colDescCharCount" style="font-size: 0.75rem; opacity: 0.6;">0/5 min</span>
+                    </label>
+                    <textarea id="colDescInput" rows="3" placeholder="Briefly describe what ties these selections together..." style="width: 100%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1.1rem; color: #fff; font-size: 0.95rem; font-family: 'Inter', sans-serif; resize: vertical; transition: all 0.25s;"></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.2rem;">
+                    <button id="colStep1CancelBtn" class="btn-secondary" style="padding: 0.75rem 1.4rem; border-radius: 12px; font-weight: 600;">Cancel</button>
+                    <button id="colStep1NextBtn" class="btn-primary" style="display: none; padding: 0.75rem 1.8rem; border-radius: 12px; font-weight: 700; font-size: 0.95rem;">
+                        <span>Next: Select Entries</span>
+                        <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Choose Finished Entries (Search & Pick) -->
+            <div id="colStep2View" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                    <h2 class="serif" style="font-size: 1.5rem; color: #fff; margin: 0;">Select Finished Entries</h2>
+                    <span id="colSelectedCountBadge" style="background: var(--theme-accent-muted); color: var(--theme-accent); border: 1px solid var(--theme-accent); padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.8rem; font-weight: 800;">0 Selected (Min 1)</span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.2rem; text-align: left; opacity: 0.8;">Choose entries from your finished library to include in this collection.</p>
+
+                <!-- Search Bar & Filters -->
+                <div style="position: relative; margin-bottom: 1rem;">
+                    <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); opacity: 0.6;"></i>
+                    <input type="text" id="colSearchInput" placeholder="Search finished library..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.6rem; color: #fff; font-size: 0.95rem;">
+                </div>
+
+                <!-- Available Entries List -->
+                <div id="colEntriesList" style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; margin-bottom: 1.5rem; text-align: left;">
+                    <!-- Dynamically populated entries -->
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.2rem;">
+                    <button id="colStep2BackBtn" class="btn-secondary" style="padding: 0.75rem 1.4rem; border-radius: 12px; font-weight: 600;">
+                        <i class="fas fa-arrow-left" style="margin-right: 0.4rem;"></i>
+                        Back
+                    </button>
+                    <button id="colCreateSubmitBtn" class="btn-primary" disabled style="padding: 0.75rem 2rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; opacity: 0.5; cursor: not-allowed;">
+                        <i class="fas fa-sparkles" style="margin-right: 0.4rem;"></i>
+                        Create Collection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=425"></script>
+    <script src="app.js?v=433"></script>
 
 
 

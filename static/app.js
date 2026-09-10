@@ -118,9 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if(guestActions) guestActions.style.display = 'none';
             if(devActions) devActions.style.display = 'block';
             
-            // Show global add button in header
+            // Show global add button in header and hub gateway cards
             const globalAddBtn = document.getElementById('addMediaBtn');
             if (globalAddBtn) globalAddBtn.style.display = 'flex';
+
+            const addColBtn = document.getElementById('addCollectionBtn');
+            if (addColBtn) addColBtn.style.display = 'flex';
         } else {
             document.body.classList.add('read-only-mode');
             document.getElementById('reviewInputBox').readOnly = true;
@@ -132,6 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Hide global add button
             const globalAddBtn = document.getElementById('addMediaBtn');
             if (globalAddBtn) globalAddBtn.style.display = 'none';
+
+            const addColBtn = document.getElementById('addCollectionBtn');
+            if (addColBtn) addColBtn.style.display = 'none';
         }
 
         if (rankingsAdminConsole) {
@@ -663,6 +669,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const collectionsGrid = document.getElementById('collectionsGrid');
     const collectionsMainTitle = document.getElementById('collectionsMainTitle');
 
+    // Load custom user collections from localStorage
+    const getStoredCollections = (category) => {
+        try {
+            const raw = localStorage.getItem(`silva_collections_${category.toLowerCase()}`);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    };
+
+    const saveCustomCollection = (category, collection) => {
+        const existing = getStoredCollections(category);
+        existing.unshift(collection);
+        localStorage.setItem(`silva_collections_${category.toLowerCase()}`, JSON.stringify(existing));
+    };
+
     const renderCollections = (category) => {
         if (!collectionsGrid) return;
         const displayLabel = category === 'TV Series' ? 'TV Shows' : category;
@@ -671,140 +693,150 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const categoryItems = allMedia.filter(i => (i.type || '').toLowerCase() === category.toLowerCase());
+        const customCollections = getStoredCollections(category);
 
-        // Dynamic sample collections based on category
-        let collectionsData = [];
+        // Dynamic starter collections based on category
+        let starterCollections = [];
         if (category === 'Movies') {
-            collectionsData = [
+            starterCollections = [
                 {
+                    id: 'c-movies-1',
                     title: "Actually Scary Horror",
                     badge: "Atmosphere",
                     desc: "Films that genuinely unsettled or terrified me rather than relying on cheap jumpscares.",
                     filter: item => (item.genres || '').toLowerCase().includes('horror') || (item.genres || '').toLowerCase().includes('thriller'),
-                    fallbackImages: ['/static/movies_header.png']
                 },
                 {
+                    id: 'c-movies-2',
                     title: "Animated Masterpieces",
                     badge: "Visuals & Heart",
                     desc: "Animation that transcends age — storytelling, art direction, and emotional weight.",
                     filter: item => (item.genres || '').toLowerCase().includes('animation'),
-                    fallbackImages: ['/static/movies_header.png']
                 },
                 {
+                    id: 'c-movies-3',
                     title: "Mind-Bending Sci-Fi",
                     badge: "High Concept",
                     desc: "Space odysseys, time loops, and philosophical thought experiments.",
                     filter: item => (item.genres || '').toLowerCase().includes('science fiction') || (item.genres || '').toLowerCase().includes('sci-fi'),
-                    fallbackImages: ['/static/movies_header.png']
                 },
                 {
+                    id: 'c-movies-4',
                     title: "Silva's Personal Tier 10s",
                     badge: "Pinnacle",
                     desc: "The absolute highest rated cinematic experiences in the vault.",
                     filter: item => (item.numeric_rating >= 9 || (typeof item.rating === 'string' && item.rating.includes('10'))),
-                    fallbackImages: ['/static/movies_header.png']
                 }
             ];
         } else if (category === 'TV Series') {
-            collectionsData = [
+            starterCollections = [
                 {
+                    id: 'c-tv-1',
                     title: "Peak Prestige Drama",
                     badge: "Elite Writing",
                     desc: "Gripping serialized narratives, stellar character arcs, and unforgettable climaxes.",
                     filter: item => (item.genres || '').toLowerCase().includes('drama'),
-                    fallbackImages: ['/static/tv_shows_header.png']
                 },
                 {
+                    id: 'c-tv-2',
                     title: "Comfort Rewatches",
                     badge: "Binge-Worthy",
                     desc: "Shows with infectious chemistry that can be put on at any time.",
                     filter: item => (item.genres || '').toLowerCase().includes('comedy') || (item.genres || '').toLowerCase().includes('animation'),
-                    fallbackImages: ['/static/tv_shows_header.png']
                 },
                 {
+                    id: 'c-tv-3',
                     title: "Dark Thrillers & Mystery",
                     badge: "Edge of Seat",
                     desc: "Intricate puzzles, conspiracies, and gripping crime procedurals.",
                     filter: item => (item.genres || '').toLowerCase().includes('mystery') || (item.genres || '').toLowerCase().includes('crime'),
-                    fallbackImages: ['/static/tv_shows_header.png']
                 }
             ];
         } else if (category === 'Manga') {
-            collectionsData = [
+            starterCollections = [
                 {
+                    id: 'c-manga-1',
                     title: "Unrivaled Art & Panels",
                     badge: "Visual Spectacle",
                     desc: "Mangas with god-tier double spreads and line-work that stops you in your tracks.",
                     filter: item => item.is_liked || (item.numeric_rating >= 8.5),
-                    fallbackImages: ['/static/manga_header.png']
                 },
                 {
+                    id: 'c-manga-2',
                     title: "Psychological & Seinen",
                     badge: "Complex",
                     desc: "Mature narratives tackling moral ambiguity, dread, and identity.",
                     filter: item => (item.genres || '').toLowerCase().includes('psychological') || (item.genres || '').toLowerCase().includes('drama'),
-                    fallbackImages: ['/static/manga_header.png']
                 },
                 {
+                    id: 'c-manga-3',
                     title: "Peak Battle Shonen",
                     badge: "Hype & Progression",
                     desc: "Iconic power systems, high stakes tournaments, and tear-jerking resolutions.",
                     filter: item => (item.genres || '').toLowerCase().includes('action') || (item.genres || '').toLowerCase().includes('shounen'),
-                    fallbackImages: ['/static/manga_header.png']
                 }
             ];
         } else {
             // Anime
-            collectionsData = [
+            starterCollections = [
                 {
+                    id: 'c-anime-1',
                     title: "Sakuga & High Octane",
                     badge: "Animation Flex",
                     desc: "Shows with jaw-dropping choreography and fluid frame-by-frame masterclasses.",
                     filter: item => (item.genres || '').toLowerCase().includes('action') || item.is_liked,
-                    fallbackImages: ['/static/anime_header.png']
                 },
                 {
+                    id: 'c-anime-2',
                     title: "Existential & Philosophical",
                     badge: "Mind Expansion",
                     desc: "Classic and modern masterpieces that leave you staring at the ceiling at 3 AM.",
                     filter: item => (item.genres || '').toLowerCase().includes('psychological') || (item.genres || '').toLowerCase().includes('sci-fi'),
-                    fallbackImages: ['/static/anime_header.png']
                 },
                 {
+                    id: 'c-anime-3',
                     title: "Emotional Gut-Punches",
                     badge: "Tearjerkers",
                     desc: "Bittersweet dramas and romance stories guaranteed to leave an impact.",
                     filter: item => (item.genres || '').toLowerCase().includes('drama') || (item.genres || '').toLowerCase().includes('romance'),
-                    fallbackImages: ['/static/anime_header.png']
                 }
             ];
         }
 
-        collectionsGrid.innerHTML = collectionsData.map(col => {
-            const matches = categoryItems.filter(col.filter);
-            const sampleCovers = matches.slice(0, 3).map(m => m.cover_image_url || m.poster_url).filter(Boolean);
+        // Combine custom collections + starter collections
+        const allCollectionsToRender = [
+            ...customCollections.map(c => ({
+                ...c,
+                isCustom: true,
+                matchedItems: categoryItems.filter(item => (c.entryIds || []).includes(item.id))
+            })),
+            ...starterCollections.map(c => ({
+                ...c,
+                isCustom: false,
+                matchedItems: categoryItems.filter(c.filter)
+            }))
+        ];
+
+        collectionsGrid.innerHTML = allCollectionsToRender.map(col => {
+            const matches = col.matchedItems || [];
+            const sampleCovers = matches.map(m => m.cover_image_url || m.poster_url || m.cover_url).filter(Boolean);
+            const gridCovers = sampleCovers.slice(0, 4);
             
-            // Build stack of images
-            let stackHtml = '';
-            if (sampleCovers.length >= 3) {
-                stackHtml = `
-                    <img src="${sampleCovers[1]}" alt="cover" loading="lazy">
-                    <img src="${sampleCovers[2]}" alt="cover" loading="lazy">
-                    <img src="${sampleCovers[0]}" alt="cover" loading="lazy">
-                `;
-            } else if (sampleCovers.length > 0) {
-                stackHtml = sampleCovers.map((c, i) => `<img src="${c}" alt="cover" style="position:relative; transform:none; opacity:1;" loading="lazy">`).join('');
+            // Build 4-thumbnail cropped grid
+            let gridHtml = '';
+            if (gridCovers.length > 0) {
+                const countClass = `count-${Math.min(gridCovers.length, 4)}`;
+                const thumbs = gridCovers.map(c => `<img src="${c}" class="grid-thumb" alt="thumbnail" loading="lazy">`).join('');
+                gridHtml = `<div class="collection-cover-grid ${countClass}">${thumbs}</div>`;
             } else {
-                stackHtml = `<div style="color:var(--text-secondary); opacity:0.4; font-size:0.85rem;"><i class="fas fa-layer-group" style="font-size:2rem; margin-bottom:0.5rem; display:block;"></i>Draft Collection</div>`;
+                gridHtml = `<div class="collection-cover-grid count-1"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);opacity:0.4;"><i class="fas fa-layer-group" style="font-size:2.5rem;"></i></div></div>`;
             }
 
             return `
                 <div class="collection-card" role="button" tabindex="0">
-                    <div class="collection-cover-stack">
-                        ${stackHtml}
-                    </div>
+                    ${gridHtml}
                     <div class="collection-info">
-                        <span class="collection-badge">${col.badge}</span>
+                        <span class="collection-badge">${col.badge || 'Curated'}</span>
                         <h3 class="collection-title">${col.title}</h3>
                         <p class="collection-desc">${col.desc}</p>
                         <div class="collection-footer">
@@ -816,6 +848,237 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }).join('');
     };
+
+    // ==========================================
+    // Collection Creator Wizard Logic
+    // ==========================================
+    const addCollectionBtn = document.getElementById('addCollectionBtn');
+    const collectionCreatorModal = document.getElementById('collectionCreatorModal');
+    const closeCollectionCreatorBtn = document.getElementById('closeCollectionCreatorBtn');
+    const colStep1View = document.getElementById('colStep1View');
+    const colStep2View = document.getElementById('colStep2View');
+    const colTitleInput = document.getElementById('colTitleInput');
+    const colDescInput = document.getElementById('colDescInput');
+    const colTitleCharCount = document.getElementById('colTitleCharCount');
+    const colDescCharCount = document.getElementById('colDescCharCount');
+    const colStep1NextBtn = document.getElementById('colStep1NextBtn');
+    const colStep1CancelBtn = document.getElementById('colStep1CancelBtn');
+    const colStep2BackBtn = document.getElementById('colStep2BackBtn');
+    const colCreateSubmitBtn = document.getElementById('colCreateSubmitBtn');
+    const colSearchInput = document.getElementById('colSearchInput');
+    const colEntriesList = document.getElementById('colEntriesList');
+    const colSelectedCountBadge = document.getElementById('colSelectedCountBadge');
+    const colStep1Badge = document.getElementById('colStep1Badge');
+    const colStep2Badge = document.getElementById('colStep2Badge');
+    const colModalTitle = document.getElementById('colModalTitle');
+
+    let selectedColEntryIds = new Set();
+    const MIN_TITLE_LEN = 3;
+    const MIN_DESC_LEN = 5;
+
+    const resetCollectionModal = () => {
+        if (colTitleInput) colTitleInput.value = '';
+        if (colDescInput) colDescInput.value = '';
+        if (colSearchInput) colSearchInput.value = '';
+        selectedColEntryIds.clear();
+        updateColStep1Validation();
+        goToColStep(1);
+    };
+
+    const goToColStep = (step) => {
+        if (step === 1) {
+            if (colStep1View) colStep1View.style.display = 'block';
+            if (colStep2View) colStep2View.style.display = 'none';
+            if (colStep1Badge) { colStep1Badge.style.color = 'var(--theme-accent)'; colStep1Badge.style.opacity = '1'; }
+            if (colStep2Badge) { colStep2Badge.style.color = 'var(--text-secondary)'; colStep2Badge.style.opacity = '0.5'; }
+        } else if (step === 2) {
+            if (colStep1View) colStep1View.style.display = 'none';
+            if (colStep2View) colStep2View.style.display = 'block';
+            if (colStep1Badge) { colStep1Badge.style.color = 'var(--text-secondary)'; colStep1Badge.style.opacity = '0.6'; }
+            if (colStep2Badge) { colStep2Badge.style.color = 'var(--theme-accent)'; colStep2Badge.style.opacity = '1'; }
+            renderColEntriesPicker();
+            if (colSearchInput) colSearchInput.focus();
+        }
+    };
+
+    const updateColStep1Validation = () => {
+        const titleVal = (colTitleInput ? colTitleInput.value : '').trim();
+        const descVal = (colDescInput ? colDescInput.value : '').trim();
+
+        if (colTitleCharCount) {
+            colTitleCharCount.innerText = `${titleVal.length}/${MIN_TITLE_LEN} min`;
+            colTitleCharCount.style.color = titleVal.length >= MIN_TITLE_LEN ? 'var(--theme-accent)' : 'var(--text-secondary)';
+        }
+        if (colDescCharCount) {
+            colDescCharCount.innerText = `${descVal.length}/${MIN_DESC_LEN} min`;
+            colDescCharCount.style.color = descVal.length >= MIN_DESC_LEN ? 'var(--theme-accent)' : 'var(--text-secondary)';
+        }
+
+        const isValid = titleVal.length >= MIN_TITLE_LEN && descVal.length >= MIN_DESC_LEN;
+        if (colStep1NextBtn) {
+            colStep1NextBtn.style.display = isValid ? 'inline-flex' : 'none';
+        }
+    };
+
+    const renderColEntriesPicker = () => {
+        if (!colEntriesList) return;
+        const query = (colSearchInput ? colSearchInput.value : '').toLowerCase().trim();
+        const categoryItems = allMedia.filter(i => (i.type || '').toLowerCase() === currentCategory.toLowerCase());
+        
+        let filtered = categoryItems;
+        if (query) {
+            filtered = categoryItems.filter(i => 
+                (i.title || '').toLowerCase().includes(query) ||
+                (i.director || '').toLowerCase().includes(query) ||
+                (i.genres || '').toLowerCase().includes(query)
+            );
+        }
+
+        if (filtered.length === 0) {
+            colEntriesList.innerHTML = `<div style="text-align:center; padding: 2rem; color: var(--text-secondary); opacity: 0.6; font-size: 0.9rem;">No matching finished entries found.</div>`;
+            return;
+        }
+
+        colEntriesList.innerHTML = filtered.map(item => {
+            const isSelected = selectedColEntryIds.has(item.id);
+            const cover = item.cover_image_url || item.poster_url || item.cover_url || '/static/movies_header.png';
+            const yearStr = item.release_year ? item.release_year : '';
+            const ratingStr = item.numeric_rating ? `${item.numeric_rating}/10` : (item.rating || '');
+
+            return `
+                <div class="col-entry-item ${isSelected ? 'selected' : ''}" data-id="${item.id}" role="checkbox" aria-checked="${isSelected}">
+                    <img src="${cover}" class="col-entry-thumb" alt="${item.title}" loading="lazy">
+                    <div class="col-entry-info">
+                        <span class="col-entry-title">${item.title}</span>
+                        <span class="col-entry-meta">${yearStr}${yearStr && ratingStr ? ' • ' : ''}${ratingStr}</span>
+                    </div>
+                    <div class="col-entry-check">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Wire up selection click events
+        colEntriesList.querySelectorAll('.col-entry-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const id = parseInt(el.getAttribute('data-id'));
+                if (selectedColEntryIds.has(id)) {
+                    selectedColEntryIds.delete(id);
+                    el.classList.remove('selected');
+                } else {
+                    selectedColEntryIds.add(id);
+                    el.classList.add('selected');
+                }
+                updateColStep2Validation();
+            });
+        });
+
+        updateColStep2Validation();
+    };
+
+    const updateColStep2Validation = () => {
+        const count = selectedColEntryIds.size;
+        if (colSelectedCountBadge) {
+            colSelectedCountBadge.innerText = `${count} Selected (Min 1)`;
+            colSelectedCountBadge.style.borderColor = count >= 1 ? 'var(--theme-accent)' : 'rgba(255,255,255,0.2)';
+        }
+
+        if (colCreateSubmitBtn) {
+            if (count >= 1) {
+                colCreateSubmitBtn.disabled = false;
+                colCreateSubmitBtn.style.opacity = '1';
+                colCreateSubmitBtn.style.cursor = 'pointer';
+            } else {
+                colCreateSubmitBtn.disabled = true;
+                colCreateSubmitBtn.style.opacity = '0.5';
+                colCreateSubmitBtn.style.cursor = 'not-allowed';
+            }
+        }
+    };
+
+    if (addCollectionBtn) {
+        addCollectionBtn.addEventListener('click', (e) => {
+            if (e) e.stopPropagation();
+            const displayLabel = currentCategory === 'TV Series' ? 'TV Shows' : currentCategory;
+            if (colModalTitle) colModalTitle.innerText = `Create ${displayLabel} Collection`;
+            resetCollectionModal();
+            if (collectionCreatorModal) collectionCreatorModal.classList.add('show');
+            if (colTitleInput) colTitleInput.focus();
+        });
+    }
+
+    if (closeCollectionCreatorBtn) {
+        closeCollectionCreatorBtn.addEventListener('click', () => {
+            if (collectionCreatorModal) collectionCreatorModal.classList.remove('show');
+        });
+    }
+
+    if (colStep1CancelBtn) {
+        colStep1CancelBtn.addEventListener('click', () => {
+            if (collectionCreatorModal) collectionCreatorModal.classList.remove('show');
+        });
+    }
+
+    if (colTitleInput) {
+        colTitleInput.addEventListener('input', updateColStep1Validation);
+    }
+    if (colDescInput) {
+        colDescInput.addEventListener('input', updateColStep1Validation);
+    }
+
+    if (colStep1NextBtn) {
+        colStep1NextBtn.addEventListener('click', () => {
+            goToColStep(2);
+        });
+    }
+
+    if (colStep2BackBtn) {
+        colStep2BackBtn.addEventListener('click', () => {
+            goToColStep(1);
+        });
+    }
+
+    if (colSearchInput) {
+        colSearchInput.addEventListener('input', debounce(() => {
+            renderColEntriesPicker();
+        }, 100));
+    }
+
+    if (colCreateSubmitBtn) {
+        colCreateSubmitBtn.addEventListener('click', () => {
+            const title = (colTitleInput ? colTitleInput.value : '').trim();
+            const desc = (colDescInput ? colDescInput.value : '').trim();
+            const entryIds = Array.from(selectedColEntryIds);
+
+            if (title.length < MIN_TITLE_LEN || desc.length < MIN_DESC_LEN || entryIds.length === 0) {
+                return;
+            }
+
+            const newCollection = {
+                id: `col-${Date.now()}`,
+                title: title,
+                badge: "Custom",
+                desc: desc,
+                entryIds: entryIds,
+                created_at: new Date().toISOString()
+            };
+
+            saveCustomCollection(currentCategory, newCollection);
+
+            if (collectionCreatorModal) collectionCreatorModal.classList.remove('show');
+
+            // Switch to Collections subTab and render
+            currentSubTab = 'Collections';
+            document.querySelectorAll('.pill-tab').forEach(t => {
+                if (t.getAttribute('data-sub')) t.classList.remove('active');
+                if (t.getAttribute('data-sub') === currentSubTab) t.classList.add('active');
+            });
+
+            filterAndRenderMedia();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 
     const statsPage = document.getElementById('hubStatsContainer');
 
