@@ -696,7 +696,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const collectionDetailModal = document.getElementById('collectionDetailModal');
     const closeColDetailBtn = document.getElementById('closeColDetailBtn');
     const colDetailTitle = document.getElementById('colDetailTitle');
-    const colDetailBadge = document.getElementById('colDetailBadge');
     const colDetailCount = document.getElementById('colDetailCount');
     const colDetailDesc = document.getElementById('colDetailDesc');
     const colDetailEntriesList = document.getElementById('colDetailEntriesList');
@@ -704,7 +703,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const openCollectionDetail = (col) => {
         if (!collectionDetailModal) return;
         if (colDetailTitle) colDetailTitle.innerText = col.title;
-        if (colDetailBadge) colDetailBadge.innerText = col.badge || 'Curated';
         if (colDetailDesc) colDetailDesc.innerText = col.desc || '';
         
         const items = col.matchedItems || [];
@@ -767,113 +765,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const categoryItems = allMedia.filter(i => (i.type || '').toLowerCase() === category.toLowerCase());
         const customCollections = getStoredCollections(category);
 
-        // Dynamic starter collections based on category
-        let starterCollections = [];
-        if (category === 'Movies') {
-            starterCollections = [
-                {
-                    id: 'c-movies-1',
-                    title: "Actually Scary Horror",
-                    badge: "Atmosphere",
-                    desc: "Films that genuinely unsettled or terrified me rather than relying on cheap jumpscares.",
-                    filter: item => (item.genres || '').toLowerCase().includes('horror') || (item.genres || '').toLowerCase().includes('thriller'),
-                },
-                {
-                    id: 'c-movies-2',
-                    title: "Animated Masterpieces",
-                    badge: "Visuals & Heart",
-                    desc: "Animation that transcends age — storytelling, art direction, and emotional weight.",
-                    filter: item => (item.genres || '').toLowerCase().includes('animation'),
-                },
-                {
-                    id: 'c-movies-3',
-                    title: "Mind-Bending Sci-Fi",
-                    badge: "High Concept",
-                    desc: "Space odysseys, time loops, and philosophical thought experiments.",
-                    filter: item => (item.genres || '').toLowerCase().includes('science fiction') || (item.genres || '').toLowerCase().includes('sci-fi'),
-                },
-                {
-                    id: 'c-movies-4',
-                    title: "Silva's Personal Tier 10s",
-                    badge: "Pinnacle",
-                    desc: "The absolute highest rated cinematic experiences in the vault.",
-                    filter: item => (item.numeric_rating >= 9 || (typeof item.rating === 'string' && item.rating.includes('10'))),
-                }
-            ];
-        } else if (category === 'TV Series') {
-            starterCollections = [
-                {
-                    id: 'c-tv-1',
-                    title: "Peak Prestige Drama",
-                    badge: "Elite Writing",
-                    desc: "Gripping serialized narratives, stellar character arcs, and unforgettable climaxes.",
-                    filter: item => (item.genres || '').toLowerCase().includes('drama'),
-                },
-                {
-                    id: 'c-tv-2',
-                    title: "Comfort Rewatches",
-                    badge: "Binge-Worthy",
-                    desc: "Shows with infectious chemistry that can be put on at any time.",
-                    filter: item => (item.genres || '').toLowerCase().includes('comedy') || (item.genres || '').toLowerCase().includes('animation'),
-                },
-                {
-                    id: 'c-tv-3',
-                    title: "Dark Thrillers & Mystery",
-                    badge: "Edge of Seat",
-                    desc: "Intricate puzzles, conspiracies, and gripping crime procedurals.",
-                    filter: item => (item.genres || '').toLowerCase().includes('mystery') || (item.genres || '').toLowerCase().includes('crime'),
-                }
-            ];
-        } else if (category === 'Manga') {
-            starterCollections = [
-                {
-                    id: 'c-manga-1',
-                    title: "Unrivaled Art & Panels",
-                    badge: "Visual Spectacle",
-                    desc: "Mangas with god-tier double spreads and line-work that stops you in your tracks.",
-                    filter: item => item.is_liked || (item.numeric_rating >= 8.5),
-                },
-                {
-                    id: 'c-manga-2',
-                    title: "Psychological & Seinen",
-                    badge: "Complex",
-                    desc: "Mature narratives tackling moral ambiguity, dread, and identity.",
-                    filter: item => (item.genres || '').toLowerCase().includes('psychological') || (item.genres || '').toLowerCase().includes('drama'),
-                },
-                {
-                    id: 'c-manga-3',
-                    title: "Peak Battle Shonen",
-                    badge: "Hype & Progression",
-                    desc: "Iconic power systems, high stakes tournaments, and tear-jerking resolutions.",
-                    filter: item => (item.genres || '').toLowerCase().includes('action') || (item.genres || '').toLowerCase().includes('shounen'),
-                }
-            ];
-        } else {
-            // Anime
-            starterCollections = [
-                {
-                    id: 'c-anime-1',
-                    title: "Sakuga & High Octane",
-                    badge: "Animation Flex",
-                    desc: "Shows with jaw-dropping choreography and fluid frame-by-frame masterclasses.",
-                    filter: item => (item.genres || '').toLowerCase().includes('action') || item.is_liked,
-                },
-                {
-                    id: 'c-anime-2',
-                    title: "Existential & Philosophical",
-                    badge: "Mind Expansion",
-                    desc: "Classic and modern masterpieces that leave you staring at the ceiling at 3 AM.",
-                    filter: item => (item.genres || '').toLowerCase().includes('psychological') || (item.genres || '').toLowerCase().includes('sci-fi'),
-                },
-                {
-                    id: 'c-anime-3',
-                    title: "Emotional Gut-Punches",
-                    badge: "Tearjerkers",
-                    desc: "Bittersweet dramas and romance stories guaranteed to leave an impact.",
-                    filter: item => (item.genres || '').toLowerCase().includes('drama') || (item.genres || '').toLowerCase().includes('romance'),
-                }
-            ];
-        }
+        // No starter draft collections - clean user-created library
+        const starterCollections = [];
 
         // Combine custom collections + starter collections
         const allCollectionsToRender = [
@@ -888,6 +781,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 matchedItems: categoryItems.filter(c.filter)
             }))
         ];
+
+        if (allCollectionsToRender.length === 0) {
+            collectionsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: var(--text-secondary);">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; color: var(--theme-accent); font-size: 1.5rem;">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3 style="color: #fff; font-size: 1.25rem; font-family: 'Outfit', sans-serif; margin-bottom: 0.5rem;">No Collections Created Yet</h3>
+                    <p style="font-size: 0.9rem; opacity: 0.7; max-width: 420px; margin: 0 auto;">Click the <strong>+</strong> button on the top right to create your first themed ${displayLabel.toLowerCase()} collection.</p>
+                </div>
+            `;
+            return;
+        }
 
         collectionsGrid.innerHTML = allCollectionsToRender.map(col => {
             const matches = col.matchedItems || [];
@@ -913,12 +819,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${deleteBtnHtml}
                     ${gridHtml}
                     <div class="collection-info">
-                        <span class="collection-badge">${col.badge || 'Curated'}</span>
                         <h3 class="collection-title">${col.title}</h3>
                         <p class="collection-desc">${col.desc}</p>
                         <div class="collection-footer">
-                            <span>Curated by Silva</span>
-                            <span class="collection-count-tag">${matches.length > 0 ? `${matches.length} entries` : 'Curating...'}</span>
+                            <span class="collection-count-tag">${matches.length > 0 ? `${matches.length} ${matches.length === 1 ? 'entry' : 'entries'}` : '0 entries'}</span>
                         </div>
                     </div>
                 </div>
