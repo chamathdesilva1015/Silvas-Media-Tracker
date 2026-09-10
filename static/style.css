@@ -5904,21 +5904,26 @@ body.modal-open .bottom-nav {
 
 
 
-.header-actions {
-    display: flex;
-    gap: 1.5rem;
-    align-items: center;
-}
-
 #quickInfoSourceBtn {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 1.1rem;
-    transition: color 0.2s;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
     cursor: pointer;
+    text-decoration: none;
 }
 
 #quickInfoSourceBtn:hover {
     color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
 }
 
 #quickInfoTitle {
