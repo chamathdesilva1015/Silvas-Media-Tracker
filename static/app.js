@@ -667,7 +667,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const collectionsGrid = document.getElementById('collectionsGrid');
-    const collectionsMainTitle = document.getElementById('collectionsMainTitle');
 
     // Load custom user collections from localStorage
     const getStoredCollections = (category) => {
@@ -758,9 +757,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderCollections = (category) => {
         if (!collectionsGrid) return;
         const displayLabel = category === 'TV Series' ? 'TV Shows' : category;
-        if (collectionsMainTitle) {
-            collectionsMainTitle.innerText = `${displayLabel} Collections`;
-        }
 
         const categoryItems = allMedia.filter(i => (i.type || '').toLowerCase() === category.toLowerCase());
         const customCollections = getStoredCollections(category);
@@ -788,8 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; color: var(--theme-accent); font-size: 1.5rem;">
                         <i class="fas fa-layer-group"></i>
                     </div>
-                    <h3 style="color: #fff; font-size: 1.25rem; font-family: 'Outfit', sans-serif; margin-bottom: 0.5rem;">No Collections Created Yet</h3>
-                    <p style="font-size: 0.9rem; opacity: 0.7; max-width: 420px; margin: 0 auto;">Click the <strong>+</strong> button on the top right to create your first themed ${displayLabel.toLowerCase()} collection.</p>
+                    <h3 style="color: #fff; font-size: 1.25rem; font-family: 'Outfit', sans-serif; margin-bottom: 0;">No Collections Created Yet</h3>
                 </div>
             `;
             return;
