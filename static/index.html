@@ -94,6 +94,13 @@
             <!-- Cards will be populated here via Javascript -->
         </div>
 
+        <!-- Rankings Admin Bar (shown only when admin is on the Rankings sub-tab) -->
+        <div id="rankingsAdminConsole" style="display: none; justify-content: flex-end; align-items: center; padding: 0 0 1rem; gap: 0.75rem;">
+            <button id="manageRankingsBtn" class="btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 10px; font-size: 0.85rem;">
+                <i class="fas fa-edit"></i> Edit Top 20 List
+            </button>
+        </div>
+
         <!-- Collections Container -->
         <div id="collectionsContainer" class="collections-page" style="display: none; width: 100%; max-width: 1100px; margin: 0 auto; padding: 1rem 0 4rem;">
             <div class="collections-grid" id="collectionsGrid">
@@ -1043,7 +1050,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=437"></script>
+    <script src="app.js?v=438"></script>
 
 
 
