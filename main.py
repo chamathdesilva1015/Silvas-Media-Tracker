@@ -1,5 +1,8 @@
 import asyncio
 import os
+import time
+import hashlib
+import hmac
 from dotenv import load_dotenv
 load_dotenv() # Load env vars as early as possible
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
@@ -11,7 +14,7 @@ from sqlmodel import Session, select
 from sqlalchemy import text
 
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from database import engine, create_db_and_tables, MediaItem, RatingHistory, PassedSuggestion, Recommendation
 from enrich_data import run_enrichment
@@ -42,7 +45,69 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Dn1h7M55!")
+# --- SECURITY: Hashed Admin Secret & Constant-Time Verification ---
+_SALT = b"silva_secure_media_vault_salt_2026"
+ADMIN_RAW_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Dn1h7M55!")
+ADMIN_PASSWORD_HASH = hashlib.pbkdf2_hmac(
+    'sha256',
+    ADMIN_RAW_PASSWORD.encode('utf-8'),
+    _SALT,
+    iterations=100000
+)
+
+def verify_password_constant_time(provided_key: str) -> bool:
+    """Verifies candidate key against hashed admin secret in constant time to prevent timing attacks."""
+    if not provided_key:
+        return False
+    candidate_hash = hashlib.pbkdf2_hmac(
+        'sha256',
+        provided_key.encode('utf-8'),
+        _SALT,
+        iterations=100000
+    )
+    return hmac.compare_digest(ADMIN_PASSWORD_HASH, candidate_hash)
+
+# --- SECURITY: Global API Rate Limiter Middleware ---
+# Sliding window tracking per client IP: max 60 requests / minute for public traffic
+ip_request_history: Dict[str, List[float]] = {}
+RATE_LIMIT_WINDOW = 60.0 # 60 seconds
+MAX_REQUESTS_PER_WINDOW = 80 # Up to 80 requests per minute
+
+@app.middleware("http")
+async def global_rate_limiting_middleware(request: Request, call_next):
+    # Skip rate limiting for static assets or health checks
+    path = request.url.path
+    if not path.startswith("/api/") or path == "/api/health":
+        return await call_next(request)
+
+    # Admin requests authenticated via header bypass public rate limiting
+    admin_header = request.headers.get("x-admin-key")
+    if admin_header and verify_password_constant_time(admin_header):
+        return await call_next(request)
+
+    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    now = time.time()
+    
+    timestamps = ip_request_history.get(client_ip, [])
+    # Filter timestamps older than the sliding window
+    timestamps = [t for t in timestamps if now - t < RATE_LIMIT_WINDOW]
+    
+    if len(timestamps) >= MAX_REQUESTS_PER_WINDOW:
+        ip_request_history[client_ip] = timestamps
+        retry_after = int(RATE_LIMIT_WINDOW - (now - timestamps[0])) + 1
+        return JSONResponse(
+            status_code=429,
+            content={
+                "status": "rate_limited",
+                "detail": f"Rate limit exceeded (80 requests/min). Please slow down.",
+                "retry_after_seconds": retry_after
+            },
+            headers={"Retry-After": str(retry_after)}
+        )
+    
+    timestamps.append(now)
+    ip_request_history[client_ip] = timestamps
+    return await call_next(request)
 
 def get_session():
     with Session(engine) as session:
@@ -52,7 +117,7 @@ def check_readonly(request: Request):
     # Enforce read-only protection in Vercel or any environment with READONLY_MODE=1
     if os.environ.get("VERCEL") == "1" or os.environ.get("READONLY_MODE") == "1":
         client_key = request.headers.get("x-admin-key")
-        if client_key and client_key == ADMIN_PASSWORD:
+        if client_key and verify_password_constant_time(client_key):
             return # Unlock for valid admin
         raise HTTPException(status_code=403, detail="Action disabled in public read-only mode.")
 
@@ -73,7 +138,6 @@ login_attempts = {} # ip -> {"failures": int, "lockout_until": float, "lockout_d
 
 @app.post("/api/auth/verify")
 def verify_admin_key(payload: AdminAuthRequest, request: Request):
-    import time
     client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
     now = time.time()
     
@@ -91,7 +155,7 @@ def verify_admin_key(payload: AdminAuthRequest, request: Request):
             }
         )
 
-    if payload.key == ADMIN_PASSWORD:
+    if verify_password_constant_time(payload.key):
         # Success — reset failure tracker for this IP
         login_attempts.pop(client_ip, None)
         return {"status": "success", "authenticated": True}
