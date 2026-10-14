@@ -1,34 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- FEATURE: Security & Safety Gateway on Load ---
-    const runSecurityChecks = () => {
+    const runSecurityChecks = async () => {
         const overlay = document.getElementById('securityOverlay');
         const log = document.getElementById('securityLog');
         const bar = document.getElementById('securityProgressBar');
         if (!overlay) return;
 
-        const steps = [
-            "Verifying device environment...",
-            "Checking secure connection...",
-            "Authenticating session...",
-            "Integrity verified. Access granted."
-        ];
+        const updateStep = (text, percent) => {
+            if (log) log.innerHTML = `<div id="securityStep"><i class="fas fa-circle-notch fa-spin" style="color: var(--theme-accent); margin-right: 0.5rem;"></i>${text}</div>`;
+            if (bar) bar.style.width = `${percent}%`;
+        };
 
-        let currentStep = 0;
-        const interval = setInterval(() => {
-            if (currentStep < steps.length) {
-                log.innerHTML = `<div id="securityStep"><i class="fas fa-circle-notch fa-spin" style="color: var(--theme-accent); margin-right: 0.5rem;"></i>${steps[currentStep]}</div>`;
-                bar.style.width = `${(currentStep + 1) * 25}%`;
-                currentStep++;
+        const finishCheck = (success = true, msg = "Access Granted.") => {
+            if (log) log.innerHTML = `<div id="securityStep" style="color: ${success ? '#2ecc71' : '#e74c3c'};"><i class="fas ${success ? 'fa-check-circle' : 'fa-exclamation-triangle'}" style="margin-right: 0.5rem;"></i>${msg}</div>`;
+            if (bar) bar.style.width = '100%';
+            setTimeout(() => {
+                overlay.style.transition = 'opacity 0.4s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 400);
+            }, 350);
+        };
+
+        try {
+            updateStep("Verifying secure connection...", 30);
+            // Real backend and database integrity verification
+            const resp = await fetch('/api/health');
+            if (resp.ok) {
+                updateStep("Database integrity verified...", 70);
+                setTimeout(() => finishCheck(true, "Integrity verified. Access granted."), 200);
             } else {
-                clearInterval(interval);
-                log.innerHTML = `<div id="securityStep" style="color: #2ecc71;"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Access Granted.</div>`;
-                setTimeout(() => {
-                    overlay.style.transition = 'opacity 0.5s ease';
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.remove(), 500);
-                }, 500);
+                finishCheck(false, "Running in degraded mode.");
             }
-        }, 600);
+        } catch (e) {
+            // Offline or fallback handling
+            finishCheck(true, "Offline / Local mode active.");
+        }
     };
     runSecurityChecks();
 
@@ -74,10 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
 
     // Admin Auth Hook (In-Memory Only, Wipes on Refresh)
-    const tempKey = localStorage.getItem('admin_key_temp');
-    if (tempKey === "9745") {
+    const tempKey = sessionStorage.getItem('admin_session_key') || localStorage.getItem('admin_key_temp');
+    if (tempKey) {
         window.runtimeAdminKey = tempKey;
-        localStorage.removeItem('admin_key_temp'); // Burn after reading so next refresh is guest
+        localStorage.removeItem('admin_key_temp'); // Burn after reading if set
     } else {
         window.runtimeAdminKey = null;
     }
@@ -163,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(btn) btn.onclick = () => {
             window.runtimeAdminKey = null;
             isAdminUnlocked = false;
+            sessionStorage.removeItem('admin_session_key');
             localStorage.removeItem('admin_key_temp');
             window.location.reload(); // Hard reset for clean logout sweep
         };
@@ -180,15 +187,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if(closeLoginModalBtn) closeLoginModalBtn.onclick = closeLogin;
 
     if(submitLoginBtn) {
-        submitLoginBtn.onclick = () => {
-            const key = adminPasswordInput.value;
-            if (key === "9745") {
-                // Set temporary key to survive the RELOAD
-                localStorage.setItem('admin_key_temp', key);
-                window.location.reload(); 
-            } else {
-                alert("Incorrect Developer Key. Viewing access only.");
-                adminPasswordInput.value = '';
+        submitLoginBtn.onclick = async () => {
+            const key = adminPasswordInput.value.trim();
+            if (!key) return;
+            
+            try {
+                submitLoginBtn.disabled = true;
+                submitLoginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+
+                const resp = await fetch('/api/auth/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: key })
+                });
+
+                if (resp.ok) {
+                    sessionStorage.setItem('admin_session_key', key);
+                    window.location.reload();
+                } else {
+                    alert("Incorrect Developer Key. Viewing access only.");
+                    adminPasswordInput.value = '';
+                    adminPasswordInput.focus();
+                }
+            } catch (err) {
+                alert("Failed to verify credentials with server.");
+            } finally {
+                submitLoginBtn.disabled = false;
+                submitLoginBtn.innerHTML = 'Unlock Console';
             }
         };
     }

@@ -441,8 +441,8 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 
 
 header {
-    padding: 2.2rem 4% 1.6rem;
-    min-height: 120px;
+    padding: 1.5rem 4% 1.5rem;
+    min-height: 125px;
     background: rgba(10, 10, 10, 0.85);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
@@ -464,9 +464,9 @@ header::before {
     top: 0; left: 0; right: 0; bottom: 0;
     background-image: var(--theme-header-bg);
     background-size: cover;
-    background-position: right top;
+    background-position: center center;
     background-repeat: no-repeat;
-    opacity: 0.6;
+    opacity: 0.65;
     z-index: -1;
     transition: opacity 0.5s ease;
 }

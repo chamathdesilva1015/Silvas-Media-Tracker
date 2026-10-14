@@ -23,25 +23,56 @@ automation_status = {
     "enrich": {"running": False, "last_result": None, "logs": []},
 }
 
-# Add CORS middleware for local network/browser compatibility
+# Add CORS middleware with restricted origins
+allowed_origins = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+prod_origin = os.environ.get("ALLOWED_ORIGIN")
+if prod_origin:
+    allowed_origins.append(prod_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins if os.environ.get("VERCEL") == "1" and prod_origin else ["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
 )
+
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Dn1h7M55!")
 
 def get_session():
     with Session(engine) as session:
         yield session
 
 def check_readonly(request: Request):
-    # Detect Vercel environment automatically
-    if os.environ.get("VERCEL") == "1":
-        if request.headers.get("x-admin-key") == "9745":
+    # Enforce read-only protection in Vercel or any environment with READONLY_MODE=1
+    if os.environ.get("VERCEL") == "1" or os.environ.get("READONLY_MODE") == "1":
+        client_key = request.headers.get("x-admin-key")
+        if client_key and client_key == ADMIN_PASSWORD:
             return # Unlock for valid admin
         raise HTTPException(status_code=403, detail="Action disabled in public read-only mode.")
+
+@app.get("/api/health")
+def health_check(session: Session = Depends(get_session)):
+    try:
+        # Verify database connectivity and responsiveness
+        session.exec(select(MediaItem).limit(1)).first()
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        return JSONResponse(status_code=503, content={"status": "error", "message": str(e)})
+
+class AdminAuthRequest(BaseModel):
+    key: str
+
+@app.post("/api/auth/verify")
+def verify_admin_key(payload: AdminAuthRequest):
+    if payload.key == ADMIN_PASSWORD:
+        return {"status": "success", "authenticated": True}
+    raise HTTPException(status_code=401, detail="Invalid admin credentials.")
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
