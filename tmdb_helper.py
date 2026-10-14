@@ -262,6 +262,7 @@ def get_tmdb_details(tmdb_id: int, media_type: str = "movie") -> dict:
 def get_tmdb_recommendations(tmdb_id: int, media_type: str = "movie", limit: int = 5) -> List[dict]:
     """
     Fetches recommendations for a specific movie or TV show.
+    TMDB returns up to 20 per page — we fetch page 1 and page 2 for a richer pool.
     """
     if not TMDB_API_KEY and not TMDB_ACCESS_TOKEN:
         return []
@@ -275,26 +276,33 @@ def get_tmdb_recommendations(tmdb_id: int, media_type: str = "movie", limit: int
         
     try:
         headers = get_tmdb_headers()
-        response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        
         results = []
-        for r in data.get("results", [])[:limit]:
-            title = r.get("title") or r.get("name")
-            release_year = (r.get("release_date") or r.get("first_air_date", ""))[:4]
-            poster_path = r.get("poster_path")
-            cover_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
-            
-            if title and cover_url:
-                results.append({
-                    "title": title,
-                    "release_year": release_year,
-                    "cover_url": cover_url,
-                    "tmdb_id": r.get("id"),
-                    "type": "Movies" if media_type == "movie" else "TV Series",
-                    "popularity": r.get("popularity", 0)
-                })
+        for page in range(1, 3):  # Fetch 2 pages (up to 40 results)
+            params["page"] = page
+            response = requests.get(url, params=params, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            page_results = data.get("results", [])
+            if not page_results:
+                break
+            for r in page_results:
+                if len(results) >= limit:
+                    break
+                title = r.get("title") or r.get("name")
+                release_year = (r.get("release_date") or r.get("first_air_date", ""))[:4]
+                poster_path = r.get("poster_path")
+                cover_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+                if title and cover_url:
+                    results.append({
+                        "title": title,
+                        "release_year": release_year,
+                        "cover_url": cover_url,
+                        "tmdb_id": r.get("id"),
+                        "type": "Movies" if media_type == "movie" else "TV Series",
+                        "popularity": r.get("popularity", 0)
+                    })
+            if len(results) >= limit:
+                break
         return results
     except Exception as e:
         print(f"TMDB Recommendations Error for {media_type} ID {tmdb_id}: {e}")
@@ -341,7 +349,7 @@ def get_tmdb_similar(tmdb_id: int, media_type: str = "movie", limit: int = 20) -
         print(f"TMDB Similar Error for {media_type} ID {tmdb_id}: {e}")
         return []
 
-def get_tmdb_discover(media_type: str = "movie", year_min: Optional[int] = None, year_max: Optional[int] = None, genre_ids: Optional[List[int]] = None, limit: int = 20) -> List[dict]:
+def get_tmdb_discover(media_type: str = "movie", year_min: Optional[int] = None, year_max: Optional[int] = None, genre_ids: Optional[List[int]] = None, limit: int = 20, page: int = 1) -> List[dict]:
     """
     Discovers movies or TV shows filtered by year range and genres (OR logic).
     """
@@ -353,7 +361,8 @@ def get_tmdb_discover(media_type: str = "movie", year_min: Optional[int] = None,
 
     params = {
         "sort_by": "popularity.desc",
-        "vote_count.gte": 40
+        "vote_count.gte": 40,
+        "page": page,
     }
     if TMDB_API_KEY and not TMDB_ACCESS_TOKEN:
         params["api_key"] = TMDB_API_KEY

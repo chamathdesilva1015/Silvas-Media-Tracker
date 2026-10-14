@@ -1230,9 +1230,9 @@ class CustomSuggestionRequest(BaseModel):
 def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depends(get_session)):
     """
     Generates tailored suggestions based on:
-    - General: year specifications and genre filters
-    - Entry Specific: single entry similarity + year/genre filters
-    - Multiple Entry Specific: centroid blended similarity across multiple entries + year/genre filters
+    - General: discover results re-ranked by user taste profile (genre/director affinity)
+    - Entry Specific: seed-based similarity re-ranked by Jaccard genre overlap + user affinity
+    - Multiple Entry Specific: centroid-blended seed overlap + Jaccard genre similarity
     """
     try:
         category = req.category or "Movies"
@@ -1240,95 +1240,159 @@ def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depe
         year_max = req.year_max
         genres = [g.strip() for g in req.genres if g.strip()] if req.genres else []
         entry_ids = req.entry_ids or []
+        user_genres_set = {g.lower() for g in genres}
 
-        # 1. Gather all tracked items for exclusion
+        # ── 1. BUILD USER TASTE PROFILE ─────────────────────────────────────
+        # Compute genre & director affinity from ALL rated items in this category.
+        # Affinity = Bayesian-smoothed avg deviation from global mean.
+        # Positive = user loves it, negative = user dislikes it.
+        category_items = session.exec(
+            select(MediaItem).where(MediaItem.type == category)
+        ).all()
+
+        def parse_score(item):
+            for field in [item.numeric_rating, item.rating]:
+                if not field:
+                    continue
+                try:
+                    return float(field)
+                except ValueError:
+                    pass
+                if "/10" in str(field):
+                    try:
+                        return float(str(field).split("/")[0].strip())
+                    except ValueError:
+                        pass
+            return None
+
+        all_scores = [s for s in (parse_score(i) for i in category_items) if s is not None]
+        mu_global = sum(all_scores) / len(all_scores) if all_scores else 5.0
+
+        genre_scores_map: dict = {}
+        director_scores_map: dict = {}
+        for item in category_items:
+            s = parse_score(item)
+            if s is None:
+                continue
+            if item.genres:
+                for g in item.genres.split(","):
+                    g = g.strip()
+                    if g:
+                        genre_scores_map.setdefault(g, []).append(s)
+            if item.director:
+                d = item.director.strip()
+                if d:
+                    director_scores_map.setdefault(d, []).append(s)
+
+        genre_affinity = {
+            g: sum(sc - mu_global for sc in scores) / (len(scores) + 3.0)
+            for g, scores in genre_scores_map.items()
+        }
+        director_affinity = {
+            d: sum(sc - mu_global for sc in scores) / (len(scores) + 3.0)
+            for d, scores in director_scores_map.items()
+        }
+        # Consistently disliked genres — hard excluded in General mode
+        disliked_genres = {g for g, a in genre_affinity.items() if a <= -1.5}
+
+        # ── 2. BUILD EXCLUSION SETS ──────────────────────────────────────────
         all_items = session.exec(select(MediaItem)).all()
         tracked_titles = {normalize_title(i.title) for i in all_items}
         tracked_ids = {(i.type, int(i.tmdb_id)) for i in all_items if i.tmdb_id}
 
         try:
-            passed_items = session.exec(select(PassedSuggestion)).all()
-            for p in passed_items:
+            for p in session.exec(select(PassedSuggestion)).all():
                 tracked_ids.add((p.type, int(p.tmdb_id)))
         except Exception as pe:
             print(f"Error fetching passed list: {pe}")
 
         try:
-            active_recs = session.exec(
+            for r in session.exec(
                 select(Recommendation).where(Recommendation.status != "rejected")
-            ).all()
-            for r in active_recs:
+            ).all():
                 if r.ext_id:
                     tracked_ids.add((r.type, int(r.ext_id)))
                 if r.title:
                     tracked_titles.add(normalize_title(r.title))
-        except Exception as re:
-            print(f"Error fetching recommendations: {re}")
+        except Exception as re_err:
+            print(f"Error fetching recommendations: {re_err}")
 
-        # 2. Retrieve selected seed items from database
+        # ── 3. RETRIEVE SEED ITEMS ───────────────────────────────────────────
         selected_seed_items = []
         if entry_ids:
             for eid in entry_ids:
-                item = session.get(MediaItem, eid)
-                if item and item.tmdb_id:
-                    selected_seed_items.append(item)
+                s_item = session.get(MediaItem, eid)
+                if s_item and s_item.tmdb_id:
+                    selected_seed_items.append(s_item)
 
-        candidate_pool = {} # (type, tmdb_id) -> {"item": dict, "seed_sources": list, "sim_count": int}
+        # Build seed genre/director centroid for Jaccard similarity
+        seed_genres_set: set = set()
+        seed_directors_set: set = set()
+        for s_item in selected_seed_items:
+            if s_item.genres:
+                for g in s_item.genres.split(","):
+                    g = g.strip()
+                    if g:
+                        seed_genres_set.add(g.lower())
+            if s_item.director:
+                seed_directors_set.add(s_item.director.strip().lower())
+
+        # ── 4. CANDIDATE POOL ────────────────────────────────────────────────
+        candidate_pool: dict = {}
 
         def add_candidate(c_dict, seed_title=None, is_rec=True):
             if not c_dict.get("tmdb_id"):
                 return
-            t = c_dict.get("type") or category
+            c_type = c_dict.get("type") or category
             try:
                 tid = int(c_dict["tmdb_id"])
             except (ValueError, TypeError):
                 return
-
             norm_t = normalize_title(c_dict.get("title", ""))
-            if (t, tid) in tracked_ids or norm_t in tracked_titles:
+            if (c_type, tid) in tracked_ids or norm_t in tracked_titles:
                 return
-
-            key = (t, tid)
+            key = (c_type, tid)
             if key not in candidate_pool:
                 candidate_pool[key] = {
                     "item": c_dict,
                     "seed_sources": [],
+                    "rec_count": 0,
                     "sim_count": 0,
-                    "rec_count": 0
                 }
-            if seed_title:
-                if seed_title not in candidate_pool[key]["seed_sources"]:
-                    candidate_pool[key]["seed_sources"].append(seed_title)
+            data = candidate_pool[key]
+            if seed_title and seed_title not in data["seed_sources"]:
+                data["seed_sources"].append(seed_title)
             if is_rec:
-                candidate_pool[key]["rec_count"] += 1
+                data["rec_count"] += 1
             else:
-                candidate_pool[key]["sim_count"] += 1
+                data["sim_count"] += 1
 
-        # 3. Mode branching to gather candidates
+        # ── 5. GATHER CANDIDATES BY MODE ────────────────────────────────────
         if req.mode == "general":
-            # Discover mode
             if category in ["Movies", "TV Series"]:
                 media_type = "movie" if category == "Movies" else "tv"
                 genre_map = TMDB_GENRE_MAP_MOVIE if category == "Movies" else TMDB_GENRE_MAP_TV
                 tmdb_genre_ids = []
                 for g in genres:
-                    if g in genre_map:
-                        tmdb_genre_ids.append(genre_map[g])
-                    else:
-                        for mg_name, mg_id in genre_map.items():
-                            if g.lower() in mg_name.lower() or mg_name.lower() in g.lower():
-                                tmdb_genre_ids.append(mg_id)
+                    for mg_name, mg_id in genre_map.items():
+                        if g.lower() in mg_name.lower() or mg_name.lower() in g.lower():
+                            tmdb_genre_ids.append(mg_id)
                 tmdb_genre_ids = list(set(tmdb_genre_ids))
 
-                disc_results = get_tmdb_discover(
-                    media_type=media_type,
-                    year_min=year_min,
-                    year_max=year_max,
-                    genre_ids=tmdb_genre_ids if tmdb_genre_ids else None,
-                    limit=40
-                )
-                for dr in disc_results:
-                    add_candidate(dr, is_rec=True)
+                # Fetch 3 pages (~60 results) for a richer pool to re-rank
+                for page_num in range(1, 4):
+                    disc = get_tmdb_discover(
+                        media_type=media_type,
+                        year_min=year_min,
+                        year_max=year_max,
+                        genre_ids=tmdb_genre_ids if tmdb_genre_ids else None,
+                        limit=20,
+                        page=page_num,
+                    )
+                    if not disc:
+                        break
+                    for dr in disc:
+                        add_candidate(dr, is_rec=True)
 
             elif category in ["Anime", "Manga"]:
                 media_type = "anime" if category == "Anime" else "manga"
@@ -1337,73 +1401,63 @@ def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depe
                     year_min=year_min,
                     year_max=year_max,
                     genres=genres if genres else None,
-                    limit=40
+                    limit=60,
                 )
                 for ar in ani_results:
                     add_candidate(ar, is_rec=True)
 
         else:
-            # Entry Specific or Multiple Entry Specific
+            # Entry Specific / Multiple Entry Specific
             for s_item in selected_seed_items:
                 seed_tmdb_id = int(s_item.tmdb_id)
                 if s_item.type in ["Movies", "TV Series"]:
                     m_type = "movie" if s_item.type == "Movies" else "tv"
-                    # 1. Fetch TMDB Recommendations
                     try:
-                        recs = get_tmdb_recommendations(seed_tmdb_id, m_type, limit=25)
-                        for r in recs:
+                        for r in get_tmdb_recommendations(seed_tmdb_id, m_type, limit=40):
                             add_candidate(r, seed_title=s_item.title, is_rec=True)
                     except Exception as e:
-                        print(f"Error getting TMDB recs for seed {s_item.title}: {e}")
-
-                    # 2. Fetch TMDB Similar
+                        print(f"TMDB recs error for {s_item.title}: {e}")
                     try:
-                        sims = get_tmdb_similar(seed_tmdb_id, m_type, limit=25)
-                        for s in sims:
-                            add_candidate(s, seed_title=s_item.title, is_rec=False)
+                        for r in get_tmdb_similar(seed_tmdb_id, m_type, limit=40):
+                            add_candidate(r, seed_title=s_item.title, is_rec=False)
                     except Exception as e:
-                        print(f"Error getting TMDB similar for seed {s_item.title}: {e}")
+                        print(f"TMDB similar error for {s_item.title}: {e}")
 
                 elif s_item.type in ["Anime", "Manga"]:
                     m_type = "anime" if s_item.type == "Anime" else "manga"
                     try:
-                        recs = get_jikan_recommendations(seed_tmdb_id, m_type, limit=25)
-                        for r in recs:
+                        for r in get_jikan_recommendations(seed_tmdb_id, m_type, limit=40):
                             add_candidate(r, seed_title=s_item.title, is_rec=True)
                     except Exception as e:
-                        print(f"Error getting Jikan recs for seed {s_item.title}: {e}")
+                        print(f"Jikan recs error for {s_item.title}: {e}")
+                    try:
+                        from jikan_helper import _anilist_recommendations
+                        for r in _anilist_recommendations(seed_tmdb_id, m_type, limit=20):
+                            add_candidate(r, seed_title=s_item.title, is_rec=True)
+                    except Exception as e:
+                        print(f"AniList recs error for {s_item.title}: {e}")
 
-        # If candidates are sparse in general mode or fallback needed
-        if not candidate_pool and selected_seed_items:
-            # Fallback to category suggestions
-            pass
+        if not candidate_pool:
+            return []
 
-        # 4. Detail fetching, strict filtering by year & genres, and similarity ranking
-        pool_list = list(candidate_pool.values())
-        # Sort prelim by seed overlap count + rec_count
-        pool_list.sort(key=lambda x: (len(x["seed_sources"]) * 10 + x["rec_count"] * 2 + x["sim_count"]), reverse=True)
-        top_candidates = pool_list[:50]
+        # ── 6. PRE-SORT & LIMIT DETAIL FETCHES ──────────────────────────────
+        pool_list = sorted(
+            candidate_pool.values(),
+            key=lambda x: len(x["seed_sources"]) * 30 + x["rec_count"] * 6 + x["sim_count"] * 2,
+            reverse=True,
+        )
+        top_candidates = pool_list[:80]
 
+        # ── 7. DETAIL FETCH + SCORE ──────────────────────────────────────────
         scored_results = []
-        user_genres_set = {g.lower() for g in genres}
-
-        # Compute centroid features for Multi Entry Specific
-        centroid_genres = set()
-        centroid_directors = set()
-        for s_item in selected_seed_items:
-            if s_item.genres:
-                for g in s_item.genres.split(","):
-                    if g.strip():
-                        centroid_genres.add(g.strip().lower())
-            if s_item.director:
-                centroid_directors.add(s_item.director.strip().lower())
 
         for cand in top_candidates:
             raw_item = cand["item"]
-            details = {}
             c_type = raw_item.get("type") or category
-            c_id = raw_item["tmdb_id"]
+            c_id = raw_item.get("tmdb_id")
 
+            # ── Fetch rich details ──
+            details = {}
             try:
                 if c_type == "Movies":
                     details = get_movie_details(c_id)
@@ -1414,66 +1468,85 @@ def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depe
                 elif c_type == "Manga":
                     details = get_manga_details(c_id)
             except Exception as e:
-                print(f"Error fetching details for custom suggestion candidate {c_id}: {e}")
+                print(f"Detail fetch error for {c_type} {c_id}: {e}")
 
-            # Merge details
-            title = details.get("title") or raw_item.get("title")
-            cover_url = details.get("cover_url") or raw_item.get("cover_url")
-            raw_year = details.get("release_year") or raw_item.get("release_year") or ""
-            director = details.get("director") or ""
-            genres_str = details.get("genres") or raw_item.get("genres") or ""
-            overview = details.get("overview") or raw_item.get("overview") or ""
+            if not details:
+                continue
 
-            # Filter out Anime Movies if category is Anime
+            # Skip Anime Movies
             if c_type == "Anime" and details.get("anime_type") == "Movie":
                 continue
 
-            # Year parsing and filtering
+            title = details.get("title") or raw_item.get("title", "")
+            cover_url = details.get("cover_url") or raw_item.get("cover_url")
+            overview = details.get("overview") or raw_item.get("overview", "")
+            director = (details.get("director") or "").strip()
+            genres_str = details.get("genres") or raw_item.get("genres", "") or ""
+            raw_year = details.get("release_year") or raw_item.get("release_year") or ""
+
+            # ── Year filter ──
             cand_year = None
             if raw_year:
                 try:
                     cand_year = int(str(raw_year)[:4])
                 except (ValueError, TypeError):
                     pass
+            if year_min and cand_year and cand_year < year_min:
+                continue
+            if year_max and cand_year and cand_year > year_max:
+                continue
 
-            if year_min is not None and cand_year is not None:
-                if cand_year < year_min:
-                    continue
-            if year_max is not None and cand_year is not None:
-                if cand_year > year_max:
-                    continue
-
-            # Genre parsing and filtering (must have one or more designated genres if specified)
+            # ── Genre parsing ──
             cand_genres = [g.strip() for g in genres_str.split(",") if g.strip()] if genres_str else []
             cand_genres_lower = {g.lower() for g in cand_genres}
 
+            # Hard genre filter: item must have at least one of the user-specified genres
             matched_filter_genres = []
             if user_genres_set:
-                matched_filter_genres = [g for g in cand_genres if g.lower() in user_genres_set]
-                # If designated genres were requested and candidate has none of them, discard
+                matched_filter_genres = [
+                    g for g in cand_genres
+                    if g.lower() in user_genres_set
+                    or any(g.lower() in ug or ug in g.lower() for ug in user_genres_set)
+                ]
                 if not matched_filter_genres:
                     continue
 
-            # Similarity Scoring Algorithm
-            # Base score
-            score = 10.0
+            # Hard disliked genre filter (General mode only, unless user explicitly selected it)
+            if req.mode == "general" and not matched_filter_genres:
+                if any(g in disliked_genres for g in cand_genres):
+                    continue
 
-            # 1. Seed overlap score (crucial for multiple entries)
-            num_seeds = len(cand["seed_sources"])
-            score += num_seeds * 25.0
-            score += cand["rec_count"] * 5.0
+            # ── SCORING ──────────────────────────────────────────────────────
+            score = 0.0
+
+            # A) Seed overlap — primary signal for entry-specific modes
+            score += len(cand["seed_sources"]) * 30.0
+            score += cand["rec_count"] * 6.0
             score += cand["sim_count"] * 3.0
 
-            # 2. Genre overlap with seed centroid or filter
-            overlap_centroid_genres = [g for g in cand_genres if g.lower() in centroid_genres]
-            score += len(overlap_centroid_genres) * 6.0
-            score += len(matched_filter_genres) * 8.0
+            # B) Jaccard genre similarity with seed centroid
+            #    Measures how well this candidate overlaps the seeds' genre fingerprint
+            if seed_genres_set and cand_genres_lower:
+                intersection = len(seed_genres_set & cand_genres_lower)
+                union = len(seed_genres_set | cand_genres_lower)
+                jaccard = intersection / union if union > 0 else 0.0
+                score += jaccard * 45.0  # Up to +45 for perfect genre match
 
-            # 3. Director/Creator synergy with seeds
-            if director and director.lower() in centroid_directors:
-                score += 30.0
+            # C) User taste affinity — personalisation layer (all modes)
+            affinity_boost = sum(genre_affinity.get(g, 0.0) * 12.0 for g in cand_genres)
+            score += affinity_boost
 
-            # 4. Construct high-fidelity contextual reason
+            # D) Director affinity / seed director match
+            if director:
+                director_lower = director.lower()
+                if director_lower in seed_directors_set:
+                    score += 35.0  # Same creator as a seed entry — very strong
+                score += director_affinity.get(director, 0.0) * 20.0
+
+            # E) Explicit filter genre bonus
+            score += len(matched_filter_genres) * 10.0
+
+            # ── REASON CONSTRUCTION ───────────────────────────────────────────
             reasons = []
             if cand["seed_sources"]:
                 if len(cand["seed_sources"]) == 1:
@@ -1481,21 +1554,27 @@ def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depe
                 elif len(cand["seed_sources"]) == 2:
                     reasons.append(f"Combines elements of {cand['seed_sources'][0]} & {cand['seed_sources'][1]}")
                 else:
-                    reasons.append(f"Shares vibe with {cand['seed_sources'][0]}, {cand['seed_sources'][1]} + {len(cand['seed_sources'])-2} more")
+                    reasons.append(
+                        f"Shares vibe with {cand['seed_sources'][0]}, {cand['seed_sources'][1]} "
+                        f"+{len(cand['seed_sources']) - 2} more"
+                    )
             elif selected_seed_items:
-                reasons.append(f"Recommended for fans of {', '.join([s.title for s in selected_seed_items[:2]])}")
+                reasons.append(f"Recommended for fans of {', '.join(s.title for s in selected_seed_items[:2])}")
 
-            if director and director.lower() in centroid_directors:
-                reasons.append(f"directed by {director}")
+            if director and director.lower() in seed_directors_set:
+                reasons.append(f"by {director}")
+
+            # Surface strongest affinity genre as a reason
+            best_affinity_genre = max(
+                ((g, genre_affinity.get(g, 0.0)) for g in cand_genres),
+                key=lambda x: x[1],
+                default=(None, 0),
+            )
+            if best_affinity_genre[0] and best_affinity_genre[1] >= 0.5:
+                reasons.append(f"you love {best_affinity_genre[0]}")
 
             if matched_filter_genres:
-                reasons.append(f"matches your {', '.join(matched_filter_genres[:2])} selection")
-            elif overlap_centroid_genres:
-                reasons.append(f"shares {', '.join(overlap_centroid_genres[:2])} style")
-
-            if cand_year:
-                if year_min and year_max:
-                    reasons.append(f"released in {cand_year} ({year_min}-{year_max})")
+                reasons.append(f"matches your {', '.join(matched_filter_genres[:2])} filter")
 
             final_reason = " • ".join(reasons) if reasons else "Recommended based on your criteria"
 
@@ -1509,17 +1588,22 @@ def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depe
                 "director": director,
                 "genres": genres_str,
                 "overview": overview,
-                "score": score
+                "score": score,
             })
 
-        # Sort by final score descending
-        scored_results.sort(key=lambda x: x["score"], reverse=True)
-        final_picks = scored_results[:18]
+        # ── 8. DEDUPLICATE & RETURN TOP 18 ──────────────────────────────────
+        seen_ids: set = set()
+        final_picks = []
+        for result in sorted(scored_results, key=lambda x: x["score"], reverse=True):
+            key = (result["type"], int(result["tmdb_id"]))
+            if key not in seen_ids:
+                seen_ids.add(key)
+                final_picks.append(result)
+            if len(final_picks) >= 18:
+                break
 
-        # Clean up response
-        clean_results = []
-        for c in final_picks:
-            clean_results.append({
+        return [
+            {
                 "title": c["title"],
                 "release_year": c["release_year"],
                 "cover_url": c["cover_url"],
@@ -1528,10 +1612,11 @@ def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depe
                 "reason": c["reason"],
                 "director": c["director"],
                 "genres": c["genres"],
-                "overview": c["overview"]
-            })
+                "overview": c["overview"],
+            }
+            for c in final_picks
+        ]
 
-        return clean_results
     except Exception as e:
         print("--- CUSTOM SUGGESTION ERROR ---")
         traceback.print_exc()
