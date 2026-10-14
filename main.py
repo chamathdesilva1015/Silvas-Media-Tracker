@@ -68,11 +68,65 @@ def health_check(session: Session = Depends(get_session)):
 class AdminAuthRequest(BaseModel):
     key: str
 
+# IP-based rate limiting & exponential lockout tracker
+login_attempts = {} # ip -> {"failures": int, "lockout_until": float, "lockout_duration": int}
+
 @app.post("/api/auth/verify")
-def verify_admin_key(payload: AdminAuthRequest):
+def verify_admin_key(payload: AdminAuthRequest, request: Request):
+    import time
+    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    now = time.time()
+    
+    record = login_attempts.get(client_ip, {"failures": 0, "lockout_until": 0.0, "lockout_duration": 60})
+    
+    # Check if IP is currently locked out
+    if now < record["lockout_until"]:
+        remaining_seconds = int(record["lockout_until"] - now) + 1
+        return JSONResponse(
+            status_code=429,
+            content={
+                "status": "locked",
+                "detail": f"Too many failed attempts. Locked out for {remaining_seconds} seconds.",
+                "remaining_seconds": remaining_seconds
+            }
+        )
+
     if payload.key == ADMIN_PASSWORD:
+        # Success — reset failure tracker for this IP
+        login_attempts.pop(client_ip, None)
         return {"status": "success", "authenticated": True}
-    raise HTTPException(status_code=401, detail="Invalid admin credentials.")
+    
+    # Failure handling
+    record["failures"] += 1
+    failures = record["failures"]
+    
+    if failures >= 3:
+        # Calculate exponential lockout duration: 3rd failure = 60s, 4th = 120s, 5th = 240s, etc.
+        exponent = failures - 3
+        duration = 60 * (2 ** exponent)
+        record["lockout_until"] = now + duration
+        record["lockout_duration"] = duration
+        login_attempts[client_ip] = record
+        return JSONResponse(
+            status_code=429,
+            content={
+                "status": "locked",
+                "detail": f"Incorrect password 3 times. Locked out for {duration} seconds.",
+                "remaining_seconds": duration,
+                "failures": failures
+            }
+        )
+    
+    login_attempts[client_ip] = record
+    remaining_attempts = 3 - failures
+    return JSONResponse(
+        status_code=401,
+        content={
+            "status": "error",
+            "detail": f"Incorrect key. {remaining_attempts} attempt{'s' if remaining_attempts > 1 else ''} left before temporary lockout.",
+            "remaining_attempts": remaining_attempts
+        }
+    )
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

@@ -211,13 +211,64 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
+    let lockoutCountdownTimer = null;
+    const lockoutAlert = document.getElementById('loginLockoutAlert');
+    const lockoutText = document.getElementById('loginLockoutText');
+
+    const startLockoutCountdown = (seconds) => {
+        if (lockoutCountdownTimer) clearInterval(lockoutCountdownTimer);
+        
+        if (adminPasswordInput) {
+            adminPasswordInput.value = '';
+            adminPasswordInput.disabled = true;
+        }
+        updatePinDots();
+
+        if (submitLoginBtn) {
+            submitLoginBtn.disabled = true;
+        }
+
+        let remaining = seconds;
+        const updateText = () => {
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            const timeStr = mins > 0 ? `${mins}m ${secs < 10 ? '0' : ''}${secs}s` : `${secs}s`;
+            if (lockoutText) lockoutText.innerText = `Access locked. Please retry in ${timeStr}.`;
+            if (lockoutAlert) lockoutAlert.style.display = 'block';
+            if (submitLoginBtn) submitLoginBtn.innerHTML = `<i class="fas fa-lock"></i> Locked (${timeStr})`;
+        };
+
+        updateText();
+
+        lockoutCountdownTimer = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+                clearInterval(lockoutCountdownTimer);
+                lockoutCountdownTimer = null;
+                if (lockoutAlert) lockoutAlert.style.display = 'none';
+                if (adminPasswordInput) {
+                    adminPasswordInput.disabled = false;
+                    adminPasswordInput.focus();
+                }
+                if (submitLoginBtn) {
+                    submitLoginBtn.disabled = false;
+                    submitLoginBtn.innerHTML = 'Unlock Console';
+                }
+            } else {
+                updateText();
+            }
+        }, 1000);
+    };
+
     if(closeLoginModalBtn) closeLoginModalBtn.onclick = () => {
         closeLogin();
         updatePinDots();
+        if (!lockoutCountdownTimer && lockoutAlert) lockoutAlert.style.display = 'none';
     };
 
     if(submitLoginBtn) {
         submitLoginBtn.onclick = async () => {
+            if (lockoutCountdownTimer) return;
             const key = adminPasswordInput.value.trim();
             if (!key) return;
             
@@ -231,11 +282,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ key: key })
                 });
 
-                if (resp.ok) {
+                const data = await resp.json().catch(() => ({}));
+
+                if (resp.status === 200) {
                     sessionStorage.setItem('admin_session_key', key);
                     window.location.reload();
+                } else if (resp.status === 429) {
+                    // Lockout enforced!
+                    const secs = data.remaining_seconds || 60;
+                    startLockoutCountdown(secs);
                 } else {
-                    alert("Incorrect Developer Key. Viewing access only.");
+                    // 401 or other error
+                    if (lockoutAlert && data.detail) {
+                        lockoutText.innerText = data.detail;
+                        lockoutAlert.style.display = 'block';
+                    }
                     adminPasswordInput.value = '';
                     updatePinDots();
                     adminPasswordInput.focus();
@@ -243,8 +304,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 alert("Failed to verify credentials with server.");
             } finally {
-                submitLoginBtn.disabled = false;
-                submitLoginBtn.innerHTML = 'Unlock Console';
+                if (!lockoutCountdownTimer) {
+                    submitLoginBtn.disabled = false;
+                    submitLoginBtn.innerHTML = 'Unlock Console';
+                }
             }
         };
     }
