@@ -79,16 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const hostname = window.location.hostname;
     const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
 
-    // Admin Auth Hook (In-Memory Only, Wipes on Refresh)
-    const tempKey = sessionStorage.getItem('admin_session_key') || localStorage.getItem('admin_key_temp');
-    if (tempKey) {
-        window.runtimeAdminKey = tempKey;
-        localStorage.removeItem('admin_key_temp'); // Burn after reading if set
-    } else {
-        window.runtimeAdminKey = null;
-    }
-    
-    let isAdminUnlocked = (window.runtimeAdminKey !== null);
+    // Admin Auth Hook (Strictly In-Memory Only — Wipes on any Page Refresh)
+    sessionStorage.removeItem('admin_session_key');
+    localStorage.removeItem('admin_key_temp');
+    window.runtimeAdminKey = null;
+    let isAdminUnlocked = false;
 
     // Helper to evaluate auth bounds
     const computeCanEdit = () => !isReadOnly || isAdminUnlocked;
@@ -285,8 +280,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await resp.json().catch(() => ({}));
 
                 if (resp.status === 200) {
-                    sessionStorage.setItem('admin_session_key', key);
-                    window.location.reload();
+                    window.runtimeAdminKey = key;
+                    isAdminUnlocked = true;
+                    closeLogin();
+                    updatePinDots();
+                    if (window.updateAuthUI) window.updateAuthUI();
+                    if (typeof filterAndRenderMedia === 'function') filterAndRenderMedia();
                 } else if (resp.status === 429) {
                     // Lockout enforced!
                     const secs = data.remaining_seconds || 60;
