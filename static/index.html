@@ -666,18 +666,18 @@
             <div style="margin-top: 1.5rem; margin-bottom: 2rem;">
                 <h2 class="serif" style="margin-bottom: 8px; font-size: 1.8rem;">Developer Portal</h2>
                 <p style="color: var(--text-secondary); font-size: 0.85rem; opacity: 0.8;">
-                    Enter the 4-digit key to unlock database write access.
+                    Enter the developer key to unlock database write access.
                 </p>
             </div>
             
             <div style="position: relative; margin-bottom: 2rem;">
-                <input type="password" id="adminPasswordInput" placeholder="••••" maxlength="4" 
-                    style="width: 100%; background: rgba(0,0,0,0.2); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.2rem; color: var(--theme-accent); font-size: 2.5rem; font-weight: 800; text-align: center; letter-spacing: 0.5em; transition: all 0.3s ease; font-family: 'Inter', sans-serif;"
-                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length === 4) document.getElementById('submitLoginBtn').click();">
+                <input type="password" id="adminPasswordInput" placeholder="" maxlength="9" 
+                    autocomplete="current-password"
+                    style="width: 100%; background: rgba(0,0,0,0.25); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.1rem; color: var(--theme-accent); font-size: 1.8rem; font-weight: 700; text-align: center; letter-spacing: 0.35em; transition: all 0.3s ease; font-family: 'Inter', sans-serif;">
             </div>
 
             <button id="submitLoginBtn" class="btn-primary" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; box-shadow: 0 10px 20px rgba(var(--theme-accent-rgb, 100, 180, 255), 0.2);">
-                Unlock Dashboard
+                Unlock Console
             </button>
             
             <p style="margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.5;">

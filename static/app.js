@@ -218,8 +218,25 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     
-    // Fancy focus effect for the key input
+    // Auto-submit at 9 characters and allow enter key
     if(adminPasswordInput) {
+        adminPasswordInput.oninput = () => {
+            if (adminPasswordInput.value.length === 9) {
+                if (submitLoginBtn && !submitLoginBtn.disabled) {
+                    submitLoginBtn.click();
+                }
+            }
+        };
+
+        adminPasswordInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (submitLoginBtn && !submitLoginBtn.disabled) {
+                    submitLoginBtn.click();
+                }
+            }
+        };
+
         adminPasswordInput.onfocus = () => {
             adminPasswordInput.style.borderColor = 'var(--theme-accent)';
             adminPasswordInput.style.boxShadow = '0 0 20px rgba(var(--theme-accent-rgb), 0.3)';
