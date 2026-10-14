@@ -1426,8 +1426,16 @@ document.addEventListener('DOMContentLoaded', () => {
             filterActions.style.display = shouldShow ? 'flex' : 'none';
         }
 
+        const headerEl = document.querySelector('header');
         if (headerSubControls) {
             headerSubControls.style.display = (currentSubTab === 'Info') ? 'none' : 'flex';
+        }
+        if (headerEl) {
+            if (currentSubTab === 'Info') {
+                headerEl.classList.remove('has-sub-controls');
+            } else {
+                headerEl.classList.add('has-sub-controls');
+            }
         }
 
 

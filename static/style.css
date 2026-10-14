@@ -441,8 +441,9 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 
 
 header {
-    padding: 1.5rem 4% 1.5rem;
-    min-height: 125px;
+    padding: 1.2rem 4%;
+    min-height: 155px;
+    height: clamp(155px, 13.5vw, 195px);
     background: rgba(10, 10, 10, 0.85);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
@@ -450,7 +451,7 @@ header {
     position: sticky;
     top: 0;
     z-index: 3000;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -464,11 +465,16 @@ header::before {
     top: 0; left: 0; right: 0; bottom: 0;
     background-image: var(--theme-header-bg);
     background-size: cover;
-    background-position: center center;
+    background-position: center top;
     background-repeat: no-repeat;
     opacity: 0.65;
     z-index: -1;
     transition: opacity 0.5s ease;
+}
+
+/* When sub controls (search / filter / back to hub) are displayed in Database views */
+header.has-sub-controls {
+    height: clamp(155px, 13.5vw, 195px);
 }
 
 .header-main {
