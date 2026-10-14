@@ -175,16 +175,46 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
+    const pinDotsContainer = document.getElementById('pinDotsContainer');
+    const updatePinDots = () => {
+        const val = adminPasswordInput ? adminPasswordInput.value : '';
+        const dots = document.querySelectorAll('.pin-dot');
+        dots.forEach((dot, idx) => {
+            if (idx < val.length) {
+                dot.style.background = 'var(--theme-accent)';
+                dot.style.borderColor = 'var(--theme-accent)';
+                dot.style.boxShadow = '0 0 10px var(--theme-accent-glow)';
+                dot.style.transform = 'scale(1.25)';
+            } else {
+                dot.style.background = 'transparent';
+                dot.style.borderColor = 'rgba(255,255,255,0.25)';
+                dot.style.boxShadow = 'none';
+                dot.style.transform = 'scale(1)';
+            }
+        });
+    };
+
+    if (pinDotsContainer && adminPasswordInput) {
+        pinDotsContainer.onclick = () => adminPasswordInput.focus();
+    }
+
     loginAdminBtns.forEach(btn => {
         if(btn) btn.onclick = () => {
             if(loginModal) {
                 loginModal.classList.add('show');
-                if(adminPasswordInput) adminPasswordInput.focus();
+                if(adminPasswordInput) {
+                    adminPasswordInput.value = '';
+                    updatePinDots();
+                    adminPasswordInput.focus();
+                }
             }
         };
     });
 
-    if(closeLoginModalBtn) closeLoginModalBtn.onclick = closeLogin;
+    if(closeLoginModalBtn) closeLoginModalBtn.onclick = () => {
+        closeLogin();
+        updatePinDots();
+    };
 
     if(submitLoginBtn) {
         submitLoginBtn.onclick = async () => {
@@ -207,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     alert("Incorrect Developer Key. Viewing access only.");
                     adminPasswordInput.value = '';
+                    updatePinDots();
                     adminPasswordInput.focus();
                 }
             } catch (err) {
@@ -218,9 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     
-    // Auto-submit at 9 characters and allow enter key
+    // Auto-submit at 9 characters, sync dots, and allow enter key
     if(adminPasswordInput) {
         adminPasswordInput.oninput = () => {
+            updatePinDots();
             if (adminPasswordInput.value.length === 9) {
                 if (submitLoginBtn && !submitLoginBtn.disabled) {
                     submitLoginBtn.click();
@@ -238,12 +270,16 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         adminPasswordInput.onfocus = () => {
-            adminPasswordInput.style.borderColor = 'var(--theme-accent)';
-            adminPasswordInput.style.boxShadow = '0 0 20px rgba(var(--theme-accent-rgb), 0.3)';
+            if (pinDotsContainer) {
+                pinDotsContainer.style.borderColor = 'var(--theme-accent)';
+                pinDotsContainer.style.boxShadow = '0 0 20px rgba(var(--theme-accent-rgb), 0.3)';
+            }
         };
         adminPasswordInput.onblur = () => {
-            adminPasswordInput.style.borderColor = 'var(--border-color)';
-            adminPasswordInput.style.boxShadow = 'none';
+            if (pinDotsContainer) {
+                pinDotsContainer.style.borderColor = 'var(--border-color)';
+                pinDotsContainer.style.boxShadow = 'none';
+            }
         };
     }
 

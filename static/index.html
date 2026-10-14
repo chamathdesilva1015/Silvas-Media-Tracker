@@ -671,9 +671,19 @@
             </div>
             
             <div style="position: relative; margin-bottom: 2rem;">
-                <input type="password" id="adminPasswordInput" placeholder="" maxlength="9" 
-                    autocomplete="current-password"
-                    style="width: 100%; background: rgba(0,0,0,0.25); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.1rem; color: var(--theme-accent); font-size: 1.8rem; font-weight: 700; text-align: center; letter-spacing: 0.35em; transition: all 0.3s ease; font-family: 'Inter', sans-serif;">
+                <input type="password" id="adminPasswordInput" maxlength="9" autocomplete="off"
+                    style="position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; top: 0; left: 0;">
+                <div id="pinDotsContainer" style="display: flex; justify-content: center; align-items: center; gap: 0.65rem; padding: 1.2rem 0.5rem; background: rgba(0,0,0,0.25); border: 2px solid var(--border-color); border-radius: 12px; cursor: text; transition: all 0.3s ease;">
+                    <span class="pin-dot" data-index="0" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="1" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="2" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="3" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="4" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="5" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="6" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="7" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="8" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                </div>
             </div>
 
             <button id="submitLoginBtn" class="btn-primary" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; box-shadow: 0 10px 20px rgba(var(--theme-accent-rgb, 100, 180, 255), 0.2);">
@@ -1156,7 +1166,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=438"></script>
+    <script src="app.js?v=439"></script>
 
 
 
