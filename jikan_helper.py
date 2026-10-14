@@ -896,3 +896,59 @@ def search_jikan_multi(title: str, media_type: str = "anime") -> List[dict]:
         
     print(f"Falling back to Kitsu multi search for '{title}' ({media_type})")
     return _kitsu_search_multi(title, media_type)
+
+def get_anilist_discover(media_type: str = "anime", year_min: Optional[int] = None, year_max: Optional[int] = None, genres: Optional[List[str]] = None, limit: int = 20) -> List[dict]:
+    """
+    Discovers anime or manga from AniList filtered by year range and genres (OR logic).
+    """
+    type_str = "ANIME" if media_type == "anime" else "MANGA"
+    query = """
+    query ($type: MediaType, $genres: [String], $startDate: FuzzyDateInt, $endDate: FuzzyDateInt, $perPage: Int) {
+      Page(page: 1, perPage: $perPage) {
+        media(type: $type, genre_in: $genres, startDate_greater: $startDate, startDate_lesser: $endDate, sort: POPULARITY_DESC) {
+          id
+          idMal
+          title { english romaji native }
+          seasonYear
+          startDate { year }
+          genres
+          coverImage { extraLarge }
+          description
+        }
+      }
+    }
+    """
+    variables = {
+        "type": type_str,
+        "perPage": limit
+    }
+    if genres:
+        variables["genres"] = genres
+    if year_min:
+        variables["startDate"] = int(f"{year_min}0101")
+    if year_max:
+        variables["endDate"] = int(f"{year_max}1231")
+
+    res = _anilist_post(query, variables)
+    if not res:
+        return []
+
+    media_list = res.get("data", {}).get("Page", {}).get("media", [])
+    results = []
+    for m in media_list:
+        rec_id = m.get("idMal") or m.get("id")
+        if not rec_id:
+            continue
+        t_obj = m.get("title", {})
+        main_title = t_obj.get("english") or t_obj.get("romaji") or t_obj.get("native") or ""
+        y = m.get("seasonYear") or (m.get("startDate") or {}).get("year")
+        results.append({
+            "title": main_title,
+            "release_year": str(y) if y else "",
+            "cover_url": (m.get("coverImage") or {}).get("extraLarge"),
+            "tmdb_id": rec_id,
+            "type": "Anime" if media_type == "anime" else "Manga",
+            "genres": ", ".join(m.get("genres", [])),
+            "overview": m.get("description", "")
+        })
+    return results

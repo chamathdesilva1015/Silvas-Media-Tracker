@@ -347,12 +347,110 @@
 
     <!-- Suggestion Modal -->
     <div id="suggestionModal" class="modal">
-        <div class="modal-content" style="max-width: 800px; border-radius: 24px; padding: 2.5rem; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(40px) saturate(180%);">
+        <div class="modal-content" style="max-width: 820px; border-radius: 24px; padding: 2.5rem; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(40px) saturate(180%);">
             <span class="close-btn" id="closeSuggestionBtn" style="position: absolute; top: 1.5rem; right: 1.5rem; color: #aaa; font-size: 2rem; cursor: pointer;">&times;</span>
-            <h2 class="serif" style="text-align: center; margin-bottom: 0.5rem; color: #fff;">Suggest Me Something</h2>
-            <p style="text-align: center; opacity: 0.7; font-size: 0.9rem; margin-bottom: 2rem; color: #fff;">Based on your highest-rated favorites across all databases.</p>
+            <div id="suggestionHeader">
+                <h2 class="serif" id="suggestionModalTitle" style="text-align: center; margin-bottom: 0.4rem; color: #fff;">Get Suggestions</h2>
+                <p id="suggestionModalSubtitle" style="text-align: center; opacity: 0.7; font-size: 0.88rem; margin-bottom: 1.8rem; color: #fff;">Choose how you would like to discover new recommendations</p>
+            </div>
             
-            <div class="modal-body" style="max-height: 60vh; overflow-y: auto; padding-right: 0.5rem;">
+            <div class="modal-body" style="max-height: 65vh; overflow-y: auto; padding-right: 0.5rem;">
+                <!-- Step 1: Mode Selection Menu -->
+                <div id="suggestionModeMenu" class="suggestion-mode-menu">
+                    <button class="suggestion-mode-btn" data-mode="general">
+                        <div class="mode-icon"><i class="fas fa-compass"></i></div>
+                        <div class="mode-info">
+                            <span class="mode-title">General</span>
+                            <span class="mode-desc">Discover by year span and specific genres</span>
+                        </div>
+                        <i class="fas fa-chevron-right mode-arrow"></i>
+                    </button>
+
+                    <button class="suggestion-mode-btn" data-mode="entry_specific">
+                        <div class="mode-icon"><i class="fas fa-bullseye"></i></div>
+                        <div class="mode-info">
+                            <span class="mode-title">Entry Specific</span>
+                            <span class="mode-desc">Pick one finished favorite to find kindred titles</span>
+                        </div>
+                        <i class="fas fa-chevron-right mode-arrow"></i>
+                    </button>
+
+                    <button class="suggestion-mode-btn" data-mode="multi_entry_specific">
+                        <div class="mode-icon"><i class="fas fa-network-wired"></i></div>
+                        <div class="mode-info">
+                            <span class="mode-title">Multiple Entry Specific</span>
+                            <span class="mode-desc">Blend multiple finished favorites to triangulate your taste</span>
+                        </div>
+                        <i class="fas fa-chevron-right mode-arrow"></i>
+                    </button>
+                </div>
+
+                <!-- Step 2: Customization Form (Year, Genre, Seeds) -->
+                <div id="suggestionConfigPanel" style="display: none;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                        <button id="suggestionBackBtn" class="suggestion-back-btn">
+                            <i class="fas fa-arrow-left"></i> Change Mode
+                        </button>
+                        <span id="suggestionActiveModeBadge" class="suggestion-mode-pill">General</span>
+                    </div>
+
+                    <!-- Year Range Section -->
+                    <div class="suggestion-section">
+                        <label class="suggestion-section-label">
+                            <i class="fas fa-calendar-alt"></i> Year Specifications
+                        </label>
+                        <div class="suggestion-year-grid">
+                            <div class="suggestion-input-wrap">
+                                <span class="input-prefix">From</span>
+                                <input type="number" id="sugYearMin" placeholder="e.g. 2010" min="1900" max="2030">
+                            </div>
+                            <div class="suggestion-input-wrap">
+                                <span class="input-prefix">To</span>
+                                <input type="number" id="sugYearMax" placeholder="e.g. 2024" min="1900" max="2030">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Genre Specifications Section -->
+                    <div class="suggestion-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                            <label class="suggestion-section-label" style="margin-bottom: 0;">
+                                <i class="fas fa-tags"></i> Genre Specifications
+                                <span style="font-size: 0.75rem; opacity: 0.6; font-weight: normal; margin-left: 0.5rem;">(Must have one or more)</span>
+                            </label>
+                            <button id="sugClearGenresBtn" class="suggestion-text-link">Clear</button>
+                        </div>
+                        <div id="sugGenreChips" class="suggestion-genre-chips">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Entry Selection Section (Shown for Entry Specific & Multi Entry Specific) -->
+                    <div id="sugEntrySection" class="suggestion-section" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                            <label class="suggestion-section-label" style="margin-bottom: 0;" id="sugEntrySectionLabel">
+                                <i class="fas fa-bookmark"></i> Select Finished Entry
+                            </label>
+                            <span id="sugSelectedCount" class="sug-selection-count">0 selected</span>
+                        </div>
+                        <div class="sug-search-wrap">
+                            <i class="fas fa-search sug-search-icon"></i>
+                            <input type="text" id="sugEntrySearchInput" placeholder="Search your completed titles...">
+                        </div>
+                        <div id="sugEntryPickerList" class="sug-entry-picker-list">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button id="sugGenerateBtn" class="sug-generate-btn">
+                            <i class="fas fa-magic"></i> Find Suggestions
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Loading Progress Animation -->
                 <div id="suggestionLoading" style="display: none; text-align: center; padding: 3rem 0;">
                     <div class="radar-container" style="width: 150px; height: 150px; margin: 1rem auto;">
                         <div class="radar-circle"></div>
@@ -387,28 +485,36 @@
                     <div id="suggestionChecklist" style="margin: 1.5rem auto; width: 250px; text-align: left; font-size: 0.85rem; color: rgba(255,255,255,0.8); display: inline-block;">
                         <div id="check1" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i class="fas fa-circle-notch fa-spin fa-fw" style="color: var(--theme-accent);"></i>
-                            <span>Scanning library seeds</span>
+                            <span>Scanning criteria</span>
                         </div>
                         <div id="check2" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
                             <i class="far fa-circle fa-fw"></i>
-                            <span>Querying external APIs</span>
+                            <span>Querying catalog sources</span>
                         </div>
                         <div id="check3" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
                             <i class="far fa-circle fa-fw"></i>
-                            <span>Removing duplicates</span>
+                            <span>Matching years & genres</span>
                         </div>
                         <div id="check4" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
                             <i class="far fa-circle fa-fw"></i>
-                            <span>Preparing visual cards</span>
+                            <span>Preparing recommendations</span>
                         </div>
                     </div>
 
                     <p id="suggestionLoadingSubtext" style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.8rem; color: #fff;">Finding the best matches for you...</p>
                 </div>
 
-                
-                <div id="suggestionResults" style="display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
-                    <!-- Filled dynamically by JS -->
+                <!-- Step 4: Results Display -->
+                <div id="suggestionResultsWrap" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <button id="sugModifyCriteriaBtn" class="suggestion-back-btn">
+                            <i class="fas fa-sliders-h"></i> Modify Criteria
+                        </button>
+                        <span id="sugResultCountBadge" class="suggestion-mode-pill">Matches</span>
+                    </div>
+                    <div id="suggestionResults" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+                        <!-- Filled dynamically by JS -->
+                    </div>
                 </div>
                 
                 <div id="suggestionError" style="display: none; text-align: center; color: #ff6b6b; padding: 2rem;">

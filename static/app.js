@@ -490,10 +490,11 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('click', (e) => {
             const sub = card.getAttribute('data-sub');
             if (sub === 'Suggestions') {
-                // Trigger the Suggestions modal and algorithm
-                if (suggestionModal) {
+                // Trigger the Suggestions modal and prompt
+                if (typeof openSuggestionModal === 'function') {
+                    openSuggestionModal();
+                } else if (suggestionModal) {
                     suggestionModal.classList.add('show');
-                    if (typeof fetchSuggestions === 'function') fetchSuggestions();
                 }
                 return;
             }
@@ -4247,29 +4248,275 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // Suggestion Engine Logic
+    // Suggestion Engine Logic (Interactive Prompt & Filters)
     // ==========================================
     const suggestMeBtn = document.getElementById('suggestMeBtn');
     const suggestionModal = document.getElementById('suggestionModal');
     const closeSuggestionBtn = document.getElementById('closeSuggestionBtn');
+    const suggestionHeader = document.getElementById('suggestionHeader');
+    const suggestionModalTitle = document.getElementById('suggestionModalTitle');
+    const suggestionModalSubtitle = document.getElementById('suggestionModalSubtitle');
+    const suggestionModeMenu = document.getElementById('suggestionModeMenu');
+    const suggestionConfigPanel = document.getElementById('suggestionConfigPanel');
+    const suggestionBackBtn = document.getElementById('suggestionBackBtn');
+    const suggestionActiveModeBadge = document.getElementById('suggestionActiveModeBadge');
+    const sugYearMin = document.getElementById('sugYearMin');
+    const sugYearMax = document.getElementById('sugYearMax');
+    const sugGenreChips = document.getElementById('sugGenreChips');
+    const sugClearGenresBtn = document.getElementById('sugClearGenresBtn');
+    const sugEntrySection = document.getElementById('sugEntrySection');
+    const sugEntrySectionLabel = document.getElementById('sugEntrySectionLabel');
+    const sugSelectedCount = document.getElementById('sugSelectedCount');
+    const sugEntrySearchInput = document.getElementById('sugEntrySearchInput');
+    const sugEntryPickerList = document.getElementById('sugEntryPickerList');
+    const sugGenerateBtn = document.getElementById('sugGenerateBtn');
+
     const suggestionLoading = document.getElementById('suggestionLoading');
+    const suggestionResultsWrap = document.getElementById('suggestionResultsWrap');
     const suggestionResults = document.getElementById('suggestionResults');
     const suggestionError = document.getElementById('suggestionError');
-
     const suggestionControls = document.getElementById('suggestionControls');
-    
-    let lastSuggestionIds = [];
+    const sugModifyCriteriaBtn = document.getElementById('sugModifyCriteriaBtn');
+    const sugResultCountBadge = document.getElementById('sugResultCountBadge');
     const retrySuggestionBtn = document.getElementById('retrySuggestionBtn');
 
-
+    let currentSugMode = 'general'; // 'general', 'entry_specific', 'multi_entry_specific'
+    let sugSelectedGenres = new Set();
+    let sugSelectedEntryIds = new Set();
+    let lastSuggestionIds = [];
     let progressInterval;
 
-    async function fetchSuggestions() {
-        suggestionLoading.style.display = 'block';
-        suggestionResults.style.display = 'none';
-        suggestionError.style.display = 'none';
+    function openSuggestionModal() {
+        if (!suggestionModal) return;
+        suggestionModal.classList.add('show');
+        showSuggestionModeMenu();
+    }
+
+    function showSuggestionModeMenu() {
+        if (suggestionHeader) suggestionHeader.style.display = 'block';
+        if (suggestionModalTitle) {
+            const displayLabel = currentCategory === 'TV Series' ? 'TV Shows' : currentCategory;
+            suggestionModalTitle.innerText = `${displayLabel} Suggestions`;
+        }
+        if (suggestionModalSubtitle) {
+            suggestionModalSubtitle.innerText = 'Choose how you would like to discover new recommendations';
+        }
+
+        if (suggestionModeMenu) suggestionModeMenu.style.display = 'flex';
+        if (suggestionConfigPanel) suggestionConfigPanel.style.display = 'none';
+        if (suggestionLoading) suggestionLoading.style.display = 'none';
+        if (suggestionResultsWrap) suggestionResultsWrap.style.display = 'none';
+        if (suggestionError) suggestionError.style.display = 'none';
         if (suggestionControls) suggestionControls.style.display = 'none';
-        suggestionResults.innerHTML = '';
+    }
+
+    function setupSuggestionMode(mode) {
+        currentSugMode = mode;
+        if (suggestionModeMenu) suggestionModeMenu.style.display = 'none';
+        if (suggestionLoading) suggestionLoading.style.display = 'none';
+        if (suggestionResultsWrap) suggestionResultsWrap.style.display = 'none';
+        if (suggestionError) suggestionError.style.display = 'none';
+        if (suggestionControls) suggestionControls.style.display = 'none';
+        if (suggestionConfigPanel) suggestionConfigPanel.style.display = 'block';
+
+        const modeLabels = {
+            general: 'General',
+            entry_specific: 'Entry Specific',
+            multi_entry_specific: 'Multiple Entry Specific'
+        };
+        if (suggestionActiveModeBadge) {
+            suggestionActiveModeBadge.innerText = modeLabels[mode] || 'General';
+        }
+
+        populateSugGenreChips();
+
+        if (mode === 'general') {
+            if (sugEntrySection) sugEntrySection.style.display = 'none';
+        } else {
+            if (sugEntrySection) sugEntrySection.style.display = 'block';
+            if (sugEntrySectionLabel) {
+                sugEntrySectionLabel.innerHTML = mode === 'entry_specific' 
+                    ? '<i class="fas fa-bookmark"></i> Select One Finished Entry'
+                    : '<i class="fas fa-layer-group"></i> Select Multiple Finished Entries';
+            }
+            populateSugEntryPicker();
+        }
+    }
+
+    function populateSugGenreChips() {
+        if (!sugGenreChips) return;
+        sugGenreChips.innerHTML = '';
+
+        // Gather all genres for currentCategory across completed entries
+        const categoryGenres = new Set();
+        allMedia.forEach(item => {
+            if ((item.type || '').toLowerCase() === currentCategory.toLowerCase()) {
+                if (item.genres) {
+                    item.genres.split(',').forEach(g => {
+                        const clean = g.trim();
+                        if (clean) categoryGenres.add(clean);
+                    });
+                }
+            }
+        });
+
+        const sorted = Array.from(categoryGenres).sort();
+        if (sorted.length === 0) {
+            sugGenreChips.innerHTML = '<span style="font-size: 0.8rem; opacity: 0.5;">No genres available in current library.</span>';
+            return;
+        }
+
+        sorted.forEach(genre => {
+            const chip = document.createElement('div');
+            chip.className = 'sug-genre-chip' + (sugSelectedGenres.has(genre) ? ' active' : '');
+            chip.textContent = genre;
+            chip.addEventListener('click', () => {
+                if (sugSelectedGenres.has(genre)) {
+                    sugSelectedGenres.delete(genre);
+                    chip.classList.remove('active');
+                } else {
+                    sugSelectedGenres.add(genre);
+                    chip.classList.add('active');
+                }
+            });
+            sugGenreChips.appendChild(chip);
+        });
+    }
+
+    function populateSugEntryPicker(filterText = '') {
+        if (!sugEntryPickerList) return;
+        sugEntryPickerList.innerHTML = '';
+
+        // Completed items from current category
+        const completedItems = allMedia.filter(item => 
+            (item.type || '').toLowerCase() === currentCategory.toLowerCase() && !item.is_ranking
+        );
+
+        const query = filterText.toLowerCase().trim();
+        const matches = completedItems.filter(item => {
+            if (!query) return true;
+            return (item.title || '').toLowerCase().includes(query) || 
+                   (item.director || '').toLowerCase().includes(query);
+        });
+
+        if (matches.length === 0) {
+            sugEntryPickerList.innerHTML = '<div style="font-size: 0.82rem; opacity: 0.5; padding: 1rem; text-align: center;">No completed entries match your search.</div>';
+            updateSugEntryCount();
+            return;
+        }
+
+        matches.forEach(item => {
+            const isSelected = sugSelectedEntryIds.has(item.id);
+            const row = document.createElement('div');
+            row.className = 'sug-entry-row' + (isSelected ? ' selected' : '');
+            
+            const cover = item.cover_url || 'https://via.placeholder.com/60x90/222/fff?text=Poster';
+            const year = item.release_year ? `(${item.release_year})` : '';
+            const rating = item.rating || item.numeric_rating ? `★ ${item.rating || item.numeric_rating}` : '';
+
+            row.innerHTML = `
+                <img src="${cover}" alt="${item.title}" class="sug-entry-poster" loading="lazy" />
+                <div class="sug-entry-info">
+                    <div class="sug-entry-title">${item.title}</div>
+                    <div class="sug-entry-meta">${year} ${rating ? ' • ' + rating : ''}</div>
+                </div>
+                <div class="sug-entry-check">
+                    <i class="fas fa-check"></i>
+                </div>
+            `;
+
+            row.addEventListener('click', () => {
+                if (currentSugMode === 'entry_specific') {
+                    // Single selection
+                    if (sugSelectedEntryIds.has(item.id)) {
+                        sugSelectedEntryIds.clear();
+                    } else {
+                        sugSelectedEntryIds.clear();
+                        sugSelectedEntryIds.add(item.id);
+                    }
+                    populateSugEntryPicker(sugEntrySearchInput ? sugEntrySearchInput.value : '');
+                } else {
+                    // Multi selection
+                    if (sugSelectedEntryIds.has(item.id)) {
+                        sugSelectedEntryIds.delete(item.id);
+                        row.classList.remove('selected');
+                    } else {
+                        sugSelectedEntryIds.add(item.id);
+                        row.classList.add('selected');
+                    }
+                }
+                updateSugEntryCount();
+            });
+
+            sugEntryPickerList.appendChild(row);
+        });
+
+        updateSugEntryCount();
+    }
+
+    function updateSugEntryCount() {
+        if (!sugSelectedCount) return;
+        const count = sugSelectedEntryIds.size;
+        sugSelectedCount.textContent = `${count} selected`;
+    }
+
+    if (sugClearGenresBtn) {
+        sugClearGenresBtn.addEventListener('click', () => {
+            sugSelectedGenres.clear();
+            populateSugGenreChips();
+        });
+    }
+
+    if (sugEntrySearchInput) {
+        sugEntrySearchInput.addEventListener('input', (e) => {
+            populateSugEntryPicker(e.target.value);
+        });
+    }
+
+    if (suggestionBackBtn) {
+        suggestionBackBtn.addEventListener('click', () => {
+            showSuggestionModeMenu();
+        });
+    }
+
+    if (sugModifyCriteriaBtn) {
+        sugModifyCriteriaBtn.addEventListener('click', () => {
+            if (suggestionResultsWrap) suggestionResultsWrap.style.display = 'none';
+            if (suggestionConfigPanel) suggestionConfigPanel.style.display = 'block';
+        });
+    }
+
+    // Attach click events to the 3 Mode Buttons
+    document.querySelectorAll('.suggestion-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.getAttribute('data-mode');
+            setupSuggestionMode(mode);
+        });
+    });
+
+    if (sugGenerateBtn) {
+        sugGenerateBtn.addEventListener('click', () => {
+            // Validation for Entry Specific modes
+            if (currentSugMode === 'entry_specific' && sugSelectedEntryIds.size === 0) {
+                alert('Please select an entry from your completed library.');
+                return;
+            }
+            if (currentSugMode === 'multi_entry_specific' && sugSelectedEntryIds.size === 0) {
+                alert('Please select at least one entry from your completed library.');
+                return;
+            }
+
+            fetchCustomSuggestions();
+        });
+    }
+
+    async function fetchCustomSuggestions() {
+        if (suggestionConfigPanel) suggestionConfigPanel.style.display = 'none';
+        if (suggestionResultsWrap) suggestionResultsWrap.style.display = 'none';
+        if (suggestionResults) suggestionResults.innerHTML = '';
+        if (suggestionError) suggestionError.style.display = 'none';
+        if (suggestionControls) suggestionControls.style.display = 'none';
+        if (suggestionLoading) suggestionLoading.style.display = 'block';
 
         const stepLineProgress = document.getElementById('stepLineProgress');
         const loadingText = document.getElementById('suggestionLoadingText');
@@ -4290,18 +4537,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        if (loadingText) loadingText.textContent = "Analyzing your library...";
-        if (loadingSubtext) loadingSubtext.textContent = "Starting up...";
+        if (loadingText) loadingText.textContent = "Processing Request";
+        if (loadingSubtext) loadingSubtext.textContent = "Finding the best matches for you...";
 
         const startTime = Date.now();
-        
-        if (loadingText) loadingText.textContent = "Processing Request";
-
         const isSlow = currentCategory === 'Anime' || currentCategory === 'Manga';
-        // Enforce a minimum of 4 seconds for fast categories so users can see the stages
-        const estimatedTime = isSlow ? 45000 : 4000; 
+        const estimatedTime = isSlow ? 30000 : 4000;
         let elapsed = 0;
-        const interval = 200; // ms
+        const interval = 200;
         
         const checkItems = [
             document.getElementById('check1'),
@@ -4325,7 +4568,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            // Update steps and checklist based on progress
             if (progress < 25) {
                 updateActiveStep(0);
                 updateChecklist(0);
@@ -4376,20 +4618,32 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Abort if the request takes longer than 120 seconds (Jikan can be very slow with multiple seeds)
         const abortController = new AbortController();
         const abortTimeout = setTimeout(() => abortController.abort(), 120000);
-
         let suggestionsData = null;
 
+        const yearMinVal = sugYearMin && sugYearMin.value ? parseInt(sugYearMin.value) : null;
+        const yearMaxVal = sugYearMax && sugYearMax.value ? parseInt(sugYearMax.value) : null;
+        const genresArr = Array.from(sugSelectedGenres);
+        const entryIdsArr = Array.from(sugSelectedEntryIds);
+
+        const payload = {
+            category: currentCategory,
+            mode: currentSugMode,
+            year_min: yearMinVal,
+            year_max: yearMaxVal,
+            genres: genresArr,
+            entry_ids: entryIdsArr
+        };
+
         try {
-            let url = `/api/suggestions?category=${encodeURIComponent(currentCategory)}`;
-            if (lastSuggestionIds.length > 0) {
-                url += `&exclude=${lastSuggestionIds.join(',')}`;
-            }
-            
-            const res = await fetch(url, {
-                headers: getAuthHeaders(false), // Guests can use this too
+            const res = await fetch('/api/suggestions/custom', {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders(false),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload),
                 signal: abortController.signal
             });
             clearTimeout(abortTimeout);
@@ -4400,21 +4654,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error("Suggestion Engine Error:", err);
             suggestionError.style.display = 'block';
-            suggestionError.textContent = "An error occurred while generating suggestions. Please try again.";
-            if (suggestionControls) suggestionControls.style.display = 'block'; // Allow retry on error
+            suggestionError.textContent = "An error occurred while generating suggestions. Please check your criteria and try again.";
+            if (suggestionControls) suggestionControls.style.display = 'block';
         } finally {
             clearInterval(progressInterval);
             
-            // Calculate how much longer we need to wait to hit the 3-second minimum
             const elapsedActual = Date.now() - startTime;
             const waitTime = Math.max(3000 - elapsedActual, 0);
             
             setTimeout(() => {
-                // Force bar to 100% and mark all completed
                 if (stepLineProgress) stepLineProgress.style.width = '100%';
                 steps.forEach(s => { if (s) { s.classList.remove('active'); s.classList.add('completed'); } });
                 
-                // Complete all checklist items
                 checkItems.forEach(item => {
                     if (!item) return;
                     item.style.opacity = '1';
@@ -4425,116 +4676,119 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (loadingSubtext) loadingSubtext.textContent = "Est. remaining: 0s";
                 
-                // Wait for the animation to finish before showing results
                 setTimeout(() => {
                     suggestionLoading.style.display = 'none';
                 
-                if (suggestionsData) {
-                    if (suggestionsData.length === 0) {
-                        suggestionError.style.display = 'block';
-                        suggestionError.textContent = "We don't have enough highly-rated data in your tracker to make good suggestions yet!";
-                    } else {
-                        lastSuggestionIds = suggestionsData.map(item => item.tmdb_id);
-                        
-                        suggestionsData.forEach(item => {
-                            const card = document.createElement('div');
-                            card.className = 'suggestion-card';
-                            
-                            const coverUrl = item.cover_url || 'https://via.placeholder.com/180x270/2c3e50/ecf0f1?text=No+Poster';
-                            const year = item.release_year ? `(${item.release_year})` : '';
-                            const genres = item.genres ? `<div class="suggestion-genres">${item.genres}</div>` : '';
-                            const director = item.director ? `<div class="suggestion-director">${item.type === 'Movies' ? 'Dir.' : 'By'} ${item.director}</div>` : '';
-                            const overview = item.overview ? `<div class="suggestion-overview">${item.overview}</div>` : '';
-                            
-                            card.innerHTML = `
-                                <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
-                                <div class="suggestion-title">${item.title}</div>
-                                <div class="suggestion-meta">${item.type} ${year}</div>
-                                ${director}
-                                ${genres}
-                                ${overview}
-                                <div class="suggestion-reason">${item.reason}</div>
-                                <div class="suggestion-admin-actions">
-                                    <button class="suggestion-action-btn pass" title="Pass (Never show again)"><i class="fas fa-times"></i> Pass</button>
-                                    <button class="suggestion-action-btn add" title="Add to Recommendations"><i class="fas fa-plus"></i> Add Rec</button>
-                                </div>
-                            `;
-                            
-                            const adminActions = card.querySelector('.suggestion-admin-actions');
-                            const passBtn = card.querySelector('.suggestion-action-btn.pass');
-                            const addBtn = card.querySelector('.suggestion-action-btn.add');
-
-                            if (!isAdminUnlocked) {
-                                adminActions.style.display = 'none';
-                            } else {
-                                passBtn.addEventListener('click', async () => {
-                                    passBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                                    try {
-                                        const pRes = await fetch('/api/suggestions/pass', {
-                                            method: 'POST',
-                                            headers: getAuthHeaders(true),
-                                            body: JSON.stringify({ 
-                                                type: item.type, 
-                                                tmdb_id: item.tmdb_id,
-                                                title: item.title
-                                            })
-                                        });
-                                        if (pRes.ok) {
-                                            card.style.opacity = '0.3';
-                                            card.style.pointerEvents = 'none';
-                                            passBtn.innerHTML = '<i class="fas fa-check" style="color:#2ed573;"></i> Passed';
-                                        } else {
-                                            throw new Error('Failed to pass');
-                                        }
-                                    } catch (e) {
-                                        console.error("Pass error:", e);
-                                        passBtn.innerHTML = '<i class="fas fa-times"></i> Error';
-                                    }
-                                });
-
-                                addBtn.addEventListener('click', async () => {
-                                    addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                                    try {
-                                        const addRes = await fetch('/api/recommendations/submit', {
-                                            method: 'POST',
-                                            headers: getAuthHeaders(true),
-                                            body: JSON.stringify({
-                                                title: item.title,
-                                                year: item.release_year ? parseInt(item.release_year) : null,
-                                                ext_id: item.tmdb_id,
-                                                type: item.type,
-                                                recommender_name: "Recommendation"
-                                            })
-                                        });
-                                        if (addRes.ok) {
-                                            card.style.opacity = '0.3';
-                                            card.style.pointerEvents = 'none';
-                                            addBtn.innerHTML = '<i class="fas fa-check"></i> Added';
-                                        } else {
-                                            throw new Error('Failed to add recommendation');
-                                        }
-                                    } catch (e) {
-                                        console.error("Add rec error:", e);
-                                        addBtn.innerHTML = '<i class="fas fa-times"></i> Error';
-                                    }
-                                });
+                    if (suggestionsData) {
+                        if (suggestionsData.length === 0) {
+                            suggestionError.style.display = 'block';
+                            suggestionError.textContent = "No matches found matching these exact year and genre criteria. Try expanding your year range or selecting different genres!";
+                            if (suggestionResultsWrap) suggestionResultsWrap.style.display = 'block';
+                        } else {
+                            lastSuggestionIds = suggestionsData.map(item => item.tmdb_id);
+                            if (sugResultCountBadge) {
+                                sugResultCountBadge.textContent = `${suggestionsData.length} Matches Found`;
                             }
-        
-                            suggestionResults.appendChild(card);
-                        });
-                        suggestionResults.style.display = 'grid';
-                        if (suggestionControls) suggestionControls.style.display = 'block';
+                            
+                            suggestionsData.forEach(item => {
+                                const card = document.createElement('div');
+                                card.className = 'suggestion-card';
+                                
+                                const coverUrl = item.cover_url || 'https://via.placeholder.com/180x270/2c3e50/ecf0f1?text=No+Poster';
+                                const year = item.release_year ? `(${item.release_year})` : '';
+                                const genres = item.genres ? `<div class="suggestion-genres">${item.genres}</div>` : '';
+                                const director = item.director ? `<div class="suggestion-director">${item.type === 'Movies' ? 'Dir.' : 'By'} ${item.director}</div>` : '';
+                                const overview = item.overview ? `<div class="suggestion-overview">${item.overview}</div>` : '';
+                                
+                                card.innerHTML = `
+                                    <img src="${coverUrl}" alt="${item.title}" class="suggestion-poster" loading="lazy" />
+                                    <div class="suggestion-title">${item.title}</div>
+                                    <div class="suggestion-meta">${item.type} ${year}</div>
+                                    ${director}
+                                    ${genres}
+                                    ${overview}
+                                    <div class="suggestion-reason">${item.reason}</div>
+                                    <div class="suggestion-admin-actions">
+                                        <button class="suggestion-action-btn pass" title="Pass (Never show again)"><i class="fas fa-times"></i> Pass</button>
+                                        <button class="suggestion-action-btn add" title="Add to Recommendations"><i class="fas fa-plus"></i> Add Rec</button>
+                                    </div>
+                                `;
+                                
+                                const adminActions = card.querySelector('.suggestion-admin-actions');
+                                const passBtn = card.querySelector('.suggestion-action-btn.pass');
+                                const addBtn = card.querySelector('.suggestion-action-btn.add');
+
+                                if (!isAdminUnlocked) {
+                                    adminActions.style.display = 'none';
+                                } else {
+                                    passBtn.addEventListener('click', async () => {
+                                        passBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                                        try {
+                                            const pRes = await fetch('/api/suggestions/pass', {
+                                                method: 'POST',
+                                                headers: getAuthHeaders(true),
+                                                body: JSON.stringify({ 
+                                                    type: item.type, 
+                                                    tmdb_id: item.tmdb_id,
+                                                    title: item.title
+                                                })
+                                            });
+                                            if (pRes.ok) {
+                                                card.style.opacity = '0.3';
+                                                card.style.pointerEvents = 'none';
+                                                passBtn.innerHTML = '<i class="fas fa-check" style="color:#2ed573;"></i> Passed';
+                                            } else {
+                                                throw new Error('Failed to pass');
+                                            }
+                                        } catch (e) {
+                                            console.error("Pass error:", e);
+                                            passBtn.innerHTML = '<i class="fas fa-times"></i> Error';
+                                        }
+                                    });
+
+                                    addBtn.addEventListener('click', async () => {
+                                        addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                                        try {
+                                            const addRes = await fetch('/api/recommendations/submit', {
+                                                method: 'POST',
+                                                headers: getAuthHeaders(true),
+                                                body: JSON.stringify({
+                                                    title: item.title,
+                                                    year: item.release_year ? parseInt(item.release_year) : null,
+                                                    ext_id: item.tmdb_id,
+                                                    type: item.type,
+                                                    recommender_name: "Recommendation"
+                                                })
+                                            });
+                                            if (addRes.ok) {
+                                                card.style.opacity = '0.3';
+                                                card.style.pointerEvents = 'none';
+                                                addBtn.innerHTML = '<i class="fas fa-check"></i> Added';
+                                            } else {
+                                                throw new Error('Failed to add recommendation');
+                                            }
+                                        } catch (e) {
+                                            console.error("Add rec error:", e);
+                                            addBtn.innerHTML = '<i class="fas fa-times"></i> Error';
+                                        }
+                                    });
+                                }
+            
+                                suggestionResults.appendChild(card);
+                            });
+                            
+                            if (suggestionResultsWrap) suggestionResultsWrap.style.display = 'block';
+                            if (suggestionControls) suggestionControls.style.display = 'block';
+                        }
                     }
-                }
-            }, 800);
-        }, waitTime);
+                }, 800);
+            }, waitTime);
+        }
     }
-}
 
     if (suggestMeBtn) {
         suggestMeBtn.addEventListener('click', () => {
-            suggestionModal.classList.add('show');
-            fetchSuggestions();
+            openSuggestionModal();
         });
     }
 
@@ -4983,7 +5237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (retrySuggestionBtn) {
         retrySuggestionBtn.addEventListener('click', () => {
-            fetchSuggestions();
+            fetchCustomSuggestions();
         });
     }
 
