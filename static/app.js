@@ -4283,12 +4283,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSugMode = 'general'; // 'general', 'entry_specific', 'multi_entry_specific'
     let sugSelectedGenres = new Set();
     let sugSelectedEntryIds = new Set();
-    let lastSuggestionIds = [];
+    let shownSuggestionIds = []; // Accumulates ALL shown IDs across retries so each retry is truly fresh
     let progressInterval;
 
     function openSuggestionModal() {
         if (!suggestionModal) return;
         suggestionModal.classList.add('show');
+        shownSuggestionIds = []; // Fresh session — reset exclusion list
         showSuggestionModeMenu();
     }
 
@@ -4633,7 +4634,8 @@ document.addEventListener('DOMContentLoaded', () => {
             year_min: yearMinVal,
             year_max: yearMaxVal,
             genres: genresArr,
-            entry_ids: entryIdsArr
+            entry_ids: entryIdsArr,
+            exclude_tmdb_ids: [...shownSuggestionIds] // Exclude everything shown in previous batches
         };
 
         try {
@@ -4685,7 +4687,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             suggestionError.textContent = "No matches found matching these exact year and genre criteria. Try expanding your year range or selecting different genres!";
                             if (suggestionResultsWrap) suggestionResultsWrap.style.display = 'block';
                         } else {
-                            lastSuggestionIds = suggestionsData.map(item => item.tmdb_id);
+                            // Accumulate shown IDs so each retry excludes ALL previously shown items
+                            const newIds = suggestionsData.map(item => item.tmdb_id);
+                            shownSuggestionIds = [...new Set([...shownSuggestionIds, ...newIds])];
                             if (sugResultCountBadge) {
                                 sugResultCountBadge.textContent = `${suggestionsData.length} Matches Found`;
                             }
@@ -5237,6 +5241,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (retrySuggestionBtn) {
         retrySuggestionBtn.addEventListener('click', () => {
+            // shownSuggestionIds already has all previously shown IDs — fetchCustomSuggestions
+            // will send them as exclude_tmdb_ids so the backend returns a completely fresh batch
             fetchCustomSuggestions();
         });
     }

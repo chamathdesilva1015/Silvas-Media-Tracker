@@ -1225,6 +1225,7 @@ class CustomSuggestionRequest(BaseModel):
     year_max: Optional[int] = None
     genres: Optional[List[str]] = None
     entry_ids: Optional[List[int]] = None # MediaItem ids from completed database
+    exclude_tmdb_ids: Optional[List[int]] = None # IDs already shown this session (retry exclusions)
 
 @app.post("/api/suggestions/custom")
 def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depends(get_session)):
@@ -1300,6 +1301,9 @@ def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depe
         tracked_titles = {normalize_title(i.title) for i in all_items}
         tracked_ids = {(i.type, int(i.tmdb_id)) for i in all_items if i.tmdb_id}
 
+        # Include client-side session exclusions (items already shown this retry session)
+        session_exclude_ids = set(req.exclude_tmdb_ids) if req.exclude_tmdb_ids else set()
+
         try:
             for p in session.exec(select(PassedSuggestion)).all():
                 tracked_ids.add((p.type, int(p.tmdb_id)))
@@ -1349,7 +1353,7 @@ def get_custom_suggestions(req: CustomSuggestionRequest, session: Session = Depe
             except (ValueError, TypeError):
                 return
             norm_t = normalize_title(c_dict.get("title", ""))
-            if (c_type, tid) in tracked_ids or norm_t in tracked_titles:
+            if (c_type, tid) in tracked_ids or norm_t in tracked_titles or tid in session_exclude_ids:
                 return
             key = (c_type, tid)
             if key not in candidate_pool:
