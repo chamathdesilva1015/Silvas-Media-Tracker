@@ -75,9 +75,9 @@ MAX_REQUESTS_PER_WINDOW = 80 # Up to 80 requests per minute
 
 @app.middleware("http")
 async def global_rate_limiting_middleware(request: Request, call_next):
-    # Skip rate limiting for static assets or health checks
+    # Skip rate limiting for static assets, health checks, or live update pings
     path = request.url.path
-    if not path.startswith("/api/") or path == "/api/health":
+    if not path.startswith("/api/") or path in ["/api/health", "/api/version"]:
         return await call_next(request)
 
     # Admin requests authenticated via header bypass public rate limiting
@@ -882,7 +882,7 @@ def get_category_stats(category: str, session: Session = Depends(get_session)):
 
     # Most recently added (by date_added)
     most_recent = max(items, key=lambda i: i.date_added)
-    sorted_recent = sorted(items, key=lambda i: i.date_added, reverse=True)[:10]
+    sorted_recent = sorted(items, key=lambda i: i.date_added, reverse=True)[:20]
     recent_additions = [
         {
             "item": item,
@@ -2129,6 +2129,22 @@ def update_recommendation_status(rec_id: int, payload: RecommendationStatusPaylo
     session.add(rec)
     session.commit()
     return {"ok": True}
+
+from sqlmodel import func as sql_func
+
+@app.get("/api/version")
+def get_database_version(session: Session = Depends(get_session)):
+    """Lightweight version fingerprint to notify open devices of updates without heavy queries."""
+    m_cnt = session.exec(select(sql_func.count(MediaItem.id))).one()
+    m_max = session.exec(select(sql_func.max(MediaItem.date_added))).one()
+    r_cnt = session.exec(select(sql_func.count(RatingHistory.id))).one()
+    r_max = session.exec(select(sql_func.max(RatingHistory.changed_at))).one()
+    rec_cnt = session.exec(select(sql_func.count(Recommendation.id))).one()
+    rec_max = session.exec(select(sql_func.max(Recommendation.date_added))).one()
+    
+    # Hash or compose the composite version string
+    version_str = f"{m_cnt}:{m_max}:{r_cnt}:{r_max}:{rec_cnt}:{rec_max}"
+    return {"version": version_str}
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

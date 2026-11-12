@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=435">
+    <link rel="stylesheet" href="style.css?v=443">
 </head>
 
 <body class="read-only-mode">
@@ -138,7 +138,7 @@
                             <i class="fas fa-award" id="hubGatewayRankingsIcon"></i>
                         </div>
                         <div class="hub-gateway-content">
-                            <span class="hub-gateway-badge">Leaderboard</span>
+                            <span class="hub-gateway-badge">Rankings</span>
                             <h3 class="hub-gateway-title" id="hubGatewayRankingsTitle">Top 20 Rankings</h3>
                         </div>
                         <div class="hub-gateway-action">
@@ -878,7 +878,7 @@
             
             <div class="ranking-manager-layout">
                 <div class="ranking-manager-list-section">
-                    <label style="margin-bottom: 1.5rem; display: block;">Leaderboard</label>
+                    <label style="margin-bottom: 1.5rem; display: block;">Rankings</label>
                     <div id="rankingList" class="sortable-list">
                         <!-- Populated via JS -->
                     </div>
@@ -932,12 +932,12 @@
         </div>
     </div>
 
-    <!-- Recently Discovered History Modal -->
+    <!-- Recently Added History Modal -->
     <div id="recentHistoryModal" class="modal">
         <div class="modal-content" style="max-width: 500px; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
             <span class="close-btn" id="closeRecentHistoryBtn">&times;</span>
-            <h2 class="serif" id="recentHistoryModalTitle">Discovery History</h2>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">The 10 most recently discovered additions.</p>
+            <h2 class="serif" id="recentHistoryModalTitle">Recently Added</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">The 20 most recent additions.</p>
             <div id="recentHistoryList" style="max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
                 <!-- Populated via JS -->
                 <p style="text-align: center; opacity: 0.5; padding: 2rem;">Loading history...</p>
@@ -1169,9 +1169,23 @@
         </div>
     </div>
 
+    <!-- Live Update Prompt Popup -->
+    <div id="liveUpdateToast" class="live-update-toast" style="display: none;">
+        <div class="live-update-content">
+            <div class="live-update-icon"><i class="fas fa-sync-alt fa-spin"></i></div>
+            <div class="live-update-text">
+                <strong>New updates detected</strong>
+                <span>Changes were made on another device.</span>
+            </div>
+            <button id="liveUpdateRefreshBtn" class="live-update-btn">
+                <i class="fas fa-redo-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=442"></script>
+    <script src="app.js?v=443"></script>
 
 
 

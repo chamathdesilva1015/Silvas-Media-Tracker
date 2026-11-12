@@ -1352,8 +1352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         statsPage.innerHTML = `
             <div class="stats-header">
-                <h2 class="serif">${category} — Analysis Complete</h2>
-                <p>Insights generated from ${category.toLowerCase()} collection.</p>
+                <h2 class="serif">${category} — Information</h2>
             </div>
 
             <div class="stats-hero-row">
@@ -1374,7 +1373,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="stat-card" id="recentDiscoveryCard" style="cursor: pointer;">
                     <div class="discovery-details">
-                        <div class="discovery-label">Recently Discovered</div>
+                        <div class="discovery-label">Recently Added</div>
                         <div class="discovery-title">${data.most_recent?.item?.title || 'Unknown'}</div>
                         <div class="discovery-date">Added on ${data.most_recent?.display_date || 'N/A'}</div>
                     </div>
@@ -1387,8 +1386,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="genresHeader">
                     <div class="hof-accordion-title">
                         Top Genres
-                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1.35 if Heart) × [Count / (Count + 1.5)]</b></span>
-                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1.35 if Heart) × [Count / (Count + 1.5)]</span>
+                        <span class="hof-subtitle hof-subtitle-desktop">Points are weighted by ratings and how many titles watched.</span>
+                        <span class="hof-subtitle-mobile">Points are weighted by ratings and how many titles watched.</span>
                     </div>
                     <span class="hof-chevron" id="genresChevron">▼</span>
                 </div>
@@ -1414,8 +1413,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="hof-accordion-header" id="directorsHeader">
                     <div class="hof-accordion-title">
                         ${category === 'Movies' ? 'Top Directors' : (category === 'Manga' ? 'Top Authors' : 'Top Creators')}
-                        <span class="hof-subtitle hof-subtitle-desktop"><b>Passion-Volume Index: Σ (Rating - 4.5)³ × (1.35 if Heart) × [Count / (Count + 1.5)]</b></span>
-                        <span class="hof-subtitle-mobile"><b>Passion-Volume Index:</b> Σ (Rating - 4.5)³ × (1.35 if Heart) × [Count / (Count + 1.5)]</span>
+                        <span class="hof-subtitle hof-subtitle-desktop">Points are weighted by ratings and how many titles watched.</span>
+                        <span class="hof-subtitle-mobile">Points are weighted by ratings and how many titles watched.</span>
                     </div>
                     <span class="hof-chevron" id="directorsChevron">▼</span>
                 </div>
@@ -1464,11 +1463,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (historyModal && historyList && additions.length > 0) {
                     historyList.innerHTML = additions.map(add => {
                         const item = add.item;
+                        const rawScore = (() => {
+                            if (item.numeric_rating && !String(item.numeric_rating).startsWith('#')) {
+                                return String(item.numeric_rating).replace('/10', '').trim();
+                            }
+                            if (item.rating && !String(item.rating).startsWith('#')) {
+                                return String(item.rating).replace('/10', '').trim();
+                            }
+                            return '';
+                        })();
                         return `
                             <div class="history-item-row" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
                                 <div style="display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; flex: 1; padding-right: 1rem;">
                                     <span style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</span>
-                                    <span style="font-size: 0.75rem; opacity: 0.6; color: var(--text-secondary);">${item.release_year ? `${item.release_year} • ` : ''}${item.director || ''}</span>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                        <span style="font-size: 0.75rem; opacity: 0.6; color: var(--text-secondary);">${item.release_year ? `${item.release_year} • ` : ''}${item.director || ''}</span>
+                                        ${rawScore ? `<span class="col-detail-rating-pill" style="font-size: 0.7rem; padding: 0.1rem 0.45rem;">${rawScore}/10</span>` : ''}
+                                    </div>
                                 </div>
                                 <div style="text-align: right; flex-shrink: 0;">
                                     <div style="font-size: 0.8rem; font-weight: 600; color: var(--theme-accent);">${add.display_date}</div>
@@ -5626,5 +5637,58 @@ document.addEventListener('DOMContentLoaded', () => {
             currentRecFilter = btn.dataset.type;
             fetchAllRecs();
         });
+    });
+
+    // ── Multi-Device Realtime Update Watcher ────────────────────────────────────
+    const liveUpdateToast = document.getElementById('liveUpdateToast');
+    const liveUpdateRefreshBtn = document.getElementById('liveUpdateRefreshBtn');
+    let currentServerVersion = null;
+    let isLiveToastShown = false;
+
+    if (liveUpdateRefreshBtn) {
+        liveUpdateRefreshBtn.onclick = () => {
+            window.location.reload();
+        };
+    }
+
+    const checkServerVersion = async () => {
+        if (isLiveToastShown) return; // Already prompted
+        try {
+            const res = await fetch('/api/version', { cache: 'no-store' });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data || !data.version) return;
+
+            if (currentServerVersion === null) {
+                // Initialize baseline version on initial load
+                currentServerVersion = data.version;
+            } else if (currentServerVersion !== data.version) {
+                // Change detected from another device/tab
+                isLiveToastShown = true;
+                if (liveUpdateToast) {
+                    liveUpdateToast.style.display = 'block';
+                    // Trigger CSS transition
+                    requestAnimationFrame(() => {
+                        liveUpdateToast.classList.add('show');
+                    });
+                }
+            }
+        } catch (e) {
+            // Silently catch background poll failures
+        }
+    };
+
+    // Initial baseline fetch
+    checkServerVersion();
+
+    // Poll periodically (every 5 seconds)
+    setInterval(checkServerVersion, 5000);
+
+    // Also check immediately when window / tab regains focus or visibility
+    window.addEventListener('focus', checkServerVersion);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            checkServerVersion();
+        }
     });
 });
