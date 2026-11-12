@@ -16,8 +16,10 @@ from sqlalchemy import text
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 
-from database import engine, create_db_and_tables, MediaItem, RatingHistory, PassedSuggestion, Recommendation
+from database import engine, create_db_and_tables, MediaItem, RatingHistory, PassedSuggestion, Recommendation, SyncState
 from enrich_data import run_enrichment
+from sqlalchemy import event
+from datetime import datetime
 
 app = FastAPI(title="Silva's Media Tracker API")
 
@@ -108,6 +110,48 @@ async def global_rate_limiting_middleware(request: Request, call_next):
     timestamps.append(now)
     ip_request_history[client_ip] = timestamps
     return await call_next(request)
+
+@app.middleware("http")
+async def no_cache_html_middleware(request: Request, call_next):
+    """Ensure HTML pages are never cached so that client bundle updates apply immediately."""
+    response = await call_next(request)
+    if request.url.path in ["/", "/index.html"]:
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+# Global system version tracking for cross-tab and cross-device live updates
+SERVER_DATA_VERSION = int(time.time() * 1000)
+
+def bump_data_version(session: Session = None):
+    global SERVER_DATA_VERSION
+    SERVER_DATA_VERSION = int(time.time() * 1000)
+    if session:
+        try:
+            row = session.exec(select(SyncState).where(SyncState.channel_id == "global_data_version")).first()
+            now_ts = datetime.utcnow()
+            if not row:
+                row = SyncState(channel_id="global_data_version", last_message_id=str(SERVER_DATA_VERSION), last_sync_at=now_ts)
+                session.add(row)
+            else:
+                row.last_message_id = str(SERVER_DATA_VERSION)
+                row.last_sync_at = now_ts
+                session.add(row)
+        except Exception as e:
+            print(f"[!] Error updating global_data_version: {e}")
+
+@event.listens_for(Session, "before_commit")
+def before_commit_hook(session):
+    """Automatically bump global data version on any model mutation in database."""
+    if session.dirty or session.new or session.deleted:
+        has_other = False
+        for obj in list(session.new) + list(session.dirty) + list(session.deleted):
+            if not (isinstance(obj, SyncState) and getattr(obj, "channel_id", None) == "global_data_version"):
+                has_other = True
+                break
+        if has_other:
+            bump_data_version(session)
 
 def get_session():
     with Session(engine) as session:
@@ -2133,18 +2177,19 @@ def update_recommendation_status(rec_id: int, payload: RecommendationStatusPaylo
 from sqlmodel import func as sql_func
 
 @app.get("/api/version")
-def get_database_version(session: Session = Depends(get_session)):
+def get_database_version(response: Response, session: Session = Depends(get_session)):
     """Lightweight version fingerprint to notify open devices of updates without heavy queries."""
-    m_cnt = session.exec(select(sql_func.count(MediaItem.id))).one()
-    m_max = session.exec(select(sql_func.max(MediaItem.date_added))).one()
-    r_cnt = session.exec(select(sql_func.count(RatingHistory.id))).one()
-    r_max = session.exec(select(sql_func.max(RatingHistory.changed_at))).one()
-    rec_cnt = session.exec(select(sql_func.count(Recommendation.id))).one()
-    rec_max = session.exec(select(sql_func.max(Recommendation.date_added))).one()
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     
-    # Hash or compose the composite version string
-    version_str = f"{m_cnt}:{m_max}:{r_cnt}:{r_max}:{rec_cnt}:{rec_max}"
-    return {"version": version_str}
+    try:
+        row = session.exec(select(SyncState).where(SyncState.channel_id == "global_data_version")).first()
+        db_ver = row.last_message_id if row and row.last_message_id else str(SERVER_DATA_VERSION)
+    except Exception:
+        db_ver = str(SERVER_DATA_VERSION)
+        
+    return {"version": f"{db_ver}"}
 
 # Mount static directory to serve frontend (CSS, JS, index.html)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

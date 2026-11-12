@@ -5639,11 +5639,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ── Multi-Device Realtime Update Watcher ────────────────────────────────────
+    // ── Multi-Device & Cross-Tab Realtime Update Watcher ─────────────────────────
     const liveUpdateToast = document.getElementById('liveUpdateToast');
     const liveUpdateRefreshBtn = document.getElementById('liveUpdateRefreshBtn');
     let currentServerVersion = null;
     let isLiveToastShown = false;
+
+    const showLiveUpdatePrompt = () => {
+        if (isLiveToastShown) return;
+        isLiveToastShown = true;
+        if (liveUpdateToast) {
+            liveUpdateToast.classList.add('show');
+        }
+    };
 
     if (liveUpdateRefreshBtn) {
         liveUpdateRefreshBtn.onclick = () => {
@@ -5651,10 +5659,70 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // 1. Cross-Tab Synchronization (Instantaneous within same browser)
+    const SYNC_CHANNEL_NAME = 'silva_media_sync';
+    let syncChannel = null;
+    try {
+        if (typeof BroadcastChannel !== 'undefined') {
+            syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
+            syncChannel.onmessage = (event) => {
+                if (event.data && event.data.type === 'DATA_CHANGED') {
+                    showLiveUpdatePrompt();
+                }
+            };
+        }
+    } catch (e) {
+        syncChannel = null;
+    }
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'silva_media_sync_event') {
+            showLiveUpdatePrompt();
+        }
+    });
+
+    const broadcastDataChange = () => {
+        try {
+            if (syncChannel) {
+                syncChannel.postMessage({ type: 'DATA_CHANGED', timestamp: Date.now() });
+            }
+            localStorage.setItem('silva_media_sync_event', Date.now().toString());
+        } catch (e) {}
+    };
+
+    // 2. Wrap window.fetch to automatically broadcast data mutations across tabs
+    const nativeFetch = window.fetch;
+    window.fetch = async function(...args) {
+        const res = await nativeFetch.apply(this, args);
+        try {
+            const [resource, config] = args;
+            const method = (config && config.method ? config.method.toUpperCase() : 'GET');
+            const url = typeof resource === 'string' ? resource : (resource && resource.url ? resource.url : '');
+
+            if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method) && url.includes('/api/') && !url.includes('/api/auth/verify')) {
+                if (res.ok) {
+                    broadcastDataChange();
+                    // Update our own baseline silently after brief delay so current tab doesn't prompt itself
+                    setTimeout(async () => {
+                        try {
+                            const verRes = await nativeFetch('/api/version', { cache: 'no-store' });
+                            if (verRes.ok) {
+                                const vData = await verRes.json();
+                                if (vData && vData.version) currentServerVersion = vData.version;
+                            }
+                        } catch (err) {}
+                    }, 400);
+                }
+            }
+        } catch (err) {}
+        return res;
+    };
+
+    // 3. Multi-Device Polling & State Verification
     const checkServerVersion = async () => {
         if (isLiveToastShown) return; // Already prompted
         try {
-            const res = await fetch('/api/version', { cache: 'no-store' });
+            const res = await nativeFetch('/api/version', { cache: 'no-store' });
             if (!res.ok) return;
             const data = await res.json();
             if (!data || !data.version) return;
@@ -5663,15 +5731,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Initialize baseline version on initial load
                 currentServerVersion = data.version;
             } else if (currentServerVersion !== data.version) {
-                // Change detected from another device/tab
-                isLiveToastShown = true;
-                if (liveUpdateToast) {
-                    liveUpdateToast.style.display = 'block';
-                    // Trigger CSS transition
-                    requestAnimationFrame(() => {
-                        liveUpdateToast.classList.add('show');
-                    });
-                }
+                // Change detected from another device
+                showLiveUpdatePrompt();
             }
         } catch (e) {
             // Silently catch background poll failures
@@ -5681,8 +5742,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial baseline fetch
     checkServerVersion();
 
-    // Poll periodically (every 5 seconds)
-    setInterval(checkServerVersion, 5000);
+    // Poll periodically (every 3.5 seconds)
+    setInterval(checkServerVersion, 3500);
 
     // Also check immediately when window / tab regains focus or visibility
     window.addEventListener('focus', checkServerVersion);
