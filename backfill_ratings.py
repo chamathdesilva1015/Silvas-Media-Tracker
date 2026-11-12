@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from database import engine, MediaItem
 from sqlmodel import Session, select
 from tmdb_helper import fetch_external_ratings
@@ -21,6 +22,7 @@ def backfill(batch_size: int = 50, delay: float = 0.5):
                 if ratings.get("rt_critics_score"): m.rt_critics_score = ratings["rt_critics_score"]
                 if ratings.get("rt_audience_score"): m.rt_audience_score = ratings["rt_audience_score"]
                 if ratings.get("letterboxd_rating"): m.letterboxd_rating = ratings["letterboxd_rating"]
+                m.ratings_updated_at = datetime.utcnow()
                 session.add(m)
                 session.commit()
                 print(f"    -> IMDb: {m.imdb_rating} | RT: {m.rt_critics_score} / {m.rt_audience_score} | LB: {m.letterboxd_rating}")

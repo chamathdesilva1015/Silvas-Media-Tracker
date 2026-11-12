@@ -413,12 +413,13 @@ def refresh_movie_ratings(item_id: int, session: Session = Depends(get_session))
     if ratings.get("rt_critics_score"): item.rt_critics_score = ratings["rt_critics_score"]
     if ratings.get("rt_audience_score"): item.rt_audience_score = ratings["rt_audience_score"]
     if ratings.get("letterboxd_rating"): item.letterboxd_rating = ratings["letterboxd_rating"]
+    item.ratings_updated_at = datetime.utcnow()
 
     session.info["skip_version_bump"] = True
     session.add(item)
     session.commit()
     session.refresh(item)
-    return {"ok": True, "ratings": ratings, "item": item}
+    return {"ok": True, "ratings": ratings, "ratings_updated_at": item.ratings_updated_at.isoformat(), "item": item}
 
 class LinkPayload(BaseModel):
     item_id: int

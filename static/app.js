@@ -2785,8 +2785,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateTile(rtAudienceEl, tileRtAudience, item.rt_audience_score);
                 updateTile(lbEl, tileLb, formatLb(item.letterboxd_rating));
 
-                // If all external ratings are missing and we have an ID, fetch on demand!
-                if (!item.imdb_rating && !item.rt_critics_score && !item.letterboxd_rating && item.id) {
+                // Smart Tiered TTL: Stale-While-Revalidate
+                // - Recent releases (current year or last year): 7 days TTL
+                // - Older catalog movies: 30 days TTL
+                const currentYear = new Date().getFullYear();
+                const isRecent = item.release_year && (item.release_year >= currentYear - 1);
+                const ttlDays = isRecent ? 7 : 30;
+
+                let needsRevalidate = false;
+                if (!item.imdb_rating && !item.rt_critics_score && !item.letterboxd_rating) {
+                    needsRevalidate = true;
+                } else if (!item.ratings_updated_at) {
+                    needsRevalidate = true;
+                } else {
+                    const lastUpdated = new Date(item.ratings_updated_at).getTime();
+                    if (isNaN(lastUpdated) || (Date.now() - lastUpdated) > (ttlDays * 24 * 60 * 60 * 1000)) {
+                        needsRevalidate = true;
+                    }
+                }
+
+                if (needsRevalidate && item.id) {
                     fetch(`/api/media/refresh-ratings/${item.id}`)
                         .then(r => r.json())
                         .then(d => {
@@ -2795,6 +2813,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 item.rt_critics_score = d.ratings.rt_critics_score;
                                 item.rt_audience_score = d.ratings.rt_audience_score;
                                 item.letterboxd_rating = d.ratings.letterboxd_rating;
+                                item.ratings_updated_at = d.ratings_updated_at || new Date().toISOString();
                                 updateTile(imdbEl, tileImdb, formatImdb(item.imdb_rating));
                                 updateTile(rtCriticsEl, tileRtCritics, item.rt_critics_score);
                                 updateTile(rtAudienceEl, tileRtAudience, item.rt_audience_score);

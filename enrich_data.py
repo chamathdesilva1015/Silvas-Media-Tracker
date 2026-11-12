@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from typing import Optional, Callable
 from sqlmodel import Session, select
 from database import engine, MediaItem
@@ -164,6 +165,7 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                         if ext_r.get("rt_critics_score"): item.rt_critics_score = ext_r["rt_critics_score"]
                         if ext_r.get("rt_audience_score"): item.rt_audience_score = ext_r["rt_audience_score"]
                         if ext_r.get("letterboxd_rating"): item.letterboxd_rating = ext_r["letterboxd_rating"]
+                        item.ratings_updated_at = datetime.utcnow()
                     except Exception as e:
                         log(f"  [!] External ratings fetch error: {e}")
                     

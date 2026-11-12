@@ -41,6 +41,7 @@ class MediaItem(SQLModel, table=True):
     rt_critics_score: Optional[str] = Field(default=None)
     rt_audience_score: Optional[str] = Field(default=None)
     letterboxd_rating: Optional[str] = Field(default=None)
+    ratings_updated_at: Optional[datetime] = Field(default=None)
 
 
 class SyncState(SQLModel, table=True):
@@ -130,7 +131,8 @@ def apply_migrations():
             ("imdb_rating", "VARCHAR"),
             ("rt_critics_score", "VARCHAR"),
             ("rt_audience_score", "VARCHAR"),
-            ("letterboxd_rating", "VARCHAR")
+            ("letterboxd_rating", "VARCHAR"),
+            ("ratings_updated_at", "TIMESTAMP")
         ]
         for col_name, col_type in columns:
             try:
