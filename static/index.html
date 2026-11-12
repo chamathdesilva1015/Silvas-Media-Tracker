@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=444">
+    <link rel="stylesheet" href="style.css?v=445">
 </head>
 
 <body class="read-only-mode">
@@ -601,6 +601,35 @@
                         </div>
                     </div>
 
+                    <!-- External Ratings Grid (Movies Only) -->
+                    <div class="quick-info-ext-ratings-container" id="quickInfoExtRatingsContainer" style="display:none;">
+                        <div class="ext-ratings-header">
+                            <span class="ext-ratings-title">External Ratings</span>
+                        </div>
+                        <div class="external-ratings-grid">
+                            <div class="ext-rating-tile" id="extTileRtCritics" title="Rotten Tomatoes Tomatometer (Critics)">
+                                <span class="ext-rating-icon">🍅</span>
+                                <span class="ext-rating-value" id="quickInfoRtCritics">—</span>
+                                <span class="ext-rating-source">RT Critics</span>
+                            </div>
+                            <div class="ext-rating-tile" id="extTileRtAudience" title="Rotten Tomatoes Audience Score (Popcorn)">
+                                <span class="ext-rating-icon">🍿</span>
+                                <span class="ext-rating-value" id="quickInfoRtAudience">—</span>
+                                <span class="ext-rating-source">RT Audience</span>
+                            </div>
+                            <div class="ext-rating-tile" id="extTileImdb" title="Internet Movie Database">
+                                <span class="ext-rating-icon">⭐</span>
+                                <span class="ext-rating-value" id="quickInfoImdb">—</span>
+                                <span class="ext-rating-source">IMDb</span>
+                            </div>
+                            <div class="ext-rating-tile" id="extTileLetterboxd" title="Letterboxd Average Score">
+                                <span class="ext-rating-icon">🎞️</span>
+                                <span class="ext-rating-value" id="quickInfoLetterboxd">—</span>
+                                <span class="ext-rating-source">Letterboxd</span>
+                            </div>
+                        </div>
+                    </div>
+
 
 
                     <div class="quick-info-review-section" id="quickInfoReviewSection" style="display:none;">
@@ -636,6 +665,7 @@
                         <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; display: block; margin-bottom: 0.8rem;">Metadata Repair</label>
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
                             <button id="quickInfoRefreshBtn" class="btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 0.8rem;">Sync with Official</button>
+                            <button id="quickInfoRefreshRatingsBtn" class="btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 0.8rem; display: none;">Refresh Ratings</button>
                             <button id="quickInfoShowLinkBtn" class="btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 0.8rem;">Manual Link ID</button>
                         </div>
                         
@@ -1185,7 +1215,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=444"></script>
+    <script src="app.js?v=445"></script>
 
 
 

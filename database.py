@@ -36,6 +36,12 @@ class MediaItem(SQLModel, table=True):
     manga_status: Optional[str] = Field(default=None)
     total_chapters: Optional[int] = Field(default=None)
 
+    # External Ratings for Movies
+    imdb_rating: Optional[str] = Field(default=None)
+    rt_critics_score: Optional[str] = Field(default=None)
+    rt_audience_score: Optional[str] = Field(default=None)
+    letterboxd_rating: Optional[str] = Field(default=None)
+
 
 class SyncState(SQLModel, table=True):
     """Tracks the last-synced Discord message ID per channel for incremental sync."""
@@ -120,7 +126,11 @@ def apply_migrations():
             ("total_seasons", "INTEGER"),
             ("total_episodes", "INTEGER"),
             ("manga_status", "VARCHAR"),
-            ("total_chapters", "INTEGER")
+            ("total_chapters", "INTEGER"),
+            ("imdb_rating", "VARCHAR"),
+            ("rt_critics_score", "VARCHAR"),
+            ("rt_audience_score", "VARCHAR"),
+            ("letterboxd_rating", "VARCHAR")
         ]
         for col_name, col_type in columns:
             try:

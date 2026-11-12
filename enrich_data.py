@@ -153,6 +153,18 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                     item.manga_status = details["manga_status"]
                 if details.get("total_chapters"):
                     item.total_chapters = details["total_chapters"]
+
+                # Fetch External Ratings for Movies
+                if item.type == "Movies" and tmdb_id:
+                    try:
+                        from tmdb_helper import fetch_external_ratings
+                        ext_r = fetch_external_ratings(item.title, tmdb_id, item.release_year)
+                        if ext_r.get("imdb_rating"): item.imdb_rating = ext_r["imdb_rating"]
+                        if ext_r.get("rt_critics_score"): item.rt_critics_score = ext_r["rt_critics_score"]
+                        if ext_r.get("rt_audience_score"): item.rt_audience_score = ext_r["rt_audience_score"]
+                        if ext_r.get("letterboxd_rating"): item.letterboxd_rating = ext_r["letterboxd_rating"]
+                    except Exception as e:
+                        log(f"  [!] External ratings fetch error: {e}")
                     
                 try:
                     session.add(item)

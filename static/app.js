@@ -2751,6 +2751,60 @@ document.addEventListener('DOMContentLoaded', () => {
             dirSection.style.display = 'flex';
         } else { dirSection.style.display = 'none'; }
 
+        // --- External Ratings (Movies Only) ---
+        const extRatingsContainer = document.getElementById('quickInfoExtRatingsContainer');
+        if (extRatingsContainer) {
+            if (item.type === 'Movies' && !item.isRecommendation) {
+                extRatingsContainer.style.display = 'block';
+
+                const imdbEl = document.getElementById('quickInfoImdb');
+                const rtCriticsEl = document.getElementById('quickInfoRtCritics');
+                const rtAudienceEl = document.getElementById('quickInfoRtAudience');
+                const lbEl = document.getElementById('quickInfoLetterboxd');
+
+                const tileImdb = document.getElementById('extTileImdb');
+                const tileRtCritics = document.getElementById('extTileRtCritics');
+                const tileRtAudience = document.getElementById('extTileRtAudience');
+                const tileLb = document.getElementById('extTileLetterboxd');
+
+                const updateTile = (el, tile, val) => {
+                    if (val && val !== 'N/A' && val !== 'null' && val !== 'None') {
+                        el.textContent = val;
+                        tile.classList.remove('tile-empty');
+                    } else {
+                        el.textContent = '—';
+                        tile.classList.add('tile-empty');
+                    }
+                };
+
+                updateTile(imdbEl, tileImdb, item.imdb_rating);
+                updateTile(rtCriticsEl, tileRtCritics, item.rt_critics_score);
+                updateTile(rtAudienceEl, tileRtAudience, item.rt_audience_score);
+                updateTile(lbEl, tileLb, item.letterboxd_rating);
+
+                // If all external ratings are missing and we have an ID, fetch on demand!
+                if (!item.imdb_rating && !item.rt_critics_score && !item.letterboxd_rating && item.id) {
+                    fetch(`/api/media/refresh-ratings/${item.id}`)
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d && d.ok && d.ratings) {
+                                item.imdb_rating = d.ratings.imdb_rating;
+                                item.rt_critics_score = d.ratings.rt_critics_score;
+                                item.rt_audience_score = d.ratings.rt_audience_score;
+                                item.letterboxd_rating = d.ratings.letterboxd_rating;
+                                updateTile(imdbEl, tileImdb, item.imdb_rating);
+                                updateTile(rtCriticsEl, tileRtCritics, item.rt_critics_score);
+                                updateTile(rtAudienceEl, tileRtAudience, item.rt_audience_score);
+                                updateTile(lbEl, tileLb, item.letterboxd_rating);
+                            }
+                        })
+                        .catch(() => {});
+                }
+            } else {
+                extRatingsContainer.style.display = 'none';
+            }
+        }
+
 
 
         // --- Review ---
@@ -2818,10 +2872,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Restore Metadata Repair Logic
         const refreshBtn = document.getElementById('quickInfoRefreshBtn');
+        const refreshRatingsBtn = document.getElementById('quickInfoRefreshRatingsBtn');
         const showLinkBtn = document.getElementById('quickInfoShowLinkBtn');
         const linkSubSection = document.getElementById('quickInfoLinkSubSection');
         const linkInput = document.getElementById('quickInfoLinkInput');
         const applyLinkBtn = document.getElementById('quickInfoApplyLinkBtn');
+
+        if (refreshRatingsBtn) {
+            if (item.type === 'Movies' && computeCanEdit()) {
+                refreshRatingsBtn.style.display = 'inline-block';
+                refreshRatingsBtn.onclick = async () => {
+                    refreshRatingsBtn.disabled = true;
+                    refreshRatingsBtn.textContent = 'Syncing...';
+                    try {
+                        const res = await fetch(`/api/media/refresh-ratings/${item.id}`, { method: 'POST', headers: getAuthHeaders(true) });
+                        const d = await res.json();
+                        if (d.ok && d.ratings) {
+                            item.imdb_rating = d.ratings.imdb_rating;
+                            item.rt_critics_score = d.ratings.rt_critics_score;
+                            item.rt_audience_score = d.ratings.rt_audience_score;
+                            item.letterboxd_rating = d.ratings.letterboxd_rating;
+                            document.getElementById('quickInfoImdb').textContent = item.imdb_rating || '—';
+                            document.getElementById('quickInfoRtCritics').textContent = item.rt_critics_score || '—';
+                            document.getElementById('quickInfoRtAudience').textContent = item.rt_audience_score || '—';
+                            document.getElementById('quickInfoLetterboxd').textContent = item.letterboxd_rating || '—';
+                            alert('External ratings refreshed successfully!');
+                        }
+                    } catch (e) { alert(e.message); }
+                    finally { refreshRatingsBtn.disabled = false; refreshRatingsBtn.textContent = 'Refresh Ratings'; }
+                };
+            } else {
+                refreshRatingsBtn.style.display = 'none';
+            }
+        }
 
         linkSubSection.style.display = 'none';
 

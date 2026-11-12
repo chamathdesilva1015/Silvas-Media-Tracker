@@ -376,6 +376,11 @@ async def refresh_item_metadata(item_id: int, session: Session = Depends(get_ses
     item.genres = None
     item.director = None
     item.cover_url = None
+    if item.type == "Movies":
+        item.imdb_rating = None
+        item.rt_critics_score = None
+        item.rt_audience_score = None
+        item.letterboxd_rating = None
     session.add(item)
     session.commit()
     
@@ -386,6 +391,29 @@ async def refresh_item_metadata(item_id: int, session: Session = Depends(get_ses
     
     session.refresh(item)
     return {"ok": True, "item": item}
+
+@app.get("/api/media/refresh-ratings/{item_id}")
+@app.post("/api/media/refresh-ratings/{item_id}")
+def refresh_movie_ratings(item_id: int, session: Session = Depends(get_session)):
+    """Fetches and updates the 4 external ratings for a single movie."""
+    item = session.get(MediaItem, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    if item.type != "Movies":
+        raise HTTPException(status_code=400, detail="External ratings are only available for Movies")
+
+    from tmdb_helper import fetch_external_ratings
+    ratings = fetch_external_ratings(item.title, item.tmdb_id, item.release_year)
+
+    if ratings.get("imdb_rating"): item.imdb_rating = ratings["imdb_rating"]
+    if ratings.get("rt_critics_score"): item.rt_critics_score = ratings["rt_critics_score"]
+    if ratings.get("rt_audience_score"): item.rt_audience_score = ratings["rt_audience_score"]
+    if ratings.get("letterboxd_rating"): item.letterboxd_rating = ratings["letterboxd_rating"]
+
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return {"ok": True, "ratings": ratings, "item": item}
 
 class LinkPayload(BaseModel):
     item_id: int

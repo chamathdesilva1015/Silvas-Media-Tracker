@@ -417,3 +417,135 @@ def get_movie_details(tmdb_id: int) -> dict:
 
 def get_tv_details(tmdb_id: int) -> dict:
     return get_tmdb_details(tmdb_id, "tv")
+
+def fetch_external_ratings(title: str, tmdb_id: Optional[int] = None, release_year: Optional[int] = None) -> dict:
+    """
+    Fetches 4 external ratings for a movie:
+    - IMDb (x.x/10)
+    - Rotten Tomatoes Critics (Tomatometer %)
+    - Rotten Tomatoes Audience (Popcorn %)
+    - Letterboxd (x.x/5)
+    """
+    ratings = {
+        "imdb_rating": None,
+        "rt_critics_score": None,
+        "rt_audience_score": None,
+        "letterboxd_rating": None
+    }
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    }
+
+    # 1. IMDb via TMDB external_ids + OMDb / Agregarr
+    imdb_id = None
+    if tmdb_id:
+        try:
+            tmdb_headers = get_tmdb_headers()
+            params = {}
+            if TMDB_API_KEY and not TMDB_ACCESS_TOKEN:
+                params["api_key"] = TMDB_API_KEY
+            ext_res = requests.get(f"{BASE_URL}/movie/{tmdb_id}/external_ids", headers=tmdb_headers, params=params, timeout=5)
+            if ext_res.status_code == 200:
+                imdb_id = ext_res.json().get("imdb_id")
+        except Exception as e:
+            print(f"[Ratings] TMDB external_ids error for {tmdb_id}: {e}")
+
+    if imdb_id:
+        # Check OMDb first if user configured OMDB_API_KEY
+        omdb_key = os.environ.get("OMDB_API_KEY")
+        if omdb_key:
+            try:
+                omdb_res = requests.get(f"http://www.omdbapi.com/?i={imdb_id}&apikey={omdb_key}", timeout=5)
+                if omdb_res.status_code == 200:
+                    d = omdb_res.json()
+                    ir = d.get("imdbRating")
+                    if ir and ir != "N/A":
+                        ratings["imdb_rating"] = str(ir)
+                    for r_entry in d.get("Ratings", []):
+                        if r_entry.get("Source") == "Rotten Tomatoes":
+                            ratings["rt_critics_score"] = r_entry.get("Value")
+            except Exception as e:
+                print(f"[Ratings] OMDb fetch error: {e}")
+
+        # If still no IMDb rating, query free Agregarr ratings proxy
+        if not ratings["imdb_rating"]:
+            try:
+                ag_res = requests.get(f"https://api.agregarr.org/api/ratings?id={imdb_id}", timeout=5)
+                if ag_res.status_code == 200:
+                    arr = ag_res.json()
+                    if arr and isinstance(arr, list) and len(arr) > 0:
+                        r_val = arr[0].get("rating")
+                        if r_val is not None:
+                            ratings["imdb_rating"] = f"{float(r_val):.1f}"
+            except Exception as e:
+                print(f"[Ratings] Agregarr error: {e}")
+
+    # 2. Letterboxd via TMDB ID redirect & JSON-LD
+    if tmdb_id:
+        try:
+            lb_res = requests.get(f"https://letterboxd.com/tmdb/{tmdb_id}/", headers=headers, allow_redirects=True, timeout=6)
+            if lb_res.status_code == 200:
+                import re, json
+                ld_matches = re.findall(r'<script type=\"application/ld\+json\">(.*?)</script>', lb_res.text, re.DOTALL)
+                for m in ld_matches:
+                    clean = m.strip()
+                    if clean.startswith("/* <![CDATA[ */"):
+                        clean = clean[len("/* <![CDATA[ */"):]
+                    if clean.endswith("/* ]]> */"):
+                        clean = clean[:-len("/* ]]> */")]
+                    try:
+                        d = json.loads(clean)
+                        if "aggregateRating" in d and "ratingValue" in d["aggregateRating"]:
+                            val = float(d["aggregateRating"]["ratingValue"])
+                            ratings["letterboxd_rating"] = f"{val:.1f}"
+                            break
+                    except Exception:
+                        pass
+        except Exception as e:
+            print(f"[Ratings] Letterboxd error for TMDB {tmdb_id}: {e}")
+
+    # 3. Rotten Tomatoes (Critics & Audience)
+    if title:
+        import re
+        t_clean = title.lower().replace("&", "and")
+        t_clean = re.sub(r"[^\w\s]", "", t_clean).strip()
+        slug = re.sub(r"\s+", "_", t_clean)
+
+        candidates = [slug]
+        if release_year:
+            candidates.append(f"{slug}_{release_year}")
+
+        for c in candidates:
+            try:
+                rt_res = requests.get(f"https://www.rottentomatoes.com/m/{c}", headers=headers, timeout=6)
+                if rt_res.status_code == 200:
+                    # Critics
+                    if not ratings["rt_critics_score"]:
+                        c_m = re.search(r'\"criticsScore\":\{.*?\"scorePercent\":\"(.*?)\"', rt_res.text)
+                        if c_m:
+                            c_val = c_m.group(1).strip()
+                            ratings["rt_critics_score"] = c_val if c_val.endswith("%") else f"{c_val}%"
+                        else:
+                            ld_m = re.search(r'\"name\":\"Tomatometer\".*?\"ratingValue\":\"(\d+)\"', rt_res.text)
+                            if ld_m:
+                                ratings["rt_critics_score"] = f"{ld_m.group(1)}%"
+
+                    # Audience
+                    if not ratings["rt_audience_score"]:
+                        a_m = re.search(r'\"audienceScore\":\{.*?\"scorePercent\":\"(.*?)\"', rt_res.text)
+                        if a_m:
+                            a_val = a_m.group(1).strip()
+                            ratings["rt_audience_score"] = a_val if a_val.endswith("%") else f"{a_val}%"
+                        else:
+                            tag_m = re.search(r'data-[a-zA-Z0-9_\-\"]*=\"audienceScore\"[^>]*>\s*(\d+%)\s*<', rt_res.text)
+                            if tag_m:
+                                ratings["rt_audience_score"] = tag_m.group(1).strip()
+
+                    if ratings["rt_critics_score"] or ratings["rt_audience_score"]:
+                        break
+            except Exception as e:
+                print(f"[Ratings] RT scrape error for candidate '{c}': {e}")
+
+    return ratings
