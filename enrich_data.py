@@ -21,6 +21,7 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
     log(f"Starting Media Enrichment for: {', '.join(target_categories)}...")
     
     with Session(engine) as session:
+        session.info["skip_version_bump"] = True
         # Select items that need enrichment
         statement = select(MediaItem).where(
             MediaItem.type.in_(target_categories),

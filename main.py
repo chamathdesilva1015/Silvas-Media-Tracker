@@ -143,7 +143,11 @@ def bump_data_version(session: Session = None):
 
 @event.listens_for(Session, "before_commit")
 def before_commit_hook(session):
-    """Automatically bump global data version on any model mutation in database."""
+    """Automatically bump global data version on user-initiated model mutations in database."""
+    # Skip version bump for background reads/caching (e.g. external ratings, synopsis)
+    if session.info.get("skip_version_bump"):
+        return
+
     if session.dirty or session.new or session.deleted:
         has_other = False
         for obj in list(session.new) + list(session.dirty) + list(session.deleted):
@@ -395,7 +399,7 @@ async def refresh_item_metadata(item_id: int, session: Session = Depends(get_ses
 @app.get("/api/media/refresh-ratings/{item_id}")
 @app.post("/api/media/refresh-ratings/{item_id}")
 def refresh_movie_ratings(item_id: int, session: Session = Depends(get_session)):
-    """Fetches and updates the 4 external ratings for a single movie."""
+    """Fetches and updates the 4 external ratings for a single movie (caches without bumping client sync version)."""
     item = session.get(MediaItem, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -410,6 +414,7 @@ def refresh_movie_ratings(item_id: int, session: Session = Depends(get_session))
     if ratings.get("rt_audience_score"): item.rt_audience_score = ratings["rt_audience_score"]
     if ratings.get("letterboxd_rating"): item.letterboxd_rating = ratings["letterboxd_rating"]
 
+    session.info["skip_version_bump"] = True
     session.add(item)
     session.commit()
     session.refresh(item)
@@ -663,6 +668,7 @@ def get_synopsis(item_id: int, session: Session = Depends(get_session)):
         print(f"[Synopsis] Fetch error for item {item_id}: {e}")
 
     if overview:
+        session.info["skip_version_bump"] = True
         item.overview = overview
         session.add(item)
         session.commit()

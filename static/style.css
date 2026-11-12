@@ -7469,13 +7469,18 @@ body.modal-open .bottom-nav {
 }
 
 .ext-rating-source {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     color: var(--text-secondary);
     opacity: 0.8;
-    white-space: nowrap;
+    line-height: 1.25;
+    text-align: center;
+    min-height: 2.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Mobile responsive rules for external ratings */
@@ -7495,7 +7500,8 @@ body.modal-open .bottom-nav {
         font-size: 0.95rem !important;
     }
     .ext-rating-source {
-        font-size: 0.58rem !important;
+        font-size: 0.56rem !important;
+        min-height: 2.2em !important;
     }
 }
 

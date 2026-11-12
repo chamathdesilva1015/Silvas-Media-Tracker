@@ -5,6 +5,7 @@ from tmdb_helper import fetch_external_ratings
 
 def backfill(batch_size: int = 50, delay: float = 0.5):
     with Session(engine) as session:
+        session.info["skip_version_bump"] = True
         movies = session.exec(
             select(MediaItem)
             .where(MediaItem.type == "Movies", MediaItem.imdb_rating == None, MediaItem.tmdb_id != None)
@@ -31,3 +32,4 @@ def backfill(batch_size: int = 50, delay: float = 0.5):
 
 if __name__ == "__main__":
     backfill(batch_size=10, delay=0.3)
+

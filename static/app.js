@@ -2767,6 +2767,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tileRtAudience = document.getElementById('extTileRtAudience');
                 const tileLb = document.getElementById('extTileLetterboxd');
 
+                const formatImdb = (v) => (!v || v === 'N/A' || v === 'null' || v === 'None') ? null : (v.endsWith('/10') ? v : `${v}/10`);
+                const formatLb = (v) => (!v || v === 'N/A' || v === 'null' || v === 'None') ? null : (v.endsWith('/5') ? v : `${v}/5`);
+
                 const updateTile = (el, tile, val) => {
                     if (val && val !== 'N/A' && val !== 'null' && val !== 'None') {
                         el.textContent = val;
@@ -2777,10 +2780,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 };
 
-                updateTile(imdbEl, tileImdb, item.imdb_rating);
+                updateTile(imdbEl, tileImdb, formatImdb(item.imdb_rating));
                 updateTile(rtCriticsEl, tileRtCritics, item.rt_critics_score);
                 updateTile(rtAudienceEl, tileRtAudience, item.rt_audience_score);
-                updateTile(lbEl, tileLb, item.letterboxd_rating);
+                updateTile(lbEl, tileLb, formatLb(item.letterboxd_rating));
 
                 // If all external ratings are missing and we have an ID, fetch on demand!
                 if (!item.imdb_rating && !item.rt_critics_score && !item.letterboxd_rating && item.id) {
@@ -2792,10 +2795,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 item.rt_critics_score = d.ratings.rt_critics_score;
                                 item.rt_audience_score = d.ratings.rt_audience_score;
                                 item.letterboxd_rating = d.ratings.letterboxd_rating;
-                                updateTile(imdbEl, tileImdb, item.imdb_rating);
+                                updateTile(imdbEl, tileImdb, formatImdb(item.imdb_rating));
                                 updateTile(rtCriticsEl, tileRtCritics, item.rt_critics_score);
                                 updateTile(rtAudienceEl, tileRtAudience, item.rt_audience_score);
-                                updateTile(lbEl, tileLb, item.letterboxd_rating);
+                                updateTile(lbEl, tileLb, formatLb(item.letterboxd_rating));
                             }
                         })
                         .catch(() => {});
@@ -2892,10 +2895,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             item.rt_critics_score = d.ratings.rt_critics_score;
                             item.rt_audience_score = d.ratings.rt_audience_score;
                             item.letterboxd_rating = d.ratings.letterboxd_rating;
-                            document.getElementById('quickInfoImdb').textContent = item.imdb_rating || '—';
+                            const formatImdb = (v) => (!v || v === 'N/A' || v === 'null' || v === 'None') ? null : (v.endsWith('/10') ? v : `${v}/10`);
+                            const formatLb = (v) => (!v || v === 'N/A' || v === 'null' || v === 'None') ? null : (v.endsWith('/5') ? v : `${v}/5`);
+                            document.getElementById('quickInfoImdb').textContent = formatImdb(item.imdb_rating) || '—';
                             document.getElementById('quickInfoRtCritics').textContent = item.rt_critics_score || '—';
                             document.getElementById('quickInfoRtAudience').textContent = item.rt_audience_score || '—';
-                            document.getElementById('quickInfoLetterboxd').textContent = item.letterboxd_rating || '—';
+                            document.getElementById('quickInfoLetterboxd').textContent = formatLb(item.letterboxd_rating) || '—';
                             alert('External ratings refreshed successfully!');
                         }
                     } catch (e) { alert(e.message); }
@@ -5782,7 +5787,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const method = (config && config.method ? config.method.toUpperCase() : 'GET');
             const url = typeof resource === 'string' ? resource : (resource && resource.url ? resource.url : '');
 
-            if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method) && url.includes('/api/') && !url.includes('/api/auth/verify')) {
+            if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method) &&
+                url.includes('/api/') &&
+                !url.includes('/api/auth/verify') &&
+                !url.includes('/api/media/refresh-ratings') &&
+                !url.includes('/api/synopsis')) {
                 if (res.ok) {
                     broadcastDataChange();
                     // Update our own baseline silently after brief delay so current tab doesn't prompt itself
