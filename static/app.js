@@ -2975,7 +2975,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`/api/history/${itemId}`);
             const rows = await res.json();
             if (!rows.length) {
-                document.getElementById('historyModalBody').innerHTML = '<p class="history-empty">No rating changes on record yet.<br><span style="opacity:0.5;font-size:0.8rem">Changes are logged the next time a Discord sync runs after you update a score.</span></p>';
+                document.getElementById('historyModalBody').innerHTML = '<p class="history-empty">No rating changes on record yet.<br><span style="opacity:0.5;font-size:0.8rem">Changes are logged whenever you update a score.</span></p>';
             } else {
                 document.getElementById('historyModalBody').innerHTML = rows.map(r => `
                     <div class="history-row">
@@ -5749,6 +5749,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Multi-Device & Cross-Tab Realtime Update Watcher ─────────────────────────
     const liveUpdateToast = document.getElementById('liveUpdateToast');
     const liveUpdateRefreshBtn = document.getElementById('liveUpdateRefreshBtn');
+    const liveUpdateDismissBtn = document.getElementById('liveUpdateDismissBtn');
     let currentServerVersion = null;
     let isLiveToastShown = false;
 
@@ -5763,6 +5764,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (liveUpdateRefreshBtn) {
         liveUpdateRefreshBtn.onclick = () => {
             window.location.reload();
+        };
+    }
+
+    if (liveUpdateDismissBtn) {
+        liveUpdateDismissBtn.onclick = () => {
+            if (liveUpdateToast) {
+                liveUpdateToast.classList.remove('show');
+            }
         };
     }
 

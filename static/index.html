@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=447">
+    <link rel="stylesheet" href="style.css?v=448">
 </head>
 
 <body class="read-only-mode">
@@ -754,8 +754,6 @@
             <h2 class="serif">Delete Entry?</h2>
             <p style="color: var(--text-secondary); margin: 1rem 0;">
                 Are you sure you want to delete <strong id="deleteTargetTitle" style="color: var(--text-primary);">this item</strong>?
-                <br><br>
-                <span style="font-size: 0.85rem; opacity: 0.8;">Note: If this exists on Discord, it may be re-synced unless deleted there too.</span>
             </p>
             <div class="form-actions" style="display: flex; gap: 10px; margin-top: 2rem;">
                 <button id="cancelDeleteBtn" class="btn-secondary" style="flex:1; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer; padding: 10px;">Cancel</button>
@@ -1205,17 +1203,18 @@
             <div class="live-update-icon"><i class="fas fa-sync-alt fa-spin"></i></div>
             <div class="live-update-text">
                 <strong>New updates detected</strong>
-                <span>Changes were made on another device.</span>
+                <span>A change was made in another tab or device.</span>
             </div>
             <button id="liveUpdateRefreshBtn" class="live-update-btn">
                 <i class="fas fa-redo-alt"></i> Refresh
             </button>
+            <button id="liveUpdateDismissBtn" class="live-update-dismiss-btn" title="Dismiss">&times;</button>
         </div>
     </div>
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=447"></script>
+    <script src="app.js?v=448"></script>
 
 
 
