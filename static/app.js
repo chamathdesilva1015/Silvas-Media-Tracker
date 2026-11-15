@@ -1877,6 +1877,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const rawYear = document.getElementById('releaseYearInput').value;
         const releaseYear = rawYear ? parseInt(rawYear, 10) : null;
+        if (releaseYear) {
+            const maxYear = new Date().getFullYear() + 3;
+            if (releaseYear < 1888 || releaseYear > maxYear) {
+                alert(`Please enter a valid release year between 1888 and ${maxYear}.`);
+                return;
+            }
+        }
         
         const manualId = document.getElementById('manualIdInput').value.trim();
         const titleInput = document.getElementById('titleInput').value.trim();
@@ -5286,6 +5293,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Please enter a title.');
                 return;
             }
+
+            if (year) {
+                const yr = parseInt(year, 10);
+                const maxYear = new Date().getFullYear() + 3;
+                if (isNaN(yr) || yr < 1888 || yr > maxYear) {
+                    alert(`Please enter a valid release year between 1888 and ${maxYear}.`);
+                    return;
+                }
+            }
             
             recPage1.style.display = 'none';
             recPage2.style.display = 'block';
@@ -5457,8 +5473,8 @@ document.addEventListener('DOMContentLoaded', () => {
         recSubmitBtn.addEventListener('click', async () => {
             const name = recNameInput.value.trim();
             
-            if (!selectedRecItem) {
-                alert('Please select a piece of media.');
+            if (!selectedRecItem || !selectedRecItem.tmdb_id) {
+                alert('Please select a verified title from the search results.');
                 return;
             }
             

@@ -282,6 +282,97 @@ def delete_media_item(item_id: int, session: Session = Depends(get_session), _: 
 
 @app.post("/api/media", response_model=MediaItem)
 def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+    # 1. Year Validation: Prevent distant future or invalid release dates (e.g. 2050)
+    current_year = datetime.utcnow().year
+    MAX_YEAR = current_year + 3
+    MIN_YEAR = 1888
+    if item.release_year and (item.release_year < MIN_YEAR or item.release_year > MAX_YEAR):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid release year ({item.release_year}). Release year must be between {MIN_YEAR} and {MAX_YEAR}."
+        )
+
+    # 2. Strict Verification with TMDB / Jikan: Block non-existent / fake titles
+    if item.type in ["Movies", "TV Series", "Anime", "Manga"]:
+        verified_data = None
+        if item.tmdb_id and int(item.tmdb_id) > 0:
+            try:
+                if item.type == "Movies":
+                    from tmdb_helper import get_movie_details
+                    verified_data = get_movie_details(int(item.tmdb_id))
+                elif item.type == "TV Series":
+                    from tmdb_helper import get_tv_details
+                    verified_data = get_tv_details(int(item.tmdb_id))
+                elif item.type == "Anime":
+                    from jikan_helper import get_anime_details
+                    verified_data = get_anime_details(int(item.tmdb_id))
+                elif item.type == "Manga":
+                    from jikan_helper import get_manga_details
+                    verified_data = get_manga_details(int(item.tmdb_id))
+            except Exception as e:
+                print(f"Error validating item tmdb_id {item.tmdb_id}: {e}")
+        else:
+            try:
+                if item.type == "Movies":
+                    from tmdb_helper import search_movie, get_movie_details
+                    found_id = search_movie(item.title, item.release_year)
+                    if found_id:
+                        item.tmdb_id = found_id
+                        verified_data = get_movie_details(found_id)
+                elif item.type == "TV Series":
+                    from tmdb_helper import search_tmdb, get_tv_details
+                    found_id = search_tmdb(item.title, item.release_year, media_type="tv")
+                    if found_id:
+                        item.tmdb_id = found_id
+                        verified_data = get_tv_details(found_id)
+                elif item.type == "Anime":
+                    from jikan_helper import search_anime, get_anime_details
+                    found_id = search_anime(item.title)
+                    if found_id:
+                        item.tmdb_id = found_id
+                        verified_data = get_anime_details(found_id)
+                elif item.type == "Manga":
+                    from jikan_helper import search_manga, get_manga_details
+                    found_id = search_manga(item.title)
+                    if found_id:
+                        item.tmdb_id = found_id
+                        verified_data = get_manga_details(found_id)
+            except Exception as e:
+                print(f"Error searching media for validation: {e}")
+
+        if not verified_data or not verified_data.get("title"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"'{item.title}' could not be verified on TMDB or MyAnimeList. Only real, verified titles can be added."
+            )
+
+        # Enforce verified release year if provided by provider
+        det_year = verified_data.get("release_year")
+        if det_year:
+            if det_year < MIN_YEAR or det_year > MAX_YEAR:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"This title has a release year of {det_year}, which exceeds the allowed range (max {MAX_YEAR})."
+                )
+            if not item.release_year:
+                item.release_year = det_year
+
+        # Populate missing metadata from verified source
+        if not item.cover_url and verified_data.get("cover_url"):
+            item.cover_url = verified_data["cover_url"]
+        if not item.backdrop_url and verified_data.get("backdrop_url"):
+            item.backdrop_url = verified_data["backdrop_url"]
+        if not item.director and verified_data.get("director"):
+            item.director = verified_data["director"]
+        if not item.genres and verified_data.get("genres"):
+            item.genres = verified_data["genres"]
+        if not item.runtime and verified_data.get("runtime"):
+            item.runtime = verified_data["runtime"]
+        if not item.overview and verified_data.get("overview"):
+            item.overview = verified_data["overview"]
+        if not item.content_rating and verified_data.get("content_rating"):
+            item.content_rating = verified_data["content_rating"]
+
     # Error-Proof Duplicate Check (Case-insensitive)
     stmt = select(MediaItem).where(
         MediaItem.type == item.type,
@@ -448,6 +539,15 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
             except (ValueError, TypeError):
                 target_year = None
 
+        current_year = datetime.utcnow().year
+        MAX_YEAR = current_year + 3
+        MIN_YEAR = 1888
+        if target_year and (target_year < MIN_YEAR or target_year > MAX_YEAR):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid release year ({target_year}). Year must be between {MIN_YEAR} and {MAX_YEAR}."
+            )
+
         if type == "Anime":
             from jikan_helper import search_anime, get_anime_details
             if not target_ext_id and title:
@@ -481,6 +581,12 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
 
         if not data:
             raise HTTPException(status_code=404, detail="Could not find a match for that title/ID.")
+
+        if data.get("release_year") and (data["release_year"] < MIN_YEAR or data["release_year"] > MAX_YEAR):
+            raise HTTPException(
+                status_code=400,
+                detail=f"This title has a release year of {data['release_year']}, which exceeds the allowed range (max {MAX_YEAR})."
+            )
 
         # Expert Duplicate detection
         canonical_title = data.get("title", "")
@@ -2017,10 +2123,28 @@ def get_all_recommendations(request: Request, response: Response, type: Optional
 
 @app.post("/api/recommendations/submit")
 def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
-    """Saves a recommendation with enriched metadata, preventing duplicate submissions."""
+    """Saves a recommendation with verified metadata, strictly preventing fake or unverified submissions."""
+    current_year = datetime.utcnow().year
+    MAX_YEAR = current_year + 3
+    MIN_YEAR = 1888
+
+    # 1. Year validation
+    if rec.year and (rec.year < MIN_YEAR or rec.year > MAX_YEAR):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid release year ({rec.year}). Year must be between {MIN_YEAR} and {MAX_YEAR}."
+        )
+
+    # 2. Strict ID verification: Must have a valid external ID from TMDB or MAL
+    if not rec.ext_id or int(rec.ext_id) <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="A valid TMDB or MyAnimeList ID is required. Please select a verified title from the search."
+        )
+
     norm_title = normalize_title(rec.title) if rec.title else None
 
-    # 1. Check Library (by ext_id or normalized title)
+    # 3. Check Library (by ext_id or normalized title)
     library_exists = False
     if rec.ext_id:
         library_exists = session.exec(
@@ -2033,7 +2157,7 @@ def submit_recommendation(rec: Recommendation, session: Session = Depends(get_se
     if library_exists:
         raise HTTPException(status_code=400, detail="This item is already in your finished/completed list.")
 
-    # 2. Check existing recommendations (by ext_id or normalized title)
+    # 4. Check existing recommendations (by ext_id or normalized title)
     existing_rec = None
     if rec.ext_id:
         existing_rec = session.exec(
@@ -2052,35 +2176,48 @@ def submit_recommendation(rec: Recommendation, session: Session = Depends(get_se
     if existing_rec:
         raise HTTPException(status_code=400, detail="This item has already been recommended.")
 
-    # Fetch details synchronously so it has a profile immediately
+    # 5. Fetch details synchronously and enforce that it actually exists on TMDB / Jikan
     details = {}
-    if rec.ext_id:
-        try:
-            if rec.type == "Anime":
-                from jikan_helper import get_anime_details
-                details = get_anime_details(rec.ext_id)
-            elif rec.type == "Manga":
-                from jikan_helper import get_manga_details
-                details = get_manga_details(rec.ext_id)
-            elif rec.type == "Movies":
-                from tmdb_helper import get_movie_details
-                details = get_movie_details(rec.ext_id)
-            elif rec.type == "TV Series":
-                from tmdb_helper import get_tv_details
-                details = get_tv_details(rec.ext_id)
-        except Exception as e:
-            print(f"Error enriching recommendation on submit: {e}")
+    try:
+        if rec.type == "Anime":
+            from jikan_helper import get_anime_details
+            details = get_anime_details(int(rec.ext_id))
+        elif rec.type == "Manga":
+            from jikan_helper import get_manga_details
+            details = get_manga_details(int(rec.ext_id))
+        elif rec.type == "Movies":
+            from tmdb_helper import get_movie_details
+            details = get_movie_details(int(rec.ext_id))
+        elif rec.type == "TV Series":
+            from tmdb_helper import get_tv_details
+            details = get_tv_details(int(rec.ext_id))
+    except Exception as e:
+        print(f"Error validating recommendation ext_id {rec.ext_id}: {e}")
 
-    if details:
-        rec.cover_url = details.get("cover_url")
-        rec.backdrop_url = details.get("backdrop_url")
-        rec.genres = details.get("genres")
-        rec.director = details.get("director")
-        rec.overview = details.get("overview")
-        rec.runtime = details.get("runtime")
-        rec.content_rating = details.get("content_rating")
-        if details.get("title"): rec.title = details["title"]
-        if details.get("release_year"): rec.year = details["release_year"]
+    if not details or not details.get("title"):
+        raise HTTPException(
+            status_code=400,
+            detail="Could not verify this title on TMDB or MyAnimeList. Only verified titles can be recommended."
+        )
+
+    det_year = details.get("release_year")
+    if det_year and (det_year < MIN_YEAR or det_year > MAX_YEAR):
+        raise HTTPException(
+            status_code=400,
+            detail=f"This title has a release year of {det_year}, which exceeds the allowed range (max {MAX_YEAR})."
+        )
+
+    rec.cover_url = details.get("cover_url")
+    rec.backdrop_url = details.get("backdrop_url")
+    rec.genres = details.get("genres")
+    rec.director = details.get("director")
+    rec.overview = details.get("overview")
+    rec.runtime = details.get("runtime")
+    rec.content_rating = details.get("content_rating")
+    if details.get("title"):
+        rec.title = details["title"]
+    if details.get("release_year"):
+        rec.year = details["release_year"]
 
     session.add(rec)
     session.commit()

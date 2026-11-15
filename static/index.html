@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=451">
+    <link rel="stylesheet" href="style.css?v=452">
 </head>
 
 <body class="read-only-mode">
@@ -296,7 +296,7 @@
 
                     <div class="form-group">
                         <label for="releaseYearInput">Release Year</label>
-                        <input type="number" id="releaseYearInput" min="1800" max="2100" placeholder="e.g. 2022">
+                        <input type="number" id="releaseYearInput" min="1888" max="2030" placeholder="e.g. 2022">
                     </div>
 
                     <div class="form-group">
@@ -1051,7 +1051,7 @@
                 </div>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label for="recYearInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Release Year (Optional)</label>
-                    <input type="number" id="recYearInput" placeholder="e.g. 2010" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <input type="number" id="recYearInput" min="1888" max="2030" placeholder="e.g. 2010" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
                     <button id="recNext1Btn" class="btn-primary" style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Find Match</button>
@@ -1237,7 +1237,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=451"></script>
+    <script src="app.js?v=452"></script>
 
 
 
