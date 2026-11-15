@@ -205,3 +205,4 @@ if __name__ == "__main__":
         run_restore(args.restore, confirm=args.yes)
     else:
         run_backup(encrypt=args.encrypt, key=args.key)
+
