@@ -5715,30 +5715,28 @@ body.modal-open .bottom-nav {
     align-items: stretch;  /* left col stretches to full modal height */
 }
 
-/* Poster column: fixed width, shrinks to image height — no black box */
+/* Poster column: fixed width and aspect ratio — preserves layout across all devices */
 .quick-info-poster-wrap {
     flex-shrink: 0;
     position: relative;
-    background: transparent;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: flex-start;
     justify-content: center;
     overflow: hidden;
     width: 100%;
+    aspect-ratio: 2 / 3;
+    min-height: 400px;
 }
 
-/* Image: fill the column, height auto = no crop, no bars */
+/* Image: fills the poster wrap consistently in 2:3 ratio */
 .quick-info-poster {
-    display: none;
+    display: block;
     width: 100%;
-    height: auto;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
     border-radius: 0;
     transition: transform 0.3s ease;
-}
-
-.quick-info-poster.loaded {
-    display: block;
 }
 
 /* Left column: poster stacked above synopsis */

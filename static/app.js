@@ -2843,15 +2843,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Poster ---
         const posterImg = document.getElementById('quickInfoPoster');
         const posterPlaceholder = document.getElementById('quickInfoPosterPlaceholder');
-        posterImg.classList.remove('loaded');
-        posterPlaceholder.style.display = 'flex';
+        if (posterPlaceholder) posterPlaceholder.style.display = 'none';
         if (item.cover_url) {
-            posterImg.onload = () => {
-                posterImg.classList.add('loaded');
-                posterPlaceholder.style.display = 'none';
-            };
+            posterImg.style.display = 'block';
             posterImg.src = item.cover_url;
-        } else { posterImg.src = ''; }
+            posterImg.alt = `${item.title} Poster`;
+        } else {
+            posterImg.src = '';
+            posterImg.style.display = 'none';
+        }
 
         // --- Synopsis ---
         const synopsisEl = document.getElementById('quickInfoSynopsis');
