@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import time
 import hashlib
 import hmac
@@ -280,17 +281,36 @@ def delete_media_item(item_id: int, session: Session = Depends(get_session), _: 
     session.commit()
     return {"status": "success", "message": "Item deleted"}
 
+def parse_year_int(val) -> Optional[int]:
+    """Safely extracts a 4-digit integer year from string, int, or None."""
+    if val is None:
+        return None
+    try:
+        s = str(val).strip()
+        if not s:
+            return None
+        match = re.search(r"\b(18|19|20)\d{2}\b", s)
+        if match:
+            return int(match.group(0))
+        return int(s[:4]) if len(s) >= 4 and s[:4].isdigit() else int(s)
+    except (ValueError, TypeError):
+        return None
+
 @app.post("/api/media", response_model=MediaItem)
 def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     # 1. Year Validation: Prevent distant future or invalid release dates (e.g. 2050)
     current_year = datetime.utcnow().year
     MAX_YEAR = current_year + 3
     MIN_YEAR = 1888
-    if item.release_year and (item.release_year < MIN_YEAR or item.release_year > MAX_YEAR):
+
+    parsed_item_year = parse_year_int(item.release_year)
+    if parsed_item_year and (parsed_item_year < MIN_YEAR or parsed_item_year > MAX_YEAR):
         raise HTTPException(
             status_code=400,
             detail=f"Invalid release year ({item.release_year}). Release year must be between {MIN_YEAR} and {MAX_YEAR}."
         )
+    if parsed_item_year:
+        item.release_year = parsed_item_year
 
     # 2. Strict Verification with TMDB / Jikan: Block non-existent / fake titles
     if item.type in ["Movies", "TV Series", "Anime", "Manga"]:
@@ -347,7 +367,7 @@ def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Se
             )
 
         # Enforce verified release year if provided by provider
-        det_year = verified_data.get("release_year")
+        det_year = parse_year_int(verified_data.get("release_year"))
         if det_year:
             if det_year < MIN_YEAR or det_year > MAX_YEAR:
                 raise HTTPException(
@@ -532,12 +552,7 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
             except (ValueError, TypeError):
                 target_ext_id = None
 
-        target_year = None
-        if year and year.strip():
-            try:
-                target_year = int(year.strip())
-            except (ValueError, TypeError):
-                target_year = None
+        target_year = parse_year_int(year)
 
         current_year = datetime.utcnow().year
         MAX_YEAR = current_year + 3
@@ -582,10 +597,11 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
         if not data:
             raise HTTPException(status_code=404, detail="Could not find a match for that title/ID.")
 
-        if data.get("release_year") and (data["release_year"] < MIN_YEAR or data["release_year"] > MAX_YEAR):
+        det_year = parse_year_int(data.get("release_year"))
+        if det_year and (det_year < MIN_YEAR or det_year > MAX_YEAR):
             raise HTTPException(
                 status_code=400,
-                detail=f"This title has a release year of {data['release_year']}, which exceeds the allowed range (max {MAX_YEAR})."
+                detail=f"This title has a release year of {det_year}, which exceeds the allowed range (max {MAX_YEAR})."
             )
 
         # Expert Duplicate detection
@@ -2129,11 +2145,14 @@ def submit_recommendation(rec: Recommendation, session: Session = Depends(get_se
     MIN_YEAR = 1888
 
     # 1. Year validation
-    if rec.year and (rec.year < MIN_YEAR or rec.year > MAX_YEAR):
+    rec_year = parse_year_int(rec.year)
+    if rec_year and (rec_year < MIN_YEAR or rec_year > MAX_YEAR):
         raise HTTPException(
             status_code=400,
             detail=f"Invalid release year ({rec.year}). Year must be between {MIN_YEAR} and {MAX_YEAR}."
         )
+    if rec_year:
+        rec.year = rec_year
 
     # 2. Strict ID verification: Must have a valid external ID from TMDB or MAL
     if not rec.ext_id or int(rec.ext_id) <= 0:
@@ -2200,7 +2219,7 @@ def submit_recommendation(rec: Recommendation, session: Session = Depends(get_se
             detail="Could not verify this title on TMDB or MyAnimeList. Only verified titles can be recommended."
         )
 
-    det_year = details.get("release_year")
+    det_year = parse_year_int(details.get("release_year"))
     if det_year and (det_year < MIN_YEAR or det_year > MAX_YEAR):
         raise HTTPException(
             status_code=400,
