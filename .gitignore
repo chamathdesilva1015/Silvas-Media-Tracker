@@ -10,6 +10,9 @@ venv_windows/
 database.db
 *.db
 *.sqlite
+backups/
+*.enc
+*.gz
 
 # Secrets
 .env
