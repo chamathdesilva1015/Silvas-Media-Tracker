@@ -78,15 +78,6 @@ class Recommendation(SQLModel, table=True):
     title: str = Field(index=True)
     year: Optional[int] = Field(default=None, index=True)
     ext_id: Optional[int] = Field(default=None) # TMDB ID or MAL ID
-
-class UserCollection(SQLModel, table=True):
-    """User-created collections of media entries, synced server-side."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    title: str
-    desc: Optional[str] = Field(default=None)
-    category: str  # e.g. "Movies", "TV Series", "Anime"
-    entry_ids: Optional[str] = Field(default=None)  # JSON array of MediaItem IDs, e.g. "[1, 2, 3]"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
     type: str = Field(index=True) # Movies, TV Series, Manga, Anime
     note: Optional[str] = None
     recommender_name: Optional[str] = None
@@ -101,6 +92,15 @@ class UserCollection(SQLModel, table=True):
     content_rating: Optional[str] = None
     backdrop_url: Optional[str] = None
     status: str = Field(default="pending") # pending, accepted, rejected
+
+class UserCollection(SQLModel, table=True):
+    """User-created collections of media entries, synced server-side."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str
+    desc: Optional[str] = Field(default=None)
+    category: str  # e.g. "Movies", "TV Series", "Anime"
+    entry_ids: Optional[str] = Field(default=None)  # JSON array of MediaItem IDs, e.g. "[1, 2, 3]"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 import os
 from dotenv import load_dotenv

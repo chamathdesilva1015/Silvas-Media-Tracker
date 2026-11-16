@@ -816,7 +816,29 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch(`/api/collections?category=${encodeURIComponent(category)}`, { headers: getAuthHeaders() });
             if (!res.ok) return [];
-            return await res.json();
+            const serverCols = await res.json();
+
+            // Auto-migrate any local collections previously stored on this device
+            try {
+                const localKey = `silva_collections_${category.toLowerCase()}`;
+                const raw = localStorage.getItem(localKey);
+                if (raw) {
+                    const localCols = JSON.parse(raw);
+                    if (Array.isArray(localCols) && localCols.length > 0) {
+                        for (const col of localCols) {
+                            if (!serverCols.some(sc => sc.title === col.title)) {
+                                const saved = await saveCustomCollection(category, col);
+                                if (saved) serverCols.unshift(saved);
+                            }
+                        }
+                        localStorage.removeItem(localKey);
+                    }
+                }
+            } catch (migErr) {
+                console.warn('[Collections] Local storage migration skipped:', migErr);
+            }
+
+            return serverCols;
         } catch (e) {
             return [];
         }
