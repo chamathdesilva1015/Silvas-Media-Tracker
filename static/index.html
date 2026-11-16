@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1200">
@@ -8,34 +9,48 @@
     <meta http-equiv="Expires" content="0" />
     <title>Silva's Media Tracker</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <meta name="description" content="A premium personal media tracking dashboard for movies, shows, games, and anime, by Silva.">
-    
+    <meta name="description"
+        content="A premium personal media tracking dashboard for movies, shows, games, and anime, by Silva.">
+
     <!-- Google Fonts: Outfit (Headings) & Inter (Body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
-    
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=452">
+    <link rel="stylesheet" href="style.css?v=453">
 </head>
 
 <body class="read-only-mode">
     <!-- Security & Safety Gateway -->
-    <div id="securityOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #07070a; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Outfit', sans-serif;">
-        <div style="border: 1px solid rgba(255,255,255,0.1); padding: 2.5rem; border-radius: 16px; background: rgba(15,15,20,0.8); max-width: 450px; width: 85%; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+    <div id="securityOverlay"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #07070a; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-family: 'Outfit', sans-serif;">
+        <div
+            style="border: 1px solid rgba(255,255,255,0.1); padding: 2.5rem; border-radius: 16px; background: rgba(15,15,20,0.8); max-width: 450px; width: 85%; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
                 <i class="fas fa-shield-alt" style="color: var(--theme-accent); font-size: 1.5rem;"></i>
-                <h3 style="color: #fff; margin: 0; font-size: 1.2rem; letter-spacing: 1px; font-weight: 700;">SYSTEM INTEGRITY CHECK</h3>
+                <h3 style="color: #fff; margin: 0; font-size: 1.2rem; letter-spacing: 1px; font-weight: 700;">SYSTEM
+                    INTEGRITY CHECK</h3>
             </div>
-            <div id="securityLog" style="font-size: 0.85rem; line-height: 1.8; color: rgba(255,255,255,0.7); font-family: 'Inter', sans-serif;">
-                <div id="securityStep"><i class="fas fa-circle-notch fa-spin" style="color: var(--theme-accent); margin-right: 0.5rem;"></i>Verifying device environment...</div>
+            <div id="securityLog"
+                style="font-size: 0.85rem; line-height: 1.8; color: rgba(255,255,255,0.7); font-family: 'Inter', sans-serif;">
+                <div id="securityStep"><i class="fas fa-circle-notch fa-spin"
+                        style="color: var(--theme-accent); margin-right: 0.5rem;"></i>Verifying device environment...
+                </div>
             </div>
-            <div style="width: 100%; height: 2px; background: rgba(255,255,255,0.05); margin-top: 1.5rem; position: relative; border-radius: 1px; overflow: hidden;">
-                <div id="securityProgressBar" style="width: 0%; height: 100%; background: var(--theme-accent); transition: width 0.3s ease; box-shadow: 0 0 10px var(--theme-accent);"></div>
+            <div
+                style="width: 100%; height: 2px; background: rgba(255,255,255,0.05); margin-top: 1.5rem; position: relative; border-radius: 1px; overflow: hidden;">
+                <div id="securityProgressBar"
+                    style="width: 0%; height: 100%; background: var(--theme-accent); transition: width 0.3s ease; box-shadow: 0 0 10px var(--theme-accent);">
+                </div>
             </div>
         </div>
     </div>
@@ -60,7 +75,8 @@
                 <div class="header-sub" id="headerSubControls" style="display: none;">
                     <div class="header-sub-inner">
                         <div class="page-tabs" id="pageTabs">
-                            <button class="pill-tab hub-back-pill" data-sub="Info" title="Return to Hub"><i class="fas fa-arrow-left"></i> The Hub</button>
+                            <button class="pill-tab hub-back-pill" data-sub="Info" title="Return to Hub"><i
+                                    class="fas fa-arrow-left"></i> The Hub</button>
                         </div>
 
                         <div class="header-filter-actions">
@@ -84,185 +100,221 @@
 
 
             <main class="container">
-        <!-- Loader -->
-        <div id="loader" class="loader">
-            <div class="spinner"></div>
-        </div>
-
-        <!-- Grid Container -->
-        <div id="mediaGrid" class="media-grid" style="display: none;">
-            <!-- Cards will be populated here via Javascript -->
-        </div>
-
-        <!-- Rankings Admin Bar (shown only when admin is on the Rankings sub-tab) -->
-        <div id="rankingsAdminConsole" style="display: none; justify-content: flex-end; align-items: center; padding: 0 0 1rem; gap: 0.75rem;">
-            <button id="manageRankingsBtn" class="btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 10px; font-size: 0.85rem;">
-                <i class="fas fa-edit"></i> Edit Top 20 List
-            </button>
-        </div>
-
-        <!-- Collections Container -->
-        <div id="collectionsContainer" class="collections-page" style="display: none; width: 100%; max-width: 1100px; margin: 0 auto; padding: 1rem 0 4rem;">
-            <div class="collections-grid" id="collectionsGrid">
-                <!-- Dynamically populated collection sets -->
-            </div>
-        </div>
-
-        <!-- Info Page (Now default) -->
-        <div id="infoPage" class="info-page" style="padding: 2rem 1.5rem; color: var(--text-primary); text-align: center; max-width: 800px; margin: 0 auto;">
-            <!-- Main Grid View -->
-            <div id="infoIntro">
-                <h2 class="serif info-main-title">Movies Hub</h2>
-                
-                <!-- Hub Gateway Navigation Showcase -->
-                <div class="hub-nav-showcase" id="hubNavShowcase">
-                    <div class="hub-gateway-card" data-sub="Completed" id="hubGatewayFinished" role="button" tabindex="0">
-                        <button id="addMediaBtn" class="gateway-add-btn" title="Add Entry" style="display: none;">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                        <div class="hub-gateway-icon">
-                            <i class="fas fa-film" id="hubGatewayCategoryIcon"></i>
-                        </div>
-                        <div class="hub-gateway-content">
-                            <span class="hub-gateway-badge">Library</span>
-                            <h3 class="hub-gateway-title" id="hubGatewayFinishedTitle">Finished Movies</h3>
-                        </div>
-                        <div class="hub-gateway-action">
-                            <span>Browse</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </div>
-                    </div>
-
-                    <div class="hub-gateway-card" data-sub="Rankings" id="hubGatewayRankings" role="button" tabindex="0">
-                        <div class="hub-gateway-icon">
-                            <i class="fas fa-award" id="hubGatewayRankingsIcon"></i>
-                        </div>
-                        <div class="hub-gateway-content">
-                            <span class="hub-gateway-badge">Rankings</span>
-                            <h3 class="hub-gateway-title" id="hubGatewayRankingsTitle">Top 20 Rankings</h3>
-                        </div>
-                        <div class="hub-gateway-action">
-                            <span>View</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </div>
-                    </div>
-
-                    <div class="hub-gateway-card" data-sub="Collections" id="hubGatewayCollections" role="button" tabindex="0">
-                        <button id="addCollectionBtn" class="gateway-add-btn" title="Add Collection" style="display: none;">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                        <div class="hub-gateway-icon">
-                            <i class="fas fa-layer-group" id="hubGatewayCollectionsIcon"></i>
-                        </div>
-                        <div class="hub-gateway-content">
-                            <span class="hub-gateway-badge">Curated</span>
-                            <h3 class="hub-gateway-title" id="hubGatewayCollectionsTitle">Collections</h3>
-                        </div>
-                        <div class="hub-gateway-action">
-                            <span>Explore</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </div>
-                    </div>
-
-                    <div class="hub-gateway-card" data-sub="Suggestions" id="hubGatewaySuggestions" role="button" tabindex="0">
-                        <div class="hub-gateway-icon">
-                            <i class="fas fa-magic" id="hubGatewaySuggestionsIcon"></i>
-                        </div>
-                        <div class="hub-gateway-content">
-                            <span class="hub-gateway-badge">Discover</span>
-                            <h3 class="hub-gateway-title" id="hubGatewaySuggestionsTitle">Suggestions</h3>
-                        </div>
-                        <div class="hub-gateway-action">
-                            <span>Suggest</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </div>
-                    </div>
-                </div>
-                <!-- Large Pill Container for Recommendations -->
-                <div class="recommendation-pill-box" style="background: rgba(255,255,255,0.03); border-radius: 32px; padding: 1rem 3rem 3rem 3rem; margin: 3rem auto; border: 1px solid rgba(255,255,255,0.05); max-width: 750px; backdrop-filter: blur(10px);">
-                    <button id="leaveRecommendationBtn" class="leave-recommendation-btn" style="width: 100%; margin-bottom: 3.5rem; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-comment-dots" style="font-size: 2rem;"></i>
-                        <span style="font-weight: 800; text-align: center; line-height: 1.2;">Leave Silva a<br>Movie Recommendation</span>
-                    </button>
-                    
-                    <div class="recommendations-container" style="text-align: left; margin-top: 1rem;">
-                        <!-- Active Recommendations Accordion -->
-                        <div class="hub-accordion" id="activeRecsAccordion">
-                            <div class="hub-accordion-header" id="activeRecsHeader">
-                                <span class="hub-accordion-title" id="activeRecsTitle">Active Recommendations</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                            <div class="hub-accordion-body" id="activeRecsList">
-                                <div style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No active recommendations.</div>
-                            </div>
-                        </div>
-
-                        <!-- Watched Recommendations Accordion -->
-                        <div class="hub-accordion" id="watchedRecsAccordion" style="margin-top: 1rem;">
-                            <div class="hub-accordion-header" id="watchedRecsHeader">
-                                <span class="hub-accordion-title" id="watchedRecsTitle">Watched Recommendations</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                            <div class="hub-accordion-body" id="watchedRecsList">
-                                <div style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No watched recommendations yet.</div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Loader -->
+                <div id="loader" class="loader">
+                    <div class="spinner"></div>
                 </div>
 
-                <div id="infoAccordionsContainer" style="margin-top: 1.5rem; text-align: left; display: flex; flex-direction: column; gap: 1rem;">
-                    <!-- Accordions generated by JS -->
+                <!-- Grid Container -->
+                <div id="mediaGrid" class="media-grid" style="display: none;">
+                    <!-- Cards will be populated here via Javascript -->
                 </div>
 
-                </div>
-                
-                <div id="hubStatsContainer" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <!-- Stats will be loaded here -->
-                </div>
-
-                <!-- Admin-Only Actions Container -->
-                <div id="devConsoleActions" style="display: none; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <h3 class="serif" style="margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--theme-accent);">Developer Console</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                        <button id="logoutAdminBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.2); color: #e74c3c;">
-                            <strong>Logout</strong>
-                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Revoke Admin Access</span>
-                        </button>
-                        <button id="managePassedBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
-                            <strong>Manage Passed</strong>
-                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Suggestions History</span>
-                        </button>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 2rem;">
-                        <button id="exportDataBtn" class="btn-secondary" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); color: var(--text-primary); cursor: pointer; transition: all 0.2s ease;">
-                            <strong style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-file-alt"></i> Export Data</strong>
-                            <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Download finished entries as TXT</span>
-                        </button>
-                    </div>
-
-                </div>
-
-
-                <div id="guestConsoleActions" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <button id="loginAdminBtn" class="btn-secondary" style="width: 100%; padding: 1.2rem; border-radius: 12px; font-size: 0.9rem; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); color: #fff; cursor: pointer;">
-                        Developer Login
+                <!-- Rankings Admin Bar (shown only when admin is on the Rankings sub-tab) -->
+                <div id="rankingsAdminConsole"
+                    style="display: none; justify-content: flex-end; align-items: center; padding: 0 0 1rem; gap: 0.75rem;">
+                    <button id="manageRankingsBtn" class="btn-primary"
+                        style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 10px; font-size: 0.85rem;">
+                        <i class="fas fa-edit"></i> Edit Top 20 List
                     </button>
                 </div>
 
-                <div id="consoleWrapper" style="display: none;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <h4 style="font-family: 'Inter', sans-serif; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; opacity: 0.6;">Live Console Log</h4>
+                <!-- Collections Container -->
+                <div id="collectionsContainer" class="collections-page"
+                    style="display: none; width: 100%; max-width: 1100px; margin: 0 auto; padding: 1rem 0 4rem;">
+                    <div class="collections-grid" id="collectionsGrid">
+                        <!-- Dynamically populated collection sets -->
+                    </div>
+                </div>
+
+                <!-- Info Page (Now default) -->
+                <div id="infoPage" class="info-page"
+                    style="padding: 2rem 1.5rem; color: var(--text-primary); text-align: center; max-width: 800px; margin: 0 auto;">
+                    <!-- Main Grid View -->
+                    <div id="infoIntro">
+                        <h2 class="serif info-main-title">Movies Hub</h2>
+
+                        <!-- Hub Gateway Navigation Showcase -->
+                        <div class="hub-nav-showcase" id="hubNavShowcase">
+                            <div class="hub-gateway-card" data-sub="Completed" id="hubGatewayFinished" role="button"
+                                tabindex="0">
+                                <button id="addMediaBtn" class="gateway-add-btn" title="Add Entry"
+                                    style="display: none;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <div class="hub-gateway-icon">
+                                    <i class="fas fa-film" id="hubGatewayCategoryIcon"></i>
+                                </div>
+                                <div class="hub-gateway-content">
+                                    <span class="hub-gateway-badge">Library</span>
+                                    <h3 class="hub-gateway-title" id="hubGatewayFinishedTitle">Finished Movies</h3>
+                                </div>
+                                <div class="hub-gateway-action">
+                                    <span>Browse</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+
+                            <div class="hub-gateway-card" data-sub="Rankings" id="hubGatewayRankings" role="button"
+                                tabindex="0">
+                                <div class="hub-gateway-icon">
+                                    <i class="fas fa-award" id="hubGatewayRankingsIcon"></i>
+                                </div>
+                                <div class="hub-gateway-content">
+                                    <span class="hub-gateway-badge">Rankings</span>
+                                    <h3 class="hub-gateway-title" id="hubGatewayRankingsTitle">Top 20 Rankings</h3>
+                                </div>
+                                <div class="hub-gateway-action">
+                                    <span>View</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+
+                            <div class="hub-gateway-card" data-sub="Collections" id="hubGatewayCollections"
+                                role="button" tabindex="0">
+                                <button id="addCollectionBtn" class="gateway-add-btn" title="Add Collection"
+                                    style="display: none;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <div class="hub-gateway-icon">
+                                    <i class="fas fa-layer-group" id="hubGatewayCollectionsIcon"></i>
+                                </div>
+                                <div class="hub-gateway-content">
+                                    <span class="hub-gateway-badge">Curated</span>
+                                    <h3 class="hub-gateway-title" id="hubGatewayCollectionsTitle">Collections</h3>
+                                </div>
+                                <div class="hub-gateway-action">
+                                    <span>Explore</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+
+                            <div class="hub-gateway-card" data-sub="Suggestions" id="hubGatewaySuggestions"
+                                role="button" tabindex="0">
+                                <div class="hub-gateway-icon">
+                                    <i class="fas fa-magic" id="hubGatewaySuggestionsIcon"></i>
+                                </div>
+                                <div class="hub-gateway-content">
+                                    <span class="hub-gateway-badge">Discover</span>
+                                    <h3 class="hub-gateway-title" id="hubGatewaySuggestionsTitle">Suggestions</h3>
+                                </div>
+                                <div class="hub-gateway-action">
+                                    <span>Suggest</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Large Pill Container for Recommendations -->
+                        <div class="recommendation-pill-box"
+                            style="background: rgba(255,255,255,0.03); border-radius: 32px; padding: 1rem 3rem 3rem 3rem; margin: 3rem auto; border: 1px solid rgba(255,255,255,0.05); max-width: 750px; backdrop-filter: blur(10px);">
+                            <button id="leaveRecommendationBtn" class="leave-recommendation-btn"
+                                style="width: 100%; margin-bottom: 3.5rem; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-comment-dots" style="font-size: 2rem;"></i>
+                                <span style="font-weight: 800; text-align: center; line-height: 1.2;">Leave Silva
+                                    a<br>Movie Recommendation</span>
+                            </button>
+
+                            <div class="recommendations-container" style="text-align: left; margin-top: 1rem;">
+                                <!-- Active Recommendations Accordion -->
+                                <div class="hub-accordion" id="activeRecsAccordion">
+                                    <div class="hub-accordion-header" id="activeRecsHeader">
+                                        <span class="hub-accordion-title" id="activeRecsTitle">Active
+                                            Recommendations</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="hub-accordion-body" id="activeRecsList">
+                                        <div
+                                            style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">
+                                            No active recommendations.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Watched Recommendations Accordion -->
+                                <div class="hub-accordion" id="watchedRecsAccordion" style="margin-top: 1rem;">
+                                    <div class="hub-accordion-header" id="watchedRecsHeader">
+                                        <span class="hub-accordion-title" id="watchedRecsTitle">Watched
+                                            Recommendations</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="hub-accordion-body" id="watchedRecsList">
+                                        <div
+                                            style="font-size: 0.9rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">
+                                            No watched recommendations yet.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="infoAccordionsContainer"
+                            style="margin-top: 1.5rem; text-align: left; display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Accordions generated by JS -->
+                        </div>
+
+                    </div>
+
+                    <div id="hubStatsContainer"
+                        style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <!-- Stats will be loaded here -->
+                    </div>
+
+                    <!-- Admin-Only Actions Container -->
+                    <div id="devConsoleActions"
+                        style="display: none; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <h3 class="serif" style="margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--theme-accent);">
+                            Developer Console</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <button id="logoutAdminBtn" class="btn-secondary"
+                                style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.2); color: #e74c3c;">
+                                <strong>Logout</strong>
+                                <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Revoke Admin
+                                    Access</span>
+                            </button>
+                            <button id="managePassedBtn" class="btn-secondary"
+                                style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <strong>Manage Passed</strong>
+                                <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Suggestions
+                                    History</span>
+                            </button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 2rem;">
+                            <button id="exportDataBtn" class="btn-secondary"
+                                style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: auto; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); color: var(--text-primary); cursor: pointer; transition: all 0.2s ease;">
+                                <strong style="display: flex; align-items: center; gap: 0.5rem;"><i
+                                        class="fas fa-file-alt"></i> Export Data</strong>
+                                <span style="font-size: 0.7rem; opacity: 0.8; font-weight: 400;">Download finished
+                                    entries as TXT</span>
+                            </button>
+                        </div>
+
+                    </div>
+
+
+                    <div id="guestConsoleActions"
+                        style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <button id="loginAdminBtn" class="btn-secondary"
+                            style="width: 100%; padding: 1.2rem; border-radius: 12px; font-size: 0.9rem; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); color: #fff; cursor: pointer;">
+                            Developer Login
+                        </button>
+                    </div>
+
+                    <div id="consoleWrapper" style="display: none;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <h4
+                                style="font-family: 'Inter', sans-serif; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; opacity: 0.6;">
+                                Live Console Log</h4>
                             <div id="consoleSpinner" class="spinner-sm" style="display: none;"></div>
                         </div>
-                        <div id="consoleLog" style="background: #000; border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #a0a0a0; height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); line-height: 1.5; text-align: left;">
+                        <div id="consoleLog"
+                            style="background: #000; border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #a0a0a0; height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); line-height: 1.5; text-align: left;">
                             <div style="color: #666;">Waiting for task start...</div>
                         </div>
                     </div>
-            </div>
+                </div>
 
 
 
-        </main><!-- /.container -->
+            </main><!-- /.container -->
         </div><!-- /.main-content -->
     </div><!-- /.app-layout -->
 
@@ -283,16 +335,16 @@
                             <option value="Anime">Anime</option>
                         </select>
                     </div>
-                
-                <div class="form-group">
-                    <label for="manualIdInput">ID Code (Optional)</label>
-                    <input type="text" id="manualIdInput" placeholder="Enter MAL or TMDB ID to autofill">
-                </div>
-                
-                <div class="form-group">
-                    <label for="titleInput">Title (Optional if ID provided)</label>
-                    <input type="text" id="titleInput" placeholder="e.g. The Batman">
-                </div>
+
+                    <div class="form-group">
+                        <label for="manualIdInput">ID Code (Optional)</label>
+                        <input type="text" id="manualIdInput" placeholder="Enter MAL or TMDB ID to autofill">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="titleInput">Title (Optional if ID provided)</label>
+                        <input type="text" id="titleInput" placeholder="e.g. The Batman">
+                    </div>
 
                     <div class="form-group">
                         <label for="releaseYearInput">Release Year</label>
@@ -301,7 +353,8 @@
 
                     <div class="form-group">
                         <label for="ratingInput">Rating</label>
-                        <input type="number" id="ratingInput" required step="0.5" min="0" max="10" placeholder="e.g. 8.5">
+                        <input type="number" id="ratingInput" required step="0.5" min="0" max="10"
+                            placeholder="e.g. 8.5">
                     </div>
                 </div> <!-- End formInputsContainer -->
 
@@ -311,8 +364,11 @@
                 </div>
 
                 <div id="selectionContainer" style="display: none; margin-bottom: 1.5rem;">
-                    <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8; font-weight: 500; text-align: center;">Multiple matches found. Please select the correct one:</p>
-                    <div id="selectionResults" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 8px;">
+                    <p
+                        style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8; font-weight: 500; text-align: center;">
+                        Multiple matches found. Please select the correct one:</p>
+                    <div id="selectionResults"
+                        style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 8px;">
                         <!-- Results injected here -->
                     </div>
                 </div>
@@ -320,25 +376,37 @@
 
 
                 <div id="previewContainer" style="display: none; text-align: center; margin-bottom: 1.5rem;">
-                    <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8; font-weight: 500;">Is this the correct entry?</p>
-                    <div id="previewDuplicateWarning" style="display: none; background: rgba(255,50,50,0.15); color: #ff6b6b; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; border: 1px solid rgba(255,50,50,0.3);">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i> Warning: This item already exists in your database!
+                    <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8; font-weight: 500;">Is this the
+                        correct entry?</p>
+                    <div id="previewDuplicateWarning"
+                        style="display: none; background: rgba(255,50,50,0.15); color: #ff6b6b; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; border: 1px solid rgba(255,50,50,0.3);">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i> Warning: This item
+                        already exists in your database!
                     </div>
-                    <img id="previewPoster" src="" alt="Poster" style="max-width: 140px; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);">
-                    <h3 id="previewTitle" style="font-size: 1.4rem; margin-bottom: 0.2rem; color: #fff;" class="serif">Title</h3>
+                    <img id="previewPoster" src="" alt="Poster"
+                        style="max-width: 140px; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);">
+                    <h3 id="previewTitle" style="font-size: 1.4rem; margin-bottom: 0.2rem; color: #fff;" class="serif">
+                        Title</h3>
                     <p id="previewYear" style="font-size: 1rem; opacity: 0.6; margin-bottom: 0.75rem;">2022</p>
-                    <p id="previewDirector" style="font-size: 0.85rem; margin-bottom: 1rem; color: var(--accent-color);">Director: ...</p>
-                    <div id="previewGenres" class="quick-info-genres" style="justify-content: center; flex-wrap: wrap; gap: 0.5rem; padding: 0 1rem;"></div>
-                    
-                    <div id="previewLikeContainer" style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; cursor: pointer; user-select: none;">
-                        <input type="checkbox" id="previewLikeCheckbox" style="width: 18px; height: 18px; cursor: pointer;">
-                        <label for="previewLikeCheckbox" style="font-size: 0.9rem; opacity: 0.8; font-weight: 500; cursor: pointer;">Liked?</label>
+                    <p id="previewDirector"
+                        style="font-size: 0.85rem; margin-bottom: 1rem; color: var(--accent-color);">Director: ...</p>
+                    <div id="previewGenres" class="quick-info-genres"
+                        style="justify-content: center; flex-wrap: wrap; gap: 0.5rem; padding: 0 1rem;"></div>
+
+                    <div id="previewLikeContainer"
+                        style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="previewLikeCheckbox"
+                            style="width: 18px; height: 18px; cursor: pointer;">
+                        <label for="previewLikeCheckbox"
+                            style="font-size: 0.9rem; opacity: 0.8; font-weight: 500; cursor: pointer;">Liked?</label>
                     </div>
                 </div>
-                
+
                 <div style="display: flex; gap: 1rem;">
-                    <button type="button" id="previewBackBtn" class="btn-secondary" style="flex: 1; display: none;">Go Back</button>
-                    <button type="submit" id="previewSubmitBtn" class="btn-primary" style="flex: 2;">Preview Match</button>
+                    <button type="button" id="previewBackBtn" class="btn-secondary" style="flex: 1; display: none;">Go
+                        Back</button>
+                    <button type="submit" id="previewSubmitBtn" class="btn-primary" style="flex: 2;">Preview
+                        Match</button>
                 </div>
             </form>
         </div>
@@ -347,13 +415,18 @@
 
     <!-- Suggestion Modal -->
     <div id="suggestionModal" class="modal">
-        <div class="modal-content" style="max-width: 820px; border-radius: 24px; padding: 2.5rem; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(40px) saturate(180%);">
-            <span class="close-btn" id="closeSuggestionBtn" style="position: absolute; top: 1.5rem; right: 1.5rem; color: #aaa; font-size: 2rem; cursor: pointer;">&times;</span>
+        <div class="modal-content"
+            style="max-width: 820px; border-radius: 24px; padding: 2.5rem; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(40px) saturate(180%);">
+            <span class="close-btn" id="closeSuggestionBtn"
+                style="position: absolute; top: 1.5rem; right: 1.5rem; color: #aaa; font-size: 2rem; cursor: pointer;">&times;</span>
             <div id="suggestionHeader">
-                <h2 class="serif" id="suggestionModalTitle" style="text-align: center; margin-bottom: 0.4rem; color: #fff;">Get Suggestions</h2>
-                <p id="suggestionModalSubtitle" style="text-align: center; opacity: 0.7; font-size: 0.88rem; margin-bottom: 1.8rem; color: #fff;">Choose how you would like to discover new recommendations</p>
+                <h2 class="serif" id="suggestionModalTitle"
+                    style="text-align: center; margin-bottom: 0.4rem; color: #fff;">Get Suggestions</h2>
+                <p id="suggestionModalSubtitle"
+                    style="text-align: center; opacity: 0.7; font-size: 0.88rem; margin-bottom: 1.8rem; color: #fff;">
+                    Choose how you would like to discover new recommendations</p>
             </div>
-            
+
             <div class="modal-body" style="max-height: 65vh; overflow-y: auto; padding-right: 0.5rem;">
                 <!-- Step 1: Mode Selection Menu -->
                 <div id="suggestionModeMenu" class="suggestion-mode-menu">
@@ -387,7 +460,8 @@
 
                 <!-- Step 2: Customization Form (Year, Genre, Seeds) -->
                 <div id="suggestionConfigPanel" style="display: none;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
                         <button id="suggestionBackBtn" class="suggestion-back-btn">
                             <i class="fas fa-arrow-left"></i> Change Mode
                         </button>
@@ -413,10 +487,13 @@
 
                     <!-- Genre Specifications Section -->
                     <div class="suggestion-section">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
                             <label class="suggestion-section-label" style="margin-bottom: 0;">
                                 <i class="fas fa-tags"></i> Genre Specifications
-                                <span style="font-size: 0.75rem; opacity: 0.6; font-weight: normal; margin-left: 0.5rem;">(Must have one or more)</span>
+                                <span
+                                    style="font-size: 0.75rem; opacity: 0.6; font-weight: normal; margin-left: 0.5rem;">(Must
+                                    have one or more)</span>
                             </label>
                             <button id="sugClearGenresBtn" class="suggestion-text-link">Clear</button>
                         </div>
@@ -427,7 +504,8 @@
 
                     <!-- Entry Selection Section (Shown for Entry Specific & Multi Entry Specific) -->
                     <div id="sugEntrySection" class="suggestion-section" style="display: none;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
                             <label class="suggestion-section-label" style="margin-bottom: 0;" id="sugEntrySectionLabel">
                                 <i class="fas fa-bookmark"></i> Select Finished Entry
                             </label>
@@ -457,70 +535,89 @@
                         <div class="radar-circle"></div>
                         <div class="radar-circle"></div>
                     </div>
-                    
+
                     <!-- Stepped Progress Bar -->
                     <div class="suggestion-steps">
                         <div class="step-item active" id="step1">
                             <div class="step-dot"></div>
-                            <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Scan</div>
+                            <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Scan
+                            </div>
                         </div>
                         <div class="step-item" id="step2" style="z-index: 2;">
                             <div class="step-dot"></div>
-                            <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Fetch</div>
+                            <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Fetch
+                            </div>
                         </div>
                         <div class="step-item" id="step3" style="z-index: 2;">
                             <div class="step-dot"></div>
-                            <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Filter</div>
+                            <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Filter
+                            </div>
                         </div>
                         <div class="step-item" id="step4" style="z-index: 2;">
                             <div class="step-dot"></div>
-                            <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Picks</div>
+                            <div class="step-label" style="font-size: 0.7rem; margin-top: 0.5rem; color: #fff;">Picks
+                            </div>
                         </div>
-                        <div class="step-line-bg" style="position: absolute; top: 6px; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.05); z-index: 1;"></div>
-                        <div id="stepLineProgress" style="position: absolute; top: 6px; left: 0; width: 0%; height: 2px; background: var(--theme-accent); z-index: 2; transition: width 0.5s ease; box-shadow: 0 0 10px var(--theme-accent);"></div>
+                        <div class="step-line-bg"
+                            style="position: absolute; top: 6px; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.05); z-index: 1;">
+                        </div>
+                        <div id="stepLineProgress"
+                            style="position: absolute; top: 6px; left: 0; width: 0%; height: 2px; background: var(--theme-accent); z-index: 2; transition: width 0.5s ease; box-shadow: 0 0 10px var(--theme-accent);">
+                        </div>
                     </div>
 
-                    <p id="suggestionLoadingText" style="margin-top: 1.5rem; color: var(--theme-accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8rem;">Processing Request</p>
-                    
-                    <div id="suggestionChecklist" style="margin: 1.5rem auto; width: 250px; text-align: left; font-size: 0.85rem; color: rgba(255,255,255,0.8); display: inline-block;">
-                        <div id="check1" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <p id="suggestionLoadingText"
+                        style="margin-top: 1.5rem; color: var(--theme-accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.8rem;">
+                        Processing Request</p>
+
+                    <div id="suggestionChecklist"
+                        style="margin: 1.5rem auto; width: 250px; text-align: left; font-size: 0.85rem; color: rgba(255,255,255,0.8); display: inline-block;">
+                        <div id="check1"
+                            style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i class="fas fa-circle-notch fa-spin fa-fw" style="color: var(--theme-accent);"></i>
                             <span>Scanning criteria</span>
                         </div>
-                        <div id="check2" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
+                        <div id="check2"
+                            style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
                             <i class="far fa-circle fa-fw"></i>
                             <span>Querying catalog sources</span>
                         </div>
-                        <div id="check3" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
+                        <div id="check3"
+                            style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
                             <i class="far fa-circle fa-fw"></i>
                             <span>Matching years & genres</span>
                         </div>
-                        <div id="check4" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
+                        <div id="check4"
+                            style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.5;">
                             <i class="far fa-circle fa-fw"></i>
                             <span>Preparing recommendations</span>
                         </div>
                     </div>
 
-                    <p id="suggestionLoadingSubtext" style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.8rem; color: #fff;">Finding the best matches for you...</p>
+                    <p id="suggestionLoadingSubtext"
+                        style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.8rem; color: #fff;">Finding the best
+                        matches for you...</p>
                 </div>
 
                 <!-- Step 4: Results Display -->
                 <div id="suggestionResultsWrap" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <button id="sugModifyCriteriaBtn" class="suggestion-back-btn">
                             <i class="fas fa-sliders-h"></i> Modify Criteria
                         </button>
                         <span id="sugResultCountBadge" class="suggestion-mode-pill">Matches</span>
                     </div>
-                    <div id="suggestionResults" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+                    <div id="suggestionResults"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
                         <!-- Filled dynamically by JS -->
                     </div>
                 </div>
-                
+
                 <div id="suggestionError" style="display: none; text-align: center; color: #ff6b6b; padding: 2rem;">
                     Could not load suggestions right now. Please try again later.
                 </div>
-                
+
                 <div id="suggestionControls" style="display: none; text-align: center; margin-top: 1.5rem;">
                     <button id="retrySuggestionBtn">
                         <i class="fas fa-sync-alt"></i> Retry
@@ -564,11 +661,16 @@
                             <div style="display: flex; align-items: center; gap: 0.8rem;">
                                 <span class="type-badge" id="quickInfoType">Movie</span>
                                 <!-- Moved Favorite/Like Pill here -->
-                                <div class="favorite-display" id="quickInfoFavoritePill" style="cursor: pointer; pointer-events: all; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.85rem;" title="Toggle Like">
-                                    <i class="fas fa-heart" id="quickInfoRatingLike" style="color: #ff4757; font-size: 1rem; transition: transform 0.2s, color 0.2s;"></i>
-                                    <span class="rating-label" id="quickInfoFavoriteLabel" style="font-size: 0.65rem; margin-left: 4px;">Like</span>
+                                <div class="favorite-display" id="quickInfoFavoritePill"
+                                    style="cursor: pointer; pointer-events: all; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.85rem;"
+                                    title="Toggle Like">
+                                    <i class="fas fa-heart" id="quickInfoRatingLike"
+                                        style="color: #ff4757; font-size: 1rem; transition: transform 0.2s, color 0.2s;"></i>
+                                    <span class="rating-label" id="quickInfoFavoriteLabel"
+                                        style="font-size: 0.65rem; margin-left: 4px;">Like</span>
                                 </div>
-                                <a id="quickInfoSourceBtn" target="_blank" title="View Source"><i class="fas fa-external-link-alt"></i></a>
+                                <a id="quickInfoSourceBtn" target="_blank" title="View Source"><i
+                                        class="fas fa-external-link-alt"></i></a>
                             </div>
                         </div>
 
@@ -586,13 +688,13 @@
                     </div>
 
                     <div class="quick-info-genres" id="quickInfoGenres"></div>
-                    
+
                     <div class="quick-info-rating-section">
                         <div class="rating-display">
                             <span class="rating-value" id="quickInfoRating"></span>
                             <span class="rating-label">Personal Rating</span>
                         </div>
-                        
+
                         <!-- Like Pill removed from here and moved to top -->
 
                         <div class="director-display" id="quickInfoDirectorSection" style="display:none;">
@@ -602,28 +704,38 @@
                     </div>
 
                     <!-- External Ratings Grid (Movies Only) -->
-                    <div class="quick-info-ext-ratings-container" id="quickInfoExtRatingsContainer" style="display:none;">
+                    <div class="quick-info-ext-ratings-container" id="quickInfoExtRatingsContainer"
+                        style="display:none;">
                         <div class="ext-ratings-header">
                             <span class="ext-ratings-title">External Ratings</span>
                         </div>
                         <div class="external-ratings-grid">
-                            <div class="ext-rating-tile" id="extTileRtCritics" title="Rotten Tomatoes Tomatometer (Critics)">
+                            <div class="ext-rating-tile" id="extTileRtCritics"
+                                title="Rotten Tomatoes Tomatometer (Critics)">
                                 <span class="ext-rating-icon">
-                                    <svg class="ext-rating-svg" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true">
-                                        <path fill="#FA320A" d="M16 6.5C8.5 6.5 4 11.5 4 18c0 7 5.5 11 12 11s12-4 12-11c0-6.5-4.5-11.5-12-11.5z"/>
-                                        <path fill="#2E7D32" d="M16 7c-.6-2.2-1.6-4.5-2.2-5.5 1 .4 2.8 1 3.2 2 .5-1 2.2-1.6 3.2-2-.6 1-1.6 3.3-2.2 5.5.8-.4 2.5-1 3.5-.8-.8.8-2.2 1.8-3.2 2 1 .2 3 .8 3.5 1.8-1.2 0-2.8-.4-3.8-1.2.2 1.2.2 2.5 0 3.2-.6-.8-1-1.8-1-3-.2 1.2-.6 2.2-1.2 3 0-.7 0-2 .2-3.2-1 .8-2.6 1.2-3.8 1.2.5-1 2.5-1.6 3.5-1.8-1-.2-2.4-1.2-3.2-2 1-.2 2.7.4 3.5.8z"/>
+                                    <svg class="ext-rating-svg" viewBox="0 0 32 32" width="22" height="22"
+                                        aria-hidden="true">
+                                        <path fill="#FA320A"
+                                            d="M16 6.5C8.5 6.5 4 11.5 4 18c0 7 5.5 11 12 11s12-4 12-11c0-6.5-4.5-11.5-12-11.5z" />
+                                        <path fill="#2E7D32"
+                                            d="M16 7c-.6-2.2-1.6-4.5-2.2-5.5 1 .4 2.8 1 3.2 2 .5-1 2.2-1.6 3.2-2-.6 1-1.6 3.3-2.2 5.5.8-.4 2.5-1 3.5-.8-.8.8-2.2 1.8-3.2 2 1 .2 3 .8 3.5 1.8-1.2 0-2.8-.4-3.8-1.2.2 1.2.2 2.5 0 3.2-.6-.8-1-1.8-1-3-.2 1.2-.6 2.2-1.2 3 0-.7 0-2 .2-3.2-1 .8-2.6 1.2-3.8 1.2.5-1 2.5-1.6 3.5-1.8-1-.2-2.4-1.2-3.2-2 1-.2 2.7.4 3.5.8z" />
                                     </svg>
                                 </span>
                                 <span class="ext-rating-value" id="quickInfoRtCritics">—</span>
                                 <span class="ext-rating-source">Rotten Tomatoes<br>Critics</span>
                             </div>
-                            <div class="ext-rating-tile" id="extTileRtAudience" title="Rotten Tomatoes Audience Score (Popcorn)">
+                            <div class="ext-rating-tile" id="extTileRtAudience"
+                                title="Rotten Tomatoes Audience Score (Popcorn)">
                                 <span class="ext-rating-icon">
-                                    <svg class="ext-rating-svg" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true">
-                                        <path fill="#F9D448" d="M9 11.5c-1.4 0-2.5-1.1-2.5-2.5 0-1.8 1.8-3 3.5-2.5.6-1.1 1.8-1.8 3-1.8 1.5 0 2.8.9 3.3 2.2.7-.7 1.8-1.1 2.9-1.1 1.9 0 3.5 1.4 3.7 3.3 1.2.3 2.1 1.4 2.1 2.7 0 1.5-1.2 2.7-2.7 2.7H9.2c-.1-.7-.1-1.6-.2-3z"/>
-                                        <path fill="#E5A600" d="M13 8c-.6.8-.6 2 0 2.8.8-.6 1.6-1.5 2.4-1.5-.8-.6-1.8-1-2.4-1.3zm8 0c-.6.3-1.6.7-2.4 1.3.8 0 1.6.9 2.4 1.5.6-.8.6-2 0-2.8z"/>
-                                        <path fill="#E50914" d="M7.5 12l2.3 17h12.4l2.3-17H7.5z"/>
-                                        <path fill="#FFFFFF" d="M10.8 12l.6 17h2.8l-.3-17h-3.1zm6.2 0l-.3 17h2.8l.6-17h-3.1z"/>
+                                    <svg class="ext-rating-svg" viewBox="0 0 32 32" width="22" height="22"
+                                        aria-hidden="true">
+                                        <path fill="#F9D448"
+                                            d="M9 11.5c-1.4 0-2.5-1.1-2.5-2.5 0-1.8 1.8-3 3.5-2.5.6-1.1 1.8-1.8 3-1.8 1.5 0 2.8.9 3.3 2.2.7-.7 1.8-1.1 2.9-1.1 1.9 0 3.5 1.4 3.7 3.3 1.2.3 2.1 1.4 2.1 2.7 0 1.5-1.2 2.7-2.7 2.7H9.2c-.1-.7-.1-1.6-.2-3z" />
+                                        <path fill="#E5A600"
+                                            d="M13 8c-.6.8-.6 2 0 2.8.8-.6 1.6-1.5 2.4-1.5-.8-.6-1.8-1-2.4-1.3zm8 0c-.6.3-1.6.7-2.4 1.3.8 0 1.6.9 2.4 1.5.6-.8.6-2 0-2.8z" />
+                                        <path fill="#E50914" d="M7.5 12l2.3 17h12.4l2.3-17H7.5z" />
+                                        <path fill="#FFFFFF"
+                                            d="M10.8 12l.6 17h2.8l-.3-17h-3.1zm6.2 0l-.3 17h2.8l.6-17h-3.1z" />
                                     </svg>
                                 </span>
                                 <span class="ext-rating-value" id="quickInfoRtAudience">—</span>
@@ -631,9 +743,12 @@
                             </div>
                             <div class="ext-rating-tile" id="extTileImdb" title="Internet Movie Database">
                                 <span class="ext-rating-icon">
-                                    <svg class="ext-rating-svg imdb-badge-svg" viewBox="0 0 36 18" width="30" height="15" aria-hidden="true">
-                                        <rect width="36" height="18" rx="3" fill="#F5C518"/>
-                                        <text x="18" y="13" font-family="'Impact', 'Arial Black', sans-serif" font-weight="900" font-size="11" fill="#000000" text-anchor="middle" letter-spacing="-0.5px">IMDb</text>
+                                    <svg class="ext-rating-svg imdb-badge-svg" viewBox="0 0 36 18" width="30"
+                                        height="15" aria-hidden="true">
+                                        <rect width="36" height="18" rx="3" fill="#F5C518" />
+                                        <text x="18" y="13" font-family="'Impact', 'Arial Black', sans-serif"
+                                            font-weight="900" font-size="11" fill="#000000" text-anchor="middle"
+                                            letter-spacing="-0.5px">IMDb</text>
                                     </svg>
                                 </span>
                                 <span class="ext-rating-value" id="quickInfoImdb">—</span>
@@ -641,10 +756,11 @@
                             </div>
                             <div class="ext-rating-tile" id="extTileLetterboxd" title="Letterboxd Average Score">
                                 <span class="ext-rating-icon">
-                                    <svg class="ext-rating-svg letterboxd-badge-svg" viewBox="0 0 32 16" width="28" height="14" aria-hidden="true">
-                                        <circle cx="8" cy="8" r="6" fill="#FF8000"/>
-                                        <circle cx="16" cy="8" r="6" fill="#00E054"/>
-                                        <circle cx="24" cy="8" r="6" fill="#40BCF4"/>
+                                    <svg class="ext-rating-svg letterboxd-badge-svg" viewBox="0 0 32 16" width="28"
+                                        height="14" aria-hidden="true">
+                                        <circle cx="8" cy="8" r="6" fill="#FF8000" />
+                                        <circle cx="16" cy="8" r="6" fill="#00E054" />
+                                        <circle cx="24" cy="8" r="6" fill="#40BCF4" />
                                     </svg>
                                 </span>
                                 <span class="ext-rating-value" id="quickInfoLetterboxd">—</span>
@@ -662,37 +778,58 @@
 
                     <div class="quick-info-footer-actions" style="display: flex; gap: 1rem; align-items: center;">
                         <button id="quickInfoEditBtn" class="btn-primary-ghost">Edit Entry</button>
-                        <button id="quickInfoDeleteBtn" class="btn-danger-ghost" style="display: none;">Delete Entry</button>
+                        <button id="quickInfoDeleteBtn" class="btn-danger-ghost" style="display: none;">Delete
+                            Entry</button>
                     </div>
-                    <div id="quickInfoRatingEditSection" style="display: none; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-                        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; display: block; margin-bottom: 0.8rem;">Admin Override: Update Metadata</span>
-                        
+                    <div id="quickInfoRatingEditSection"
+                        style="display: none; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <span
+                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; display: block; margin-bottom: 0.8rem;">Admin
+                            Override: Update Metadata</span>
+
                         <div class="form-group" style="margin-bottom: 1rem;">
-                            <label for="quickInfoTitleInput" style="font-size: 0.65rem; opacity: 0.5; display: block;">Title / Name</label>
-                            <input type="text" id="quickInfoTitleInput" name="title" placeholder="Item Title" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-weight: 600;">
+                            <label for="quickInfoTitleInput"
+                                style="font-size: 0.65rem; opacity: 0.5; display: block;">Title / Name</label>
+                            <input type="text" id="quickInfoTitleInput" name="title" placeholder="Item Title"
+                                style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-weight: 600;">
                         </div>
 
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem;">
+                        <div
+                            style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem;">
                             <div class="form-group" style="flex: 1; min-width: 80px;">
-                                <label for="quickInfoRatingInput" style="font-size: 0.65rem; opacity: 0.5; display: block;">Rating</label>
-                                <input type="number" id="quickInfoRatingInput" name="rating" step="0.5" min="0" max="10" placeholder="--" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--theme-accent); font-weight: 600; text-align: center;">
+                                <label for="quickInfoRatingInput"
+                                    style="font-size: 0.65rem; opacity: 0.5; display: block;">Rating</label>
+                                <input type="number" id="quickInfoRatingInput" name="rating" step="0.5" min="0" max="10"
+                                    placeholder="--"
+                                    style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--theme-accent); font-weight: 600; text-align: center;">
                             </div>
                             <div class="form-group" style="flex: 1.5; min-width: 100px;">
-                                <label for="quickInfoYearInput" style="font-size: 0.65rem; opacity: 0.5; display: block;">Release Year</label>
-                                <input type="text" id="quickInfoYearInput" name="year" placeholder="YYYY" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                <label for="quickInfoYearInput"
+                                    style="font-size: 0.65rem; opacity: 0.5; display: block;">Release Year</label>
+                                <input type="text" id="quickInfoYearInput" name="year" placeholder="YYYY"
+                                    style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-weight: 600; text-align: center;">
                             </div>
-                            <button id="quickInfoSaveAllBtn" class="btn-primary" style="padding: 0.8rem 1.2rem; font-size: 0.85rem; align-self: flex-end; margin-bottom: 5px;">Save Changes</button>
+                            <button id="quickInfoSaveAllBtn" class="btn-primary"
+                                style="padding: 0.8rem 1.2rem; font-size: 0.85rem; align-self: flex-end; margin-bottom: 5px;">Save
+                                Changes</button>
                         </div>
 
 
-                        <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; display: block; margin-bottom: 0.8rem;">Metadata Repair</label>
+                        <label
+                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; display: block; margin-bottom: 0.8rem;">Metadata
+                            Repair</label>
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-                            <button id="quickInfoRefreshBtn" class="btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 0.8rem;">Sync with Official</button>
-                            <button id="quickInfoRefreshRatingsBtn" class="btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 0.8rem; display: none;">Refresh Ratings</button>
-                            <button id="quickInfoShowLinkBtn" class="btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 0.8rem;">Manual Link ID</button>
+                            <button id="quickInfoRefreshBtn" class="btn-secondary"
+                                style="font-size: 0.8rem; padding: 0.5rem 0.8rem;">Sync with Official</button>
+                            <button id="quickInfoRefreshRatingsBtn" class="btn-secondary"
+                                style="font-size: 0.8rem; padding: 0.5rem 0.8rem; display: none;">Refresh
+                                Ratings</button>
+                            <button id="quickInfoShowLinkBtn" class="btn-secondary"
+                                style="font-size: 0.8rem; padding: 0.5rem 0.8rem;">Manual Link ID</button>
                         </div>
-                        
-                        <div id="quickInfoLinkSubSection" style="display: none; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px dashed var(--border-color);">
+
+                        <div id="quickInfoLinkSubSection"
+                            style="display: none; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px dashed var(--border-color);">
                             <p style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0.8rem; line-height: 1.5;">
                                 Paste the numeric ID from the official URL.<br>
                                 <span style="opacity: 0.5;">
@@ -702,8 +839,10 @@
                                 </span>
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
-                                <input type="number" id="quickInfoLinkInput" placeholder="Enter ID Number" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-size: 0.85rem;">
-                                <button id="quickInfoApplyLinkBtn" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Apply Link</button>
+                                <input type="number" id="quickInfoLinkInput" placeholder="Enter ID Number"
+                                    style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-size: 0.85rem;">
+                                <button id="quickInfoApplyLinkBtn" class="btn-primary"
+                                    style="padding: 0.5rem 1rem; font-size: 0.8rem;">Apply Link</button>
                             </div>
                         </div>
                     </div>
@@ -714,7 +853,8 @@
 
     <!-- Admin Login Modal -->
     <div id="loginModal" class="modal">
-        <div class="modal-content" style="max-width: 380px; text-align: center; background: rgba(30, 30, 35, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+        <div class="modal-content"
+            style="max-width: 380px; text-align: center; background: rgba(30, 30, 35, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
             <span class="close-btn" id="closeLoginModalBtn" style="right: 20px; top: 15px;">&times;</span>
             <div style="margin-top: 1.5rem; margin-bottom: 2rem;">
                 <h2 class="serif" style="margin-bottom: 8px; font-size: 1.8rem;">Developer Portal</h2>
@@ -722,32 +862,44 @@
                     Enter the developer key to unlock database write access.
                 </p>
             </div>
-            
+
             <div style="position: relative; margin-bottom: 2rem;">
                 <input type="password" id="adminPasswordInput" maxlength="9" autocomplete="off"
                     style="position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; top: 0; left: 0;">
-                <div id="pinDotsContainer" style="display: flex; justify-content: center; align-items: center; gap: 0.65rem; padding: 1.2rem 0.5rem; background: rgba(0,0,0,0.25); border: 2px solid var(--border-color); border-radius: 12px; cursor: text; transition: all 0.3s ease;">
-                    <span class="pin-dot" data-index="0" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
-                    <span class="pin-dot" data-index="1" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
-                    <span class="pin-dot" data-index="2" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
-                    <span class="pin-dot" data-index="3" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
-                    <span class="pin-dot" data-index="4" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
-                    <span class="pin-dot" data-index="5" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
-                    <span class="pin-dot" data-index="6" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
-                    <span class="pin-dot" data-index="7" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
-                    <span class="pin-dot" data-index="8" style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                <div id="pinDotsContainer"
+                    style="display: flex; justify-content: center; align-items: center; gap: 0.65rem; padding: 1.2rem 0.5rem; background: rgba(0,0,0,0.25); border: 2px solid var(--border-color); border-radius: 12px; cursor: text; transition: all 0.3s ease;">
+                    <span class="pin-dot" data-index="0"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="1"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="2"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="3"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="4"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="5"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="6"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="7"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
+                    <span class="pin-dot" data-index="8"
+                        style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.25); background: transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></span>
                 </div>
             </div>
 
-            <div id="loginLockoutAlert" style="display: none; padding: 0.8rem; border-radius: 10px; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #ff6b6b; font-size: 0.85rem; margin-bottom: 1.25rem; text-align: center; line-height: 1.4;">
+            <div id="loginLockoutAlert"
+                style="display: none; padding: 0.8rem; border-radius: 10px; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #ff6b6b; font-size: 0.85rem; margin-bottom: 1.25rem; text-align: center; line-height: 1.4;">
                 <i class="fas fa-exclamation-triangle" style="margin-right: 0.4rem;"></i>
                 <span id="loginLockoutText"></span>
             </div>
 
-            <button id="submitLoginBtn" class="btn-primary" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; box-shadow: 0 10px 20px rgba(var(--theme-accent-rgb, 100, 180, 255), 0.2);">
+            <button id="submitLoginBtn" class="btn-primary"
+                style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; box-shadow: 0 10px 20px rgba(var(--theme-accent-rgb, 100, 180, 255), 0.2);">
                 Unlock Console
             </button>
-            
+
             <p style="margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.5;">
                 Authorized access only. All actions are logged.
             </p>
@@ -759,14 +911,17 @@
         <div class="modal-content review-modal-content">
             <span class="close-btn" id="closeReviewModalBtn">&times;</span>
             <h2 id="reviewTitleDisplay" class="serif">Rate & Review</h2>
-            
+
             <div class="form-group">
-                <textarea id="reviewInputBox" rows="8" placeholder="Type your review here... (will be saved automatically upon clicking Save)"></textarea>
+                <textarea id="reviewInputBox" rows="8"
+                    placeholder="Type your review here... (will be saved automatically upon clicking Save)"></textarea>
             </div>
-            
+
             <div class="form-actions" style="display: flex; gap: 10px; margin-top: 1.5rem;">
                 <button id="saveReviewBtn" class="btn-primary" style="flex:1;">Save Review</button>
-                <button id="clearReviewBtn" style="flex:1; background:var(--bg-base); color:var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; cursor:pointer; font-family:'Nunito', sans-serif;">Delete Review</button>
+                <button id="clearReviewBtn"
+                    style="flex:1; background:var(--bg-base); color:var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; cursor:pointer; font-family:'Nunito', sans-serif;">Delete
+                    Review</button>
             </div>
         </div>
     </div>
@@ -776,10 +931,12 @@
         <div class="modal-content review-modal-content" style="max-width: 400px; text-align: center;">
             <h2 class="serif">Delete Entry?</h2>
             <p style="color: var(--text-secondary); margin: 1rem 0;">
-                Are you sure you want to delete <strong id="deleteTargetTitle" style="color: var(--text-primary);">this item</strong>?
+                Are you sure you want to delete <strong id="deleteTargetTitle" style="color: var(--text-primary);">this
+                    item</strong>?
             </p>
             <div class="form-actions" style="display: flex; gap: 10px; margin-top: 2rem;">
-                <button id="cancelDeleteBtn" class="btn-secondary" style="flex:1; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer; padding: 10px;">Cancel</button>
+                <button id="cancelDeleteBtn" class="btn-secondary"
+                    style="flex:1; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer; padding: 10px;">Cancel</button>
                 <button id="confirmDeleteBtn" class="btn-primary" style="flex:1; background: #e74c3c;">Delete</button>
             </div>
         </div>
@@ -787,24 +944,38 @@
 
     <!-- Export Data Confirmation Modal -->
     <div id="exportConfirmModal" class="modal">
-        <div class="modal-content review-modal-content" style="max-width: 440px; text-align: center; border-top: 3px solid var(--theme-accent); padding-top: 2rem;">
-            <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 0 24px var(--theme-accent-glow);">
+        <div class="modal-content review-modal-content"
+            style="max-width: 440px; text-align: center; border-top: 3px solid var(--theme-accent); padding-top: 2rem;">
+            <div
+                style="width: 56px; height: 56px; border-radius: 50%; background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 0 24px var(--theme-accent-glow);">
                 <i class="fas fa-file-alt" style="font-size: 1.5rem; color: var(--theme-accent);"></i>
             </div>
-            <h2 class="serif" style="margin-bottom: 0.5rem; font-size: 1.6rem;">Export <span id="exportCategoryLabel" style="color: var(--theme-accent);">Data</span></h2>
+            <h2 class="serif" style="margin-bottom: 0.5rem; font-size: 1.6rem;">Export <span id="exportCategoryLabel"
+                    style="color: var(--theme-accent);">Data</span></h2>
             <p style="color: var(--text-secondary); margin: 0.75rem 0 0.5rem; font-size: 0.9rem; line-height: 1.6;">
-                This will download a <strong style="color: var(--text-primary);">TXT file</strong> of all your finished <span id="exportCategoryLabel2" style="color: var(--theme-accent); font-weight: 700;"></span> entries.
+                This will download a <strong style="color: var(--text-primary);">TXT file</strong> of all your finished
+                <span id="exportCategoryLabel2" style="color: var(--theme-accent); font-weight: 700;"></span> entries.
             </p>
-            <p style="color: var(--text-secondary); font-size: 0.8rem; opacity: 0.7; margin-bottom: 1.25rem; line-height: 1.5;">
-                Includes: <strong style="color: var(--text-primary);">title, year, director, genres, liked status, rating</strong>.
+            <p
+                style="color: var(--text-secondary); font-size: 0.8rem; opacity: 0.7; margin-bottom: 1.25rem; line-height: 1.5;">
+                Includes: <strong style="color: var(--text-primary);">title, year, director, genres, liked status,
+                    rating</strong>.
             </p>
-            <div style="background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--text-secondary); text-align: left; line-height: 1.6; opacity: 0.85;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;"><i class="fas fa-info-circle" style="color: var(--theme-accent); flex-shrink: 0;"></i><span>Rankings are excluded — finished entries only.</span></div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-shield-alt" style="color: var(--theme-accent); flex-shrink: 0;"></i><span>Admin access required to download.</span></div>
+            <div
+                style="background: var(--theme-accent-muted); border: 1px solid var(--theme-accent); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--text-secondary); text-align: left; line-height: 1.6; opacity: 0.85;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;"><i
+                        class="fas fa-info-circle"
+                        style="color: var(--theme-accent); flex-shrink: 0;"></i><span>Rankings are excluded — finished
+                        entries only.</span></div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-shield-alt"
+                        style="color: var(--theme-accent); flex-shrink: 0;"></i><span>Admin access required to
+                        download.</span></div>
             </div>
             <div class="form-actions" style="display: flex; gap: 10px; margin-top: 0.5rem;">
-                <button id="cancelExportBtn" class="btn-secondary" style="flex:1; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer; padding: 10px;">Cancel</button>
-                <button id="confirmExportBtn" class="btn-primary" style="flex:2; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                <button id="cancelExportBtn" class="btn-secondary"
+                    style="flex:1; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer; padding: 10px;">Cancel</button>
+                <button id="confirmExportBtn" class="btn-primary"
+                    style="flex:2; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                     <i class="fas fa-download"></i> Download TXT
                 </button>
             </div>
@@ -817,7 +988,9 @@
             <h2 class="serif" style="margin-bottom: 1rem;">Review this entry?</h2>
             <div class="form-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button id="noReviewBtn" class="btn-secondary" style="flex: 1; min-width: 100px;">No</button>
-                <button id="textReviewBtn" class="btn-secondary" style="flex: 1; min-width: 100px; background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border-color);">Just Text</button>
+                <button id="textReviewBtn" class="btn-secondary"
+                    style="flex: 1; min-width: 100px; background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border-color);">Just
+                    Text</button>
                 <button id="yesReviewBtn" class="btn-primary" style="flex: 1; min-width: 100px;">Yes</button>
             </div>
         </div>
@@ -828,7 +1001,7 @@
         <div class="modal-content review-modal-content">
             <span class="close-btn" id="closeReviewingStructureBtn">&times;</span>
             <h2 class="serif">Reviewing Structure</h2>
-            
+
             <!-- Step 1: Category Selection -->
             <div id="reviewStep1" class="review-step">
                 <p class="step-instruction">Select the categories you wish to evaluate (Select 1-8):</p>
@@ -843,7 +1016,8 @@
                     <div class="category-chip" data-cat="Genre Fit">Genre Fit</div>
                 </div>
                 <div class="step-actions">
-                    <button id="goToStep2Btn" class="btn-primary" style="display: none; width: 100%;">Next Step: Content</button>
+                    <button id="goToStep2Btn" class="btn-primary" style="display: none; width: 100%;">Next Step:
+                        Content</button>
                 </div>
             </div>
 
@@ -851,14 +1025,19 @@
             <div id="reviewContentStep" class="review-step" style="display: none;">
                 <div id="categoryHeader">
                     <h3 id="currentCategoryTitle" class="serif" style="margin-bottom: 0.2rem;">Category Name</h3>
-                    <p id="currentCategoryDef" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">Definition goes here...</p>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1.5rem; font-size: 0.8rem; line-height: 1.3;">
-                        <div style="background: rgba(46, 204, 113, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #2ecc71;">
+                    <p id="currentCategoryDef"
+                        style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                        Definition goes here...</p>
+
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1.5rem; font-size: 0.8rem; line-height: 1.3;">
+                        <div
+                            style="background: rgba(46, 204, 113, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #2ecc71;">
                             <strong style="color: #2ecc71; display: block; margin-bottom: 4px;">Done well:</strong>
                             <span id="currentCategoryWell" style="opacity: 0.8;">...</span>
                         </div>
-                        <div style="background: rgba(231, 76, 60, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #e74c3c;">
+                        <div
+                            style="background: rgba(231, 76, 60, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #e74c3c;">
                             <strong style="color: #e74c3c; display: block; margin-bottom: 4px;">Done poorly:</strong>
                             <span id="currentCategoryPoor" style="opacity: 0.8;">...</span>
                         </div>
@@ -866,7 +1045,8 @@
                 </div>
 
                 <div class="form-group">
-                    <textarea id="categoryContentInput" rows="6" placeholder="Write your thoughts here... (Min. 1 word required)"></textarea>
+                    <textarea id="categoryContentInput" rows="6"
+                        placeholder="Write your thoughts here... (Min. 1 word required)"></textarea>
                 </div>
 
                 <div class="step-actions" style="justify-content: space-between; align-items: center;">
@@ -886,32 +1066,42 @@
         <div class="filter-section">
             <h4>Sort By</h4>
             <div class="filter-options-grid sort-options">
-                <label class="filter-option"><input type="radio" name="sort" value="rating-desc"><span>Rating: High to Low</span></label>
-                <label class="filter-option"><input type="radio" name="sort" value="rating-asc"><span>Rating: Low to High</span></label>
-                <label class="filter-option"><input type="radio" name="sort" value="year-desc"><span>Year: Newest First</span></label>
-                <label class="filter-option"><input type="radio" name="sort" value="year-asc"><span>Year: Oldest First</span></label>
-                <label class="filter-option"><input type="radio" name="sort" value="title-asc"><span>Title: A-Z</span></label>
-                <label class="filter-option"><input type="radio" name="sort" value="title-desc"><span>Title: Z-A</span></label>
-                <label class="filter-option"><input type="radio" name="sort" value="date-added-desc"><span>Date Added: Newest First</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="rating-desc"><span>Rating: High to
+                        Low</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="rating-asc"><span>Rating: Low to
+                        High</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="year-desc"><span>Year: Newest
+                        First</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="year-asc"><span>Year: Oldest
+                        First</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="title-asc"><span>Title:
+                        A-Z</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="title-desc"><span>Title:
+                        Z-A</span></label>
+                <label class="filter-option"><input type="radio" name="sort" value="date-added-desc"><span>Date Added:
+                        Newest First</span></label>
             </div>
         </div>
-        
+
         <div class="filter-section">
             <h4>Status</h4>
             <div class="filter-options-grid">
-                <label class="filter-option checkbox"><input type="checkbox" id="filterLiked"><span>Liked Only</span></label>
-                <label class="filter-option checkbox"><input type="checkbox" id="filterReviewed"><span>Has Review</span></label>
-                <label class="filter-option checkbox"><input type="checkbox" id="filterUnreviewed"><span>No Review</span></label>
+                <label class="filter-option checkbox"><input type="checkbox" id="filterLiked"><span>Liked
+                        Only</span></label>
+                <label class="filter-option checkbox"><input type="checkbox" id="filterReviewed"><span>Has
+                        Review</span></label>
+                <label class="filter-option checkbox"><input type="checkbox" id="filterUnreviewed"><span>No
+                        Review</span></label>
             </div>
         </div>
-        
+
         <div class="filter-section">
             <h4>Genres</h4>
             <div class="filter-options-grid" id="genreFilterList">
                 <!-- Populated via JS -->
             </div>
         </div>
-        
+
         <div class="filter-actions">
             <button id="resetFilters" class="btn-text">Reset</button>
             <button id="applyFilters" class="btn-primary">Apply</button>
@@ -926,7 +1116,7 @@
                 <h2 class="serif">Rankings Manager</h2>
                 <p id="rankingManagerSubtitle">Manage your Top 20 list</p>
             </div>
-            
+
             <div class="ranking-manager-layout">
                 <div class="ranking-manager-list-section">
                     <label style="margin-bottom: 1.5rem; display: block;">Rankings</label>
@@ -934,19 +1124,22 @@
                         <!-- Populated via JS -->
                     </div>
                 </div>
-                
+
                 <div class="ranking-manager-add-section">
                     <label style="margin-bottom: 1.5rem; display: block;">Scouting</label>
                     <div class="search-container" style="margin-bottom: 1.5rem;">
-                        <input type="text" id="rankingSearchInput" class="search-bar" placeholder="Find in collection..." style="width: 100%;">
+                        <input type="text" id="rankingSearchInput" class="search-bar"
+                            placeholder="Find in collection..." style="width: 100%;">
                     </div>
                     <div class="ranking-scout-filters" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
-                        <select id="scoutFilterLiked" style="padding: 0.5rem; border-radius: 6px; font-size: 0.85rem; height: auto;">
+                        <select id="scoutFilterLiked"
+                            style="padding: 0.5rem; border-radius: 6px; font-size: 0.85rem; height: auto;">
                             <option value="all">All (Liked/Unliked)</option>
                             <option value="liked">Liked ♥</option>
                             <option value="unliked">Unliked</option>
                         </select>
-                        <select id="scoutFilterRating" style="padding: 0.5rem; border-radius: 6px; font-size: 0.85rem; height: auto;">
+                        <select id="scoutFilterRating"
+                            style="padding: 0.5rem; border-radius: 6px; font-size: 0.85rem; height: auto;">
                             <option value="all">All Ratings</option>
                             <option value="9">9+ Rating</option>
                             <option value="8">8+ Rating</option>
@@ -961,7 +1154,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="ranking-manager-footer">
                 <p class="ranking-tip">Changes will be saved and all items will be re-ranked sequentially.</p>
                 <button id="saveRankingsBtn" class="btn-primary">Save New Order</button>
@@ -974,9 +1167,11 @@
         <div class="modal-content" style="max-width: 500px;">
             <span class="close-btn" id="closePassedEntriesBtn">&times;</span>
             <h2 class="serif">Passed Suggestions</h2>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem;">Remove entries from this list if you want them to be eligible for suggestions again.</p>
-            
-            <div id="passedEntriesList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem;">Remove entries from this
+                list if you want them to be eligible for suggestions again.</p>
+
+            <div id="passedEntriesList"
+                style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
                 <!-- Populated via JS -->
                 <p style="text-align: center; opacity: 0.5; padding: 2rem;">Loading passed list...</p>
             </div>
@@ -985,11 +1180,14 @@
 
     <!-- Recently Added History Modal -->
     <div id="recentHistoryModal" class="modal">
-        <div class="modal-content" style="max-width: 500px; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+        <div class="modal-content"
+            style="max-width: 500px; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
             <span class="close-btn" id="closeRecentHistoryBtn">&times;</span>
             <h2 class="serif" id="recentHistoryModalTitle">Recently Added</h2>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">The 20 most recent additions.</p>
-            <div id="recentHistoryList" style="max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">The 20 most recent
+                additions.</p>
+            <div id="recentHistoryList"
+                style="max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
                 <!-- Populated via JS -->
                 <p style="text-align: center; opacity: 0.5; padding: 2rem;">Loading history...</p>
             </div>
@@ -998,27 +1196,35 @@
 
     <!-- Manage All Recommendations Modal (Admin & Public) -->
     <div id="manageRecommendationsModal" class="modal">
-        <div class="modal-content" style="max-width: 640px; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5); min-height: 400px; display: flex; flex-direction: column;">
+        <div class="modal-content"
+            style="max-width: 640px; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5); min-height: 400px; display: flex; flex-direction: column;">
             <span class="close-btn" id="closeManageRecommendationsBtn">&times;</span>
-            
+
             <!-- Page 1: List View -->
             <div id="recMgrListView" style="display: block; flex: 1;">
                 <h2 class="serif" style="margin-bottom: 0.4rem;">Recommendations</h2>
-                
-                <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
-                    <button id="recMgrTabPending" style="background: none; border: none; color: var(--text-primary); font-weight: bold; font-size: 0.9rem; cursor: pointer; padding-bottom: 0.5rem; border-bottom: 2px solid var(--theme-accent);">Pending</button>
-                    <button id="recMgrTabAccepted" style="background: none; border: none; color: var(--text-secondary); font-size: 0.9rem; cursor: pointer; padding-bottom: 0.5rem; border-bottom: 2px solid transparent; transition: color 0.2s;">Accepted</button>
+
+                <div
+                    style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
+                    <button id="recMgrTabPending"
+                        style="background: none; border: none; color: var(--text-primary); font-weight: bold; font-size: 0.9rem; cursor: pointer; padding-bottom: 0.5rem; border-bottom: 2px solid var(--theme-accent);">Pending</button>
+                    <button id="recMgrTabAccepted"
+                        style="background: none; border: none; color: var(--text-secondary); font-size: 0.9rem; cursor: pointer; padding-bottom: 0.5rem; border-bottom: 2px solid transparent; transition: color 0.2s;">Accepted</button>
                 </div>
 
                 <!-- Category filter (Pending only) -->
-                <div id="recMgrFilterContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
-                    <button class="rec-mgr-filter active" data-type="Movies" style="--tab-color: #e50914;">Movies</button>
-                    <button class="rec-mgr-filter" data-type="TV Series" style="--tab-color: #3498db;">TV Series</button>
+                <div id="recMgrFilterContainer"
+                    style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                    <button class="rec-mgr-filter active" data-type="Movies"
+                        style="--tab-color: #e50914;">Movies</button>
+                    <button class="rec-mgr-filter" data-type="TV Series" style="--tab-color: #3498db;">TV
+                        Series</button>
                     <button class="rec-mgr-filter" data-type="Manga" style="--tab-color: #f39c12;">Manga</button>
                     <button class="rec-mgr-filter" data-type="Anime" style="--tab-color: #9b59b6;">Anime</button>
                 </div>
 
-                <div id="allRecommendationsList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 6px;">
+                <div id="allRecommendationsList"
+                    style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 6px;">
                     <p style="text-align: center; opacity: 0.5; padding: 2rem;">Loading...</p>
                 </div>
             </div>
@@ -1029,71 +1235,108 @@
 
     <!-- Recommendation Modal -->
     <div id="recommendationModal" class="modal">
-        <div class="modal-content" style="max-width: 550px; background: rgba(20, 20, 25, 0.85); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+        <div class="modal-content"
+            style="max-width: 550px; background: rgba(20, 20, 25, 0.85); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
             <span class="close-btn" id="closeRecommendationBtn">&times;</span>
-            
+
             <!-- Step Indicator -->
-            <div class="rec-steps" style="display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative;">
-                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.1); z-index: 1;"></div>
-                <div id="recStepCircle1" class="rec-step-circle active" style="width: 30px; height: 30px; border-radius: 50%; background: var(--theme-accent); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid var(--theme-accent);">1</div>
-                <div id="recStepCircle2" class="rec-step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid rgba(255,255,255,0.1);">2</div>
-                <div id="recStepCircle3" class="rec-step-circle" style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid rgba(255,255,255,0.1);">3</div>
+            <div class="rec-steps"
+                style="display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative;">
+                <div
+                    style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.1); z-index: 1;">
+                </div>
+                <div id="recStepCircle1" class="rec-step-circle active"
+                    style="width: 30px; height: 30px; border-radius: 50%; background: var(--theme-accent); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid var(--theme-accent);">
+                    1</div>
+                <div id="recStepCircle2" class="rec-step-circle"
+                    style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid rgba(255,255,255,0.1);">
+                    2</div>
+                <div id="recStepCircle3" class="rec-step-circle"
+                    style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; border: 2px solid rgba(255,255,255,0.1);">
+                    3</div>
             </div>
-            
+
             <h2 class="serif" id="recModalTitle" style="margin-bottom: 0.5rem;">Leave a Recommendation</h2>
-            
+
             <!-- Page 1: Title & Year -->
             <div id="recPage1" class="rec-page">
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">What should Silva check out next?</p>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">What should Silva
+                    check out next?</p>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="recTitleInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Title *</label>
-                    <input type="text" id="recTitleInput" placeholder="e.g. Inception" required style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <label for="recTitleInput"
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Title
+                        *</label>
+                    <input type="text" id="recTitleInput" placeholder="e.g. Inception" required
+                        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;"
+                        onfocus="this.style.borderColor='var(--theme-accent)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                 </div>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label for="recYearInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Release Year (Optional)</label>
                     <input type="number" id="recYearInput" min="1888" max="2030" placeholder="e.g. 2010" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
-                    <button id="recNext1Btn" class="btn-primary" style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Find Match</button>
+                    <button id="recNext1Btn" class="btn-primary"
+                        style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Find Match</button>
                 </div>
             </div>
-            
+
             <!-- Page 2: Search Results -->
             <div id="recPage2" class="rec-page" style="display: none;">
-                <p id="recPage2Instructions" style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Select the correct version to ensure accurate tracking.</p>
-                
+                <p id="recPage2Instructions"
+                    style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Select the correct
+                    version to ensure accurate tracking.</p>
+
                 <!-- Duplicate Check Message (Hidden by default) -->
-                <div id="recDuplicateMessage" style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid #dc3545; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
-                    <p id="recDuplicateText" style="color: #fff; margin-bottom: 1.5rem; font-size: 0.95rem;">This item is already in the database.</p>
+                <div id="recDuplicateMessage"
+                    style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid #dc3545; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
+                    <p id="recDuplicateText" style="color: #fff; margin-bottom: 1.5rem; font-size: 0.95rem;">This item
+                        is already in the database.</p>
                     <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button id="recCloseDuplicateBtn" class="btn-secondary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Close</button>
-                        <button id="recRecommendAnotherBtn" class="btn-primary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600; background: var(--theme-accent); color: #000;">Recommend Another</button>
-                        <button id="recContinueDuplicateBtn" class="btn-primary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600; background: #28a745; color: #fff; display: none;">Continue</button>
+                        <button id="recCloseDuplicateBtn" class="btn-secondary"
+                            style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Close</button>
+                        <button id="recRecommendAnotherBtn" class="btn-primary"
+                            style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600; background: var(--theme-accent); color: #000;">Recommend
+                            Another</button>
+                        <button id="recContinueDuplicateBtn" class="btn-primary"
+                            style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600; background: #28a745; color: #fff; display: none;">Continue</button>
                     </div>
                 </div>
 
                 <div id="recSearchResultsContainer">
-                    <div id="recSearchResults" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 8px;">
+                    <div id="recSearchResults"
+                        style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 8px;">
                         <!-- Populated via JS -->
                         <p style="text-align: center; opacity: 0.5;">Searching...</p>
                     </div>
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
-                        <button id="recBack2Btn" class="btn-secondary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Back</button>
-                        <button id="recNext2Btn" class="btn-primary" disabled style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Confirm Selection</button>
+                        <button id="recBack2Btn" class="btn-secondary"
+                            style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Back</button>
+                        <button id="recNext2Btn" class="btn-primary" disabled
+                            style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Confirm
+                            Selection</button>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Page 3: Name only -->
             <div id="recPage3" class="rec-page" style="display: none;">
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Sign your name so Silva knows who to thank!</p>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Sign your name so
+                    Silva knows who to thank!</p>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="recNameInput" style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Your Name (Optional)</label>
-                    <input type="text" id="recNameInput" placeholder="Anonymous" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--theme-accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <label for="recNameInput"
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Your
+                        Name (Optional)</label>
+                    <input type="text" id="recNameInput" placeholder="Anonymous"
+                        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem; color: #fff; font-size: 1rem; transition: border-color 0.3s;"
+                        onfocus="this.style.borderColor='var(--theme-accent)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
-                    <button id="recBack3Btn" class="btn-secondary" style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Back</button>
-                    <button id="recSubmitBtn" class="btn-primary" style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Submit Rec</button>
+                    <button id="recBack3Btn" class="btn-secondary"
+                        style="padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 600;">Back</button>
+                    <button id="recSubmitBtn" class="btn-primary"
+                        style="padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600;">Submit Rec</button>
                 </div>
             </div>
         </div>
@@ -1101,46 +1344,61 @@
 
     <!-- Collection Creator Modal (2-Step Wizard) -->
     <div id="collectionCreatorModal" class="modal">
-        <div class="modal-content" style="max-width: 650px; background: rgba(18, 18, 22, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 25px 50px rgba(0,0,0,0.6); border-radius: 24px; padding: 2rem 2.2rem;">
+        <div class="modal-content"
+            style="max-width: 650px; background: rgba(18, 18, 22, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 25px 50px rgba(0,0,0,0.6); border-radius: 24px; padding: 2rem 2.2rem;">
             <span class="close-btn" id="closeCollectionCreatorBtn">&times;</span>
-            
+
             <!-- Step Indicators -->
             <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
-                <div id="colStep1Badge" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--theme-accent);">
-                    <span style="width: 26px; height: 26px; border-radius: 50%; background: var(--theme-accent); color: #000; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800;">1</span>
+                <div id="colStep1Badge"
+                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--theme-accent);">
+                    <span
+                        style="width: 26px; height: 26px; border-radius: 50%; background: var(--theme-accent); color: #000; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800;">1</span>
                     Details
                 </div>
                 <div style="width: 40px; height: 2px; background: rgba(255,255,255,0.15);" id="colStepLine"></div>
-                <div id="colStep2Badge" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); opacity: 0.5;">
-                    <span style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800;">2</span>
+                <div id="colStep2Badge"
+                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); opacity: 0.5;">
+                    <span
+                        style="width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800;">2</span>
                     Select Entries
                 </div>
             </div>
 
             <!-- STEP 1: Title & Description -->
             <div id="colStep1View" style="display: block;">
-                <h2 class="serif" id="colModalTitle" style="font-size: 1.6rem; color: #fff; margin-bottom: 0.3rem;">Create New Collection</h2>
-                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.8rem; opacity: 0.85;">Give your curated showcase a distinctive title and hook.</p>
+                <h2 class="serif" id="colModalTitle" style="font-size: 1.6rem; color: #fff; margin-bottom: 0.3rem;">
+                    Create New Collection</h2>
+                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.8rem; opacity: 0.85;">Give
+                    your curated showcase a distinctive title and hook.</p>
 
                 <div class="form-group" style="margin-bottom: 1.5rem; text-align: left;">
-                    <label for="colTitleInput" style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    <label for="colTitleInput"
+                        style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">
                         <span>Collection Title</span>
                         <span id="colTitleCharCount" style="font-size: 0.75rem; opacity: 0.6;">0/3 min</span>
                     </label>
-                    <input type="text" id="colTitleInput" placeholder="e.g. Actually Scary Horror, Comfort Rewatches..." style="width: 100%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1.1rem; color: #fff; font-size: 1.05rem; font-family: 'Outfit', sans-serif; transition: all 0.25s;">
+                    <input type="text" id="colTitleInput" placeholder="e.g. Actually Scary Horror, Comfort Rewatches..."
+                        style="width: 100%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1.1rem; color: #fff; font-size: 1.05rem; font-family: 'Outfit', sans-serif; transition: all 0.25s;">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 2rem; text-align: left;">
-                    <label for="colDescInput" style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    <label for="colDescInput"
+                        style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">
                         <span>Collection Description</span>
                         <span id="colDescCharCount" style="font-size: 0.75rem; opacity: 0.6;">0/5 min</span>
                     </label>
-                    <textarea id="colDescInput" rows="3" placeholder="Briefly describe what ties these selections together..." style="width: 100%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1.1rem; color: #fff; font-size: 0.95rem; font-family: 'Inter', sans-serif; resize: vertical; transition: all 0.25s;"></textarea>
+                    <textarea id="colDescInput" rows="3"
+                        placeholder="Briefly describe what ties these selections together..."
+                        style="width: 100%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1.1rem; color: #fff; font-size: 0.95rem; font-family: 'Inter', sans-serif; resize: vertical; transition: all 0.25s;"></textarea>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.2rem;">
-                    <button id="colStep1CancelBtn" class="btn-secondary" style="padding: 0.75rem 1.4rem; border-radius: 12px; font-weight: 600;">Cancel</button>
-                    <button id="colStep1NextBtn" class="btn-primary" style="display: none; padding: 0.75rem 1.8rem; border-radius: 12px; font-weight: 700; font-size: 0.95rem;">
+                <div
+                    style="display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.2rem;">
+                    <button id="colStep1CancelBtn" class="btn-secondary"
+                        style="padding: 0.75rem 1.4rem; border-radius: 12px; font-weight: 600;">Cancel</button>
+                    <button id="colStep1NextBtn" class="btn-primary"
+                        style="display: none; padding: 0.75rem 1.8rem; border-radius: 12px; font-weight: 700; font-size: 0.95rem;">
                         <span>Next: Select Entries</span>
                         <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
                     </button>
@@ -1149,26 +1407,35 @@
 
             <!-- STEP 2: Choose Finished Entries (Search & Pick) -->
             <div id="colStep2View" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
                     <h2 class="serif" style="font-size: 1.5rem; color: #fff; margin: 0;">Select Finished Entries</h2>
-                    <span id="colSelectedCountBadge" style="background: var(--theme-accent-muted); color: var(--theme-accent); border: 1px solid var(--theme-accent); padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.8rem; font-weight: 800;">0 Selected (Min 1)</span>
+                    <span id="colSelectedCountBadge"
+                        style="background: var(--theme-accent-muted); color: var(--theme-accent); border: 1px solid var(--theme-accent); padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.8rem; font-weight: 800;">0
+                        Selected (Min 1)</span>
                 </div>
-                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.2rem; text-align: left; opacity: 0.8;">Choose entries from your finished library to include in this collection.</p>
+                <p
+                    style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.2rem; text-align: left; opacity: 0.8;">
+                    Choose entries from your finished library to include in this collection.</p>
 
                 <!-- Search Bar & Scouting Filters -->
                 <div style="position: relative; margin-bottom: 0.75rem;">
-                    <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); opacity: 0.6;"></i>
-                    <input type="text" id="colSearchInput" placeholder="Search by title, director, or genre..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.6rem; color: #fff; font-size: 0.95rem;">
+                    <i class="fas fa-search"
+                        style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); opacity: 0.6;"></i>
+                    <input type="text" id="colSearchInput" placeholder="Search by title, director, or genre..."
+                        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.6rem; color: #fff; font-size: 0.95rem;">
                 </div>
 
                 <!-- Scouting Filter Selects like Top 20 -->
                 <div class="col-scout-filters" style="display: flex; gap: 0.6rem; margin-bottom: 1rem;">
-                    <select id="colFilterLiked" style="flex: 1; padding: 0.55rem 0.8rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 8px; font-size: 0.82rem;">
+                    <select id="colFilterLiked"
+                        style="flex: 1; padding: 0.55rem 0.8rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 8px; font-size: 0.82rem;">
                         <option value="all" style="background:#18181f; color:#fff;">All (Liked/Unliked)</option>
                         <option value="liked" style="background:#18181f; color:#fff;">Liked ♥</option>
                         <option value="unliked" style="background:#18181f; color:#fff;">Unliked</option>
                     </select>
-                    <select id="colFilterRating" style="flex: 1; padding: 0.55rem 0.8rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 8px; font-size: 0.82rem;">
+                    <select id="colFilterRating"
+                        style="flex: 1; padding: 0.55rem 0.8rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #fff; border-radius: 8px; font-size: 0.82rem;">
                         <option value="all" style="background:#18181f; color:#fff;">All Ratings</option>
                         <option value="9" style="background:#18181f; color:#fff;">9+ Rating</option>
                         <option value="8" style="background:#18181f; color:#fff;">8+ Rating</option>
@@ -1180,16 +1447,20 @@
                 </div>
 
                 <!-- Available Entries List -->
-                <div id="colEntriesList" style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; margin-bottom: 1.5rem; text-align: left;">
+                <div id="colEntriesList"
+                    style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; margin-bottom: 1.5rem; text-align: left;">
                     <!-- Dynamically populated entries -->
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.2rem;">
-                    <button id="colStep2BackBtn" class="btn-secondary" style="padding: 0.75rem 1.4rem; border-radius: 12px; font-weight: 600;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.2rem;">
+                    <button id="colStep2BackBtn" class="btn-secondary"
+                        style="padding: 0.75rem 1.4rem; border-radius: 12px; font-weight: 600;">
                         <i class="fas fa-arrow-left" style="margin-right: 0.4rem;"></i>
                         Back
                     </button>
-                    <button id="colCreateSubmitBtn" class="btn-primary" disabled style="padding: 0.75rem 2rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; opacity: 0.5; cursor: not-allowed;">
+                    <button id="colCreateSubmitBtn" class="btn-primary" disabled
+                        style="padding: 0.75rem 2rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; opacity: 0.5; cursor: not-allowed;">
                         <i class="fas fa-sparkles" style="margin-right: 0.4rem;"></i>
                         Create Collection
                     </button>
@@ -1200,21 +1471,27 @@
 
     <!-- Collection Detail Modal (View Entries Inside Collection) -->
     <div id="collectionDetailModal" class="modal">
-        <div class="modal-content" style="max-width: 820px; max-height: 88vh; display: flex; flex-direction: column; padding: 2rem; background: rgba(18, 18, 24, 0.96); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.6);">
+        <div class="modal-content"
+            style="max-width: 820px; max-height: 88vh; display: flex; flex-direction: column; padding: 2rem; background: rgba(18, 18, 24, 0.96); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.6);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                 <div style="display: flex; flex-direction: column; gap: 0.3rem;">
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
                         <span id="colDetailCount" class="collection-count-tag">0 entries</span>
                     </div>
-                    <h2 id="colDetailTitle" class="serif" style="font-size: 1.8rem; color: #fff; margin: 0;">Collection Title</h2>
+                    <h2 id="colDetailTitle" class="serif" style="font-size: 1.8rem; color: #fff; margin: 0;">Collection
+                        Title</h2>
                 </div>
-                <span class="close-btn" id="closeColDetailBtn" style="margin: 0; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</span>
+                <span class="close-btn" id="closeColDetailBtn"
+                    style="margin: 0; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</span>
             </div>
 
-            <p id="colDetailDesc" style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; margin: 0 0 1.5rem 0; opacity: 0.85; text-align: left;"></p>
+            <p id="colDetailDesc"
+                style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; margin: 0 0 1.5rem 0; opacity: 0.85; text-align: left;">
+            </p>
 
             <!-- Entries List / Grid Container -->
-            <div id="colDetailEntriesList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 8px; margin-bottom: 0.5rem; text-align: left;">
+            <div id="colDetailEntriesList"
+                style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 8px; margin-bottom: 0.5rem; text-align: left;">
                 <!-- Populated via JS -->
             </div>
         </div>
@@ -1237,7 +1514,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=452"></script>
+    <script src="app.js?v=453"></script>
 
 
 
@@ -1260,4 +1537,5 @@
 
 
 </body>
+
 </html>

@@ -809,26 +809,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const collectionsGrid = document.getElementById('collectionsGrid');
 
-    // Load custom user collections from localStorage
-    const getStoredCollections = (category) => {
+    // ── Server-side collection storage ──────────────────────────────────────
+    // Collections are stored in the database so they sync across devices.
+
+    const getStoredCollections = async (category) => {
         try {
-            const raw = localStorage.getItem(`silva_collections_${category.toLowerCase()}`);
-            return raw ? JSON.parse(raw) : [];
+            const res = await fetch(`/api/collections?category=${encodeURIComponent(category)}`, { headers: getAuthHeaders() });
+            if (!res.ok) return [];
+            return await res.json();
         } catch (e) {
             return [];
         }
     };
 
-    const saveCustomCollection = (category, collection) => {
-        const existing = getStoredCollections(category);
-        existing.unshift(collection);
-        localStorage.setItem(`silva_collections_${category.toLowerCase()}`, JSON.stringify(existing));
+    const saveCustomCollection = async (category, collection) => {
+        try {
+            const res = await fetch('/api/collections', {
+                method: 'POST',
+                headers: getAuthHeaders(true),
+                body: JSON.stringify({
+                    title: collection.title,
+                    desc: collection.desc,
+                    category: category,
+                    entryIds: collection.entryIds,
+                })
+            });
+            if (!res.ok) throw new Error('Failed to save collection');
+            return await res.json();
+        } catch (e) {
+            console.error('[Collections] Save failed:', e);
+            return null;
+        }
     };
 
-    const deleteCustomCollection = (category, colId) => {
-        const existing = getStoredCollections(category);
-        const updated = existing.filter(c => c.id !== colId);
-        localStorage.setItem(`silva_collections_${category.toLowerCase()}`, JSON.stringify(updated));
+    const deleteCustomCollection = async (category, colId) => {
+        try {
+            await fetch(`/api/collections/${colId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+        } catch (e) {
+            console.error('[Collections] Delete failed:', e);
+        }
         renderCollections(category);
     };
 
@@ -858,7 +880,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cover = item.cover_url || item.cover_image_url || item.poster_url || '/static/movies_header.png';
                     const yearStr = item.release_year ? `${item.release_year}` : '';
                     const directorStr = item.director ? ` • ${item.director}` : '';
-                    const score = item.numeric_rating ? `${item.numeric_rating}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
+                    const score = item.numeric_rating ? `${String(item.numeric_rating).replace('/10', '').trim()}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating.replace('/10', '').trim() + '/10' : '');
                     
                     return `
                         <div class="col-detail-entry-row" data-id="${item.id}">
@@ -895,12 +917,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const renderCollections = (category) => {
+    const renderCollections = async (category) => {
         if (!collectionsGrid) return;
         const displayLabel = category === 'TV Series' ? 'TV Shows' : category;
 
+        // Show loading state while fetching from server
+        collectionsGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;opacity:0.5;"><div class="spinner" style="margin:0 auto;width:30px;height:30px;border-width:3px;"></div></div>`;
+
         const categoryItems = allMedia.filter(i => (i.type || '').toLowerCase() === category.toLowerCase());
-        const customCollections = getStoredCollections(category);
+        const customCollections = await getStoredCollections(category);
 
         // No starter draft collections - clean user-created library
         const starterCollections = [];
@@ -1132,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isSelected = selectedColEntryIds.has(item.id);
             const cover = item.cover_url || item.cover_image_url || item.poster_url || '/static/movies_header.png';
             const yearStr = item.release_year ? item.release_year : '';
-            const ratingStr = item.numeric_rating ? `${item.numeric_rating}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
+            const ratingStr = item.numeric_rating ? `${String(item.numeric_rating).replace('/10', '').trim()}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating.replace('/10', '').trim() + '/10' : '');
             const directorStr = item.director ? ` • ${item.director}` : '';
 
             return `
@@ -1248,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (colCreateSubmitBtn) {
-        colCreateSubmitBtn.addEventListener('click', () => {
+        colCreateSubmitBtn.addEventListener('click', async () => {
             const title = (colTitleInput ? colTitleInput.value : '').trim();
             const desc = (colDescInput ? colDescInput.value : '').trim();
             const entryIds = Array.from(selectedColEntryIds);
@@ -1258,15 +1283,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const newCollection = {
-                id: `col-${Date.now()}`,
                 title: title,
-                badge: "Custom",
                 desc: desc,
                 entryIds: entryIds,
-                created_at: new Date().toISOString()
             };
 
-            saveCustomCollection(currentCategory, newCollection);
+            colCreateSubmitBtn.disabled = true;
+            colCreateSubmitBtn.style.opacity = '0.5';
+
+            const saved = await saveCustomCollection(currentCategory, newCollection);
+
+            colCreateSubmitBtn.disabled = false;
+            colCreateSubmitBtn.style.opacity = '1';
+
+            if (!saved) {
+                alert('Failed to save collection. Please try again.');
+                return;
+            }
 
             if (collectionCreatorModal) collectionCreatorModal.classList.remove('show');
 

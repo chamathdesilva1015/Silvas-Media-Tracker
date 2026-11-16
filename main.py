@@ -17,7 +17,7 @@ from sqlalchemy import text
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 
-from database import engine, create_db_and_tables, MediaItem, RatingHistory, PassedSuggestion, Recommendation, SyncState
+from database import engine, create_db_and_tables, MediaItem, RatingHistory, PassedSuggestion, Recommendation, SyncState, UserCollection
 from enrich_data import run_enrichment
 from sqlalchemy import event
 from datetime import datetime
@@ -619,9 +619,10 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
                 return data
 
         # Fallback to Title/Year check
+        fallback_year = parse_year_int(data.get("release_year"))
         existing = session.exec(select(MediaItem).where(
             MediaItem.type == type,
-            MediaItem.release_year == data.get("release_year")
+            MediaItem.release_year == fallback_year
         )).all()
         
         is_duplicate = any(item.title.lower() == canonical_title.lower() for item in existing)
@@ -2366,6 +2367,63 @@ def update_recommendation_status(rec_id: int, payload: RecommendationStatusPaylo
     return {"ok": True}
 
 from sqlmodel import func as sql_func
+
+@app.get("/api/collections")
+def get_collections(category: Optional[str] = None, session: Session = Depends(get_session)):
+    """Return all user-created collections, optionally filtered by category."""
+    query = select(UserCollection)
+    if category:
+        query = query.where(UserCollection.category == category)
+    query = query.order_by(UserCollection.created_at.desc())
+    collections = session.exec(query).all()
+    import json as _json
+    result = []
+    for col in collections:
+        ids = []
+        try:
+            ids = _json.loads(col.entry_ids or "[]")
+        except Exception:
+            pass
+        result.append({
+            "id": col.id,
+            "title": col.title,
+            "desc": col.desc or "",
+            "category": col.category,
+            "entryIds": ids,
+            "created_at": col.created_at.isoformat() if col.created_at else None,
+        })
+    return result
+
+@app.post("/api/collections", dependencies=[Depends(check_readonly)])
+def create_collection(payload: dict, session: Session = Depends(get_session)):
+    """Create a new user collection."""
+    import json as _json
+    title = (payload.get("title") or "").strip()
+    desc = (payload.get("desc") or "").strip()
+    category = (payload.get("category") or "").strip()
+    entry_ids = payload.get("entryIds") or []
+    if not title or not category:
+        raise HTTPException(status_code=400, detail="title and category are required.")
+    col = UserCollection(
+        title=title,
+        desc=desc,
+        category=category,
+        entry_ids=_json.dumps(entry_ids),
+    )
+    session.add(col)
+    session.commit()
+    session.refresh(col)
+    return {"id": col.id, "title": col.title, "desc": col.desc, "category": col.category, "entryIds": entry_ids, "created_at": col.created_at.isoformat()}
+
+@app.delete("/api/collections/{col_id}", dependencies=[Depends(check_readonly)])
+def delete_collection(col_id: int, session: Session = Depends(get_session)):
+    """Delete a user collection by ID."""
+    col = session.get(UserCollection, col_id)
+    if not col:
+        raise HTTPException(status_code=404, detail="Collection not found.")
+    session.delete(col)
+    session.commit()
+    return {"ok": True}
 
 @app.get("/api/version")
 def get_database_version(response: Response, session: Session = Depends(get_session)):

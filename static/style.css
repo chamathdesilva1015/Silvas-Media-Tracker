@@ -7556,3 +7556,12 @@ body.modal-open .bottom-nav {
 
 
 
+
+/* ── Sub-modal z-index fix: review / confirm / structure modals must float above Quick Info ── */
+#reviewModal,
+#confirmReviewModal,
+#reviewingStructureModal,
+#ratingHistoryModal,
+#deleteModal {
+    z-index: 50000 !important;
+}
