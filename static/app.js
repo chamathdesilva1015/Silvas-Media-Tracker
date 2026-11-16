@@ -864,6 +864,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const updateCustomCollection = async (colId, payload) => {
+        try {
+            const res = await fetch(`/api/collections/${colId}`, {
+                method: 'PUT',
+                headers: getAuthHeaders(true),
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('Failed to update collection');
+            return await res.json();
+        } catch (e) {
+            console.error('[Collections] Update failed:', e);
+            return null;
+        }
+    };
+
     const deleteCustomCollection = async (category, colId) => {
         try {
             await fetch(`/api/collections/${colId}`, {
@@ -921,6 +936,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.openQuickInfo(items[idx]);
                     };
                 });
+            }
+        }
+
+        const colDetailEditBtn = document.getElementById('colDetailEditBtn');
+        if (colDetailEditBtn) {
+            if (col.isCustom && isAdminUnlocked) {
+                colDetailEditBtn.style.display = 'inline-flex';
+                colDetailEditBtn.onclick = () => {
+                    editingColId = col.id;
+                    resetCollectionModal();
+                    if (colTitleInput) colTitleInput.value = col.title;
+                    if (colDescInput) colDescInput.value = col.desc || '';
+                    selectedColEntryIds = new Set(col.entryIds || []);
+                    if (colModalTitle) colModalTitle.innerText = `Edit ${col.title}`;
+                    if (colCreateSubmitBtn) colCreateSubmitBtn.innerHTML = `<i class="fas fa-save" style="margin-right: 0.4rem;"></i> Save Changes`;
+                    updateColStep1Validation();
+                    collectionDetailModal.classList.remove('show');
+                    goToColStep(1);
+                    collectionCreatorModal.classList.add('show');
+                };
+            } else {
+                colDetailEditBtn.style.display = 'none';
             }
         }
 
@@ -1062,6 +1099,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const colStep2Badge = document.getElementById('colStep2Badge');
     const colModalTitle = document.getElementById('colModalTitle');
 
+    let editingColId = null;
     let selectedColEntryIds = new Set();
     const MIN_TITLE_LEN = 3;
     const MIN_DESC_LEN = 5;
@@ -1073,6 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (colFilterLiked) colFilterLiked.value = 'all';
         if (colFilterRating) colFilterRating.value = 'all';
         selectedColEntryIds.clear();
+        if (colCreateSubmitBtn) colCreateSubmitBtn.innerHTML = '<i class="fas fa-sparkles" style="margin-right: 0.4rem;"></i> Create Collection';
         updateColStep1Validation();
         goToColStep(1);
     };
@@ -1237,6 +1276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (addCollectionBtn) {
         addCollectionBtn.addEventListener('click', (e) => {
             if (e) e.stopPropagation();
+            editingColId = null;
             const displayLabel = currentCategory === 'TV Series' ? 'TV Shows' : currentCategory;
             if (colModalTitle) colModalTitle.innerText = `Create ${displayLabel} Collection`;
             resetCollectionModal();
@@ -1304,23 +1344,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const newCollection = {
-                title: title,
-                desc: desc,
-                entryIds: entryIds,
-            };
-
             colCreateSubmitBtn.disabled = true;
             colCreateSubmitBtn.style.opacity = '0.5';
 
-            const saved = await saveCustomCollection(currentCategory, newCollection);
+            if (editingColId) {
+                const updated = await updateCustomCollection(editingColId, {
+                    title: title,
+                    desc: desc,
+                    entryIds: entryIds,
+                });
+                colCreateSubmitBtn.disabled = false;
+                colCreateSubmitBtn.style.opacity = '1';
 
-            colCreateSubmitBtn.disabled = false;
-            colCreateSubmitBtn.style.opacity = '1';
+                if (!updated) {
+                    alert('Failed to update collection. Please try again.');
+                    return;
+                }
+                editingColId = null;
+            } else {
+                const newCollection = {
+                    title: title,
+                    desc: desc,
+                    entryIds: entryIds,
+                };
 
-            if (!saved) {
-                alert('Failed to save collection. Please try again.');
-                return;
+                const saved = await saveCustomCollection(currentCategory, newCollection);
+                colCreateSubmitBtn.disabled = false;
+                colCreateSubmitBtn.style.opacity = '1';
+
+                if (!saved) {
+                    alert('Failed to save collection. Please try again.');
+                    return;
+                }
             }
 
             if (collectionCreatorModal) collectionCreatorModal.classList.remove('show');

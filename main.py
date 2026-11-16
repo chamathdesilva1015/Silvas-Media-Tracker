@@ -2425,6 +2425,29 @@ def delete_collection(col_id: int, session: Session = Depends(get_session)):
     session.commit()
     return {"ok": True}
 
+@app.put("/api/collections/{col_id}", dependencies=[Depends(check_readonly)])
+def update_collection(col_id: int, payload: dict, session: Session = Depends(get_session)):
+    """Update an existing collection (title, desc, or entry IDs)."""
+    col = session.get(UserCollection, col_id)
+    if not col:
+        raise HTTPException(status_code=404, detail="Collection not found.")
+    import json as _json
+    if "title" in payload and str(payload["title"]).strip():
+        col.title = str(payload["title"]).strip()
+    if "desc" in payload:
+        col.desc = str(payload["desc"]).strip()
+    if "entryIds" in payload and isinstance(payload["entryIds"], list):
+        col.entry_ids = _json.dumps(payload["entryIds"])
+    session.add(col)
+    session.commit()
+    session.refresh(col)
+    entry_ids = []
+    try:
+        entry_ids = _json.loads(col.entry_ids or "[]")
+    except Exception:
+        pass
+    return {"id": col.id, "title": col.title, "desc": col.desc, "category": col.category, "entryIds": entry_ids}
+
 @app.get("/api/version")
 def get_database_version(response: Response, session: Session = Depends(get_session)):
     """Lightweight version fingerprint to notify open devices of updates without heavy queries."""
