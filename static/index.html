@@ -26,7 +26,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=455">
+    <link rel="stylesheet" href="style.css?v=456">
 </head>
 
 <body class="read-only-mode">
@@ -669,6 +669,7 @@
                                     <span class="rating-label" id="quickInfoFavoriteLabel"
                                         style="font-size: 0.65rem; margin-left: 4px;">Like</span>
                                 </div>
+                                <span id="quickInfoFranchiseBadge" class="franchise-pill" style="display:none;"></span>
                                 <a id="quickInfoSourceBtn" target="_blank" title="View Source"><i
                                         class="fas fa-external-link-alt"></i></a>
                             </div>
@@ -792,6 +793,30 @@
                                 style="font-size: 0.65rem; opacity: 0.5; display: block;">Title / Name</label>
                             <input type="text" id="quickInfoTitleInput" name="title" placeholder="Item Title"
                                 style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-weight: 600;">
+                        </div>
+
+                        <!-- Anime Franchise & Universe Settings -->
+                        <div id="quickInfoAnimeFranchiseSection" style="display:none; margin-bottom: 1rem; border-top: 1px dashed rgba(255,255,255,0.1); border-bottom: 1px dashed rgba(255,255,255,0.1); padding: 0.8rem 0;">
+                            <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--theme-accent); display: block; margin-bottom: 0.6rem; font-weight: 700;">
+                                <i class="fas fa-layer-group" style="margin-right: 0.35rem;"></i>Anime Franchise Hierarchy
+                            </span>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem;">
+                                <div class="form-group" style="flex: 1.2; min-width: 130px;">
+                                    <label for="quickInfoFranchiseInput" style="font-size: 0.65rem; opacity: 0.6; display: block;">Universe / Franchise</label>
+                                    <input type="text" id="quickInfoFranchiseInput" placeholder="e.g. Fate Series"
+                                        style="width: 100%; padding: 0.55rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                </div>
+                                <div class="form-group" style="flex: 1.2; min-width: 130px;">
+                                    <label for="quickInfoBranchInput" style="font-size: 0.65rem; opacity: 0.6; display: block;">Branch / Sub-series</label>
+                                    <input type="text" id="quickInfoBranchInput" placeholder="e.g. Fate/stay night"
+                                        style="width: 100%; padding: 0.55rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                </div>
+                                <div class="form-group" style="flex: 1; min-width: 120px;">
+                                    <label for="quickInfoRelationInput" style="font-size: 0.65rem; opacity: 0.6; display: block;">Universe Role</label>
+                                    <input type="text" id="quickInfoRelationInput" placeholder="e.g. Alternative Route"
+                                        style="width: 100%; padding: 0.55rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-base); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                </div>
+                            </div>
                         </div>
 
                         <div
@@ -1520,7 +1545,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=455"></script>
+    <script src="app.js?v=456"></script>
 
 
 

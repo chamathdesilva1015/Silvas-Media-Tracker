@@ -2607,6 +2607,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quickInfoTitle').textContent = item.title;
         document.getElementById('quickInfoType').textContent = item.type === 'Movies' ? 'Movie' : (item.type === 'TV Series' ? 'TV Series' : item.type);
 
+        // --- Franchise Badge (Anime Only) ---
+        const franchiseBadge = document.getElementById('quickInfoFranchiseBadge');
+        if (franchiseBadge) {
+            if (item.type === 'Anime' && item.anime_franchise) {
+                franchiseBadge.style.display = 'inline-flex';
+                const rolePart = item.anime_relation ? ` • ${item.anime_relation}` : '';
+                franchiseBadge.innerHTML = `<i class="fas fa-layer-group"></i> ${item.anime_franchise}${rolePart}`;
+                franchiseBadge.title = item.anime_branch ? `Branch: ${item.anime_branch}` : item.anime_franchise;
+            } else {
+                franchiseBadge.style.display = 'none';
+            }
+        }
+
         // Hide rating section for recommendations
         const ratingSection = document.querySelector('.quick-info-rating-section');
         if (ratingSection) {
@@ -2759,6 +2772,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('quickInfoRatingInput').value = rawScore || '';
             document.getElementById('quickInfoYearInput').value = item.release_year || '';
             document.getElementById('quickInfoTitleInput').value = item.title || '';
+
+            const animeFranchiseSection = document.getElementById('quickInfoAnimeFranchiseSection');
+            if (animeFranchiseSection) {
+                if (item.type === 'Anime') {
+                    animeFranchiseSection.style.display = 'block';
+                    document.getElementById('quickInfoFranchiseInput').value = item.anime_franchise || '';
+                    document.getElementById('quickInfoBranchInput').value = item.anime_branch || '';
+                    document.getElementById('quickInfoRelationInput').value = item.anime_relation || '';
+                } else {
+                    animeFranchiseSection.style.display = 'none';
+                }
+            }
             
             // Save Button
             document.getElementById('quickInfoSaveAllBtn').onclick = async () => {
@@ -2773,6 +2798,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (newYear) payload.release_year = newYear;
                 if (newTitle) payload.title = newTitle;
+
+                if (item.type === 'Anime') {
+                    const fInput = document.getElementById('quickInfoFranchiseInput');
+                    const bInput = document.getElementById('quickInfoBranchInput');
+                    const rInput = document.getElementById('quickInfoRelationInput');
+                    if (fInput) payload.anime_franchise = fInput.value.trim();
+                    if (bInput) payload.anime_branch = bInput.value.trim();
+                    if (rInput) payload.anime_relation = rInput.value.trim();
+                }
 
                 btn.disabled = true;
                 btn.textContent = 'Saving...';

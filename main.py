@@ -865,6 +865,33 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
         except (ValueError, TypeError):
             pass # Invalid year format, skip
 
+    # Anime Franchise & Universe hierarchy updates
+    franchise_changed = False
+    if "anime_franchise" in payload:
+        val = str(payload["anime_franchise"]).strip() if payload["anime_franchise"] else None
+        item.anime_franchise = val if val else None
+        franchise_changed = True
+    if "anime_branch" in payload:
+        val = str(payload["anime_branch"]).strip() if payload["anime_branch"] else None
+        item.anime_branch = val if val else None
+        franchise_changed = True
+    if "anime_relation" in payload:
+        val = str(payload["anime_relation"]).strip() if payload["anime_relation"] else None
+        item.anime_relation = val if val else None
+        franchise_changed = True
+
+    if franchise_changed:
+        # Cascade franchise tags to matching rows (Rankings + Completed)
+        target_norm = normalize_title(item.title)
+        target_year = item.release_year
+        siblings = session.exec(select(MediaItem).where(MediaItem.type == item.type)).all()
+        for sib in siblings:
+            if sib.id != item.id and normalize_title(sib.title) == target_norm and sib.release_year == target_year:
+                sib.anime_franchise = item.anime_franchise
+                sib.anime_branch = item.anime_branch
+                sib.anime_relation = item.anime_relation
+                session.add(sib)
+
     if needs_reenrich:
         # Reset metadata to force fresh match
         item.enrichment_attempts = 0

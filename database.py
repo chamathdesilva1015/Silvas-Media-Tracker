@@ -43,6 +43,11 @@ class MediaItem(SQLModel, table=True):
     letterboxd_rating: Optional[str] = Field(default=None)
     ratings_updated_at: Optional[datetime] = Field(default=None)
 
+    # Anime Franchise & Universe Hierarchy
+    anime_franchise: Optional[str] = Field(default=None, index=True) # e.g. "Fate Series"
+    anime_branch: Optional[str] = Field(default=None)               # e.g. "Fate/stay night", "Fate/strange Fake"
+    anime_relation: Optional[str] = Field(default=None)             # e.g. "Alternative Route", "Spin-off", "Main Story", "Prequel"
+
 
 class SyncState(SQLModel, table=True):
     """Tracks the last-synced Discord message ID per channel for incremental sync."""
@@ -141,7 +146,10 @@ def apply_migrations():
             ("rt_critics_score", "VARCHAR"),
             ("rt_audience_score", "VARCHAR"),
             ("letterboxd_rating", "VARCHAR"),
-            ("ratings_updated_at", "TIMESTAMP")
+            ("ratings_updated_at", "TIMESTAMP"),
+            ("anime_franchise", "VARCHAR"),
+            ("anime_branch", "VARCHAR"),
+            ("anime_relation", "VARCHAR")
         ]
         for col_name, col_type in columns:
             try:
