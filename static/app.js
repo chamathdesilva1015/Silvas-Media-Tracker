@@ -1188,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (franchiseModalTitle) franchiseModalTitle.innerText = franchiseName;
         if (franchiseModalCount) {
-            franchiseModalCount.innerText = `${franchiseItems.length} ${franchiseItems.length === 1 ? 'Installment' : 'Installments'}`;
+            franchiseModalCount.innerText = `${franchiseItems.length} Watched`;
         }
         if (franchiseTabWatchedCount) franchiseTabWatchedCount.innerText = String(franchiseItems.length);
         if (franchiseTabUnwatchedCount) franchiseTabUnwatchedCount.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -1215,13 +1215,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Group by Branch for Watched Tab
         const branchGroups = {};
         franchiseItems.forEach(item => {
-            const branch = item.anime_branch || item.title || 'Main Series';
+            const rawBranch = item.anime_branch;
+            const branch = (rawBranch && rawBranch.toLowerCase() !== 'main series')
+                ? rawBranch
+                : (franchiseItems.length > 1 ? item.title : 'Installments');
             if (!branchGroups[branch]) branchGroups[branch] = [];
             branchGroups[branch].push(item);
         });
 
         if (franchiseModalBranches) {
-            franchiseModalBranches.innerHTML = Object.keys(branchGroups).map(branchName => {
+            const branchKeys = Object.keys(branchGroups);
+            const hasMultipleBranches = branchKeys.length > 1;
+
+            franchiseModalBranches.innerHTML = branchKeys.map(branchName => {
                 const bItems = branchGroups[branchName];
                 bItems.sort((a, b) => (a.release_year || 0) - (b.release_year || 0));
 
@@ -1229,7 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cover = it.cover_url || '/static/movies_header.png';
                     const score = it.numeric_rating ? `${String(it.numeric_rating).replace('/10', '').trim()}/10` : (it.rating && !it.rating.startsWith('#') ? it.rating : '');
                     const r = rankMap[(it.title + '|' + it.type).toLowerCase()];
-                    const roleBadge = it.anime_relation ? `<span class="franchise-role-tag">${escapeFranchiseHtml(it.anime_relation)}</span>` : '';
+                    const roleBadge = (it.anime_relation && it.anime_relation.toLowerCase() !== 'main series') ? `<span class="franchise-role-tag">${escapeFranchiseHtml(it.anime_relation)}</span>` : '';
                     const rankBadge = r ? `<span style="font-weight:800; color:var(--theme-accent); font-size:0.75rem;">★ #${r}</span>` : '';
 
                     return `
@@ -1252,15 +1258,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                 }).join('');
 
+                const folderHeader = hasMultipleBranches ? `
+                    <div class="franchise-branch-header">
+                        <h3 class="franchise-branch-title">
+                            <i class="fas fa-folder-open" style="color:var(--theme-accent); font-size:0.9rem;"></i>
+                            ${escapeFranchiseHtml(branchName)}
+                        </h3>
+                        <span style="font-size:0.72rem; color:var(--text-secondary); opacity:0.6;">${bItems.length} ${bItems.length === 1 ? 'part' : 'parts'}</span>
+                    </div>
+                ` : '';
+
                 return `
                     <div class="franchise-branch-block">
-                        <div class="franchise-branch-header">
-                            <h3 class="franchise-branch-title">
-                                <i class="fas fa-folder-open" style="color:var(--theme-accent); font-size:0.9rem;"></i>
-                                ${escapeFranchiseHtml(branchName)}
-                            </h3>
-                            <span style="font-size:0.72rem; color:var(--text-secondary); opacity:0.6;">${bItems.length} ${bItems.length === 1 ? 'part' : 'parts'}</span>
-                        </div>
+                        ${folderHeader}
                         ${rowsHtml}
                     </div>
                 `;
@@ -1298,7 +1308,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (franchiseModalCount) {
                     franchiseModalCount.innerText = unwatchedCount > 0 
                         ? `${franchiseItems.length} Watched • ${unwatchedCount} In-Universe`
-                        : `${franchiseItems.length} Watched • All Caught Up!`;
+                        : `${franchiseItems.length} Watched`;
                 }
 
                 renderUnwatchedSection(currentFranchiseSession.unwatched);
@@ -2970,7 +2980,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (franchiseBadge) {
             if (item.type === 'Anime' && item.anime_franchise) {
                 franchiseBadge.style.display = 'inline-flex';
-                const rolePart = item.anime_relation ? ` • ${item.anime_relation}` : '';
+                const rolePart = (item.anime_relation && item.anime_relation.toLowerCase() !== 'main series') ? ` • ${item.anime_relation}` : '';
                 franchiseBadge.innerHTML = `<i class="fas fa-layer-group"></i> ${item.anime_franchise}${rolePart}`;
                 franchiseBadge.title = item.anime_branch ? `Branch: ${item.anime_branch}` : item.anime_franchise;
             } else {
@@ -3845,7 +3855,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div class="podium-badge">#${rankNum}</div>
                                 ${posterHtml}
                                 <div class="podium-title" title="${mainTitle}">${mainTitle}</div>
-                                ${podiumItem.director ? `<div class="podium-director">${podiumItem.director}</div>` : ''}
+                                <div class="podium-director">${podiumItem.director ? escapeFranchiseHtml(podiumItem.director) : '&nbsp;'}</div>
                             </div>
                         `;
                     };
@@ -3911,7 +3921,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="ranking-season-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin:5px 0 3px 0;">
                                 ${franchiseSiblings.map(s => {
                                     const sScore = s.numeric_rating ? `${String(s.numeric_rating).replace('/10', '').trim()}/10` : (s.rating && !s.rating.startsWith('#') ? s.rating : '');
-                                    const sBadge = s.anime_relation ? `<span class="franchise-role-tag" style="font-size:0.6rem; padding:1px 4px; margin-right:4px;">${s.anime_relation}</span>` : '';
+                                    const sBadge = (s.anime_relation && s.anime_relation.toLowerCase() !== 'main series') ? `<span class="franchise-role-tag" style="font-size:0.6rem; padding:1px 4px; margin-right:4px;">${escapeFranchiseHtml(s.anime_relation)}</span>` : '';
                                     return `
                                         <span class="ranking-season-chip" data-season-id="${s.id}" title="Click to view details for ${s.title}" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; padding:0.18rem 0.5rem; border-radius:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0e0e0; transition:all 0.15s ease;">
                                             ${sBadge}

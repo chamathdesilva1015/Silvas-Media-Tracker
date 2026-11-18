@@ -1083,6 +1083,34 @@ def get_anime_relations(mal_id: Optional[int] = None, title: Optional[str] = Non
     return results
 
 
+def check_anime_franchise_eligibility(mal_id: Optional[int] = None, title: Optional[str] = None) -> Optional[dict]:
+    """
+    Dynamically checks if an anime has sequels, prequels, spin-offs, or side stories.
+    If it has legitimate animated installments (> 0 anime relations), returns franchise metadata.
+    If it is a self-contained story with 0 anime relations (e.g. Orb), returns None.
+    """
+    try:
+        rels = get_anime_relations(mal_id=mal_id, title=title)
+        legit_rels = [
+            r for r in rels
+            if r.get("relation") in ("Sequel", "Prequel", "Spin-off", "Alternative Route", "Side Story", "Parent Story")
+            or (r.get("format") in ("TV", "MOVIE", "ONA", "OVA") and (r.get("episodes") or 1) >= 1)
+        ]
+        if legit_rels:
+            branch = guess_anime_branch(title or (legit_rels[0].get("title") or ""))
+            franchise_name = branch
+            franchise_name = re.sub(r"\s*(?:Series|Franchise|Universe|Verse)\s*$", "", franchise_name, flags=re.IGNORECASE).strip()
+            return {
+                "has_franchise": True,
+                "franchise_name": franchise_name or title,
+                "branch_name": branch,
+                "relations_count": len(legit_rels)
+            }
+    except Exception as e:
+        print(f"Error checking anime franchise eligibility for {title}: {e}")
+    return None
+
+
 def scout_franchise_universe(franchise_name: str, tracked_items: List[dict]) -> dict:
     """
     Scouts the entire franchise universe:

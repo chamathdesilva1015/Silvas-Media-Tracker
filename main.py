@@ -434,6 +434,28 @@ def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Se
                 item.numeric_rating = item.rating
             elif item.numeric_rating and not item.rating:
                 item.rating = item.numeric_rating
+
+    # Dynamic anime franchise classification: only classify if multi-entry or seasons/spinoffs exist
+    if item.type == "Anime" and not item.anime_franchise:
+        try:
+            from jikan_helper import check_anime_franchise_eligibility, guess_anime_branch
+            # 1. First check if another anime in DB belongs to same base franchise
+            existing_animes = session.exec(select(MediaItem).where(MediaItem.type == "Anime")).all()
+            base_branch = guess_anime_branch(item.title)
+            matched_franchise = None
+            for ex in existing_animes:
+                if ex.anime_franchise and (ex.anime_franchise.lower() == base_branch.lower() or ex.title.lower().startswith(base_branch.lower())):
+                    matched_franchise = ex.anime_franchise
+                    break
+            if matched_franchise:
+                item.anime_franchise = matched_franchise
+            else:
+                # 2. Check external relations dynamically
+                elig = check_anime_franchise_eligibility(item.tmdb_id, item.title)
+                if elig and elig.get("has_franchise"):
+                    item.anime_franchise = elig.get("franchise_name")
+        except Exception as e:
+            print(f"Error checking dynamic anime franchise: {e}")
         
     session.add(item)
     session.commit()
