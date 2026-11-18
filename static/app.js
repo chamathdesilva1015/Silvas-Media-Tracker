@@ -3935,7 +3935,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const isFranchise = (podiumItem.type === 'Anime' && podiumItem.anime_franchise);
                         const mainTitle = isFranchise ? podiumItem.anime_franchise : podiumItem.title;
-                        const subTitle = isFranchise ? `<div class="podium-sub" style="font-size:0.75rem; opacity:0.75; font-weight:500; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${podiumItem.title}</div>` : '';
+
+                        let subTitle = '';
+                        if (isFranchise) {
+                            const franchiseSiblings = allMedia.filter(m => m.type === 'Anime' && m.anime_franchise === podiumItem.anime_franchise);
+                            const topScore = podiumItem.numeric_rating ? `${String(podiumItem.numeric_rating).replace('/10', '').trim()}/10` : '';
+                            const otherCount = franchiseSiblings.length > 1 ? ` • +${franchiseSiblings.length - 1} more` : '';
+                            subTitle = `<div class="podium-sub" style="font-size:0.74rem; opacity:0.85; font-weight:600; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-secondary);" title="${podiumItem.title}">
+                                ${podiumItem.title}${topScore ? ` <span style="color:var(--theme-accent); font-weight:700;">(${topScore})</span>` : ''}${otherCount}
+                            </div>`;
+                        } else {
+                            const itemScore = podiumItem.numeric_rating ? `${String(podiumItem.numeric_rating).replace('/10', '').trim()}/10` : '';
+                            if (itemScore) {
+                                subTitle = `<div class="podium-sub" style="font-size:0.74rem; opacity:0.85; font-weight:700; margin-top:3px; color:var(--theme-accent);">${itemScore}</div>`;
+                            }
+                        }
 
                         return `
                             <div class="podium-item podium-rank-${rankPos}" data-item-id="${podiumItem.id}">
@@ -3961,7 +3975,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         const node = podiumContainer.children[idx];
                         node.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            window.openQuickInfo(it);
+                            if (it.type === 'Anime' && it.anime_franchise) {
+                                const fSiblings = allMedia.filter(m => m.type === 'Anime' && m.anime_franchise === it.anime_franchise);
+                                openFranchiseModal(it.anime_franchise, fSiblings);
+                            } else {
+                                window.openQuickInfo(it);
+                            }
                         });
                     });
 
@@ -3993,13 +4012,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const isFranchise = (item.type === 'Anime' && item.anime_franchise);
                     const mainTitle = isFranchise ? item.anime_franchise : item.title;
-                    const subLabel = isFranchise ? `<span class="franchise-role-tag" style="margin-left:6px; font-size:0.68rem; font-weight:600;">${item.title}</span>` : '';
+
+                    // Build season rating display
+                    let seasonChipsHtml = '';
+                    if (isFranchise) {
+                        const franchiseSiblings = allMedia.filter(m => m.type === 'Anime' && m.anime_franchise === item.anime_franchise);
+                        franchiseSiblings.sort((a, b) => (a.release_year || 0) - (b.release_year || 0));
+
+                        seasonChipsHtml = `
+                            <div class="ranking-season-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin:5px 0 3px 0;">
+                                ${franchiseSiblings.map(s => {
+                                    const sScore = s.numeric_rating ? `${String(s.numeric_rating).replace('/10', '').trim()}/10` : (s.rating && !s.rating.startsWith('#') ? s.rating : '');
+                                    const sBadge = s.anime_relation ? `<span class="franchise-role-tag" style="font-size:0.6rem; padding:1px 4px; margin-right:4px;">${s.anime_relation}</span>` : '';
+                                    return `
+                                        <span class="ranking-season-chip" data-season-id="${s.id}" title="Click to view details for ${s.title}" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; padding:0.18rem 0.5rem; border-radius:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0e0e0; transition:all 0.15s ease;">
+                                            ${sBadge}
+                                            <span style="font-weight:600;">${s.title}</span>
+                                            ${sScore ? `<strong style="color:var(--theme-accent); font-weight:700; margin-left:3px;">${sScore}</strong>` : ''}
+                                        </span>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `;
+                    } else {
+                        const itemScore = item.numeric_rating ? `${String(item.numeric_rating).replace('/10', '').trim()}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
+                        if (itemScore) {
+                            seasonChipsHtml = `
+                                <div style="margin:3px 0 2px 0;">
+                                    <span class="ranking-season-chip" style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; padding:0.15rem 0.45rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:var(--text-secondary);">
+                                        Rating: <strong style="color:var(--theme-accent); font-weight:700;">${itemScore}</strong>
+                                    </span>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    const franchisePill = isFranchise ? `<span class="franchise-pill" style="font-size:0.65rem; padding:0.15rem 0.5rem; margin-left:8px; cursor:pointer;" title="Open Franchise Universe"><i class="fas fa-layer-group"></i> Universe</span>` : '';
 
                     row.innerHTML = `
                         <div class="ranking-row-rank">#${rankNum}</div>
                         ${posterHtml}
                         <div class="ranking-row-info">
-                            <div class="ranking-row-title ${canClickReview ? 'clickable-review-trigger' : ''}" title="${mainTitle}">${mainTitle}${subLabel} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</div>
+                            <div class="ranking-row-title ${canClickReview ? 'clickable-review-trigger' : ''}" title="${mainTitle}">
+                                ${mainTitle}${franchisePill} ${item.release_year && !isFranchise ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}
+                            </div>
+                            ${seasonChipsHtml}
                             ${metaHtml}
                             ${reviewSnippet}
                         </div>
@@ -4008,9 +4065,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
 
+                    // Wire season chip click to open individual season quick info
+                    row.querySelectorAll('.ranking-season-chip[data-season-id]').forEach(chip => {
+                        chip.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const sId = parseInt(chip.getAttribute('data-season-id'), 10);
+                            const sFound = allMedia.find(m => m.id === sId);
+                            if (sFound) window.openQuickInfo(sFound);
+                        });
+                    });
+
                     row.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        window.openQuickInfo(item);
+                        if (isFranchise) {
+                            const fSiblings = allMedia.filter(m => m.type === 'Anime' && m.anime_franchise === item.anime_franchise);
+                            openFranchiseModal(item.anime_franchise, fSiblings);
+                        } else {
+                            window.openQuickInfo(item);
+                        }
                     });
 
                     const actionsDiv = row.querySelector('.ranking-row-actions');
@@ -4870,10 +4942,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (s && !s.startsWith('#')) return formatScore(s);
             return null;
         })();
+        const isFranchise = it.type === 'Anime' && it.anime_franchise;
+        const displayTitle = isFranchise ? `<span style="color:var(--theme-accent); font-weight:700;">[${it.anime_franchise}]</span> ${it.title}` : it.title;
         return `
             <div class="ranking-search-item">
                 <div class="ranking-search-item-info" onclick='window.openQuickInfo(${JSON.stringify(it)})' title="View profile" style="cursor:pointer;flex:1;">
-                    <span class="ranking-search-item-title">${it.title}</span>
+                    <span class="ranking-search-item-title">${displayTitle}</span>
                     <span class="ranking-search-item-meta">${it.release_year || 'Unknown Year'}${scoreStr ? ' &bull; ' + scoreStr + '/10' : ''}</span>
                 </div>
                 <div class="ranking-search-item-plus" onclick='window.addToRankings(${itemJson})' title="Add to rankings">+</div>
@@ -4969,19 +5043,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderRankingList = () => {
         if (!rankingList) return;
         
-        rankingList.innerHTML = currentRankedItems.map((item, index) => `
-            <div class="ranking-item" data-id="${item.id}">
-                <div class="ranking-item-handle">⠿</div>
-                <span class="ranking-number">#${index + 1}</span>
-                <div class="ranking-item-info">
-                    <span class="ranking-item-title">${item.title}</span>
-                    <span class="ranking-item-meta">${item.release_year || 'Unknown Year'} • ${currentCategory.replace(/s$/, '')}</span>
+        rankingList.innerHTML = currentRankedItems.map((item, index) => {
+            const isFranchise = item.type === 'Anime' && item.anime_franchise;
+            const displayTitle = isFranchise ? item.anime_franchise : item.title;
+            const subRoute = isFranchise ? `<span style="font-size:0.75rem; opacity:0.75; font-weight:500; margin-left:6px; color:var(--text-secondary);">(${item.title})</span>` : '';
+            const scoreStr = item.numeric_rating ? `${String(item.numeric_rating).replace('/10', '').trim()}/10` : '';
+
+            return `
+                <div class="ranking-item" data-id="${item.id}">
+                    <div class="ranking-item-handle">⠿</div>
+                    <span class="ranking-number">#${index + 1}</span>
+                    <div class="ranking-item-info">
+                        <span class="ranking-item-title">${displayTitle}${subRoute}</span>
+                        <span class="ranking-item-meta">${item.release_year || 'Unknown Year'} • ${currentCategory.replace(/s$/, '')}${scoreStr ? ' • <strong style="color:var(--theme-accent);">' + scoreStr + '</strong>' : ''}</span>
+                    </div>
+                    <div class="ranking-item-remove" title="Remove from Rankings" onclick="window.removeFromRankings(${item.id})">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </div>
                 </div>
-                <div class="ranking-item-remove" title="Remove from Rankings" onclick="window.removeFromRankings(${item.id})">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         if (sortableInstance) sortableInstance.destroy();
         sortableInstance = new Sortable(rankingList, {
