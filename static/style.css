@@ -7724,3 +7724,112 @@ body.modal-open .bottom-nav {
     gap: 0.4rem;
     flex-wrap: wrap;
 }
+
+/* Franchise Modal Tab Switcher & Progress Tracker */
+.franchise-tab-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.8rem;
+    overflow-x: auto;
+}
+
+.franchise-tab-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    padding: 0.45rem 1rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.franchise-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #fff;
+}
+
+.franchise-tab-btn.active {
+    background: var(--theme-accent);
+    color: #000;
+    border-color: var(--theme-accent);
+    font-weight: 700;
+}
+
+/* Unwatched Cards in Franchise Scout */
+.franchise-unwatched-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.franchise-unwatched-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(3px);
+}
+
+.franchise-unwatched-thumb {
+    width: 44px;
+    height: 62px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.franchise-unwatched-pill {
+    font-size: 0.68rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.franchise-quick-add-btn {
+    background: rgba(var(--theme-accent-rgb, 147, 112, 219), 0.18);
+    border: 1px solid rgba(var(--theme-accent-rgb, 147, 112, 219), 0.4);
+    color: var(--theme-accent);
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+}
+
+.franchise-quick-add-btn:hover {
+    background: var(--theme-accent);
+    color: #000;
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(var(--theme-accent-rgb, 147, 112, 219), 0.35);
+}
+
+.franchise-scout-loading, .franchise-scout-empty {
+    padding: 2.5rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+}
+

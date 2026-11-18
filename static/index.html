@@ -26,7 +26,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=457">
+    <link rel="stylesheet" href="style.css?v=458">
 </head>
 
 <body class="read-only-mode">
@@ -1544,9 +1544,86 @@
                 <span class="close-btn" id="closeFranchiseModalBtn" style="margin: 0; font-size: 2rem; cursor: pointer; color: var(--text-secondary);">&times;</span>
             </div>
 
+            <!-- Franchise Tab Navigation -->
+            <div class="franchise-tab-bar">
+                <button type="button" class="franchise-tab-btn active" id="franchiseTabWatched" data-tab="watched">
+                    <i class="fas fa-check-circle"></i> Watched (<span id="franchiseTabWatchedCount">0</span>)
+                </button>
+                <button type="button" class="franchise-tab-btn" id="franchiseTabUnwatched" data-tab="unwatched">
+                    <i class="fas fa-compass"></i> What to Watch Next (<span id="franchiseTabUnwatchedCount">...</span>)
+                </button>
+                <button type="button" class="franchise-tab-btn" id="franchiseTabAll" data-tab="all">
+                    <i class="fas fa-stream"></i> Full Universe (<span id="franchiseTabAllCount">...</span>)
+                </button>
+            </div>
+
+            <!-- Tab 1: Watched Branches -->
             <div id="franchiseModalBranches" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 6px;">
                 <!-- Populated via JS -->
             </div>
+
+            <!-- Tab 2: What to Watch Next (Scouted) -->
+            <div id="franchiseModalUnwatched" style="flex: 1; overflow-y: auto; display: none; flex-direction: column; gap: 12px; padding-right: 6px;">
+                <!-- Populated via JS -->
+            </div>
+
+            <!-- Tab 3: Full Chronological Universe -->
+            <div id="franchiseModalAll" style="flex: 1; overflow-y: auto; display: none; flex-direction: column; gap: 12px; padding-right: 6px;">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Anime Franchise Quick Rate & Add Modal -->
+    <div id="franchiseQuickAddModal" class="modal" style="z-index: 10002;">
+        <div class="modal-content" style="max-width: 480px; padding: 2rem; background: rgba(18, 18, 24, 0.98); backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 24px; box-shadow: 0 35px 70px rgba(0,0,0,0.8);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="franchise-pill"><i class="fas fa-plus-circle"></i> Mark as Watched</span>
+                </div>
+                <span class="close-btn" id="closeFranchiseQuickAddBtn" style="margin: 0; font-size: 1.8rem; cursor: pointer; color: var(--text-secondary);">&times;</span>
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.2rem; background: rgba(255, 255, 255, 0.03); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06);">
+                <img id="quickAddPoster" src="" style="width: 52px; height: 74px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" alt="Poster">
+                <div style="flex: 1; min-width: 0;">
+                    <h4 id="quickAddTitle" style="color: #fff; font-size: 1rem; margin: 0 0 0.2rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></h4>
+                    <div id="quickAddMeta" style="font-size: 0.75rem; color: var(--text-secondary);"></div>
+                </div>
+            </div>
+
+            <form id="franchiseQuickAddForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 0.3rem;">Your Rating (1 - 10)</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="number" id="quickAddRatingInput" min="1" max="10" step="0.5" value="8.0" required style="width: 90px; text-align: center; font-size: 1.1rem; font-weight: 700; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #fff; padding: 0.5rem;">
+                        <span style="color: var(--text-secondary); font-size: 1rem; font-weight: 600;">/ 10</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 0.3rem;">Branch / Sub-Series</label>
+                        <input type="text" id="quickAddBranchInput" style="width: 100%; font-size: 0.85rem; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #fff; padding: 0.5rem 0.7rem;">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 0.3rem;">Role / Relation</label>
+                        <input type="text" id="quickAddRelationInput" style="width: 100%; font-size: 0.85rem; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #fff; padding: 0.5rem 0.7rem;">
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.2rem;">
+                    <input type="checkbox" id="quickAddLikeCheckbox" style="accent-color: #ff4757; width: 16px; height: 16px;">
+                    <label for="quickAddLikeCheckbox" style="font-size: 0.85rem; color: #fff; cursor: pointer;">Add to Favorites (♥)</label>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.5rem;">
+                    <button type="button" id="quickAddCancelBtn" class="btn" style="background: rgba(255, 255, 255, 0.08); color: #ccc;">Cancel</button>
+                    <button type="submit" id="quickAddSubmitBtn" class="btn btn-primary" style="font-weight: 700;"><i class="fas fa-check"></i> Save to Tracker</button>
+                </div>
+            </form>
+        </div>
+    </div>
         </div>
     </div>
 
@@ -1567,7 +1644,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=457"></script>
+    <script src="app.js?v=458"></script>
 
 
 

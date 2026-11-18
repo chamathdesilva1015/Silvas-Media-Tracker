@@ -952,3 +952,237 @@ def get_anilist_discover(media_type: str = "anime", year_min: Optional[int] = No
             "overview": m.get("description", "")
         })
     return results
+
+
+def guess_anime_branch(title: str) -> str:
+    """
+    Infers the sub-branch name from an anime title
+    e.g. 'Fate/stay night' from 'Fate/stay night [Heaven\'s Feel]' or 'Fate/stay night: UBW'
+    e.g. 'Fate/strange Fake' from 'Fate/strange Fake -Whispers of Dawn-'
+    e.g. 'Attack on Titan' from 'Attack on Titan Season 3 Part 2'
+    """
+    if not title:
+        return "Main"
+    t = title
+    for sep in [":", " [", " - ", " – ", " -"]:
+        if sep in t:
+            cand = t.split(sep)[0].strip()
+            if len(cand) >= 4:
+                t = cand
+                break
+    t = re.sub(r"\s*(?:Season\s*\d+|\d+(?:st|nd|rd|th)\s*Season|Part\s*\d+|The\s*Final\s*Season|\(Zoku-hen\)).*$", "", t, flags=re.IGNORECASE).strip()
+    return t or title
+
+
+def get_anime_relations(mal_id: Optional[int] = None, title: Optional[str] = None) -> List[dict]:
+    """
+    Fetches direct anime relations (prequels, sequels, spin-offs, alternative routes)
+    from AniList GraphQL. Excludes print media (MANGA, NOVEL, ONE_SHOT).
+    """
+    query = """
+    query ($id: Int, $search: String) {
+      Media(idMal: $id, search: $search, type: ANIME) {
+        id
+        idMal
+        title { userPreferred english romaji }
+        relations {
+          edges {
+            relationType(version: 2)
+            node {
+              id
+              idMal
+              title { userPreferred english romaji }
+              format
+              seasonYear
+              episodes
+              status
+              coverImage { large extraLarge }
+              studios(isMain: true) { nodes { name } }
+            }
+          }
+        }
+      }
+    }
+    """
+    variables = {}
+    if mal_id:
+        variables["id"] = int(mal_id)
+    elif title:
+        variables["search"] = title
+    else:
+        return []
+
+    res = _anilist_post(query, variables)
+    if not res or not res.get("data", {}).get("Media"):
+        return []
+
+    edges = res["data"]["Media"].get("relations", {}).get("edges", [])
+    results = []
+    rel_map = {
+        "PREQUEL": "Prequel",
+        "SEQUEL": "Sequel",
+        "SPIN_OFF": "Spin-off",
+        "ALTERNATIVE": "Alternative Route",
+        "SIDE_STORY": "Side Story",
+        "PARENT": "Parent Story",
+        "SUMMARY": "Summary",
+        "CHARACTER": "Spin-off"
+    }
+
+    for edge in edges:
+        n = edge.get("node")
+        if not n:
+            continue
+        fmt = n.get("format")
+        if fmt in ("MANGA", "NOVEL", "ONE_SHOT"):
+            continue
+
+        raw_rel = edge.get("relationType", "OTHER")
+        friendly_rel = rel_map.get(raw_rel, raw_rel.replace("_", " ").title())
+        t_obj = n.get("title") or {}
+        entry_title = t_obj.get("english") or t_obj.get("userPreferred") or t_obj.get("romaji") or "Untitled"
+        studios = [s["name"] for s in (n.get("studios") or {}).get("nodes", []) if s.get("name")]
+        cover = (n.get("coverImage") or {}).get("extraLarge") or (n.get("coverImage") or {}).get("large")
+
+        results.append({
+            "mal_id": n.get("idMal"),
+            "anilist_id": n.get("id"),
+            "title": entry_title,
+            "romaji_title": t_obj.get("romaji"),
+            "relation": friendly_rel,
+            "raw_relation": raw_rel,
+            "format": fmt,
+            "year": n.get("seasonYear"),
+            "episodes": n.get("episodes"),
+            "status": n.get("status"),
+            "cover_url": cover,
+            "studio": studios[0] if studios else None,
+            "suggested_branch": guess_anime_branch(entry_title)
+        })
+
+    return results
+
+
+def scout_franchise_universe(franchise_name: str, tracked_items: List[dict]) -> dict:
+    """
+    Scouts the entire franchise universe:
+    1. Collects AniList direct relations for all tracked anime in this franchise.
+    2. Searches popular franchise titles via AniList keyword discovery.
+    3. Partitions into Watched vs Unwatched (What to Watch Next).
+    """
+    tracked_ids = set()
+    tracked_titles = set()
+    for it in tracked_items:
+        t_id = it.get("tmdb_id")
+        if t_id:
+            try:
+                tracked_ids.add(int(t_id))
+            except (ValueError, TypeError):
+                pass
+        t = it.get("title")
+        if t:
+            tracked_titles.add(t.strip().lower())
+
+    discovered = {}
+
+    # 1. Fetch relations for each tracked anime item
+    for it in tracked_items:
+        t_id = it.get("tmdb_id")
+        t_title = it.get("title")
+        try:
+            rels = get_anime_relations(mal_id=t_id, title=t_title if not t_id else None)
+            for r in rels:
+                key = r.get("mal_id") or r.get("anilist_id")
+                if key and key not in discovered:
+                    discovered[key] = r
+        except Exception as e:
+            print(f"Error getting relations for {t_title}: {e}")
+
+    # 2. Franchise keyword search (e.g. 'Fate' from 'Fate Series')
+    clean_franchise = re.sub(r"\s*(?:Series|Franchise|Universe|Verse)\s*$", "", franchise_name, flags=re.IGNORECASE).strip()
+    if clean_franchise:
+        search_query = """
+        query ($search: String) {
+          Page(page: 1, perPage: 25) {
+            media(search: $search, type: ANIME, sort: POPULARITY_DESC) {
+              id
+              idMal
+              title { userPreferred english romaji }
+              format
+              seasonYear
+              episodes
+              status
+              coverImage { large extraLarge }
+              studios(isMain: true) { nodes { name } }
+            }
+          }
+        }
+        """
+        try:
+            res = _anilist_post(search_query, {"search": clean_franchise})
+            if res and "data" in res and "Page" in res["data"]:
+                media_list = res["data"]["Page"].get("media", [])
+                for n in media_list:
+                    fmt = n.get("format")
+                    if fmt in ("MANGA", "NOVEL", "ONE_SHOT"):
+                        continue
+                    key = n.get("idMal") or n.get("id")
+                    if not key or key in discovered:
+                        continue
+                    t_obj = n.get("title") or {}
+                    e_title = t_obj.get("english") or t_obj.get("userPreferred") or t_obj.get("romaji") or ""
+                    r_title = t_obj.get("romaji") or ""
+                    
+                    # Ensure title is legitimately part of this franchise
+                    if clean_franchise.lower() not in e_title.lower() and clean_franchise.lower() not in r_title.lower():
+                        continue
+
+                    studios = [s["name"] for s in (n.get("studios") or {}).get("nodes", []) if s.get("name")]
+                    cover = (n.get("coverImage") or {}).get("extraLarge") or (n.get("coverImage") or {}).get("large")
+                    
+                    # Determine relation tag based on format
+                    rel_tag = "In-Universe"
+                    if fmt == "MOVIE":
+                        rel_tag = "Movie"
+                    elif fmt in ("OVA", "SPECIAL", "ONA"):
+                        rel_tag = "Special / OVA"
+
+                    discovered[key] = {
+                        "mal_id": n.get("idMal"),
+                        "anilist_id": n.get("id"),
+                        "title": e_title,
+                        "romaji_title": r_title,
+                        "relation": rel_tag,
+                        "raw_relation": "IN_UNIVERSE",
+                        "format": fmt,
+                        "year": n.get("seasonYear"),
+                        "episodes": n.get("episodes"),
+                        "status": n.get("status"),
+                        "cover_url": cover,
+                        "studio": studios[0] if studios else None,
+                        "suggested_branch": guess_anime_branch(e_title)
+                    }
+        except Exception as e:
+            print(f"Error in franchise keyword search: {e}")
+
+    # 3. Partition into Unwatched
+    unwatched = []
+    for item in discovered.values():
+        m_id = item.get("mal_id")
+        if m_id and m_id in tracked_ids:
+            continue
+        title_norm = (item.get("title") or "").strip().lower()
+        romaji_norm = (item.get("romaji_title") or "").strip().lower()
+        if title_norm in tracked_titles or (romaji_norm and romaji_norm in tracked_titles):
+            continue
+        unwatched.append(item)
+
+    # Sort unwatched by release year (known release years first, then TBA)
+    unwatched.sort(key=lambda x: (x["year"] is None, x["year"] or 0))
+
+    return {
+        "franchise": franchise_name,
+        "watched": tracked_items,
+        "unwatched": unwatched
+    }
+

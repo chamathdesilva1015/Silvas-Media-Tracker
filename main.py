@@ -6,7 +6,7 @@ import hashlib
 import hmac
 from dotenv import load_dotenv
 load_dotenv() # Load env vars as early as possible
-from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks, Query
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -124,10 +124,13 @@ async def no_cache_html_middleware(request: Request, call_next):
 
 # Global system version tracking for cross-tab and cross-device live updates
 SERVER_DATA_VERSION = int(time.time() * 1000)
+_FRANCHISE_SCOUT_CACHE = {}
+_FRANCHISE_CACHE_TTL = 300  # 5 minutes
 
 def bump_data_version(session: Session = None):
-    global SERVER_DATA_VERSION
+    global SERVER_DATA_VERSION, _FRANCHISE_SCOUT_CACHE
     SERVER_DATA_VERSION = int(time.time() * 1000)
+    _FRANCHISE_SCOUT_CACHE.clear()
     if session:
         try:
             row = session.exec(select(SyncState).where(SyncState.channel_id == "global_data_version")).first()
@@ -2474,6 +2477,58 @@ def update_collection(col_id: int, payload: dict, session: Session = Depends(get
     except Exception:
         pass
     return {"id": col.id, "title": col.title, "desc": col.desc, "category": col.category, "entryIds": entry_ids}
+
+@app.get("/api/anime/franchise-scout")
+def get_anime_franchise_scout(
+    franchise: str = Query(..., description="Anime franchise name"),
+    session: Session = Depends(get_session)
+):
+    """
+    Scouts the anime franchise universe:
+    Returns watched installments and unwatched in-universe titles (sequels, prequels, spin-offs, movies).
+    """
+    franchise_name = franchise.strip()
+    if not franchise_name:
+        raise HTTPException(status_code=400, detail="Franchise name is required")
+
+    now = time.time()
+    cache_entry = _FRANCHISE_SCOUT_CACHE.get(franchise_name)
+    if cache_entry and (now - cache_entry["time"] < _FRANCHISE_CACHE_TTL):
+        return cache_entry["data"]
+
+    # Fetch tracked items in DB belonging to this franchise
+    tracked_items = session.exec(
+        select(MediaItem).where(
+            MediaItem.type == "Anime",
+            MediaItem.anime_franchise == franchise_name
+        )
+    ).all()
+
+    tracked_dicts = []
+    for it in tracked_items:
+        tracked_dicts.append({
+            "id": it.id,
+            "title": it.title,
+            "release_year": it.release_year,
+            "rating": it.rating,
+            "numeric_rating": it.numeric_rating,
+            "cover_url": it.cover_url,
+            "director": it.director,
+            "tmdb_id": it.tmdb_id,
+            "anime_franchise": it.anime_franchise,
+            "anime_branch": it.anime_branch,
+            "anime_relation": it.anime_relation,
+            "is_liked": it.is_liked
+        })
+
+    from jikan_helper import scout_franchise_universe
+    result = scout_franchise_universe(franchise_name, tracked_dicts)
+
+    _FRANCHISE_SCOUT_CACHE[franchise_name] = {
+        "time": now,
+        "data": result
+    }
+    return result
 
 @app.get("/api/version")
 def get_database_version(response: Response, session: Session = Depends(get_session)):

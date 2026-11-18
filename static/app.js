@@ -983,13 +983,320 @@ document.addEventListener('DOMContentLoaded', () => {
     const franchiseModalCount = document.getElementById('franchiseModalCount');
     const franchiseModalMeta = document.getElementById('franchiseModalMeta');
     const franchiseModalBranches = document.getElementById('franchiseModalBranches');
+    const franchiseModalUnwatched = document.getElementById('franchiseModalUnwatched');
+    const franchiseModalAll = document.getElementById('franchiseModalAll');
+
+    const franchiseTabWatched = document.getElementById('franchiseTabWatched');
+    const franchiseTabUnwatched = document.getElementById('franchiseTabUnwatched');
+    const franchiseTabAll = document.getElementById('franchiseTabAll');
+    const franchiseTabWatchedCount = document.getElementById('franchiseTabWatchedCount');
+    const franchiseTabUnwatchedCount = document.getElementById('franchiseTabUnwatchedCount');
+    const franchiseTabAllCount = document.getElementById('franchiseTabAllCount');
+
+    // Quick Add Modal Elements
+    const franchiseQuickAddModal = document.getElementById('franchiseQuickAddModal');
+    const closeFranchiseQuickAddBtn = document.getElementById('closeFranchiseQuickAddBtn');
+    const quickAddCancelBtn = document.getElementById('quickAddCancelBtn');
+    const franchiseQuickAddForm = document.getElementById('franchiseQuickAddForm');
+    const quickAddPoster = document.getElementById('quickAddPoster');
+    const quickAddTitle = document.getElementById('quickAddTitle');
+    const quickAddMeta = document.getElementById('quickAddMeta');
+    const quickAddRatingInput = document.getElementById('quickAddRatingInput');
+    const quickAddBranchInput = document.getElementById('quickAddBranchInput');
+    const quickAddRelationInput = document.getElementById('quickAddRelationInput');
+    const quickAddLikeCheckbox = document.getElementById('quickAddLikeCheckbox');
+    const quickAddSubmitBtn = document.getElementById('quickAddSubmitBtn');
+
+    let currentFranchiseSession = {
+        name: '',
+        watched: [],
+        unwatched: []
+    };
+    let pendingQuickAddItem = null;
+
+    const escapeFranchiseHtml = (str) => {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
+    // Tab switching handler
+    const setFranchiseTab = (tabName) => {
+        [franchiseTabWatched, franchiseTabUnwatched, franchiseTabAll].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        if (franchiseModalBranches) franchiseModalBranches.style.display = 'none';
+        if (franchiseModalUnwatched) franchiseModalUnwatched.style.display = 'none';
+        if (franchiseModalAll) franchiseModalAll.style.display = 'none';
+
+        if (tabName === 'unwatched') {
+            if (franchiseTabUnwatched) franchiseTabUnwatched.classList.add('active');
+            if (franchiseModalUnwatched) franchiseModalUnwatched.style.display = 'flex';
+        } else if (tabName === 'all') {
+            if (franchiseTabAll) franchiseTabAll.classList.add('active');
+            if (franchiseModalAll) franchiseModalAll.style.display = 'flex';
+        } else {
+            if (franchiseTabWatched) franchiseTabWatched.classList.add('active');
+            if (franchiseModalBranches) franchiseModalBranches.style.display = 'flex';
+        }
+    };
+
+    if (franchiseTabWatched) franchiseTabWatched.addEventListener('click', () => setFranchiseTab('watched'));
+    if (franchiseTabUnwatched) franchiseTabUnwatched.addEventListener('click', () => setFranchiseTab('unwatched'));
+    if (franchiseTabAll) franchiseTabAll.addEventListener('click', () => setFranchiseTab('all'));
+
+    const openFranchiseQuickAdd = (item) => {
+        if (!computeCanEdit()) {
+            alert('You need admin access to add new franchise installments to your tracker.');
+            return;
+        }
+        pendingQuickAddItem = item;
+        if (quickAddPoster) {
+            quickAddPoster.src = item.cover_url || '/static/movies_header.png';
+            quickAddPoster.style.display = 'block';
+        }
+        if (quickAddTitle) quickAddTitle.innerText = item.title || 'Untitled';
+        if (quickAddMeta) {
+            const parts = [];
+            if (item.year) parts.push(item.year);
+            if (item.format) parts.push(item.format);
+            if (item.studio) parts.push(item.studio);
+            quickAddMeta.innerText = parts.join(' • ');
+        }
+        if (quickAddRatingInput) quickAddRatingInput.value = '8.0';
+        if (quickAddBranchInput) quickAddBranchInput.value = item.suggested_branch || currentFranchiseSession.name;
+        if (quickAddRelationInput) quickAddRelationInput.value = item.relation || 'Sequel';
+        if (quickAddLikeCheckbox) quickAddLikeCheckbox.checked = false;
+
+        if (franchiseQuickAddModal) franchiseQuickAddModal.classList.add('show');
+    };
+
+    const closeFranchiseQuickAdd = () => {
+        if (franchiseQuickAddModal) franchiseQuickAddModal.classList.remove('show');
+        pendingQuickAddItem = null;
+    };
+
+    if (closeFranchiseQuickAddBtn) closeFranchiseQuickAddBtn.addEventListener('click', closeFranchiseQuickAdd);
+    if (quickAddCancelBtn) quickAddCancelBtn.addEventListener('click', closeFranchiseQuickAdd);
+
+    if (franchiseQuickAddForm) {
+        franchiseQuickAddForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!pendingQuickAddItem) return;
+
+            const ratingVal = quickAddRatingInput ? quickAddRatingInput.value.trim() : '8.0';
+            const branchVal = quickAddBranchInput ? quickAddBranchInput.value.trim() : '';
+            const relVal = quickAddRelationInput ? quickAddRelationInput.value.trim() : '';
+            const likedVal = quickAddLikeCheckbox ? quickAddLikeCheckbox.checked : false;
+
+            if (quickAddSubmitBtn) {
+                quickAddSubmitBtn.disabled = true;
+                quickAddSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            }
+
+            try {
+                const payload = {
+                    title: pendingQuickAddItem.title,
+                    type: 'Anime',
+                    rating: `${ratingVal}/10`,
+                    numeric_rating: `${ratingVal}`,
+                    tmdb_id: pendingQuickAddItem.mal_id || null,
+                    release_year: pendingQuickAddItem.year || null,
+                    anime_franchise: currentFranchiseSession.name,
+                    anime_branch: branchVal || currentFranchiseSession.name,
+                    anime_relation: relVal || 'Sequel',
+                    is_liked: likedVal
+                };
+
+                const res = await fetch('/api/media', {
+                    method: 'POST',
+                    headers: getAuthHeaders(true),
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    closeFranchiseQuickAdd();
+                    await fetchMedia();
+                    // Re-render franchise modal with fresh tracked list
+                    const updated = allMedia.filter(m => m.type === 'Anime' && m.anime_franchise === currentFranchiseSession.name);
+                    openFranchiseModal(currentFranchiseSession.name, updated);
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    alert('Failed to add entry: ' + (err.detail || 'Server error'));
+                }
+            } catch (err) {
+                console.error('Error adding franchise entry:', err);
+                alert('Network error while saving entry.');
+            } finally {
+                if (quickAddSubmitBtn) {
+                    quickAddSubmitBtn.disabled = false;
+                    quickAddSubmitBtn.innerHTML = '<i class="fas fa-check"></i> Save to Tracker';
+                }
+            }
+        });
+    }
+
+    const renderUnwatchedSection = (unwatchedList) => {
+        if (!franchiseModalUnwatched) return;
+        if (!unwatchedList || unwatchedList.length === 0) {
+            franchiseModalUnwatched.innerHTML = `
+                <div class="franchise-scout-empty">
+                    <i class="fas fa-check-circle" style="color:#2ed573; font-size:2rem; margin-bottom:0.4rem;"></i>
+                    <strong style="color:#fff; font-size:1.1rem;">You're All Caught Up!</strong>
+                    <span>No unindexed or missing anime seasons found in this universe.</span>
+                </div>
+            `;
+            return;
+        }
+
+        franchiseModalUnwatched.innerHTML = unwatchedList.map((item, idx) => {
+            const cover = item.cover_url || '/static/movies_header.png';
+            const yearStr = item.year ? item.year : 'TBA';
+            const fmtStr = item.format || 'Anime';
+            const studioStr = item.studio ? `<span>• ${escapeFranchiseHtml(item.studio)}</span>` : '';
+            const relBadge = item.relation ? `<span class="franchise-role-tag">${escapeFranchiseHtml(item.relation)}</span>` : '';
+
+            return `
+                <div class="franchise-unwatched-card">
+                    <img src="${cover}" class="franchise-unwatched-thumb" alt="${escapeFranchiseHtml(item.title)}" loading="lazy">
+                    <div class="franchise-entry-info">
+                        <span class="franchise-entry-title">${escapeFranchiseHtml(item.title)}</span>
+                        <div class="franchise-entry-meta">
+                            <span>${yearStr}</span>
+                            <span>• ${fmtStr}</span>
+                            ${studioStr}
+                            ${relBadge}
+                            <span class="franchise-unwatched-pill">Unwatched</span>
+                        </div>
+                    </div>
+                    <button type="button" class="franchise-quick-add-btn" data-unwatched-idx="${idx}">
+                        <i class="fas fa-plus"></i> Rate & Add
+                    </button>
+                </div>
+            `;
+        }).join('');
+
+        franchiseModalUnwatched.querySelectorAll('.franchise-quick-add-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.getAttribute('data-unwatched-idx'), 10);
+                const target = unwatchedList[idx];
+                if (target) openFranchiseQuickAdd(target);
+            });
+        });
+    };
+
+    const renderFullUniverseTimeline = (watchedList, unwatchedList) => {
+        if (!franchiseModalAll) return;
+        
+        // Merge into single chronological timeline
+        const combined = [
+            ...watchedList.map(it => ({ ...it, __isWatched: true, sortYear: it.release_year || 0 })),
+            ...unwatchedList.map((it, idx) => ({ ...it, __isWatched: false, __unwatchedIdx: idx, sortYear: it.year || 0 }))
+        ];
+
+        combined.sort((a, b) => {
+            const aHasYear = a.sortYear > 0;
+            const bHasYear = b.sortYear > 0;
+            if (aHasYear && !bHasYear) return -1;
+            if (!aHasYear && bHasYear) return 1;
+            return a.sortYear - b.sortYear;
+        });
+
+        franchiseModalAll.innerHTML = combined.map(item => {
+            const isWatched = item.__isWatched;
+            const cover = item.cover_url || '/static/movies_header.png';
+            const title = item.title;
+            const yearStr = (isWatched ? item.release_year : item.year) || 'TBA';
+            const studio = (isWatched ? item.director : item.studio) || '';
+            const relation = (isWatched ? item.anime_relation : item.relation) || '';
+            const relBadge = relation ? `<span class="franchise-role-tag">${escapeFranchiseHtml(relation)}</span>` : '';
+
+            if (isWatched) {
+                const score = item.numeric_rating ? `${String(item.numeric_rating).replace('/10', '').trim()}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
+                const r = rankMap[(item.title + '|' + item.type).toLowerCase()];
+                const rankBadge = r ? `<span style="font-weight:800; color:var(--theme-accent); font-size:0.75rem;">★ #${r}</span>` : '';
+
+                return `
+                    <div class="franchise-entry-row" data-watched-id="${item.id}">
+                        <img src="${cover}" class="franchise-entry-thumb" alt="${escapeFranchiseHtml(title)}" loading="lazy">
+                        <div class="franchise-entry-info">
+                            <span class="franchise-entry-title">${escapeFranchiseHtml(title)}</span>
+                            <div class="franchise-entry-meta">
+                                <span>${yearStr}</span>
+                                ${studio ? `<span>• ${escapeFranchiseHtml(studio)}</span>` : ''}
+                                ${relBadge}
+                                ${rankBadge}
+                                <span class="franchise-pill" style="font-size:0.65rem; padding:0.1rem 0.4rem; background:rgba(46, 213, 115, 0.15); color:#2ed573; border-color:rgba(46, 213, 115, 0.3);"><i class="fas fa-check"></i> Watched</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.6rem; flex-shrink:0;">
+                            ${item.is_liked ? `<span style="color:#ff4757; font-size:0.9rem;">♥</span>` : ''}
+                            ${score ? `<span class="col-detail-rating-pill">${score}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="franchise-unwatched-card">
+                        <img src="${cover}" class="franchise-unwatched-thumb" alt="${escapeFranchiseHtml(title)}" loading="lazy">
+                        <div class="franchise-entry-info">
+                            <span class="franchise-entry-title">${escapeFranchiseHtml(title)}</span>
+                            <div class="franchise-entry-meta">
+                                <span>${yearStr}</span>
+                                <span>• ${item.format || 'Anime'}</span>
+                                ${studio ? `<span>• ${escapeFranchiseHtml(studio)}</span>` : ''}
+                                ${relBadge}
+                                <span class="franchise-unwatched-pill">Unwatched</span>
+                            </div>
+                        </div>
+                        <button type="button" class="franchise-quick-add-btn" data-all-unwatched-idx="${item.__unwatchedIdx}">
+                            <i class="fas fa-plus"></i> Rate & Add
+                        </button>
+                    </div>
+                `;
+            }
+        }).join('');
+
+        // Wire watched clicks to openQuickInfo
+        franchiseModalAll.querySelectorAll('.franchise-entry-row[data-watched-id]').forEach(row => {
+            row.addEventListener('click', () => {
+                const id = parseInt(row.getAttribute('data-watched-id'), 10);
+                const found = allMedia.find(m => m.id === id);
+                if (found) window.openQuickInfo(found);
+            });
+        });
+
+        // Wire unwatched clicks to quick add
+        franchiseModalAll.querySelectorAll('.franchise-quick-add-btn[data-all-unwatched-idx]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.getAttribute('data-all-unwatched-idx'), 10);
+                const target = unwatchedList[idx];
+                if (target) openFranchiseQuickAdd(target);
+            });
+        });
+    };
 
     const openFranchiseModal = (franchiseName, franchiseItems) => {
         if (!franchiseModal) return;
+        currentFranchiseSession.name = franchiseName;
+        currentFranchiseSession.watched = franchiseItems;
+
         if (franchiseModalTitle) franchiseModalTitle.innerText = franchiseName;
         if (franchiseModalCount) {
             franchiseModalCount.innerText = `${franchiseItems.length} ${franchiseItems.length === 1 ? 'Installment' : 'Installments'}`;
         }
+        if (franchiseTabWatchedCount) franchiseTabWatchedCount.innerText = String(franchiseItems.length);
+        if (franchiseTabUnwatchedCount) franchiseTabUnwatchedCount.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        if (franchiseTabAllCount) franchiseTabAllCount.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        // Default to Watched tab
+        setFranchiseTab('watched');
 
         const studios = Array.from(new Set(franchiseItems.map(i => i.director).filter(Boolean)));
         const bestScoreItem = [...franchiseItems].sort((a, b) => {
@@ -1007,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bestScoreItem && bestScoreItem.numeric_rating) metaParts.push(`Top Rating: ${bestScoreItem.numeric_rating}`);
         if (franchiseModalMeta) franchiseModalMeta.innerText = metaParts.join(' • ');
 
-        // Group by Branch
+        // 1. Group by Branch for Watched Tab
         const branchGroups = {};
         franchiseItems.forEach(item => {
             const branch = item.anime_branch || item.title || 'Main Series';
@@ -1024,17 +1331,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cover = it.cover_url || '/static/movies_header.png';
                     const score = it.numeric_rating ? `${String(it.numeric_rating).replace('/10', '').trim()}/10` : (it.rating && !it.rating.startsWith('#') ? it.rating : '');
                     const r = rankMap[(it.title + '|' + it.type).toLowerCase()];
-                    const roleBadge = it.anime_relation ? `<span class="franchise-role-tag">${it.anime_relation}</span>` : '';
+                    const roleBadge = it.anime_relation ? `<span class="franchise-role-tag">${escapeFranchiseHtml(it.anime_relation)}</span>` : '';
                     const rankBadge = r ? `<span style="font-weight:800; color:var(--theme-accent); font-size:0.75rem;">★ #${r}</span>` : '';
 
                     return `
                         <div class="franchise-entry-row" data-id="${it.id}">
-                            <img src="${cover}" class="franchise-entry-thumb" alt="${it.title}" loading="lazy">
+                            <img src="${cover}" class="franchise-entry-thumb" alt="${escapeFranchiseHtml(it.title)}" loading="lazy">
                             <div class="franchise-entry-info">
-                                <span class="franchise-entry-title">${it.title}</span>
+                                <span class="franchise-entry-title">${escapeFranchiseHtml(it.title)}</span>
                                 <div class="franchise-entry-meta">
                                     <span>${it.release_year || 'Unknown'}</span>
-                                    ${it.director ? `<span>• ${it.director}</span>` : ''}
+                                    ${it.director ? `<span>• ${escapeFranchiseHtml(it.director)}</span>` : ''}
                                     ${roleBadge}
                                     ${rankBadge}
                                 </div>
@@ -1052,7 +1359,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="franchise-branch-header">
                             <h3 class="franchise-branch-title">
                                 <i class="fas fa-folder-open" style="color:var(--theme-accent); font-size:0.9rem;"></i>
-                                ${branchName}
+                                ${escapeFranchiseHtml(branchName)}
                             </h3>
                             <span style="font-size:0.72rem; color:var(--text-secondary); opacity:0.6;">${bItems.length} ${bItems.length === 1 ? 'part' : 'parts'}</span>
                         </div>
@@ -1062,15 +1369,63 @@ document.addEventListener('DOMContentLoaded', () => {
             }).join('');
 
             franchiseModalBranches.querySelectorAll('.franchise-entry-row').forEach(row => {
-                row.addEventListener('click', (e) => {
+                row.addEventListener('click', () => {
                     const id = parseInt(row.getAttribute('data-id'), 10);
                     const found = allMedia.find(m => m.id === id);
-                    if (found) {
-                        window.openQuickInfo(found);
-                    }
+                    if (found) window.openQuickInfo(found);
                 });
             });
         }
+
+        // 2. Set Unwatched and All Tab to Loading State
+        if (franchiseModalUnwatched) {
+            franchiseModalUnwatched.innerHTML = `
+                <div class="franchise-scout-loading">
+                    <i class="fas fa-compass fa-spin" style="font-size:2rem; color:var(--theme-accent);"></i>
+                    <strong style="color:#fff; font-size:1.05rem;">Scouting Franchise Universe...</strong>
+                    <span>Discovering related sequels, spin-offs & alternative routes via AniList</span>
+                </div>
+            `;
+        }
+        if (franchiseModalAll) {
+            franchiseModalAll.innerHTML = `
+                <div class="franchise-scout-loading">
+                    <i class="fas fa-stream fa-spin" style="font-size:2rem; color:var(--theme-accent);"></i>
+                    <strong style="color:#fff; font-size:1.05rem;">Building Full Universe Timeline...</strong>
+                </div>
+            `;
+        }
+
+        // 3. Background Fetch to Franchise Scout API
+        fetch(`/api/anime/franchise-scout?franchise=${encodeURIComponent(franchiseName)}`)
+            .then(res => res.ok ? res.json() : Promise.reject(res))
+            .then(data => {
+                if (currentFranchiseSession.name !== franchiseName) return; // Stale check
+                currentFranchiseSession.unwatched = data.unwatched || [];
+                const unwatchedCount = currentFranchiseSession.unwatched.length;
+                const totalCount = franchiseItems.length + unwatchedCount;
+
+                if (franchiseTabUnwatchedCount) franchiseTabUnwatchedCount.innerText = String(unwatchedCount);
+                if (franchiseTabAllCount) franchiseTabAllCount.innerText = String(totalCount);
+                if (franchiseModalCount) {
+                    franchiseModalCount.innerText = `${franchiseItems.length} Watched • ${unwatchedCount} In-Universe`;
+                }
+
+                renderUnwatchedSection(currentFranchiseSession.unwatched);
+                renderFullUniverseTimeline(franchiseItems, currentFranchiseSession.unwatched);
+            })
+            .catch(err => {
+                console.error('Error fetching franchise scout:', err);
+                if (franchiseModalUnwatched) {
+                    franchiseModalUnwatched.innerHTML = `
+                        <div class="franchise-scout-empty">
+                            <i class="fas fa-exclamation-triangle" style="color:#ff4757; font-size:1.8rem; margin-bottom:0.4rem;"></i>
+                            <strong style="color:#fff;">Could not load universe relations</strong>
+                            <span>Check your connection and try again.</span>
+                        </div>
+                    `;
+                }
+            });
 
         franchiseModal.classList.add('show');
     };
@@ -1084,6 +1439,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('click', (e) => {
         if (e.target === franchiseModal) {
             franchiseModal.classList.remove('show');
+        }
+        if (e.target === franchiseQuickAddModal) {
+            closeFranchiseQuickAdd();
         }
     });
 
@@ -3574,11 +3932,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         const fallbackImg = `<div class="podium-poster" style="background:#2b2b2b;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.9rem;">No<br>Cover</div>`;
                         const posterHtml = podiumItem.cover_url ? `<img src="${podiumItem.cover_url}" class="podium-poster">` : fallbackImg;
                         const rankNum = parseInt((podiumItem.rating || '').replace('#', ''), 10) || rankPos;
+
+                        const isFranchise = (podiumItem.type === 'Anime' && podiumItem.anime_franchise);
+                        const mainTitle = isFranchise ? podiumItem.anime_franchise : podiumItem.title;
+                        const subTitle = isFranchise ? `<div class="podium-sub" style="font-size:0.75rem; opacity:0.75; font-weight:500; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${podiumItem.title}</div>` : '';
+
                         return `
                             <div class="podium-item podium-rank-${rankPos}" data-item-id="${podiumItem.id}">
                                 <div class="podium-badge">#${rankNum}</div>
                                 ${posterHtml}
-                                <div class="podium-title">${podiumItem.title}</div>
+                                <div class="podium-title" title="${mainTitle}">${mainTitle}</div>
+                                ${subTitle}
                                 ${podiumItem.director ? `<div class="podium-director">${podiumItem.director}</div>` : ''}
                             </div>
                         `;
@@ -3627,11 +3991,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     let snippet = (item.review || '').replace(/Imported from Discord/gi, '').trim();
                     const reviewSnippet = hasReview ? `<div class="ranking-row-snippet">"${snippet.substring(0, 120)}${snippet.length > 120 ? '...' : ''}"</div>` : '';
 
+                    const isFranchise = (item.type === 'Anime' && item.anime_franchise);
+                    const mainTitle = isFranchise ? item.anime_franchise : item.title;
+                    const subLabel = isFranchise ? `<span class="franchise-role-tag" style="margin-left:6px; font-size:0.68rem; font-weight:600;">${item.title}</span>` : '';
+
                     row.innerHTML = `
                         <div class="ranking-row-rank">#${rankNum}</div>
                         ${posterHtml}
                         <div class="ranking-row-info">
-                            <div class="ranking-row-title ${canClickReview ? 'clickable-review-trigger' : ''}" title="${item.title}">${item.title} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</div>
+                            <div class="ranking-row-title ${canClickReview ? 'clickable-review-trigger' : ''}" title="${mainTitle}">${mainTitle}${subLabel} ${item.release_year ? `<span style="font-weight:300; opacity:0.7;">(${item.release_year})</span>` : ''}</div>
                             ${metaHtml}
                             ${reviewSnippet}
                         </div>
