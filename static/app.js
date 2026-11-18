@@ -3913,27 +3913,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Build season rating display
                     let seasonChipsHtml = '';
-                    if (isFranchise) {
-                        const franchiseSiblings = allMedia.filter(m => m.type === 'Anime' && m.anime_franchise === item.anime_franchise);
-                        franchiseSiblings.sort((a, b) => (a.release_year || 0) - (b.release_year || 0));
+                    const itemScore = item.numeric_rating ? `${String(item.numeric_rating).replace('/10', '').trim()}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
 
-                        seasonChipsHtml = `
-                            <div class="ranking-season-chips" style="display:flex; flex-wrap:wrap; gap:6px; margin:5px 0 3px 0;">
-                                ${franchiseSiblings.map(s => {
-                                    const sScore = s.numeric_rating ? `${String(s.numeric_rating).replace('/10', '').trim()}/10` : (s.rating && !s.rating.startsWith('#') ? s.rating : '');
-                                    const sBadge = (s.anime_relation && s.anime_relation.toLowerCase() !== 'main series') ? `<span class="franchise-role-tag" style="font-size:0.6rem; padding:1px 4px; margin-right:4px;">${escapeFranchiseHtml(s.anime_relation)}</span>` : '';
-                                    return `
-                                        <span class="ranking-season-chip" data-season-id="${s.id}" title="Click to view details for ${s.title}" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; padding:0.18rem 0.5rem; border-radius:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0e0e0; transition:all 0.15s ease;">
-                                            ${sBadge}
-                                            <span style="font-weight:600;">${s.title}</span>
-                                            ${sScore ? `<strong style="color:var(--theme-accent); font-weight:700; margin-left:3px;">${sScore}</strong>` : ''}
-                                        </span>
-                                    `;
-                                }).join('')}
-                            </div>
-                        `;
+                    if (isFranchise) {
+                        const showSubTitle = (item.title && item.anime_franchise && item.title.trim().toLowerCase() !== item.anime_franchise.trim().toLowerCase());
+                        const sBadge = (item.anime_relation && item.anime_relation.toLowerCase() !== 'main series') 
+                            ? `<span class="franchise-role-tag" style="font-size:0.6rem; padding:1px 4px; margin-right:4px;">${escapeFranchiseHtml(item.anime_relation)}</span>` 
+                            : '';
+
+                        if (showSubTitle) {
+                            seasonChipsHtml = `
+                                <div style="margin:4px 0 2px 0;">
+                                    <span class="ranking-season-chip" data-season-id="${item.id}" title="Click to view details for ${item.title}" style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; padding:0.18rem 0.5rem; border-radius:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0e0e0;">
+                                        ${sBadge}
+                                        <span style="font-weight:600;">${item.title}</span>
+                                        ${itemScore ? `<strong style="color:var(--theme-accent); font-weight:700; margin-left:3px;">${itemScore}</strong>` : ''}
+                                    </span>
+                                </div>
+                            `;
+                        } else if (itemScore) {
+                            seasonChipsHtml = `
+                                <div style="margin:4px 0 2px 0;">
+                                    <span class="ranking-season-chip" style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; padding:0.15rem 0.45rem; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:var(--text-secondary);">
+                                        Rating: <strong style="color:var(--theme-accent); font-weight:700;">${itemScore}</strong>
+                                    </span>
+                                </div>
+                            `;
+                        }
                     } else {
-                        const itemScore = item.numeric_rating ? `${String(item.numeric_rating).replace('/10', '').trim()}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
                         if (itemScore) {
                             seasonChipsHtml = `
                                 <div style="margin:3px 0 2px 0;">
@@ -4060,7 +4067,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="franchise-header-badge"><i class="fas fa-layer-group"></i> Franchise</span>
                         <div class="card-header">
                             <h3 class="media-title" style="color: var(--theme-accent); font-size: 1.15rem;">${item.anime_franchise}</h3>
-                            <span class="franchise-count-pill"><i class="fas fa-sitemap"></i> ${franchiseItems.length} Routes & Spinoffs</span>
                         </div>
                         ${allGenres.length > 0 ? `
                             <div class="genre-container">
@@ -4078,7 +4084,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             <div class="badge-slot-right">
                                 ${hasLiked ? `<span class="card-liked-indicator">♥</span>` : ''}
-                                <span class="review-badge" style="background: rgba(var(--theme-accent-rgb), 0.2); border-color: var(--theme-accent); color: #fff;">View Universe</span>
                             </div>
                         </div>
                     `;
