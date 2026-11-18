@@ -1063,6 +1063,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (quickAddRelationInput) quickAddRelationInput.value = item.relation || 'Sequel';
         if (quickAddLikeCheckbox) quickAddLikeCheckbox.checked = false;
 
+        const isMovie = (item.format && item.format.toUpperCase() === 'MOVIE') || (item.relation && item.relation.toLowerCase() === 'movie');
+        const quickAddMovieRow = document.getElementById('quickAddMovieRow');
+        const quickAddAlsoMovieCheckbox = document.getElementById('quickAddAlsoMovieCheckbox');
+        if (quickAddMovieRow) {
+            quickAddMovieRow.style.display = isMovie ? 'flex' : 'none';
+        }
+        if (quickAddAlsoMovieCheckbox) {
+            quickAddAlsoMovieCheckbox.checked = isMovie;
+        }
+
         if (franchiseQuickAddModal) franchiseQuickAddModal.classList.add('show');
     };
 
@@ -1103,7 +1113,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     is_liked: likedVal
                 };
 
-                const res = await fetch('/api/media', {
+                const quickAddAlsoMovieCheckbox = document.getElementById('quickAddAlsoMovieCheckbox');
+                const alsoMovie = quickAddAlsoMovieCheckbox && quickAddAlsoMovieCheckbox.checked;
+                const endpoint = alsoMovie ? '/api/media?also_add_movie=true' : '/api/media?also_add_movie=false';
+
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: getAuthHeaders(true),
                     body: JSON.stringify(payload)
@@ -2315,6 +2329,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('previewDuplicateWarning').style.display = 'none';
         pendingPreviewPayload = null;
         resetPreviewLike();
+        const previewAlsoMovieContainer = document.getElementById('previewAlsoMovieContainer');
+        const previewAlsoMovieCheckbox = document.getElementById('previewAlsoMovieCheckbox');
+        if (previewAlsoMovieContainer) previewAlsoMovieContainer.style.display = 'none';
+        if (previewAlsoMovieCheckbox) previewAlsoMovieCheckbox.checked = true;
     });
 
     previewBackBtn.addEventListener('click', () => {
@@ -2332,6 +2350,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (previewLoading) previewLoading.style.display = 'none';
         const dupWarning = document.getElementById('previewDuplicateWarning');
         if (dupWarning) dupWarning.style.display = 'none';
+        const previewAlsoMovieContainer = document.getElementById('previewAlsoMovieContainer');
+        if (previewAlsoMovieContainer) previewAlsoMovieContainer.style.display = 'none';
         
         resetPreviewLike();
     });
@@ -2535,6 +2555,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         total_chapters: data.total_chapters
                     };
 
+                    // Check for Anime Movie to surface "Also add to Movies library"
+                    const previewAlsoMovieContainer = document.getElementById('previewAlsoMovieContainer');
+                    const previewAlsoMovieCheckbox = document.getElementById('previewAlsoMovieCheckbox');
+                    const isAnimeMovie = (type === 'Anime' && (data.anime_type === 'Movie' || data.is_anime_movie));
+                    if (previewAlsoMovieContainer) {
+                        previewAlsoMovieContainer.style.display = isAnimeMovie ? 'flex' : 'none';
+                    }
+                    if (previewAlsoMovieCheckbox) {
+                        previewAlsoMovieCheckbox.checked = isAnimeMovie;
+                    }
+
                     isPreviewPhase = false;
                     previewLoading.style.display = 'none';
                     previewContainer.style.display = 'block';
@@ -2579,7 +2610,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Final sync of the Like state from the checkbox
                 pendingPreviewPayload.is_liked = previewLikeCheckbox.checked;
 
-                const res = await fetch('/api/media', {
+                const previewAlsoMovieCheckbox = document.getElementById('previewAlsoMovieCheckbox');
+                const alsoMovie = (type === 'Anime' && previewAlsoMovieCheckbox && previewAlsoMovieCheckbox.checked);
+                const endpoint = alsoMovie ? '/api/media?also_add_movie=true' : '/api/media?also_add_movie=false';
+
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: getAuthHeaders(true),
                     body: JSON.stringify(pendingPreviewPayload)

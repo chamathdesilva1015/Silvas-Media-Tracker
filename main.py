@@ -300,7 +300,7 @@ def parse_year_int(val) -> Optional[int]:
         return None
 
 @app.post("/api/media", response_model=MediaItem)
-def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Session = Depends(get_session), _: None = Depends(check_readonly)):
+def create_media(item: MediaItem, background_tasks: BackgroundTasks, also_add_movie: Optional[bool] = Query(default=None), session: Session = Depends(get_session), _: None = Depends(check_readonly)):
     # 1. Year Validation: Prevent distant future or invalid release dates (e.g. 2050)
     current_year = datetime.utcnow().year
     MAX_YEAR = current_year + 3
@@ -461,6 +461,70 @@ def create_media(item: MediaItem, background_tasks: BackgroundTasks, session: Se
     session.commit()
     session.refresh(item)
 
+    # Auto-mirror Anime Movies into the Movies library
+    is_anime_movie = bool(verified_data and verified_data.get("anime_type") == "Movie")
+    should_mirror = (also_add_movie is True) or (also_add_movie is None and is_anime_movie)
+    if item.type == "Anime" and should_mirror:
+        try:
+            existing_movie = session.exec(
+                select(MediaItem).where(
+                    MediaItem.type == "Movies",
+                    MediaItem.title == item.title,
+                    MediaItem.release_year == item.release_year
+                )
+            ).first()
+            if not existing_movie:
+                from tmdb_helper import search_movie, get_movie_details
+                movie_tmdb_id = None
+                movie_cover = item.cover_url
+                movie_backdrop = item.backdrop_url
+                movie_director = item.director
+                movie_genres = item.genres
+                movie_runtime = item.runtime
+                movie_content_rating = item.content_rating
+                movie_overview = item.overview
+
+                try:
+                    found_tmdb = search_movie(item.title, item.release_year)
+                    if found_tmdb:
+                        movie_tmdb_id = found_tmdb
+                        tmdb_info = get_movie_details(found_tmdb)
+                        if tmdb_info:
+                            movie_cover = tmdb_info.get("cover_url") or movie_cover
+                            movie_backdrop = tmdb_info.get("backdrop_url") or movie_backdrop
+                            movie_director = tmdb_info.get("director") or movie_director
+                            movie_genres = tmdb_info.get("genres") or movie_genres
+                            movie_runtime = tmdb_info.get("runtime") or movie_runtime
+                            movie_content_rating = tmdb_info.get("content_rating") or movie_content_rating
+                            movie_overview = tmdb_info.get("overview") or movie_overview
+                except Exception as me:
+                    print(f"Error searching TMDB for anime movie mirror: {me}")
+
+                movie_item = MediaItem(
+                    title=item.title,
+                    type="Movies",
+                    release_year=item.release_year,
+                    rating=item.rating,
+                    numeric_rating=item.numeric_rating,
+                    is_liked=item.is_liked,
+                    is_manual_rating=True,
+                    source=item.source or "manual",
+                    cover_url=movie_cover,
+                    backdrop_url=movie_backdrop,
+                    director=movie_director,
+                    genres=movie_genres,
+                    runtime=movie_runtime,
+                    content_rating=movie_content_rating,
+                    overview=movie_overview,
+                    tmdb_id=movie_tmdb_id,
+                    anime_franchise=item.anime_franchise,
+                )
+                session.add(movie_item)
+                session.commit()
+                background_tasks.add_task(run_enrichment, category="Movies")
+        except Exception as me:
+            print(f"Error creating mirrored movie entry for anime movie: {me}")
+
     # Auto-enrich if it's a valid type
     if item.type in ["Movies", "TV Series", "Anime", "Manga"]:
         background_tasks.add_task(run_enrichment, category=item.type)
@@ -477,15 +541,25 @@ def update_review(payload: ReviewPayload, session: Session = Depends(get_session
 
     
     # We want to match all entries with the same exact title (case-insensitive) and exact type.
-    # We update both Completed rows and Rankings rows seamlessly!
-    target_items = session.exec(
+    # Also syncs Anime and Movies if an entry is mirrored across both.
+    types_to_match = ["Anime", "Movies"] if payload.type in ["Anime", "Movies"] else [payload.type]
+    all_candidates = session.exec(
         select(MediaItem).where(
-            MediaItem.type == payload.type
+            MediaItem.type.in_(types_to_match)
         )
     ).all()
     
-    # Case-insensitive manual filter for robustness against Discord case variations
-    target_items = [item for item in target_items if item.title.lower() == payload.title.lower()]
+    # Exact matches for original type to identify release year
+    exact_matches = [i for i in all_candidates if i.type == payload.type and i.title.lower() == payload.title.lower()]
+    target_years = {i.release_year for i in exact_matches if i.release_year is not None}
+
+    target_items = []
+    for candidate in all_candidates:
+        if candidate.title.lower() == payload.title.lower():
+            if candidate.type == payload.type:
+                target_items.append(candidate)
+            elif not target_years or candidate.release_year in target_years:
+                target_items.append(candidate)
     
     if not target_items:
         raise HTTPException(status_code=404, detail="No matching media items found.")
@@ -595,9 +669,9 @@ def preview_metadata(type: str, title: Optional[str] = "", year: Optional[str] =
             if target_ext_id:
                 data = get_anime_details(target_ext_id)
             
-            # Guardrail: Enforce that Anime Movies are added under "Movies" category instead
+            # Mark anime movies so client & backend can dual-list/mirror into Movies library
             if data and data.get("anime_type") == "Movie":
-                raise HTTPException(status_code=400, detail="This is an Anime Movie. Please add it under the 'Movies' category instead!")
+                data["is_anime_movie"] = True
         elif type == "Manga":
             from jikan_helper import search_manga, get_manga_details
             if not target_ext_id and title:
@@ -761,11 +835,17 @@ def toggle_like(item_id: str, session: Session = Depends(get_session), _: None =
     new_liked = not item.is_liked
     target_norm = normalize_title(item.title)
 
-    # Cascade across all rows with the same NORMALIZED title and type
+    # Cascade across all rows with the same NORMALIZED title and type (and sync Anime <-> Movies)
+    types_to_match = ["Anime", "Movies"] if item.type in ["Anime", "Movies"] else [item.type]
     all_related = session.exec(
-        select(MediaItem).where(MediaItem.type == item.type)
+        select(MediaItem).where(MediaItem.type.in_(types_to_match))
     ).all()
-    related = [r for r in all_related if normalize_title(r.title) == target_norm]
+    related = [
+        r for r in all_related 
+        if normalize_title(r.title) == target_norm and (
+            r.type == item.type or (item.release_year is None or r.release_year is None or r.release_year == item.release_year)
+        )
+    ]
 
     for r in related:
         r.is_liked = new_liked
@@ -845,11 +925,17 @@ async def update_media_item(item_id: int, payload: dict, background_tasks: Backg
         # Ensure /10 suffix
         new_rating = new_score if new_score.endswith("/10") else f"{new_score}/10"
         
-        # Cascade to all rows with same normalized title/type AND YEAR (Completed + Rankings)
+        # Cascade to all rows with same normalized title/type AND YEAR (and sync Anime <-> Movies)
         target_norm = normalize_title(item.title)
         target_year = item.release_year
-        all_related = session.exec(select(MediaItem).where(MediaItem.type == item.type)).all()
-        related = [r for r in all_related if normalize_title(r.title) == target_norm and r.release_year == target_year]
+        types_to_match = ["Anime", "Movies"] if item.type in ["Anime", "Movies"] else [item.type]
+        all_related = session.exec(select(MediaItem).where(MediaItem.type.in_(types_to_match))).all()
+        related = [
+            r for r in all_related 
+            if normalize_title(r.title) == target_norm and (
+                r.type == item.type or (target_year is None or r.release_year is None or r.release_year == target_year)
+            )
+        ]
         
         for r in related:
             # Log to history
