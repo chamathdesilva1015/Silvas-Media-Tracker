@@ -999,15 +999,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const quickAddTitle = document.getElementById('quickAddTitle');
     const quickAddMeta = document.getElementById('quickAddMeta');
     const quickAddRatingInput = document.getElementById('quickAddRatingInput');
-    const quickAddScoreDisplay = document.getElementById('quickAddScoreDisplay');
-    const quickAddRatingRange = document.getElementById('quickAddRatingRange');
-    const quickAddFavoriteBtn = document.getElementById('quickAddFavoriteBtn');
-    const quickAddHeartIcon = document.getElementById('quickAddHeartIcon');
-    const quickAddAlsoMovieBtn = document.getElementById('quickAddAlsoMovieBtn');
-    const quickAddAlsoMovieCheckbox = document.getElementById('quickAddAlsoMovieCheckbox');
-    const quickAddToggleAdvancedBtn = document.getElementById('quickAddToggleAdvancedBtn');
-    const quickAddAdvancedPane = document.getElementById('quickAddAdvancedPane');
-    const quickAddAdvancedChevron = document.getElementById('quickAddAdvancedChevron');
     const quickAddBranchInput = document.getElementById('quickAddBranchInput');
     const quickAddRelationInput = document.getElementById('quickAddRelationInput');
     const quickAddLikeCheckbox = document.getElementById('quickAddLikeCheckbox');
@@ -1029,65 +1020,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     };
-
-    const updateQuickAddScore = (val) => {
-        const num = parseFloat(val);
-        if (isNaN(num)) return;
-        const clamped = Math.max(1.0, Math.min(10.0, num));
-        const strVal = (clamped % 1 === 0) ? (clamped === 10 ? '10' : clamped.toFixed(1)) : clamped.toFixed(1);
-
-        if (quickAddScoreDisplay) quickAddScoreDisplay.innerText = strVal;
-        if (quickAddRatingRange) quickAddRatingRange.value = clamped;
-        if (quickAddRatingInput) quickAddRatingInput.value = strVal;
-
-        document.querySelectorAll('.quick-add-preset-chip').forEach(chip => {
-            const chipScore = parseFloat(chip.getAttribute('data-score'));
-            chip.classList.toggle('active', Math.abs(chipScore - clamped) < 0.05);
-        });
-    };
-
-    if (quickAddRatingRange) {
-        quickAddRatingRange.addEventListener('input', (e) => {
-            updateQuickAddScore(e.target.value);
-        });
-    }
-
-    document.querySelectorAll('.quick-add-preset-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const score = chip.getAttribute('data-score');
-            if (score) updateQuickAddScore(score);
-        });
-    });
-
-    if (quickAddFavoriteBtn) {
-        quickAddFavoriteBtn.addEventListener('click', () => {
-            if (!quickAddLikeCheckbox) return;
-            quickAddLikeCheckbox.checked = !quickAddLikeCheckbox.checked;
-            quickAddFavoriteBtn.classList.toggle('active', quickAddLikeCheckbox.checked);
-            if (quickAddHeartIcon) {
-                quickAddHeartIcon.className = quickAddLikeCheckbox.checked ? 'fas fa-heart' : 'far fa-heart';
-            }
-        });
-    }
-
-    if (quickAddAlsoMovieBtn) {
-        quickAddAlsoMovieBtn.addEventListener('click', () => {
-            if (!quickAddAlsoMovieCheckbox) return;
-            quickAddAlsoMovieCheckbox.checked = !quickAddAlsoMovieCheckbox.checked;
-            quickAddAlsoMovieBtn.classList.toggle('active', quickAddAlsoMovieCheckbox.checked);
-        });
-    }
-
-    if (quickAddToggleAdvancedBtn) {
-        quickAddToggleAdvancedBtn.addEventListener('click', () => {
-            if (!quickAddAdvancedPane) return;
-            const isHidden = quickAddAdvancedPane.style.display === 'none';
-            quickAddAdvancedPane.style.display = isHidden ? 'block' : 'none';
-            if (quickAddAdvancedChevron) {
-                quickAddAdvancedChevron.className = isHidden ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
-            }
-        });
-    }
 
     // Tab switching handler (Clean 2-tab view: Watched vs What to Watch Next)
     const setFranchiseTab = (tabName) => {
@@ -1120,40 +1052,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (quickAddTitle) quickAddTitle.innerText = item.title || 'Untitled';
         if (quickAddMeta) {
-            const chips = [];
-            if (item.year) chips.push(`<span class="quick-add-chip">${item.year}</span>`);
-            if (item.format) chips.push(`<span class="quick-add-chip" style="color: var(--theme-accent, #f1c40f);">${escapeFranchiseHtml(item.format)}</span>`);
-            if (item.studio) chips.push(`<span class="quick-add-chip">${escapeFranchiseHtml(item.studio)}</span>`);
-            if (item.relation) chips.push(`<span class="quick-add-chip">${escapeFranchiseHtml(item.relation)}</span>`);
-            quickAddMeta.innerHTML = chips.join('');
+            const parts = [];
+            if (item.year) parts.push(item.year);
+            if (item.format) parts.push(item.format);
+            if (item.studio) parts.push(item.studio);
+            quickAddMeta.innerText = parts.join(' • ');
         }
-
-        // Initialize score to 8.0 with slider & preset chips synced
-        updateQuickAddScore('8.0');
-
+        if (quickAddRatingInput) quickAddRatingInput.value = '8.0';
         if (quickAddBranchInput) quickAddBranchInput.value = item.suggested_branch || currentFranchiseSession.name;
         if (quickAddRelationInput) quickAddRelationInput.value = item.relation || 'Sequel';
-
-        // Reset Favorite state
         if (quickAddLikeCheckbox) quickAddLikeCheckbox.checked = false;
-        if (quickAddFavoriteBtn) quickAddFavoriteBtn.classList.remove('active');
-        if (quickAddHeartIcon) quickAddHeartIcon.className = 'far fa-heart';
 
-        // Reset collapsible taxonomy pane to closed
-        if (quickAddAdvancedPane) quickAddAdvancedPane.style.display = 'none';
-        if (quickAddAdvancedChevron) quickAddAdvancedChevron.className = 'fas fa-chevron-down';
-
-        // Check if Movie format/relation
         const isMovie = (item.format && item.format.toUpperCase() === 'MOVIE') || (item.relation && item.relation.toLowerCase() === 'movie');
         const quickAddMovieRow = document.getElementById('quickAddMovieRow');
+        const quickAddAlsoMovieCheckbox = document.getElementById('quickAddAlsoMovieCheckbox');
         if (quickAddMovieRow) {
-            quickAddMovieRow.style.display = isMovie ? 'block' : 'none';
+            quickAddMovieRow.style.display = isMovie ? 'flex' : 'none';
         }
         if (quickAddAlsoMovieCheckbox) {
             quickAddAlsoMovieCheckbox.checked = isMovie;
-        }
-        if (quickAddAlsoMovieBtn) {
-            quickAddAlsoMovieBtn.classList.toggle('active', isMovie);
         }
 
         if (franchiseQuickAddModal) franchiseQuickAddModal.classList.add('show');

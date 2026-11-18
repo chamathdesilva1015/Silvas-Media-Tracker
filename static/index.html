@@ -26,7 +26,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=465">
+    <link rel="stylesheet" href="style.css?v=466">
 </head>
 
 <body class="read-only-mode">
@@ -1578,103 +1578,49 @@
 
     <!-- Anime Franchise Quick Rate & Add Modal -->
     <div id="franchiseQuickAddModal" class="modal" style="z-index: 10002;">
-        <div class="modal-content franchise-quick-add-content">
-            <div class="quick-add-header">
-                <div class="quick-add-header-left">
-                    <span class="franchise-pill"><i class="fas fa-layer-group"></i> In-Universe Installment</span>
-                    <h3 class="quick-add-modal-title">Rate & Add to Library</h3>
-                </div>
-                <button type="button" class="quick-add-close-btn" id="closeFranchiseQuickAddBtn" aria-label="Close">&times;</button>
+        <div class="modal-content" style="max-width: 480px; text-align: center;">
+            <span class="close-btn" id="closeFranchiseQuickAddBtn">&times;</span>
+            <h2 class="serif" style="margin-bottom: 1.2rem;">Rate & Add</h2>
+
+            <div style="margin-bottom: 1.5rem;">
+                <img id="quickAddPoster" src="" alt="Poster"
+                    style="max-width: 130px; border-radius: 10px; margin-bottom: 0.8rem; box-shadow: 0 8px 24px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);">
+                <h3 id="quickAddTitle" style="font-size: 1.3rem; margin-bottom: 0.2rem; color: #fff;" class="serif">Title</h3>
+                <p id="quickAddMeta" style="font-size: 0.95rem; opacity: 0.6; margin-bottom: 0.5rem;">2024 • TV</p>
             </div>
 
-            <div class="quick-add-hero-card">
-                <img id="quickAddPoster" src="" class="quick-add-hero-poster" alt="Poster">
-                <div class="quick-add-hero-info">
-                    <h4 id="quickAddTitle" class="quick-add-hero-title"></h4>
-                    <div id="quickAddMeta" class="quick-add-hero-badges"></div>
-                </div>
-            </div>
-
-            <form id="franchiseQuickAddForm" class="quick-add-form" style="display: flex; flex-direction: column; gap: 1rem;">
-                <!-- Interactive Rating Card -->
-                <div class="quick-add-rating-box">
-                    <div class="quick-add-rating-header">
-                        <span class="quick-add-field-label">Your Rating</span>
-                        <div class="quick-add-score-container">
-                            <span id="quickAddScoreDisplay" class="quick-add-score-big">8.0</span>
-                            <span class="quick-add-score-denom">/ 10</span>
-                        </div>
-                    </div>
-
-                    <div class="quick-add-slider-wrap">
-                        <input type="range" id="quickAddRatingRange" min="1.0" max="10.0" step="0.5" value="8.0" class="quick-add-range-slider">
-                    </div>
-
-                    <input type="hidden" id="quickAddRatingInput" value="8.0" required>
-
-                    <!-- Quick Preset Pills -->
-                    <div class="quick-add-preset-row">
-                        <button type="button" class="quick-add-preset-chip" data-score="6.0">6.0</button>
-                        <button type="button" class="quick-add-preset-chip" data-score="7.0">7.0</button>
-                        <button type="button" class="quick-add-preset-chip" data-score="7.5">7.5</button>
-                        <button type="button" class="quick-add-preset-chip active" data-score="8.0">8.0</button>
-                        <button type="button" class="quick-add-preset-chip" data-score="8.5">8.5</button>
-                        <button type="button" class="quick-add-preset-chip" data-score="9.0">9.0</button>
-                        <button type="button" class="quick-add-preset-chip" data-score="9.5">9.5</button>
-                        <button type="button" class="quick-add-preset-chip" data-score="10">10 ★</button>
-                    </div>
+            <form id="franchiseQuickAddForm" style="text-align: left;">
+                <div class="form-group">
+                    <label for="quickAddRatingInput">Rating</label>
+                    <input type="number" id="quickAddRatingInput" required step="0.5" min="0" max="10" placeholder="e.g. 8.0" value="8.0">
                 </div>
 
-                <!-- Toggles Row: Favorite & Also Add to Movies -->
-                <div class="quick-add-options-row">
-                    <button type="button" id="quickAddFavoriteBtn" class="quick-add-fav-btn">
-                        <i class="far fa-heart" id="quickAddHeartIcon"></i>
-                        <span id="quickAddFavText">Favorite</span>
-                    </button>
-                    <input type="checkbox" id="quickAddLikeCheckbox" style="display: none;">
+                <input type="hidden" id="quickAddBranchInput">
+                <input type="hidden" id="quickAddRelationInput">
 
-                    <div id="quickAddMovieRow" class="quick-add-movie-row" style="display: none;">
-                        <input type="checkbox" id="quickAddAlsoMovieCheckbox" checked style="display: none;">
-                        <button type="button" id="quickAddAlsoMovieBtn" class="quick-add-movie-btn active">
-                            <span style="display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-film"></i>
-                                <span>Also list in Movies</span>
-                            </span>
-                            <i class="fas fa-check-circle quick-add-movie-check"></i>
-                        </button>
-                    </div>
+                <div id="quickAddLikeContainer"
+                    style="margin-top: 1.2rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="quickAddLikeCheckbox"
+                        style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="quickAddLikeCheckbox"
+                        style="font-size: 0.9rem; opacity: 0.8; font-weight: 500; cursor: pointer;">Liked?</label>
                 </div>
 
-                <!-- Advanced Taxonomy Details (Collapsible) -->
-                <div class="quick-add-advanced-wrapper">
-                    <button type="button" id="quickAddToggleAdvancedBtn" class="quick-add-advanced-toggle">
-                        <span><i class="fas fa-sliders-h" style="margin-right: 0.4rem; opacity: 0.7;"></i> Taxonomy details</span>
-                        <i class="fas fa-chevron-down" id="quickAddAdvancedChevron"></i>
-                    </button>
-                    <div id="quickAddAdvancedPane" class="quick-add-advanced-pane" style="display: none;">
-                        <div class="quick-add-advanced-grid">
-                            <div class="form-group" style="margin: 0;">
-                                <label class="quick-add-sublabel">Branch / Sub-Series</label>
-                                <input type="text" id="quickAddBranchInput" class="quick-add-text-input">
-                            </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label class="quick-add-sublabel">Role / Relation</label>
-                                <input type="text" id="quickAddRelationInput" class="quick-add-text-input">
-                            </div>
-                        </div>
-                    </div>
+                <div id="quickAddMovieRow"
+                    style="display: none; margin-top: 1rem; align-items: center; justify-content: center; gap: 0.75rem; cursor: pointer; user-select: none; background: rgba(235, 172, 70, 0.08); padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid rgba(235, 172, 70, 0.25);">
+                    <input type="checkbox" id="quickAddAlsoMovieCheckbox" checked
+                        style="accent-color: var(--accent-color); width: 18px; height: 18px; cursor: pointer;">
+                    <label for="quickAddAlsoMovieCheckbox"
+                        style="font-size: 0.9rem; color: #fff; font-weight: 500; cursor: pointer;">
+                        <i class="fas fa-film" style="color: var(--accent-color); margin-right: 0.3rem;"></i> Also add to Movies library
+                    </label>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="quick-add-actions">
-                    <button type="button" id="quickAddCancelBtn" class="quick-add-btn-cancel">Cancel</button>
-                    <button type="submit" id="quickAddSubmitBtn" class="quick-add-btn-save">
-                        <i class="fas fa-check"></i> Save to Tracker
-                    </button>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" id="quickAddCancelBtn" class="btn-secondary" style="flex: 1;">Cancel</button>
+                    <button type="submit" id="quickAddSubmitBtn" class="btn-primary" style="flex: 2;">Save to Tracker</button>
                 </div>
             </form>
-        </div>
-    </div>
         </div>
     </div>
 
@@ -1695,7 +1641,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=465"></script>
+    <script src="app.js?v=466"></script>
 
 
 
