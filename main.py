@@ -2552,6 +2552,13 @@ def get_anime_franchise_scout(
     }
     return result
 
+@app.post("/api/anime/sync-franchises")
+def trigger_franchise_sync(background_tasks: BackgroundTasks, _: None = Depends(check_readonly)):
+    """Background trigger to sync all anime franchise statuses against MAL/AniList."""
+    from run_franchise_sync import run_sync
+    background_tasks.add_task(run_sync)
+    return {"ok": True, "message": "Anime franchise sync started in background"}
+
 @app.get("/api/version")
 def get_database_version(response: Response, session: Session = Depends(get_session)):
     """Lightweight version fingerprint to notify open devices of updates without heavy queries."""

@@ -156,6 +156,17 @@ async def run_enrichment(log_func: Optional[Callable] = None, category: Optional
                 if details.get("total_chapters"):
                     item.total_chapters = details["total_chapters"]
 
+                # Dynamic Anime Franchise Sync (keeps database perpetually updated if sequels get announced)
+                if item.type == "Anime" and not item.anime_franchise:
+                    try:
+                        from jikan_helper import check_anime_franchise_eligibility
+                        elig = check_anime_franchise_eligibility(mal_id=tmdb_id, title=item.title)
+                        if elig and elig.get("has_franchise"):
+                            item.anime_franchise = elig.get("franchise_name") or item.title
+                            log(f"  [+] Dynamically Promoted to Franchise: '{item.anime_franchise}'")
+                    except Exception as fe:
+                        log(f"  [!] Dynamic franchise check warning: {fe}")
+
                 # Fetch External Ratings for Movies
                 if item.type == "Movies" and tmdb_id:
                     try:

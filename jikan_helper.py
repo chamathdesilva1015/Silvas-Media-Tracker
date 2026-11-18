@@ -36,12 +36,18 @@ def _jikan_get(url: str, params: Optional[Dict] = None) -> requests.Response:
 # --- AniList Fallback Integration ---
 
 def _anilist_post(query: str, variables: dict) -> Optional[dict]:
-    try:
-        response = requests.post(ANILIST_URL, json={"query": query, "variables": variables}, timeout=4)
-        if response.status_code == 200:
-            return response.json()
-    except Exception as e:
-        print(f"AniList API Error: {e}")
+    for attempt in range(3):
+        try:
+            response = requests.post(ANILIST_URL, json={"query": query, "variables": variables}, timeout=6)
+            if response.status_code == 200:
+                return response.json()
+            if response.status_code == 429:
+                retry_after = int(response.headers.get("Retry-After", 3))
+                time.sleep(max(retry_after, 2))
+                continue
+        except Exception as e:
+            print(f"AniList API Error (attempt {attempt+1}): {e}")
+            time.sleep(1)
     return None
 
 def _parse_anilist_media(media: dict) -> dict:
@@ -956,21 +962,17 @@ def get_anilist_discover(media_type: str = "anime", year_min: Optional[int] = No
 
 def guess_anime_branch(title: str) -> str:
     """
-    Infers the sub-branch name from an anime title
-    e.g. 'Fate/stay night' from 'Fate/stay night [Heaven\'s Feel]' or 'Fate/stay night: UBW'
-    e.g. 'Fate/strange Fake' from 'Fate/strange Fake -Whispers of Dawn-'
+    Infers the sub-branch/series name from an anime title by stripping season/part suffixes
+    e.g. 'The Apothecary Diaries' from 'The Apothecary Diaries Season 2'
+    e.g. 'Frieren: Beyond Journey\'s End' from 'Frieren: Beyond Journey\'s End Season 2'
     e.g. 'Attack on Titan' from 'Attack on Titan Season 3 Part 2'
     """
     if not title:
         return "Main"
-    t = title
-    for sep in [":", " [", " - ", " – ", " -"]:
-        if sep in t:
-            cand = t.split(sep)[0].strip()
-            if len(cand) >= 4:
-                t = cand
-                break
-    t = re.sub(r"\s*(?:Season\s*\d+|\d+(?:st|nd|rd|th)\s*Season|Part\s*\d+|The\s*Final\s*Season|\(Zoku-hen\)).*$", "", t, flags=re.IGNORECASE).strip()
+    t = re.sub(
+        r"\s*[:–-]?\s*(?:Season\s*\d+|\d+(?:st|nd|rd|th)\s*Season|\d+(?:st|nd|rd|th)\s*Cour|Cour\s*\d+|Part\s*\d+|The\s*Final\s*Season|\(Zoku-hen\)|2nd\s*Season|3rd\s*Season|4th\s*Season).*$",
+        "", title, flags=re.IGNORECASE
+    ).strip()
     return t or title
 
 
@@ -1014,7 +1016,11 @@ def get_anime_relations(mal_id: Optional[int] = None, title: Optional[str] = Non
         return []
 
     res = _anilist_post(query, variables)
-    if not res or not res.get("data", {}).get("Media"):
+    if (res is None or not res.get("data", {}).get("Media")) and title and "search" not in variables:
+        res = _anilist_post(query, {"search": title})
+    if res is None:
+        return None
+    if not res.get("data", {}).get("Media"):
         return []
 
     edges = res["data"]["Media"].get("relations", {}).get("edges", [])
@@ -1087,10 +1093,13 @@ def check_anime_franchise_eligibility(mal_id: Optional[int] = None, title: Optio
     """
     Dynamically checks if an anime has sequels, prequels, spin-offs, or side stories.
     If it has legitimate animated installments (> 0 anime relations), returns franchise metadata.
-    If it is a self-contained story with 0 anime relations (e.g. Orb), returns None.
+    If it is a self-contained story with 0 anime relations (e.g. Orb), returns has_franchise: False.
+    Returns None if an API error/rate-limit occurred.
     """
     try:
         rels = get_anime_relations(mal_id=mal_id, title=title)
+        if rels is None:
+            return None
         legit_rels = [
             r for r in rels
             if r.get("relation") in ("Sequel", "Prequel", "Spin-off", "Alternative Route", "Side Story", "Parent Story")
@@ -1105,6 +1114,12 @@ def check_anime_franchise_eligibility(mal_id: Optional[int] = None, title: Optio
                 "franchise_name": franchise_name or title,
                 "branch_name": branch,
                 "relations_count": len(legit_rels)
+            }
+        else:
+            return {
+                "has_franchise": False,
+                "franchise_name": None,
+                "relations_count": 0
             }
     except Exception as e:
         print(f"Error checking anime franchise eligibility for {title}: {e}")
