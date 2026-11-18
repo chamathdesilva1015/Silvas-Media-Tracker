@@ -984,14 +984,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const franchiseModalMeta = document.getElementById('franchiseModalMeta');
     const franchiseModalBranches = document.getElementById('franchiseModalBranches');
     const franchiseModalUnwatched = document.getElementById('franchiseModalUnwatched');
-    const franchiseModalAll = document.getElementById('franchiseModalAll');
 
     const franchiseTabWatched = document.getElementById('franchiseTabWatched');
     const franchiseTabUnwatched = document.getElementById('franchiseTabUnwatched');
-    const franchiseTabAll = document.getElementById('franchiseTabAll');
     const franchiseTabWatchedCount = document.getElementById('franchiseTabWatchedCount');
     const franchiseTabUnwatchedCount = document.getElementById('franchiseTabUnwatchedCount');
-    const franchiseTabAllCount = document.getElementById('franchiseTabAllCount');
 
     // Quick Add Modal Elements
     const franchiseQuickAddModal = document.getElementById('franchiseQuickAddModal');
@@ -1024,21 +1021,16 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#39;');
     };
 
-    // Tab switching handler
+    // Tab switching handler (Clean 2-tab view: Watched vs What to Watch Next)
     const setFranchiseTab = (tabName) => {
-        [franchiseTabWatched, franchiseTabUnwatched, franchiseTabAll].forEach(btn => {
-            if (btn) btn.classList.remove('active');
-        });
+        if (franchiseTabWatched) franchiseTabWatched.classList.remove('active');
+        if (franchiseTabUnwatched) franchiseTabUnwatched.classList.remove('active');
         if (franchiseModalBranches) franchiseModalBranches.style.display = 'none';
         if (franchiseModalUnwatched) franchiseModalUnwatched.style.display = 'none';
-        if (franchiseModalAll) franchiseModalAll.style.display = 'none';
 
         if (tabName === 'unwatched') {
             if (franchiseTabUnwatched) franchiseTabUnwatched.classList.add('active');
             if (franchiseModalUnwatched) franchiseModalUnwatched.style.display = 'flex';
-        } else if (tabName === 'all') {
-            if (franchiseTabAll) franchiseTabAll.classList.add('active');
-            if (franchiseModalAll) franchiseModalAll.style.display = 'flex';
         } else {
             if (franchiseTabWatched) franchiseTabWatched.classList.add('active');
             if (franchiseModalBranches) franchiseModalBranches.style.display = 'flex';
@@ -1047,7 +1039,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (franchiseTabWatched) franchiseTabWatched.addEventListener('click', () => setFranchiseTab('watched'));
     if (franchiseTabUnwatched) franchiseTabUnwatched.addEventListener('click', () => setFranchiseTab('unwatched'));
-    if (franchiseTabAll) franchiseTabAll.addEventListener('click', () => setFranchiseTab('all'));
 
     const openFranchiseQuickAdd = (item) => {
         if (!computeCanEdit()) {
@@ -1190,98 +1181,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const renderFullUniverseTimeline = (watchedList, unwatchedList) => {
-        if (!franchiseModalAll) return;
-        
-        // Merge into single chronological timeline
-        const combined = [
-            ...watchedList.map(it => ({ ...it, __isWatched: true, sortYear: it.release_year || 0 })),
-            ...unwatchedList.map((it, idx) => ({ ...it, __isWatched: false, __unwatchedIdx: idx, sortYear: it.year || 0 }))
-        ];
-
-        combined.sort((a, b) => {
-            const aHasYear = a.sortYear > 0;
-            const bHasYear = b.sortYear > 0;
-            if (aHasYear && !bHasYear) return -1;
-            if (!aHasYear && bHasYear) return 1;
-            return a.sortYear - b.sortYear;
-        });
-
-        franchiseModalAll.innerHTML = combined.map(item => {
-            const isWatched = item.__isWatched;
-            const cover = item.cover_url || '/static/movies_header.png';
-            const title = item.title;
-            const yearStr = (isWatched ? item.release_year : item.year) || 'TBA';
-            const studio = (isWatched ? item.director : item.studio) || '';
-            const relation = (isWatched ? item.anime_relation : item.relation) || '';
-            const relBadge = relation ? `<span class="franchise-role-tag">${escapeFranchiseHtml(relation)}</span>` : '';
-
-            if (isWatched) {
-                const score = item.numeric_rating ? `${String(item.numeric_rating).replace('/10', '').trim()}/10` : (item.rating && !item.rating.startsWith('#') ? item.rating : '');
-                const r = rankMap[(item.title + '|' + item.type).toLowerCase()];
-                const rankBadge = r ? `<span style="font-weight:800; color:var(--theme-accent); font-size:0.75rem;">★ #${r}</span>` : '';
-
-                return `
-                    <div class="franchise-entry-row" data-watched-id="${item.id}">
-                        <img src="${cover}" class="franchise-entry-thumb" alt="${escapeFranchiseHtml(title)}" loading="lazy">
-                        <div class="franchise-entry-info">
-                            <span class="franchise-entry-title">${escapeFranchiseHtml(title)}</span>
-                            <div class="franchise-entry-meta">
-                                <span>${yearStr}</span>
-                                ${studio ? `<span>• ${escapeFranchiseHtml(studio)}</span>` : ''}
-                                ${relBadge}
-                                ${rankBadge}
-                                <span class="franchise-pill" style="font-size:0.65rem; padding:0.1rem 0.4rem; background:rgba(46, 213, 115, 0.15); color:#2ed573; border-color:rgba(46, 213, 115, 0.3);"><i class="fas fa-check"></i> Watched</span>
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:0.6rem; flex-shrink:0;">
-                            ${item.is_liked ? `<span style="color:#ff4757; font-size:0.9rem;">♥</span>` : ''}
-                            ${score ? `<span class="col-detail-rating-pill">${score}</span>` : ''}
-                        </div>
-                    </div>
-                `;
-            } else {
-                return `
-                    <div class="franchise-unwatched-card">
-                        <img src="${cover}" class="franchise-unwatched-thumb" alt="${escapeFranchiseHtml(title)}" loading="lazy">
-                        <div class="franchise-entry-info">
-                            <span class="franchise-entry-title">${escapeFranchiseHtml(title)}</span>
-                            <div class="franchise-entry-meta">
-                                <span>${yearStr}</span>
-                                <span>• ${item.format || 'Anime'}</span>
-                                ${studio ? `<span>• ${escapeFranchiseHtml(studio)}</span>` : ''}
-                                ${relBadge}
-                                <span class="franchise-unwatched-pill">Unwatched</span>
-                            </div>
-                        </div>
-                        <button type="button" class="franchise-quick-add-btn" data-all-unwatched-idx="${item.__unwatchedIdx}">
-                            <i class="fas fa-plus"></i> Rate & Add
-                        </button>
-                    </div>
-                `;
-            }
-        }).join('');
-
-        // Wire watched clicks to openQuickInfo
-        franchiseModalAll.querySelectorAll('.franchise-entry-row[data-watched-id]').forEach(row => {
-            row.addEventListener('click', () => {
-                const id = parseInt(row.getAttribute('data-watched-id'), 10);
-                const found = allMedia.find(m => m.id === id);
-                if (found) window.openQuickInfo(found);
-            });
-        });
-
-        // Wire unwatched clicks to quick add
-        franchiseModalAll.querySelectorAll('.franchise-quick-add-btn[data-all-unwatched-idx]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const idx = parseInt(btn.getAttribute('data-all-unwatched-idx'), 10);
-                const target = unwatchedList[idx];
-                if (target) openFranchiseQuickAdd(target);
-            });
-        });
-    };
-
     const openFranchiseModal = (franchiseName, franchiseItems) => {
         if (!franchiseModal) return;
         currentFranchiseSession.name = franchiseName;
@@ -1293,7 +1192,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (franchiseTabWatchedCount) franchiseTabWatchedCount.innerText = String(franchiseItems.length);
         if (franchiseTabUnwatchedCount) franchiseTabUnwatchedCount.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        if (franchiseTabAllCount) franchiseTabAllCount.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
         // Default to Watched tab
         setFranchiseTab('watched');
@@ -1377,21 +1275,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 2. Set Unwatched and All Tab to Loading State
+        // 2. Set Unwatched Tab to Loading State
         if (franchiseModalUnwatched) {
             franchiseModalUnwatched.innerHTML = `
                 <div class="franchise-scout-loading">
                     <i class="fas fa-compass fa-spin" style="font-size:2rem; color:var(--theme-accent);"></i>
                     <strong style="color:#fff; font-size:1.05rem;">Scouting Franchise Universe...</strong>
-                    <span>Discovering related sequels, spin-offs & alternative routes via AniList</span>
-                </div>
-            `;
-        }
-        if (franchiseModalAll) {
-            franchiseModalAll.innerHTML = `
-                <div class="franchise-scout-loading">
-                    <i class="fas fa-stream fa-spin" style="font-size:2rem; color:var(--theme-accent);"></i>
-                    <strong style="color:#fff; font-size:1.05rem;">Building Full Universe Timeline...</strong>
+                    <span>Discovering related sequels, spin-offs & alternative routes</span>
                 </div>
             `;
         }
@@ -1403,16 +1293,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentFranchiseSession.name !== franchiseName) return; // Stale check
                 currentFranchiseSession.unwatched = data.unwatched || [];
                 const unwatchedCount = currentFranchiseSession.unwatched.length;
-                const totalCount = franchiseItems.length + unwatchedCount;
 
                 if (franchiseTabUnwatchedCount) franchiseTabUnwatchedCount.innerText = String(unwatchedCount);
-                if (franchiseTabAllCount) franchiseTabAllCount.innerText = String(totalCount);
                 if (franchiseModalCount) {
-                    franchiseModalCount.innerText = `${franchiseItems.length} Watched • ${unwatchedCount} In-Universe`;
+                    franchiseModalCount.innerText = unwatchedCount > 0 
+                        ? `${franchiseItems.length} Watched • ${unwatchedCount} In-Universe`
+                        : `${franchiseItems.length} Watched • All Caught Up!`;
                 }
 
                 renderUnwatchedSection(currentFranchiseSession.unwatched);
-                renderFullUniverseTimeline(franchiseItems, currentFranchiseSession.unwatched);
             })
             .catch(err => {
                 console.error('Error fetching franchise scout:', err);
@@ -3905,7 +3794,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const renderedFranchises = new Set();
 
-        items.forEach((item, index) => {
+        let displayItems = items;
+        if (isRankingRequired) {
+            const seenFranchises = new Set();
+            displayItems = [];
+            items.forEach(it => {
+                if (it.type === 'Anime' && it.anime_franchise) {
+                    if (seenFranchises.has(it.anime_franchise)) {
+                        return; // Ensure only one season represents the whole franchise at its highest rank
+                    }
+                    seenFranchises.add(it.anime_franchise);
+                }
+                displayItems.push(it);
+            });
+        }
+
+        displayItems.forEach((item, index) => {
             // Format date correctly
             const dateObj = new Date(item.date_added);
             const dateStr = dateObj.toLocaleDateString(undefined, { 
@@ -3923,7 +3827,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isRankingRequired) {
                 // Podium Logic (1, 2, 3)
                 if (index === 0) {
-                    const top3 = items.slice(0, 3);
+                    const top3 = displayItems.slice(0, 3);
                     const podiumContainer = document.createElement('div');
                     podiumContainer.className = 'ranking-podium stagger-in';
                     
@@ -3936,27 +3840,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         const isFranchise = (podiumItem.type === 'Anime' && podiumItem.anime_franchise);
                         const mainTitle = isFranchise ? podiumItem.anime_franchise : podiumItem.title;
 
-                        let subTitle = '';
-                        if (isFranchise) {
-                            const franchiseSiblings = allMedia.filter(m => m.type === 'Anime' && m.anime_franchise === podiumItem.anime_franchise);
-                            const topScore = podiumItem.numeric_rating ? `${String(podiumItem.numeric_rating).replace('/10', '').trim()}/10` : '';
-                            const otherCount = franchiseSiblings.length > 1 ? ` • +${franchiseSiblings.length - 1} more` : '';
-                            subTitle = `<div class="podium-sub" style="font-size:0.74rem; opacity:0.85; font-weight:600; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-secondary);" title="${podiumItem.title}">
-                                ${podiumItem.title}${topScore ? ` <span style="color:var(--theme-accent); font-weight:700;">(${topScore})</span>` : ''}${otherCount}
-                            </div>`;
-                        } else {
-                            const itemScore = podiumItem.numeric_rating ? `${String(podiumItem.numeric_rating).replace('/10', '').trim()}/10` : '';
-                            if (itemScore) {
-                                subTitle = `<div class="podium-sub" style="font-size:0.74rem; opacity:0.85; font-weight:700; margin-top:3px; color:var(--theme-accent);">${itemScore}</div>`;
-                            }
-                        }
-
                         return `
                             <div class="podium-item podium-rank-${rankPos}" data-item-id="${podiumItem.id}">
                                 <div class="podium-badge">#${rankNum}</div>
                                 ${posterHtml}
                                 <div class="podium-title" title="${mainTitle}">${mainTitle}</div>
-                                ${subTitle}
                                 ${podiumItem.director ? `<div class="podium-director">${podiumItem.director}</div>` : ''}
                             </div>
                         `;

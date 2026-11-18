@@ -26,7 +26,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=459">
+    <link rel="stylesheet" href="style.css?v=460">
 </head>
 
 <body class="read-only-mode">
@@ -1552,9 +1552,6 @@
                 <button type="button" class="franchise-tab-btn" id="franchiseTabUnwatched" data-tab="unwatched">
                     <i class="fas fa-compass"></i> What to Watch Next (<span id="franchiseTabUnwatchedCount">...</span>)
                 </button>
-                <button type="button" class="franchise-tab-btn" id="franchiseTabAll" data-tab="all">
-                    <i class="fas fa-stream"></i> Full Universe (<span id="franchiseTabAllCount">...</span>)
-                </button>
             </div>
 
             <!-- Tab 1: Watched Branches -->
@@ -1562,13 +1559,8 @@
                 <!-- Populated via JS -->
             </div>
 
-            <!-- Tab 2: What to Watch Next (Scouted) -->
+            <!-- Tab 2: What to Watch Next (Scouted Universe) -->
             <div id="franchiseModalUnwatched" style="flex: 1; overflow-y: auto; display: none; flex-direction: column; gap: 12px; padding-right: 6px;">
-                <!-- Populated via JS -->
-            </div>
-
-            <!-- Tab 3: Full Chronological Universe -->
-            <div id="franchiseModalAll" style="flex: 1; overflow-y: auto; display: none; flex-direction: column; gap: 12px; padding-right: 6px;">
                 <!-- Populated via JS -->
             </div>
         </div>
@@ -1644,7 +1636,7 @@
 
     <!-- Core App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="app.js?v=459"></script>
+    <script src="app.js?v=460"></script>
 
 
 

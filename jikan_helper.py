@@ -995,6 +995,7 @@ def get_anime_relations(mal_id: Optional[int] = None, title: Optional[str] = Non
               format
               seasonYear
               episodes
+              duration
               status
               coverImage { large extraLarge }
               studios(isMain: true) { nodes { name } }
@@ -1025,8 +1026,7 @@ def get_anime_relations(mal_id: Optional[int] = None, title: Optional[str] = Non
         "ALTERNATIVE": "Alternative Route",
         "SIDE_STORY": "Side Story",
         "PARENT": "Parent Story",
-        "SUMMARY": "Summary",
-        "CHARACTER": "Spin-off"
+        "SUMMARY": "Summary"
     }
 
     for edge in edges:
@@ -1034,13 +1034,33 @@ def get_anime_relations(mal_id: Optional[int] = None, title: Optional[str] = Non
         if not n:
             continue
         fmt = n.get("format")
-        if fmt in ("MANGA", "NOVEL", "ONE_SHOT"):
+        # 1. Strictly exclude print media and music videos/singles
+        if fmt in ("MANGA", "NOVEL", "ONE_SHOT", "MUSIC"):
             continue
 
         raw_rel = edge.get("relationType", "OTHER")
-        friendly_rel = rel_map.get(raw_rel, raw_rel.replace("_", " ").title())
+        # 2. Exclude CHARACTER crossovers (which pulls in Toriko, Dragon Ball Z in One Piece, or commercial cameos)
+        if raw_rel == "CHARACTER":
+            continue
+
+        ep = n.get("episodes")
+        dur = n.get("duration")
+        # 3. Exclude insignificant shorts (single episode <= 8 minutes, like 1m-5m commercial/promotional shorts)
+        if ep == 1 and dur and dur <= 8:
+            continue
+
         t_obj = n.get("title") or {}
         entry_title = t_obj.get("english") or t_obj.get("userPreferred") or t_obj.get("romaji") or "Untitled"
+        lower_title = entry_title.lower()
+
+        # 4. Filter out promotional noise, picture dramas, and recaps
+        if any(noise in lower_title for noise in [
+            "picture drama", "music video", "theme song", "commercial",
+            "interview", "digest", "dance carnival", "preview", "teaser", "recap"
+        ]):
+            continue
+
+        friendly_rel = rel_map.get(raw_rel, raw_rel.replace("_", " ").title())
         studios = [s["name"] for s in (n.get("studios") or {}).get("nodes", []) if s.get("name")]
         cover = (n.get("coverImage") or {}).get("extraLarge") or (n.get("coverImage") or {}).get("large")
 
@@ -1111,6 +1131,7 @@ def scout_franchise_universe(franchise_name: str, tracked_items: List[dict]) -> 
               format
               seasonYear
               episodes
+              duration
               status
               coverImage { large extraLarge }
               studios(isMain: true) { nodes { name } }
@@ -1124,15 +1145,29 @@ def scout_franchise_universe(franchise_name: str, tracked_items: List[dict]) -> 
                 media_list = res["data"]["Page"].get("media", [])
                 for n in media_list:
                     fmt = n.get("format")
-                    if fmt in ("MANGA", "NOVEL", "ONE_SHOT"):
+                    if fmt in ("MANGA", "NOVEL", "ONE_SHOT", "MUSIC"):
                         continue
                     key = n.get("idMal") or n.get("id")
                     if not key or key in discovered:
                         continue
+
+                    ep = n.get("episodes")
+                    dur = n.get("duration")
+                    if ep == 1 and dur and dur <= 8:
+                        continue
+
                     t_obj = n.get("title") or {}
                     e_title = t_obj.get("english") or t_obj.get("userPreferred") or t_obj.get("romaji") or ""
                     r_title = t_obj.get("romaji") or ""
-                    
+                    lower_title = e_title.lower()
+
+                    # Filter promotional noise, commercials, recaps, music videos
+                    if any(noise in lower_title for noise in [
+                        "picture drama", "music video", "theme song", "commercial",
+                        "interview", "digest", "dance carnival", "preview", "teaser", "recap"
+                    ]):
+                        continue
+
                     # Ensure title is legitimately part of this franchise
                     if clean_franchise.lower() not in e_title.lower() and clean_franchise.lower() not in r_title.lower():
                         continue
