@@ -976,6 +976,117 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Anime Franchise Detail Modal Logic ---
+    const franchiseModal = document.getElementById('franchiseModal');
+    const closeFranchiseModalBtn = document.getElementById('closeFranchiseModalBtn');
+    const franchiseModalTitle = document.getElementById('franchiseModalTitle');
+    const franchiseModalCount = document.getElementById('franchiseModalCount');
+    const franchiseModalMeta = document.getElementById('franchiseModalMeta');
+    const franchiseModalBranches = document.getElementById('franchiseModalBranches');
+
+    const openFranchiseModal = (franchiseName, franchiseItems) => {
+        if (!franchiseModal) return;
+        if (franchiseModalTitle) franchiseModalTitle.innerText = franchiseName;
+        if (franchiseModalCount) {
+            franchiseModalCount.innerText = `${franchiseItems.length} ${franchiseItems.length === 1 ? 'Installment' : 'Installments'}`;
+        }
+
+        const studios = Array.from(new Set(franchiseItems.map(i => i.director).filter(Boolean)));
+        const bestScoreItem = [...franchiseItems].sort((a, b) => {
+            const getScore = (it) => {
+                const s = it.numeric_rating ? String(it.numeric_rating).replace('/10', '').trim() : '';
+                return parseFloat(s) || 0;
+            };
+            return getScore(b) - getScore(a);
+        })[0];
+        const bestRank = franchiseItems.map(i => rankMap[(i.title + '|' + i.type).toLowerCase()]).filter(Boolean).sort((a, b) => a - b)[0];
+
+        let metaParts = [];
+        if (studios.length > 0) metaParts.push(`Studios: ${studios.join(', ')}`);
+        if (bestRank) metaParts.push(`Peak Rank: ★ #${bestRank}`);
+        if (bestScoreItem && bestScoreItem.numeric_rating) metaParts.push(`Top Rating: ${bestScoreItem.numeric_rating}`);
+        if (franchiseModalMeta) franchiseModalMeta.innerText = metaParts.join(' • ');
+
+        // Group by Branch
+        const branchGroups = {};
+        franchiseItems.forEach(item => {
+            const branch = item.anime_branch || item.title || 'Main Series';
+            if (!branchGroups[branch]) branchGroups[branch] = [];
+            branchGroups[branch].push(item);
+        });
+
+        if (franchiseModalBranches) {
+            franchiseModalBranches.innerHTML = Object.keys(branchGroups).map(branchName => {
+                const bItems = branchGroups[branchName];
+                bItems.sort((a, b) => (a.release_year || 0) - (b.release_year || 0));
+
+                const rowsHtml = bItems.map(it => {
+                    const cover = it.cover_url || '/static/movies_header.png';
+                    const score = it.numeric_rating ? `${String(it.numeric_rating).replace('/10', '').trim()}/10` : (it.rating && !it.rating.startsWith('#') ? it.rating : '');
+                    const r = rankMap[(it.title + '|' + it.type).toLowerCase()];
+                    const roleBadge = it.anime_relation ? `<span class="franchise-role-tag">${it.anime_relation}</span>` : '';
+                    const rankBadge = r ? `<span style="font-weight:800; color:var(--theme-accent); font-size:0.75rem;">★ #${r}</span>` : '';
+
+                    return `
+                        <div class="franchise-entry-row" data-id="${it.id}">
+                            <img src="${cover}" class="franchise-entry-thumb" alt="${it.title}" loading="lazy">
+                            <div class="franchise-entry-info">
+                                <span class="franchise-entry-title">${it.title}</span>
+                                <div class="franchise-entry-meta">
+                                    <span>${it.release_year || 'Unknown'}</span>
+                                    ${it.director ? `<span>• ${it.director}</span>` : ''}
+                                    ${roleBadge}
+                                    ${rankBadge}
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.6rem; flex-shrink:0;">
+                                ${it.is_liked ? `<span style="color:#ff4757; font-size:0.9rem;">♥</span>` : ''}
+                                ${score ? `<span class="col-detail-rating-pill">${score}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="franchise-branch-block">
+                        <div class="franchise-branch-header">
+                            <h3 class="franchise-branch-title">
+                                <i class="fas fa-folder-open" style="color:var(--theme-accent); font-size:0.9rem;"></i>
+                                ${branchName}
+                            </h3>
+                            <span style="font-size:0.72rem; color:var(--text-secondary); opacity:0.6;">${bItems.length} ${bItems.length === 1 ? 'part' : 'parts'}</span>
+                        </div>
+                        ${rowsHtml}
+                    </div>
+                `;
+            }).join('');
+
+            franchiseModalBranches.querySelectorAll('.franchise-entry-row').forEach(row => {
+                row.addEventListener('click', (e) => {
+                    const id = parseInt(row.getAttribute('data-id'), 10);
+                    const found = allMedia.find(m => m.id === id);
+                    if (found) {
+                        window.openQuickInfo(found);
+                    }
+                });
+            });
+        }
+
+        franchiseModal.classList.add('show');
+    };
+
+    if (closeFranchiseModalBtn) {
+        closeFranchiseModalBtn.onclick = () => {
+            if (franchiseModal) franchiseModal.classList.remove('show');
+        };
+    }
+
+    window.addEventListener('click', (e) => {
+        if (e.target === franchiseModal) {
+            franchiseModal.classList.remove('show');
+        }
+    });
+
     const renderCollections = async (category) => {
         if (!collectionsGrid) return;
         const displayLabel = category === 'TV Series' ? 'TV Shows' : category;
@@ -3434,6 +3545,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const renderedFranchises = new Set();
+
         items.forEach((item, index) => {
             // Format date correctly
             const dateObj = new Date(item.date_added);
@@ -3571,6 +3684,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
             } else {
+                // Franchise Master Card Block (Anime Only)
+                if (currentCategory === 'Anime' && item.anime_franchise) {
+                    if (renderedFranchises.has(item.anime_franchise)) {
+                        return; // Sibling route/spinoff already bundled
+                    }
+                    renderedFranchises.add(item.anime_franchise);
+
+                    // Find all anime in this franchise
+                    const franchiseItems = allMedia.filter(m => 
+                        m.type === 'Anime' && m.anime_franchise === item.anime_franchise
+                    );
+
+                    const fCard = document.createElement('div');
+                    fCard.className = 'media-card franchise-card stagger-in';
+                    fCard.style.animationDelay = `${index * 0.02}s`;
+                    fCard.style.cursor = 'pointer';
+
+                    // Pick representative item (best rank or highest score)
+                    const bestItem = [...franchiseItems].sort((a, b) => {
+                        const getScore = (it) => {
+                            const s = it.numeric_rating ? String(it.numeric_rating).replace('/10', '').trim() : '';
+                            return parseFloat(s) || 0;
+                        };
+                        return getScore(b) - getScore(a);
+                    })[0] || item;
+
+                    const bestRank = franchiseItems.map(i => rankMap[(i.title + '|' + i.type).toLowerCase()]).filter(Boolean).sort((a, b) => a - b)[0];
+                    const hasLiked = franchiseItems.some(i => i.is_liked);
+
+                    const allGenres = Array.from(new Set(franchiseItems.flatMap(i => (i.genres || '').split(',').map(g => g.trim())).filter(Boolean))).slice(0, 3);
+                    const allStudios = Array.from(new Set(franchiseItems.map(i => i.director).filter(Boolean))).slice(0, 2);
+
+                    fCard.innerHTML = `
+                        <div class="card-poster-bg" style="background-image: url('${bestItem.cover_url || ''}')"></div>
+                        <div class="card-content-overlay"></div>
+                        <span class="franchise-header-badge"><i class="fas fa-layer-group"></i> Franchise</span>
+                        <div class="card-header">
+                            <h3 class="media-title" style="color: var(--theme-accent); font-size: 1.15rem;">${item.anime_franchise}</h3>
+                            <span class="franchise-count-pill"><i class="fas fa-sitemap"></i> ${franchiseItems.length} Routes & Spinoffs</span>
+                        </div>
+                        ${allGenres.length > 0 ? `
+                            <div class="genre-container">
+                                ${allGenres.map(g => `<span class="genre-badge">${g}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        ${allStudios.length > 0 ? `
+                            <div class="director-container">
+                                <span class="director-badge">Studio: ${allStudios.join(' / ')}</span>
+                            </div>
+                        ` : ''}
+                        <div class="card-badges">
+                            <div class="badge-slot-left">
+                                ${bestRank ? `<span class="card-rank-badge rank-top5">★ #${bestRank}</span>` : ''}
+                            </div>
+                            <div class="badge-slot-right">
+                                ${hasLiked ? `<span class="card-liked-indicator">♥</span>` : ''}
+                                <span class="review-badge" style="background: rgba(var(--theme-accent-rgb), 0.2); border-color: var(--theme-accent); color: #fff;">View Universe</span>
+                            </div>
+                        </div>
+                    `;
+
+                    fCard.addEventListener('click', () => {
+                        openFranchiseModal(item.anime_franchise, franchiseItems);
+                    });
+
+                    grid.appendChild(fCard);
+                    return;
+                }
+
                 // Traditional Grid Block 
                 const card = document.createElement('div');
                 card.className = 'media-card stagger-in';

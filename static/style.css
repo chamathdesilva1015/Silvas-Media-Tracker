@@ -7587,3 +7587,140 @@ body.modal-open .bottom-nav {
     background: rgba(var(--theme-accent-rgb, 147, 112, 219), 0.25) !important;
     box-shadow: 0 0 16px var(--theme-accent-glow);
 }
+
+/* ── Anime Franchise Grid Card & Modal Overhaul ── */
+.media-card.franchise-card {
+    border: 1px solid rgba(var(--theme-accent-rgb, 147, 112, 219), 0.35) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(var(--theme-accent-rgb, 147, 112, 219), 0.15) !important;
+    position: relative;
+}
+
+.media-card.franchise-card:hover {
+    border-color: rgba(var(--theme-accent-rgb, 147, 112, 219), 0.8) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(var(--theme-accent-rgb, 147, 112, 219), 0.4) !important;
+}
+
+.franchise-header-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.6rem;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(var(--theme-accent-rgb, 147, 112, 219), 0.5);
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--theme-accent);
+    z-index: 5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.franchise-count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(var(--theme-accent-rgb, 147, 112, 219), 0.18);
+    border: 1px solid rgba(var(--theme-accent-rgb, 147, 112, 219), 0.35);
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--theme-accent);
+    margin-top: 0.3rem;
+}
+
+.franchise-branch-block {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.franchise-branch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.2rem;
+}
+
+.franchise-branch-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.franchise-role-tag {
+    font-size: 0.68rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.franchise-entry-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 0.9rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.franchise-entry-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(var(--theme-accent-rgb, 147, 112, 219), 0.4);
+    transform: translateX(4px);
+}
+
+.franchise-entry-thumb {
+    width: 44px;
+    height: 62px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.franchise-entry-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.franchise-entry-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.franchise-entry-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
