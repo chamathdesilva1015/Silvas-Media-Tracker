@@ -148,6 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 rankingsAdminConsole.style.display = 'none';
             }
         }
+
+        // Keep hub recommendations in sync with auth status
+        if (typeof window.fetchHubRecommendations === 'function') {
+            window.fetchHubRecommendations(currentCategory);
+        }
     };
 
     const loginModal = document.getElementById('loginModal');
@@ -286,6 +291,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     updatePinDots();
                     if (window.updateAuthUI) window.updateAuthUI();
                     if (typeof filterAndRenderMedia === 'function') filterAndRenderMedia();
+                    if (typeof fetchHubRecommendations === 'function') fetchHubRecommendations(currentCategory);
+                    if (typeof renderCollections === 'function' && currentSubTab === 'Collections') renderCollections(currentCategory);
                 } else if (resp.status === 429) {
                     // Lockout enforced!
                     const secs = data.remaining_seconds || 60;
@@ -538,6 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCategoryTitleCount();
             updateHubGatewayUI();
             updateTheme();
+            if (typeof fetchHubRecommendations === 'function') fetchHubRecommendations(category);
             filterAndRenderMedia();
             if (typeof renderInfoAccordions === 'function') renderInfoAccordions();
         }
@@ -586,6 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateTheme();
                 populateGenreFilters();
                 filterAndRenderMedia();
+                if (typeof fetchHubRecommendations === 'function') fetchHubRecommendations(currentCategory);
             } else if (filter) {
                 handleCategorySwitch(filter);
             }
@@ -621,6 +630,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 populateGenreFilters();
                 filterAndRenderMedia();
+                if (sub === 'Info' && typeof fetchHubRecommendations === 'function') {
+                    fetchHubRecommendations(currentCategory);
+                }
             }
         });
     });
@@ -5790,6 +5802,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
+    let hubRecsCache = {};
+
     async function fetchHubRecommendations(category) {
         const activeList = document.getElementById('activeRecsList');
         const watchedList = document.getElementById('watchedRecsList');
@@ -5801,96 +5815,110 @@ document.addEventListener('DOMContentLoaded', () => {
         const isManga = category === 'Manga';
         const watchedVerb = isManga ? 'Read' : 'Watched';
         const watchedVerbLower = isManga ? 'read' : 'watched';
-        
-        // Immediately clear recommendations lists and show loading spinner to prevent old category items from lingering
-        activeList.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;"><i class="fas fa-circle-notch fa-spin fa-fw"></i> Loading...</div>`;
-        watchedList.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;"><i class="fas fa-circle-notch fa-spin fa-fw"></i> Loading...</div>`;
-        if (activeTitle) activeTitle.textContent = `Active Recommendations`;
-        if (watchedTitle) watchedTitle.textContent = `${watchedVerb} Recommendations`;
+
+        const renderList = (container, recs, isWatched) => {
+            container.innerHTML = '';
+            if (recs.length === 0) {
+                container.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No ${isWatched ? watchedVerbLower : 'active'} recommendations.</div>`;
+                return;
+            }
+            
+            recs.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'rec-entry-item';
+                
+                const posterUrl = rec.cover_url || 'https://via.placeholder.com/150x225?text=No+Poster';
+                
+                item.innerHTML = `
+                    <img src="${posterUrl}" class="rec-entry-poster" alt="Poster">
+                    <div class="rec-entry-info">
+                        <div class="rec-entry-title">${rec.title}</div>
+                        <div class="rec-entry-meta">
+                            ${rec.year || '????'} • ${rec.recommender_name || 'Anonymous'}
+                            <div style="font-size: 0.65rem; opacity: 0.5; margin-top: 2px;">
+                                ${new Date(rec.date_added + 'Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${new Date(rec.date_added + 'Z').toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rec-entry-actions">
+                        ${!isWatched && computeCanEdit() ? `
+                            <div class="rec-action-btn accept" title="Mark as ${watchedVerb}"><i class="fas fa-check"></i></div>
+                            <div class="rec-action-btn delete" title="Remove"><i class="fas fa-trash-alt"></i></div>
+                        ` : (isWatched && computeCanEdit() ? `
+                            <div class="rec-action-btn delete" title="Remove"><i class="fas fa-trash-alt"></i></div>
+                        ` : '')}
+                    </div>
+                `;
+                
+                // Open Quick Info on Title/Poster click
+                const openInfo = () => {
+                    window.openQuickInfo({
+                        ...rec,
+                        release_year: rec.year,
+                        isRecommendation: true,
+                        _recId: rec.id
+                    });
+                };
+                item.querySelector('.rec-entry-title').onclick = openInfo;
+                item.querySelector('.rec-entry-poster').onclick = openInfo;
+                
+                // Admin Actions
+                if (computeCanEdit()) {
+                    const acceptBtn = item.querySelector('.accept');
+                    const deleteBtn = item.querySelector('.delete');
+                    
+                    if (acceptBtn) {
+                        acceptBtn.onclick = async (e) => {
+                            e.stopPropagation();
+                            if (!confirm(`Mark "${rec.title}" as ${watchedVerbLower}?`)) return;
+                            const success = await updateRecStatus(rec.id, 'accepted');
+                            if (success) fetchHubRecommendations(category);
+                        };
+                    }
+                    
+                    if (deleteBtn) {
+                        deleteBtn.onclick = async (e) => {
+                            e.stopPropagation();
+                            if (!confirm(`Remove "${rec.title}" from recommendations?`)) return;
+                            const success = await updateRecStatus(rec.id, 'rejected');
+                            if (success) fetchHubRecommendations(category);
+                        };
+                    }
+                }
+                
+                container.appendChild(item);
+            });
+        };
+
+        // If category switched, show loading to prevent old items lingering.
+        // If same category (e.g. admin login or refresh), render cached immediately to prevent flicker and show admin actions instantly!
+        if (activeList.dataset.category !== category) {
+            activeList.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;"><i class="fas fa-circle-notch fa-spin fa-fw"></i> Loading...</div>`;
+            watchedList.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;"><i class="fas fa-circle-notch fa-spin fa-fw"></i> Loading...</div>`;
+            if (activeTitle) activeTitle.textContent = `Active Recommendations`;
+            if (watchedTitle) watchedTitle.textContent = `${watchedVerb} Recommendations`;
+        } else if (hubRecsCache[category]) {
+            const cachedActive = hubRecsCache[category].filter(r => r.status === 'pending');
+            const cachedWatched = hubRecsCache[category].filter(r => r.status === 'accepted');
+            if (activeTitle) activeTitle.textContent = `[${cachedActive.length}] Active Recommendations`;
+            if (watchedTitle) watchedTitle.textContent = `[${cachedWatched.length}] ${watchedVerb} Recommendations`;
+            renderList(activeList, cachedActive, false);
+            renderList(watchedList, cachedWatched, true);
+        }
+
+        activeList.dataset.category = category;
+        watchedList.dataset.category = category;
 
         try {
             const response = await fetch(`/api/recommendations/recent/${category}?t=${Date.now()}`);
             const data = await response.json();
+            hubRecsCache[category] = data;
             
             const activeData = data.filter(r => r.status === 'pending');
             const watchedData = data.filter(r => r.status === 'accepted');
             
             if (activeTitle) activeTitle.textContent = `[${activeData.length}] Active Recommendations`;
             if (watchedTitle) watchedTitle.textContent = `[${watchedData.length}] ${watchedVerb} Recommendations`;
-            
-            const renderList = (container, recs, isWatched) => {
-                container.innerHTML = '';
-                if (recs.length === 0) {
-                    container.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-secondary); opacity: 0.5; text-align: center; padding: 1.5rem;">No ${isWatched ? watchedVerbLower : 'active'} recommendations.</div>`;
-                    return;
-                }
-                
-                recs.forEach(rec => {
-                    const item = document.createElement('div');
-                    item.className = 'rec-entry-item';
-                    
-                    const posterUrl = rec.cover_url || 'https://via.placeholder.com/150x225?text=No+Poster';
-                    
-                    item.innerHTML = `
-                        <img src="${posterUrl}" class="rec-entry-poster" alt="Poster">
-                        <div class="rec-entry-info">
-                            <div class="rec-entry-title">${rec.title}</div>
-                            <div class="rec-entry-meta">
-                                ${rec.year || '????'} • ${rec.recommender_name || 'Anonymous'}
-                                <div style="font-size: 0.65rem; opacity: 0.5; margin-top: 2px;">
-                                    ${new Date(rec.date_added + 'Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${new Date(rec.date_added + 'Z').toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="rec-entry-actions">
-                            ${!isWatched && computeCanEdit() ? `
-                                <div class="rec-action-btn accept" title="Mark as ${watchedVerb}"><i class="fas fa-check"></i></div>
-                                <div class="rec-action-btn delete" title="Remove"><i class="fas fa-trash-alt"></i></div>
-                            ` : (isWatched && computeCanEdit() ? `
-                                <div class="rec-action-btn delete" title="Remove"><i class="fas fa-trash-alt"></i></div>
-                            ` : '')}
-                        </div>
-                    `;
-                    
-                    // Open Quick Info on Title/Poster click
-                    const openInfo = () => {
-                        window.openQuickInfo({
-                            ...rec,
-                            release_year: rec.year,
-                            isRecommendation: true,
-                            _recId: rec.id
-                        });
-                    };
-                    item.querySelector('.rec-entry-title').onclick = openInfo;
-                    item.querySelector('.rec-entry-poster').onclick = openInfo;
-                    
-                    // Admin Actions
-                    if (computeCanEdit()) {
-                        const acceptBtn = item.querySelector('.accept');
-                        const deleteBtn = item.querySelector('.delete');
-                        
-                        if (acceptBtn) {
-                            acceptBtn.onclick = async (e) => {
-                                e.stopPropagation();
-                                if (!confirm(`Mark "${rec.title}" as ${watchedVerbLower}?`)) return;
-                                const success = await updateRecStatus(rec.id, 'accepted');
-                                if (success) fetchHubRecommendations(category);
-                            };
-                        }
-                        
-                        if (deleteBtn) {
-                            deleteBtn.onclick = async (e) => {
-                                e.stopPropagation();
-                                if (!confirm(`Remove "${rec.title}" from recommendations?`)) return;
-                                const success = await updateRecStatus(rec.id, 'rejected');
-                                if (success) fetchHubRecommendations(category);
-                            };
-                        }
-                    }
-                    
-                    container.appendChild(item);
-                });
-            };
             
             renderList(activeList, activeData, false);
             renderList(watchedList, watchedData, true);
@@ -5899,6 +5927,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error fetching hub recommendations:', error);
         }
     }
+    window.fetchHubRecommendations = fetchHubRecommendations;
 
     async function updateRecStatus(recId, status) {
         try {
