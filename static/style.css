@@ -12,7 +12,7 @@
     --theme-accent: #60a5fa;
     --theme-secondary: #c084fc;
     --theme-accent-muted: rgba(96, 165, 250, 0.1);
-    --theme-accent-glow: rgba(96, 165, 250, 0.3);
+    --theme-accent-glow: rgba(96, 165, 250, 0.18);
     --theme-secondary-muted: rgba(192, 132, 252, 0.1);
     --theme-banner: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
 
@@ -31,7 +31,7 @@
     --theme-accent-vibrant: #00d2ff;
     --theme-secondary: #9b59b6; /* Purple */
     --theme-accent-muted: rgba(52, 152, 219, 0.15);
-    --theme-accent-glow: rgba(52, 152, 219, 0.4);
+    --theme-accent-glow: rgba(52, 152, 219, 0.2);
     --theme-secondary-muted: rgba(155, 89, 182, 0.15);
     --theme-banner: linear-gradient(135deg, #0f1c2e 0%, #1b2838 100%);
     --theme-header-bg: url('movies_header.png');
@@ -48,7 +48,7 @@
     --theme-accent-vibrant: #ff4757;
     --theme-secondary: #e67e22; /* Orange */
     --theme-accent-muted: rgba(231, 76, 60, 0.15);
-    --theme-accent-glow: rgba(231, 76, 60, 0.4);
+    --theme-accent-glow: rgba(231, 76, 60, 0.2);
     --theme-secondary-muted: rgba(230, 126, 34, 0.15);
     --theme-banner: linear-gradient(135deg, #2d0a0a 0%, #30171a 100%);
     --theme-header-bg: url('tv_shows_header.png');
@@ -70,7 +70,7 @@
     --theme-accent-vibrant: #2ed573;
     --theme-secondary: #f1c40f; /* Yellow */
     --theme-accent-muted: rgba(46, 204, 113, 0.15);
-    --theme-accent-glow: rgba(46, 204, 113, 0.4);
+    --theme-accent-glow: rgba(46, 204, 113, 0.2);
     --theme-secondary-muted: rgba(241, 196, 15, 0.15);
     --theme-banner: linear-gradient(135deg, #0a1a10 0%, #142e1f 100%);
     --theme-header-bg: url('manga_header.png');
@@ -87,7 +87,7 @@
     --theme-accent-vibrant: #fffa65;
     --theme-secondary: #2ecc71; /* Green */
     --theme-accent-muted: rgba(241, 196, 15, 0.15);
-    --theme-accent-glow: rgba(241, 196, 15, 0.5);
+    --theme-accent-glow: rgba(241, 196, 15, 0.22);
     --theme-secondary-muted: rgba(46, 204, 113, 0.15);
     --theme-banner: linear-gradient(135deg, #241b0a 0%, #302416 100%);
     --theme-header-bg: url('anime_header.png');
@@ -436,7 +436,7 @@ h1, h2, h3, h4, h5, h6, .serif, .font-heading {
 .hub-category-switcher .pill-tab.active,
 .premium-segmented-control .tuning-btn.active {
     border-color: var(--theme-accent) !important;
-    box-shadow: 0 0 25px var(--theme-accent-glow), 0 0 50px rgba(var(--theme-accent-rgb), 0.3);
+    box-shadow: 0 4px 14px rgba(var(--theme-accent-rgb), 0.25);
 }
 
 
@@ -525,7 +525,7 @@ header.has-sub-controls {
     color: #000 !important;
     font-weight: 800 !important;
     border-color: var(--theme-accent) !important;
-    box-shadow: 0 0 25px var(--theme-accent-glow), 0 0 50px rgba(var(--theme-accent-rgb), 0.3) !important;
+    box-shadow: 0 4px 16px rgba(var(--theme-accent-rgb), 0.3) !important;
     transform: scale(1.05);
 }
 
@@ -1287,7 +1287,7 @@ header p {
 .hub-gateway-card:hover {
     transform: translateY(-5px) scale(1.02);
     border-color: var(--theme-accent);
-    box-shadow: 0 15px 40px var(--theme-accent-glow), 0 0 30px rgba(var(--theme-accent-rgb), 0.2);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 16px var(--theme-accent-glow);
     background: rgba(255, 255, 255, 0.05);
 }
 
@@ -1308,7 +1308,7 @@ header p {
     color: var(--theme-accent);
     flex-shrink: 0;
     transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 16px var(--theme-accent-glow), inset 0 0 12px var(--theme-accent-muted);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 .hub-gateway-card:hover .hub-gateway-icon {
@@ -1316,7 +1316,7 @@ header p {
     background: var(--theme-accent);
     border-color: #fff;
     color: #000;
-    box-shadow: 0 0 24px var(--theme-accent-glow);
+    box-shadow: 0 4px 14px var(--theme-accent-glow);
 }
 
 .hub-gateway-content {
@@ -1480,11 +1480,9 @@ header p {
 
 
 .card-liked-indicator {
-    color: #ff3b4b; /* Brighter vivid red */
-    font-size: 1.1rem;
-    text-shadow: 0 0 15px rgba(255, 59, 75, 0.9); /* Stronger vivid glow */
-    filter: drop-shadow(0 0 8px rgba(255, 59, 75, 0.6));
-
+    color: #ff4757;
+    font-size: 1.05rem;
+    filter: drop-shadow(0 1px 4px rgba(255, 71, 87, 0.4));
     pointer-events: none;
     margin-right: 0.3rem;
     display: inline-block;
@@ -1570,7 +1568,7 @@ header p {
 
 .media-card:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px var(--theme-accent-glow);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 12px var(--theme-accent-glow);
     border-color: var(--theme-accent);
     background: rgba(255, 255, 255, 0.05);
 }
@@ -1907,7 +1905,7 @@ delete-btn {
 
 .hover-rating {
     color: var(--text-primary) !important;
-    text-shadow: 0 0 30px var(--theme-accent-glow) !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 10px var(--theme-accent-glow) !important;
     font-weight: 400;
     opacity: 0;
 }
@@ -2027,7 +2025,7 @@ delete-btn {
 
 .director-badge:hover {
     background: rgba(var(--theme-accent-rgb), 0.2) !important;
-    box-shadow: 0 0 15px var(--theme-accent-glow) !important;
+    box-shadow: 0 2px 8px var(--theme-accent-glow) !important;
     transform: scale(1.05);
 }
 
@@ -5938,7 +5936,7 @@ body.modal-open .bottom-nav {
 #quickInfoGenres .genre-badge:hover, 
 .type-badge:hover, 
 .meta-chip:hover {
-    box-shadow: 0 0 20px var(--theme-accent-glow) !important;
+    box-shadow: 0 2px 8px var(--theme-accent-glow) !important;
     border-color: var(--theme-accent) !important;
     transform: translateY(-2px);
     background: rgba(var(--theme-accent-rgb), 0.1) !important;
@@ -5983,7 +5981,7 @@ body.modal-open .bottom-nav {
         position: relative;
         background: rgba(10, 10, 12, 0.88) !important;
         backdrop-filter: blur(10px);
-        box-shadow: 0 0 80px var(--theme-accent), 0 20px 80px rgba(0, 0, 0, 0.9);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 20px rgba(var(--theme-accent-rgb), 0.15);
         margin: auto;
     }
 
@@ -6057,8 +6055,7 @@ body.modal-open .bottom-nav {
         max-height: 70vh;
         overflow-y: auto;
         gap: 0.35rem;
-        /* Theme-aware text glow for all details */
-        text-shadow: 0 0 10px var(--theme-accent), 0 1px 4px rgba(0,0,0,0.9); 
+        text-shadow: 0 1px 4px rgba(0,0,0,0.9); 
     }
 
     .quick-info-header {
@@ -6078,7 +6075,7 @@ body.modal-open .bottom-nav {
         line-height: 1.2;
         text-transform: none;
         opacity: 0.9;
-        text-shadow: 0 0 10px rgba(var(--theme-accent-rgb), 0.6) !important;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
     }
 
 
@@ -6092,8 +6089,7 @@ body.modal-open .bottom-nav {
             -1px -1px 0 #000,  
              1px -1px 0 #000,
             -1px  1px 0 #000,
-             1px  1px 0 #000,
-             0 0 10px var(--theme-accent); /* Keep themed glow too */
+             1px  1px 0 #000;
     }
 
     .quick-info-rating-section {
@@ -6194,7 +6190,7 @@ body.modal-open .bottom-nav {
         background: rgba(var(--theme-accent-rgb), 0.3) !important;
         border: 1px solid var(--theme-accent) !important;
         color: #fff !important;
-        text-shadow: 0 0 10px var(--theme-accent), 0 1px 4px #000 !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
         font-weight: 700 !important;
         border-radius: 20px !important;
         display: inline-block !important;
@@ -6291,9 +6287,7 @@ body.modal-open .bottom-nav {
     line-height: 1.1;
     margin-bottom: 0.8rem;
     color: var(--text-primary);
-    text-shadow: 
-        0 0 15px rgba(var(--theme-accent-rgb), 0.7),
-        0 0 30px rgba(var(--theme-accent-rgb), 0.4) !important; /* Multilayer theme glow */
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
     letter-spacing: -0.02em;
 }
 
@@ -6611,8 +6605,7 @@ body.modal-open .bottom-nav {
         font-weight: 800 !important;
         font-size: 0.95rem !important;
         border-radius: 15px 15px 0 0 !important;
-        /* Default theme glow */
-        box-shadow: 0 0 25px var(--theme-accent-glow) !important;
+        box-shadow: 0 4px 14px var(--theme-accent-glow) !important;
         border: 1px solid var(--theme-accent) !important;
         background: rgba(var(--theme-accent-rgb), 0.1) !important;
     }
@@ -6979,7 +6972,7 @@ body.modal-open .bottom-nav {
 .collection-card:hover {
     transform: translateY(-5px);
     border-color: var(--theme-accent);
-    box-shadow: 0 15px 35px var(--theme-accent-glow), 0 0 25px rgba(var(--theme-accent-rgb), 0.2);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 14px var(--theme-accent-glow);
 }
 
 .collection-cover-stack {
@@ -7606,19 +7599,19 @@ body.modal-open .bottom-nav {
 
 .franchise-pill:hover {
     background: rgba(var(--theme-accent-rgb, 147, 112, 219), 0.25) !important;
-    box-shadow: 0 0 16px var(--theme-accent-glow);
+    box-shadow: 0 2px 8px var(--theme-accent-glow);
 }
 
 /* ── Anime Franchise Grid Card & Modal Overhaul ── */
 .media-card.franchise-card {
     border: 1px solid rgba(var(--theme-accent-rgb, 147, 112, 219), 0.35) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(var(--theme-accent-rgb, 147, 112, 219), 0.15) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 12px rgba(var(--theme-accent-rgb, 147, 112, 219), 0.1) !important;
     position: relative;
 }
 
 .media-card.franchise-card:hover {
     border-color: rgba(var(--theme-accent-rgb, 147, 112, 219), 0.8) !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(var(--theme-accent-rgb, 147, 112, 219), 0.4) !important;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.65), 0 0 18px rgba(var(--theme-accent-rgb, 147, 112, 219), 0.2) !important;
 }
 
 .franchise-header-badge {

@@ -3050,12 +3050,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isLiked) {
                 pill.style.display = 'flex';
                 pill.style.opacity = '1';
-                pill.style.background = 'rgba(255, 59, 75, 0.35)'; /* High-voltage background */
-                pill.style.borderColor = 'rgba(255, 59, 75, 0.8)';  /* Strong solid border */
-                pill.style.boxShadow = '0 0 30px rgba(255, 59, 75, 0.5)'; /* Massive glow */
+                pill.style.background = 'rgba(255, 59, 75, 0.15)';
+                pill.style.borderColor = 'rgba(255, 59, 75, 0.4)';
+                pill.style.boxShadow = '0 2px 10px rgba(255, 59, 75, 0.25)';
                 pill.innerHTML = `
-                    <i class="fas fa-heart" style="color: #ff3b4b; font-size: 1.1rem; display: inline-block; margin-right: 4px; filter: drop-shadow(0 0 10px rgba(255, 59, 75, 1));"></i>
-                    <span class="rating-label" style="color: #ff3b4b; opacity: 1; margin: 0; font-weight: 900; letter-spacing: 0.08em; text-shadow: 0 0 12px rgba(255, 59, 75, 0.7);">Liked</span>
+                    <i class="fas fa-heart" style="color: #ff4757; font-size: 1rem; display: inline-block; margin-right: 4px;"></i>
+                    <span class="rating-label" style="color: #ff4757; opacity: 1; margin: 0; font-weight: 700; letter-spacing: 0.04em;">Liked</span>
                 `;
             } else {
 
