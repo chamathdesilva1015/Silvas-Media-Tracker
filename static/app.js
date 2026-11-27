@@ -79,11 +79,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const hostname = window.location.hostname;
     const isReadOnly = (hostname !== 'localhost' && hostname !== '127.0.0.1');
 
-    // Admin Auth Hook (Strictly In-Memory Only — Wipes on any Page Refresh)
+    // Clear any legacy client-side storage; auth now uses HttpOnly signed session cookies
     sessionStorage.removeItem('admin_session_key');
     localStorage.removeItem('admin_key_temp');
-    window.runtimeAdminKey = null;
     let isAdminUnlocked = false;
+
+    const escapeHtml = (val) => String(val ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
     // Helper to evaluate auth bounds
     const computeCanEdit = () => !isReadOnly || isAdminUnlocked;
@@ -91,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const getAuthHeaders = (isJson = true) => {
         const headers = {};
         if (isJson) headers['Content-Type'] = 'application/json';
-        if (isAdminUnlocked && window.runtimeAdminKey) headers['X-Admin-Key'] = window.runtimeAdminKey;
         return headers;
     };
 
@@ -166,11 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     logoutAdminBtns.forEach(btn => {
-        if(btn) btn.onclick = () => {
-            window.runtimeAdminKey = null;
+        if(btn) btn.onclick = async () => {
             isAdminUnlocked = false;
             sessionStorage.removeItem('admin_session_key');
             localStorage.removeItem('admin_key_temp');
+            try {
+                await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+            } catch (e) {}
             window.location.reload(); // Hard reset for clean logout sweep
         };
     });
@@ -285,7 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await resp.json().catch(() => ({}));
 
                 if (resp.status === 200) {
-                    window.runtimeAdminKey = key;
                     isAdminUnlocked = true;
                     closeLogin();
                     updatePinDots();
@@ -5827,14 +5833,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const item = document.createElement('div');
                 item.className = 'rec-entry-item';
                 
-                const posterUrl = rec.cover_url || 'https://via.placeholder.com/150x225?text=No+Poster';
+                const posterUrl = escapeHtml(rec.cover_url || 'https://via.placeholder.com/150x225?text=No+Poster');
+                const safeTitle = escapeHtml(rec.title);
+                const safeYear = escapeHtml(rec.year || '????');
+                const safeRecommender = escapeHtml(rec.recommender_name || 'Anonymous');
                 
                 item.innerHTML = `
                     <img src="${posterUrl}" class="rec-entry-poster" alt="Poster">
                     <div class="rec-entry-info">
-                        <div class="rec-entry-title">${rec.title}</div>
+                        <div class="rec-entry-title">${safeTitle}</div>
                         <div class="rec-entry-meta">
-                            ${rec.year || '????'} • ${rec.recommender_name || 'Anonymous'}
+                            ${safeYear} • ${safeRecommender}
                             <div style="font-size: 0.65rem; opacity: 0.5; margin-top: 2px;">
                                 ${new Date(rec.date_added + 'Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${new Date(rec.date_added + 'Z').toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
                             </div>
@@ -6572,6 +6581,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Wrap window.fetch to automatically broadcast data mutations across tabs
     const nativeFetch = window.fetch;
+    let lastLocalMutationAt = 0;
     window.fetch = async function(...args) {
         const res = await nativeFetch.apply(this, args);
         try {
@@ -6581,12 +6591,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method) &&
                 url.includes('/api/') &&
-                !url.includes('/api/auth/verify') &&
+                !url.includes('/api/auth/') &&
                 !url.includes('/api/media/refresh-ratings') &&
                 !url.includes('/api/synopsis')) {
                 if (res.ok) {
+                    lastLocalMutationAt = Date.now();
+                    const headerVer = res.headers.get('X-Data-Version');
+                    if (headerVer) currentServerVersion = headerVer;
                     broadcastDataChange();
-                    // Update our own baseline silently after brief delay so current tab doesn't prompt itself
+                    // Backup baseline sync in case proxy stripped custom header
                     setTimeout(async () => {
                         try {
                             const verRes = await nativeFetch('/api/version', { cache: 'no-store' });
@@ -6595,7 +6608,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (vData && vData.version) currentServerVersion = vData.version;
                             }
                         } catch (err) {}
-                    }, 400);
+                    }, 150);
                 }
             }
         } catch (err) {}
@@ -6605,6 +6618,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Multi-Device Polling & State Verification
     const checkServerVersion = async () => {
         if (isLiveToastShown) return; // Already prompted
+        if (Date.now() - lastLocalMutationAt < 2500) return; // Ignore own recent mutations
         try {
             const res = await nativeFetch('/api/version', { cache: 'no-store' });
             if (!res.ok) return;
@@ -6622,6 +6636,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // Silently catch background poll failures
         }
     };
+
+    // Restore HttpOnly cookie admin session across page refreshes
+    (async () => {
+        try {
+            const sRes = await nativeFetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' });
+            if (sRes.ok) {
+                const sData = await sRes.json();
+                if (sData && sData.authenticated && !isAdminUnlocked) {
+                    isAdminUnlocked = true;
+                    if (window.updateAuthUI) window.updateAuthUI();
+                    if (typeof filterAndRenderMedia === 'function') filterAndRenderMedia();
+                }
+            }
+        } catch (e) {}
+    })();
 
     // Initial baseline fetch
     checkServerVersion();

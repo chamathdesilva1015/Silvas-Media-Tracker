@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import re
 import time
@@ -34,33 +35,44 @@ allowed_origins = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "https://silvas-media-tracker.vercel.app",
 ]
 prod_origin = os.environ.get("ALLOWED_ORIGIN")
-if prod_origin:
+if prod_origin and prod_origin not in allowed_origins:
     allowed_origins.append(prod_origin)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins if os.environ.get("VERCEL") == "1" and prod_origin else ["*"],
+    allow_origins=allowed_origins if os.environ.get("VERCEL") == "1" else ["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# --- SECURITY: Hashed Admin Secret & Constant-Time Verification ---
+# --- SECURITY: Hashed Admin Secret & Signed HttpOnly Session Tokens ---
 _SALT = b"silva_secure_media_vault_salt_2026"
-ADMIN_RAW_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Dn1h7M55!")
-ADMIN_PASSWORD_HASH = hashlib.pbkdf2_hmac(
-    'sha256',
-    ADMIN_RAW_PASSWORD.encode('utf-8'),
-    _SALT,
-    iterations=100000
+ADMIN_RAW_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+ADMIN_PASSWORD_HASH = (
+    hashlib.pbkdf2_hmac(
+        'sha256',
+        ADMIN_RAW_PASSWORD.encode('utf-8'),
+        _SALT,
+        iterations=100000
+    )
+    if ADMIN_RAW_PASSWORD
+    else None
+)
+SESSION_COOKIE_NAME = "silva_admin_session"
+SESSION_TTL_SECONDS = 60 * 60 * 24 * 7  # 7 days
+_SESSION_SECRET = (
+    os.environ.get("SESSION_SECRET")
+    or (hashlib.sha256((ADMIN_RAW_PASSWORD + "_silva_session_v1").encode("utf-8")).hexdigest() if ADMIN_RAW_PASSWORD else "")
 )
 
 def verify_password_constant_time(provided_key: str) -> bool:
     """Verifies candidate key against hashed admin secret in constant time to prevent timing attacks."""
-    if not provided_key:
+    if not provided_key or ADMIN_PASSWORD_HASH is None:
         return False
     candidate_hash = hashlib.pbkdf2_hmac(
         'sha256',
@@ -69,6 +81,38 @@ def verify_password_constant_time(provided_key: str) -> bool:
         iterations=100000
     )
     return hmac.compare_digest(ADMIN_PASSWORD_HASH, candidate_hash)
+
+def create_session_token(ttl_seconds: int = SESSION_TTL_SECONDS) -> str:
+    """Creates an HMAC-signed session token with expiration timestamp."""
+    if not _SESSION_SECRET:
+        return ""
+    exp = int(time.time()) + ttl_seconds
+    payload = str(exp)
+    sig = hmac.new(_SESSION_SECRET.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"{payload}.{sig}"
+
+def verify_session_token(token: Optional[str]) -> bool:
+    """Verifies an HMAC-signed session token and checks expiration."""
+    if not token or not _SESSION_SECRET or "." not in token:
+        return False
+    try:
+        payload, sig = token.split(".", 1)
+        expected_sig = hmac.new(_SESSION_SECRET.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected_sig):
+            return False
+        return int(payload) > int(time.time())
+    except Exception:
+        return False
+
+def is_request_admin(request: Request) -> bool:
+    """Checks whether the request has a valid signed session cookie or x-admin-key header."""
+    session_cookie = request.cookies.get(SESSION_COOKIE_NAME)
+    if session_cookie and verify_session_token(session_cookie):
+        return True
+    admin_header = request.headers.get("x-admin-key")
+    if admin_header and verify_password_constant_time(admin_header):
+        return True
+    return False
 
 # --- SECURITY: Global API Rate Limiter Middleware ---
 # Sliding window tracking per client IP: max 60 requests / minute for public traffic
@@ -83,9 +127,8 @@ async def global_rate_limiting_middleware(request: Request, call_next):
     if not path.startswith("/api/") or path in ["/api/health", "/api/version"]:
         return await call_next(request)
 
-    # Admin requests authenticated via header bypass public rate limiting
-    admin_header = request.headers.get("x-admin-key")
-    if admin_header and verify_password_constant_time(admin_header):
+    # Admin requests authenticated via session cookie or header bypass public rate limiting
+    if is_request_admin(request):
         return await call_next(request)
 
     client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
@@ -114,12 +157,28 @@ async def global_rate_limiting_middleware(request: Request, call_next):
 
 @app.middleware("http")
 async def no_cache_html_middleware(request: Request, call_next):
-    """Ensure HTML pages are never cached so that client bundle updates apply immediately."""
+    """Ensure HTML pages are never cached, attach security headers, and expose data version on API calls."""
     response = await call_next(request)
     if request.url.path in ["/", "/index.html"]:
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+    if request.url.path.startswith("/api/"):
+        response.headers["X-Data-Version"] = str(SERVER_DATA_VERSION)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
+        "font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none';"
+    )
     return response
 
 # Global system version tracking for cross-tab and cross-device live updates
@@ -168,8 +227,7 @@ def get_session():
 def check_readonly(request: Request):
     # Enforce read-only protection in Vercel or any environment with READONLY_MODE=1
     if os.environ.get("VERCEL") == "1" or os.environ.get("READONLY_MODE") == "1":
-        client_key = request.headers.get("x-admin-key")
-        if client_key and verify_password_constant_time(client_key):
+        if is_request_admin(request):
             return # Unlock for valid admin
         raise HTTPException(status_code=403, detail="Action disabled in public read-only mode.")
 
@@ -180,23 +238,66 @@ def health_check(session: Session = Depends(get_session)):
         session.exec(select(MediaItem).limit(1)).first()
         return {"status": "ok", "database": "connected"}
     except Exception as e:
-        return JSONResponse(status_code=503, content={"status": "error", "message": str(e)})
+        print(f"[!] Health check error: {e}")
+        return JSONResponse(status_code=503, content={"status": "error", "message": "Database unavailable"})
 
 class AdminAuthRequest(BaseModel):
     key: str
 
-# IP-based rate limiting & exponential lockout tracker
-login_attempts = {} # ip -> {"failures": int, "lockout_until": float, "lockout_duration": int}
+def _get_client_ip(request: Request) -> str:
+    return request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
+
+def _get_auth_record(session: Session, client_ip: str) -> dict:
+    channel_id = f"auth_lockout:{client_ip}"
+    row = session.exec(select(SyncState).where(SyncState.channel_id == channel_id)).first()
+    if row and row.last_message_id:
+        try:
+            return json.loads(row.last_message_id)
+        except Exception:
+            pass
+    return {"failures": 0, "lockout_until": 0.0, "lockout_duration": 60}
+
+def _save_auth_record(session: Session, client_ip: str, record: Optional[dict]):
+    channel_id = f"auth_lockout:{client_ip}"
+    row = session.exec(select(SyncState).where(SyncState.channel_id == channel_id)).first()
+    session.info["skip_version_bump"] = True
+    if record is None:
+        if row:
+            session.delete(row)
+            session.commit()
+        return
+    payload_str = json.dumps(record)
+    if not row:
+        row = SyncState(channel_id=channel_id, last_message_id=payload_str, last_sync_at=datetime.utcnow())
+    else:
+        row.last_message_id = payload_str
+        row.last_sync_at = datetime.utcnow()
+    session.add(row)
+    session.commit()
+
+@app.get("/api/auth/session")
+def get_auth_session(request: Request):
+    """Returns whether the current request holds a valid admin session cookie or header."""
+    is_local = os.environ.get("VERCEL") != "1" and os.environ.get("READONLY_MODE") != "1"
+    return {"authenticated": is_local or is_request_admin(request)}
+
+@app.post("/api/auth/logout")
+def logout_admin(response: Response):
+    """Clears the HttpOnly admin session cookie."""
+    response.delete_cookie(key=SESSION_COOKIE_NAME, path="/")
+    return {"status": "success", "authenticated": False}
 
 @app.post("/api/auth/verify")
-def verify_admin_key(payload: AdminAuthRequest, request: Request):
-    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
+def verify_admin_key(payload: AdminAuthRequest, request: Request, session: Session = Depends(get_session)):
+    if not ADMIN_RAW_PASSWORD:
+        raise HTTPException(status_code=503, detail="Admin authentication is not configured on this server.")
+
+    client_ip = _get_client_ip(request)
     now = time.time()
-    
-    record = login_attempts.get(client_ip, {"failures": 0, "lockout_until": 0.0, "lockout_duration": 60})
+    record = _get_auth_record(session, client_ip)
     
     # Check if IP is currently locked out
-    if now < record["lockout_until"]:
+    if now < record.get("lockout_until", 0.0):
         remaining_seconds = int(record["lockout_until"] - now) + 1
         return JSONResponse(
             status_code=429,
@@ -208,21 +309,33 @@ def verify_admin_key(payload: AdminAuthRequest, request: Request):
         )
 
     if verify_password_constant_time(payload.key):
-        # Success — reset failure tracker for this IP
-        login_attempts.pop(client_ip, None)
-        return {"status": "success", "authenticated": True}
+        # Success — reset failure tracker for this IP and set HttpOnly signed session cookie
+        _save_auth_record(session, client_ip, None)
+        token = create_session_token()
+        resp = JSONResponse(content={"status": "success", "authenticated": True})
+        is_https = os.environ.get("VERCEL") == "1" or request.url.scheme == "https"
+        resp.set_cookie(
+            key=SESSION_COOKIE_NAME,
+            value=token,
+            max_age=SESSION_TTL_SECONDS,
+            httponly=True,
+            secure=is_https,
+            samesite="lax",
+            path="/",
+        )
+        return resp
     
     # Failure handling
-    record["failures"] += 1
+    record["failures"] = record.get("failures", 0) + 1
     failures = record["failures"]
     
     if failures >= 3:
         # Calculate exponential lockout duration: 3rd failure = 60s, 4th = 120s, 5th = 240s, etc.
         exponent = failures - 3
-        duration = 60 * (2 ** exponent)
+        duration = min(60 * (2 ** exponent), 86400) # Cap at 24h
         record["lockout_until"] = now + duration
         record["lockout_duration"] = duration
-        login_attempts[client_ip] = record
+        _save_auth_record(session, client_ip, record)
         return JSONResponse(
             status_code=429,
             content={
@@ -233,7 +346,7 @@ def verify_admin_key(payload: AdminAuthRequest, request: Request):
             }
         )
     
-    login_attempts[client_ip] = record
+    _save_auth_record(session, client_ip, record)
     remaining_attempts = 3 - failures
     return JSONResponse(
         status_code=401,
@@ -608,8 +721,10 @@ async def refresh_item_metadata(item_id: int, session: Session = Depends(get_ses
 
 @app.get("/api/media/refresh-ratings/{item_id}")
 @app.post("/api/media/refresh-ratings/{item_id}")
-def refresh_movie_ratings(item_id: int, session: Session = Depends(get_session)):
+def refresh_movie_ratings(item_id: int, request: Request, session: Session = Depends(get_session)):
     """Fetches and updates the 4 external ratings for a single movie (caches without bumping client sync version)."""
+    if request.method == "POST":
+        check_readonly(request)
     item = session.get(MediaItem, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -2160,7 +2275,7 @@ def delete_passed_suggestion(pass_id: int, session: Session = Depends(get_sessio
     return {"status": "success", "message": "Suggestion un-passed."}
 
 @app.post("/api/automation/enrich")
-async def trigger_enrich(category: Optional[str] = None):
+async def trigger_enrich(category: Optional[str] = None, _: None = Depends(check_readonly)):
     async def log_generator():
         q = asyncio.Queue()
         def log_enrich(msg):
@@ -2277,8 +2392,39 @@ def get_all_recommendations(request: Request, response: Response, type: Optional
     return recs
 
 @app.post("/api/recommendations/submit")
-def submit_recommendation(rec: Recommendation, session: Session = Depends(get_session)):
+def submit_recommendation(rec: Recommendation, request: Request, session: Session = Depends(get_session)):
     """Saves a recommendation with verified metadata, strictly preventing fake or unverified submissions."""
+    # 0. Per-IP spam rate limiting (max 8 submissions per hour for non-admins)
+    if not is_request_admin(request):
+        client_ip = _get_client_ip(request)
+        rec_channel = f"rec_limit:{client_ip}"
+        now_ts = time.time()
+        row = session.exec(select(SyncState).where(SyncState.channel_id == rec_channel)).first()
+        recent_hits = []
+        if row and row.last_message_id:
+            try:
+                recent_hits = [t for t in json.loads(row.last_message_id) if now_ts - t < 3600]
+            except Exception:
+                recent_hits = []
+        if len(recent_hits) >= 8:
+            raise HTTPException(status_code=429, detail="Too many recommendations submitted. Please try again later.")
+        recent_hits.append(now_ts)
+        session.info["skip_version_bump"] = True
+        if not row:
+            row = SyncState(channel_id=rec_channel, last_message_id=json.dumps(recent_hits), last_sync_at=datetime.utcnow())
+        else:
+            row.last_message_id = json.dumps(recent_hits)
+            row.last_sync_at = datetime.utcnow()
+        session.add(row)
+        session.commit()
+        session.info["skip_version_bump"] = False
+
+    # Sanitize user-provided text fields to prevent stored XSS
+    if rec.recommender_name:
+        rec.recommender_name = re.sub(r"<[^>]*>", "", rec.recommender_name).strip()[:50] or None
+    if rec.note:
+        rec.note = re.sub(r"<[^>]*>", "", rec.note).strip()[:500] or None
+
     current_year = datetime.utcnow().year
     MAX_YEAR = current_year + 3
     MIN_YEAR = 1888
